@@ -20,19 +20,19 @@
     var CONFIG = {"hostname":"rickyqliu.bitbucket.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="题目LeetCode.221.最大正方形（中等） 在一个由  &#39;0&#39;  和  &#39;1&#39;  组成的二维矩阵内，找到只包含  &#39;1&#39;  的最大正方形，并返回其面积。">
+  <meta name="description" content="题目LeetCode.300.最长递增子序列（中等） 给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。 子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子序列。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LeetCode.221.最大正方形（中等）">
+<meta property="og:title" content="LeetCode.300.最长递增子序列（中等）">
 <meta property="og:url" content="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.300.%E6%9C%80%E9%95%BF%E9%80%92%E5%A2%9E%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/index.html">
 <meta property="og:site_name" content="Ricky.L的随笔">
-<meta property="og:description" content="题目LeetCode.221.最大正方形（中等） 在一个由  &#39;0&#39;  和  &#39;1&#39;  组成的二维矩阵内，找到只包含  &#39;1&#39;  的最大正方形，并返回其面积。">
+<meta property="og:description" content="题目LeetCode.300.最长递增子序列（中等） 给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。 子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子序列。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-08-15T07:02:12.000Z">
-<meta property="article:modified_time" content="2021-08-16T15:56:51.315Z">
+<meta property="article:published_time" content="2021-08-15T07:07:12.000Z">
+<meta property="article:modified_time" content="2021-08-16T16:10:24.482Z">
 <meta property="article:author" content="Ricky.L">
 <meta property="article:tag" content="算法">
-<meta property="article:tag" content="动态规划">
 <meta property="article:tag" content="LeetCode中等">
+<meta property="article:tag" content="动态规划">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.300.%E6%9C%80%E9%95%BF%E9%80%92%E5%A2%9E%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/">
@@ -48,7 +48,7 @@
   };
 </script>
 
-  <title>LeetCode.221.最大正方形（中等） | Ricky.L的随笔</title>
+  <title>LeetCode.300.最长递增子序列（中等） | Ricky.L的随笔</title>
   
 
 
@@ -136,11 +136,6 @@
     <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
 
   </li>
-        <li class="menu-item menu-item-commonweal">
-
-    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
-
-  </li>
       <li class="menu-item menu-item-search">
         <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
         </a>
@@ -209,7 +204,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          LeetCode.221.最大正方形（中等）
+          LeetCode.300.最长递增子序列（中等）
         </h1>
 
         <div class="post-meta">
@@ -219,14 +214,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-08-15 15:02:12" itemprop="dateCreated datePublished" datetime="2021-08-15T15:02:12+08:00">2021-08-15</time>
+              <time title="创建时间：2021-08-15 15:07:12" itemprop="dateCreated datePublished" datetime="2021-08-15T15:07:12+08:00">2021-08-15</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-16 23:56:51" itemprop="dateModified" datetime="2021-08-16T23:56:51+08:00">2021-08-16</time>
+                <time title="修改时间：2021-08-17 00:10:24" itemprop="dateModified" datetime="2021-08-17T00:10:24+08:00">2021-08-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -263,39 +258,54 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/maximal-square/">LeetCode.221.最大正方形（中等）</a></p>
-<p>在一个由  <code>&#39;0&#39;</code>  和  <code>&#39;1&#39;</code>  组成的二维矩阵内，找到只包含  <code>&#39;1&#39;</code>  的最大正方形，并返回其面积。</p>
+        <h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/longest-increasing-subsequence/">LeetCode.300.最长递增子序列（中等）</a></p>
+<p>给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。</p>
+<p>子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子序列。</p>
 <span id="more"></span>
 
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>最值问题考虑用动态规划。<br>想办法把大问题划分子问题+有限步骤。</p>
-<h3 id="从基本情况出发"><a href="#从基本情况出发" class="headerlink" title="从基本情况出发"></a>从基本情况出发</h3><p>对于某一个点<code>[i, j]</code>，如果它的值是1，那么构成边长为1的正方形。</p>
-<h3 id="构成边长为2的正方形需要什么条件？"><a href="#构成边长为2的正方形需要什么条件？" class="headerlink" title="构成边长为2的正方形需要什么条件？"></a>构成边长为2的正方形需要什么条件？</h3><p>对于某一个点<code>[i, j]</code>，如果想要构成边长为2的正方形，要知道周围其余3个点是否都是1。</p>
-<p>而这3个点的构成有四个方向：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">b b    b b    a b    b a</span><br><span class="line">b a    a b    b b    b b</span><br><span class="line">左上    右上   右下    左下</span><br></pre></td></tr></table></figure>
-<p>判断的方向太多了，能不能归类简化一下。<br>可以发现右上、右下、左下的情况，都可以归类为左上的问题，因为它们右下角的点都会遇到左上的情况。</p>
-<p>这里还看不出一般规律，继续看边长更大的情况。</p>
-<h3 id="怎么快速判断能否构成边长为3的正方形？"><a href="#怎么快速判断能否构成边长为3的正方形？" class="headerlink" title="怎么快速判断能否构成边长为3的正方形？"></a>怎么快速判断能否构成边长为3的正方形？</h3><p>对于某一个点<code>[i, j]</code>，如果去一个个检查左上方的点是不是都是1，太麻烦了；因为如果要检查边长更大的正方形，那么往回遍历的点就越多，而且之前遍历过的点都要重复遍历。</p>
-<p>能不能利用之前的计算结果呢？<br>假设<code>side[i][j]</code>表示以<code>[i, j]</code>为右下角的正方形的个数。<br>个数的统计是通过看是否依次能够成边长为1、2、3、…、n的正方形，所以<code>a[i][j]</code>也表示能形成的最大的正方形的边长。</p>
-<p>分析如下的3x3网格：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">         col </span><br><span class="line">a0 a1 a2  0</span><br><span class="line">b0 b1 b2  1</span><br><span class="line">c0 c1 c2  2</span><br><span class="line"> 0  1  2 row </span><br></pre></td></tr></table></figure>
-<p>从正方形的边界来推理，怎么利用<code>side</code>数组快速判断格子是否为1。</p>
-<p>如果想要a2、b2为1，那么<code>side[1][2] &gt;= 2</code>才行，也就是右下角的格子上方至少有2x2的正方形。<br>如果想要c0、c1为1，那么<code>side[1][2] &gt;= 2</code>才行，也就是右下角的格子左方至少有2x2的正方形。<br>a0、a1、b0要为1，那么<code>side[1][1] &gt;= 2</code>才行，也就是右下角的格子的左上方至少有2x2的正方形。</p>
-<p>如果有两个方向的正方形边长大于2，但有一个方向的正方形边长为1，会怎么影响<code>side[2][2]</code>？<br>比如</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 1 0</span><br><span class="line">1 1 1</span><br><span class="line">1 1 1</span><br></pre></td></tr></table></figure>
-<p>只能取边长最小的这个方向的正方形边长。</p>
-<p>规律已经浮现。</p>
-<h3 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h3><p><code>side[i][j] = 1 + minOf(side[i - 1][j], side[i][j - 1], side[i - 1][j - 1])</code></p>
-<h3 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h3><p>第一行的每个格子没有上面，只能形成边长为1的正方形。<br>第一列的每个格子没有左面，只能形成边长为1的正方形。</p>
-<h3 id="最后结果"><a href="#最后结果" class="headerlink" title="最后结果"></a>最后结果</h3><p>记录最大的<code>side[i][j]</code>，再求平方就是最终结果</p>
-<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><p>必须遍历完二维数组所有元素才能完成求解，并且只需要遍历一次，时间复杂度O(mn)。<br>需要记录<code>side</code>二维数组，空间复杂度O(mn)。</p>
-<h3 id="代码（kotlin"><a href="#代码（kotlin" class="headerlink" title="代码（kotlin)"></a>代码（kotlin)</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maximalSquare</span><span class="params">(matrix: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = matrix.size</span><br><span class="line">        <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> side = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        side[<span class="number">0</span>][<span class="number">0</span>] = <span class="keyword">if</span> (matrix[<span class="number">0</span>][<span class="number">0</span>] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">        maxLength = maxOf(maxLength, side[<span class="number">0</span>][<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            side[i][<span class="number">0</span>] = <span class="keyword">if</span> (matrix[i][<span class="number">0</span>] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            maxLength = maxOf(maxLength, side[i][<span class="number">0</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            side[<span class="number">0</span>][j] = <span class="keyword">if</span> (matrix[<span class="number">0</span>][j] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            maxLength = maxOf(maxLength, side[<span class="number">0</span>][j])</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">                <span class="keyword">if</span> (matrix[i][j] == <span class="string">&#x27;1&#x27;</span>) &#123;</span><br><span class="line">                    side[i][j] = <span class="number">1</span> + minOf(side[i - <span class="number">1</span>][j], side[i][j - <span class="number">1</span>], side[i - <span class="number">1</span>][j - <span class="number">1</span>])</span><br><span class="line">                    maxLength = maxOf(maxLength, side[i][j])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> maxLength * maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>最值问题考虑动态规划，看能不能把大问题先拆分为子问题+有限步骤。</p>
+<p><strong>如果已知最长严格递增子序列，它是怎么得来的呢？上一步的最小操作是什么？</strong></p>
+<ul>
+<li>如果前面没有递增子序列，当前字符作为新的递增子序列起点。</li>
+<li>如果前面有了递增子序列，当前字符比前面子序列最后一个数字大，可以形成新的递增子序列，长度加1。</li>
+</ul>
+<p><strong>前面的递增子序列可能有很多个，应该追加到哪个递增子序列的后面？</strong><br>找长度最大的递增子序列。</p>
+<p><strong>数组前面的部分又是怎么找到最长递增子序列的？</strong><br>还是一样的拆解，递归进行，这里划分出了子问题+有限步骤。</p>
+<ul>
+<li>子问题是最优的，经过有限步骤得出下一个问题的最优解，符合最优子结构。</li>
+<li>子问题的结果不受更大问题的影响，无后效性。</li>
+<li>计算长的子数组的最长递增子序列的长度，都要访问前面的递增子序列的长度，有重叠子问题。</li>
+</ul>
+<p>符合使用动态规划所有条件。</p>
+<p><strong>状态转移方程</strong><br>设<code>dp[i]</code>为以<code>nums[i]</code>结尾的最长递增子序列的长度。<br>遍历<code>nums[0, i - 1]</code>，寻找<code>j</code>（<code>0 &lt;= j &lt;= i - 1</code>）：</p>
+<ul>
+<li>对于所有满足<code>nums[i] &gt; nums[j]</code>的<code>j</code>，找出最大<code>dp[j]</code>，<code>dp[i] = 1 + 最大的dp[j]</code>。</li>
+<li>如果<code>nums[i]</code>比<code>nums[0, i - 1]</code>都小，<code>dp[i] = 1</code>。</li>
+</ul>
+<p><strong>复杂度</strong><br>时间复杂度$O(n^2)$：<br>计算所有<code>dp[i]</code>得遍历整个数组，需要$O(n)$；<br>计算每个<code>dp[i]</code>需要遍历<code>[0, i - 1]</code>，即$O(n)$。<br>双循环共执行<code>1 + 2 + 3 + ... + n - 1 = (1 + n - 1) * (n - 1) / 2 = n(n - 1) / 2次</code>。</p>
+<p>空间复杂度$O(n)$：<br><code>dp</code>数组占用线性空间。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">lengthOfLIS</span><span class="params">(nums: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = nums.size</span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n) &#123; <span class="number">1</span> &#125;</span><br><span class="line">        <span class="keyword">var</span> maxLen = <span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">var</span> preMaxLen = <span class="number">0</span></span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until i) &#123;</span><br><span class="line">                <span class="keyword">if</span> (nums[i] &gt; nums[j]) &#123;</span><br><span class="line">                    preMaxLen = maxOf(preMaxLen, dp[j])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            dp[i] = <span class="number">1</span> + preMaxLen</span><br><span class="line">            maxLen = maxOf(maxLen, dp[i])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> maxLen</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p>状态转移只与左、上、左上三个状态有关，不需要记录所有状态。</p>
-<p>由于状态递推是从左到右遍历二维数组的，所以至少要存储一行的记录，否则要是只用三个变量记录上一个状态，换行从第1列开始递推的时候，你不知道左、上、左上的状态了。</p>
-<p>但是一行缓存记录还不够，因为要读取左边和左上方的状态，在从左到右递推的时候，左上方的值被覆盖了，只能读取到左边的状态，所以要多记录上一行的状态，以便读取左上方的状态。</p>
-<p>空间复杂度O(m)</p>
-<p>如果<code>m &gt; n</code>，按列遍历列表，跟按行遍历是一样的，可以做到O(n)空间复杂度，这里不再编写，形式相似。在n远小于m时这样做才有意义。</p>
-<h3 id="优化的代码（kotlin）"><a href="#优化的代码（kotlin）" class="headerlink" title="优化的代码（kotlin）"></a>优化的代码（kotlin）</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maximalSquare</span><span class="params">(matrix: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = matrix.size</span><br><span class="line">        <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> side = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 第一行状态</span></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            side[j] = <span class="keyword">if</span> (matrix[<span class="number">0</span>][j] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            maxLength = maxOf(maxLength, side[j])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 存储上一行状态，以方便接下来读取左上方的状态</span></span><br><span class="line">        <span class="keyword">val</span> pre = side.copyOf()</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="keyword">if</span> (matrix[i][j] == <span class="string">&#x27;1&#x27;</span>) &#123;</span><br><span class="line">	                <span class="comment">// side[j - 1]: 左方状态</span></span><br><span class="line">					<span class="comment">// pre[j - 1]: 左上方状态</span></span><br><span class="line">					<span class="comment">// pre[j]: 上方状态</span></span><br><span class="line">                    side[j] = <span class="keyword">if</span> (j == <span class="number">0</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">1</span> + minOf(side[j - <span class="number">1</span>], pre[j - <span class="number">1</span>], pre[j])</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    side[j] = <span class="number">0</span></span><br><span class="line">                &#125;</span><br><span class="line">                maxLength = maxOf(maxLength, side[j])</span><br><span class="line">            &#125;</span><br><span class="line">            side.copyInto(pre)</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> maxLength * maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>时间优化</strong></p>
+<p><strong>计算所有<code>dp[i]</code>的时间能不能优化？</strong><br>计算所有<code>dp[i]</code>必须要遍历整个数组，无法优化。</p>
+<p><strong>计算每个<code>dp[i]</code>的时间能不能优化？</strong><br>先看计算单个<code>dp[i]</code>的过程：<br>是要在已经发现的递增子序列中看<code>nums[i]</code>能接到哪些子序列后面，再在能接上去的这些子序列中找一个长度最大的。</p>
+<p><strong>直接找之前最长子序列的去接行不行？</strong><br>行，如果能接上肯定最好。</p>
+<p><strong>如果接不上最长的，还有必要去接短的递增子序列吗？</strong><br>有必要的，比如数组<code>[1, 6, 7, 2, 3, 4]</code>，有递增子序列是<code>[1]</code>、<code>[1, 6]</code>和<code>[1, 6, 7]</code>，2是接不到<code>[1, 6, 7]</code>后面的，但是可以接在<code>[1]</code>后面形成<code>[1, 2]</code>，最后遇到3和4，可以接在<code>[1, 2]</code>后面形成长度为4的递增子序列，比<code>[1, 6, 7]</code>还要长。</p>
+<p>这里就引发一个问题，如果<strong>之前最长的子序列可能会有多个，应该去接哪个？</strong><br>跟末尾元素最小的比较，是最快的；否则要是接不上，得比较多次。<br>比如上面长度为2的子序列有<code>[1, 6]</code>和<code>[1, 2]</code>，后面遇到3和4肯定直接跟2比较，比较次数是最少的。</p>
+<p>所以如果当前数字接不到最长的，但是能接到短的子序列后面，如果当前数字比之前子序列末尾元素小，接上去对后面接更长的子序列是有意义的。</p>
+<p><strong>能否在查找方法上做优化？</strong><br>一说到查找和比较，就能想到最优化的查找元素方法是二分查找，可以把时间复杂度降低到$O(log n)$。</p>
+<p>二分查找是要求在有序数组里做查找比较的，那就把递增子序列的末尾数字从小到大排序。</p>
+<p>我们想通过比较末尾元素，是想更新某个长度的递增子序列的末尾元素为更小的。</p>
+<p>递增子序列末尾元素的大小顺序和子序列的长度有没有什么关联？</p>
+<p>可以发现，如果相同长度的子序列只保留最小的末尾数字，那么长度大的子序列的末尾元素一定比长度小的子序列的末尾元素大。<br>因为只有新的数字比原来短的递增子序列的末尾元素大，才能形成长度更长的递增子序列；如果新的数字比原来短的递增子序列的末尾元素小，是无法形成长度更长的递增子序列的。</p>
+<hr>
+<p><strong>能否在查找方法上做优化？</strong><br>一说到查找和比较，就能想到最优化的查找元素方法是二分查找，可以把时间复杂度降低到$O(log n)$。</p>
+<p>二分查找是要求在有序数组里做查找比较的，那就把递增子序列的末尾数字从小到大排序。<br>新的数字去二分比较后，能否确定新数字可以拼接的子序列最长长度？只有能确定，才可以不跟所有末尾数字比较，二分查找才能节约出时间，否则还得顺序扫描所有元素。</p>
+<p>换句话说，递增子序列末尾元素的大小顺序和子序列的长度有没有什么关联？</p>
+<p>可以发现，如果相同长度的子序列只保留最小的末尾数字，那么长度大的子序列的末尾元素一定比长度小的子序列的末尾元素大。<br>因为只有新的数字比原来短的递增子序列的末尾元素大，才能形成长度更长的递增子序列；如果新的数字比原来短的递增子序列的末尾元素小，是无法形成长度更长的递增子序列的；如果新数字比某长度的递增子序列的最小的末尾数字都要小，那肯定是无法接在它后面形成长度更长的递增子子序列了。</p>
+<p>所以二分查找是可行的，可以保存每个长度的递增子序列的最小末尾数字形成数组，递增子序列长度作为数组索引，数组元素默认就是严格递增。<br>遇到新的数字用二分查找，就可以知道应该更新哪个长度的子序列的末尾元素。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">lengthOfLIS</span><span class="params">(nums: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (nums.isEmpty()) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (nums.size == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">val</span> n = nums.size</span><br><span class="line">        <span class="comment">// dp[i]表示以长度为i + 1的所有上升子序列中结尾最小的数，0 &lt;= i &lt;= n - 1，n为数组长度</span></span><br><span class="line">        <span class="comment">// 由于上升子序列的长度可能是小于n的，所以这里创建动态列表来作为状态存储</span></span><br><span class="line">        <span class="keyword">val</span> dp = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        dp.add(nums[<span class="number">0</span>])</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="comment">// 可以形成更长的子序列</span></span><br><span class="line">            <span class="keyword">if</span> (nums[i] &gt; dp.last()) &#123;</span><br><span class="line">                dp.add(nums[i])</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// 不能形成更长的子序列，但是要更新之前子序列末尾的元素为更小的，方便后续快速比较</span></span><br><span class="line">                <span class="keyword">var</span> left = <span class="number">0</span></span><br><span class="line">                <span class="keyword">var</span> right = dp.size - <span class="number">1</span></span><br><span class="line">                <span class="keyword">while</span> (left &lt;= right) &#123;</span><br><span class="line">                    <span class="keyword">val</span> mid = left + (right - left) / <span class="number">2</span></span><br><span class="line">                    <span class="keyword">when</span> &#123;</span><br><span class="line">                        <span class="comment">// 要找比子序列末尾元素大的位置，所以不会是mid本身，要mid + 1</span></span><br><span class="line">                        dp[mid] &lt; nums[i] -&gt; left = mid + <span class="number">1</span></span><br><span class="line">                        <span class="comment">// dp[mid] &gt; nums[i]，dp严格递增，不存在dp[mid] == nums[i]</span></span><br><span class="line">                        <span class="keyword">else</span> -&gt; right = mid - <span class="number">1</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 熟悉二分法可知，循环结束后，一定会有 nums[left - 1] &lt; nums[i] &lt; nums[left]</span></span><br><span class="line">                <span class="comment">// 更新子序列末尾元素为更小的</span></span><br><span class="line">                dp[left] = nums[i]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp.size</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
     </div>
 
     
@@ -310,7 +320,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.300.%E6%9C%80%E9%95%BF%E9%80%92%E5%A2%9E%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" title="LeetCode.221.最大正方形（中等）">http://rickyqliu.bitbucket.io/算法/LeetCode.300.最长递增子序列（中等）/</a>
+    <a href="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.300.%E6%9C%80%E9%95%BF%E9%80%92%E5%A2%9E%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" title="LeetCode.300.最长递增子序列（中等）">http://rickyqliu.bitbucket.io/算法/LeetCode.300.最长递增子序列（中等）/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -322,8 +332,8 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
-              <a href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" rel="tag"># 动态规划</a>
               <a href="/tags/LeetCode%E4%B8%AD%E7%AD%89/" rel="tag"># LeetCode中等</a>
+              <a href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" rel="tag"># 动态规划</a>
           </div>
 
         
@@ -332,12 +342,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/%E7%AE%97%E6%B3%95/LeetCode.64.%E6%9C%80%E5%B0%8F%E8%B7%AF%E5%BE%84%E5%92%8C%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="prev" title="LeetCode.64.最小路径和（中等）">
-      <i class="fa fa-chevron-left"></i> LeetCode.64.最小路径和（中等）
+    <a href="/%E7%AE%97%E6%B3%95/LeetCode.5.%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="prev" title="LeetCode.5.最长回文子串（中等）">
+      <i class="fa fa-chevron-left"></i> LeetCode.5.最长回文子串（中等）
     </a></div>
       <div class="post-nav-item">
-    <a href="/%E7%AE%97%E6%B3%95/LeetCode.279.%E5%AE%8C%E5%85%A8%E5%B9%B3%E6%96%B9%E6%95%B0%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="next" title="LeetCode.221.最大正方形（中等）">
-      LeetCode.221.最大正方形（中等） <i class="fa fa-chevron-right"></i>
+    <a href="/%E7%AE%97%E6%B3%95/LeetCode.376.%E6%91%86%E5%8A%A8%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="next" title="LeetCode.376.摆动序列（中等）">
+      LeetCode.376.摆动序列（中等） <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -404,7 +414,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">题解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E5%9F%BA%E6%9C%AC%E6%83%85%E5%86%B5%E5%87%BA%E5%8F%91"><span class="nav-number">2.1.</span> <span class="nav-text">从基本情况出发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E6%88%90%E8%BE%B9%E9%95%BF%E4%B8%BA2%E7%9A%84%E6%AD%A3%E6%96%B9%E5%BD%A2%E9%9C%80%E8%A6%81%E4%BB%80%E4%B9%88%E6%9D%A1%E4%BB%B6%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">构成边长为2的正方形需要什么条件？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E5%BF%AB%E9%80%9F%E5%88%A4%E6%96%AD%E8%83%BD%E5%90%A6%E6%9E%84%E6%88%90%E8%BE%B9%E9%95%BF%E4%B8%BA3%E7%9A%84%E6%AD%A3%E6%96%B9%E5%BD%A2%EF%BC%9F"><span class="nav-number">2.3.</span> <span class="nav-text">怎么快速判断能否构成边长为3的正方形？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB%E6%96%B9%E7%A8%8B"><span class="nav-number">2.4.</span> <span class="nav-text">状态转移方程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%B9%E7%95%8C%E5%A4%84%E7%90%86"><span class="nav-number">2.5.</span> <span class="nav-text">边界处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%80%E5%90%8E%E7%BB%93%E6%9E%9C"><span class="nav-number">2.6.</span> <span class="nav-text">最后结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">2.7.</span> <span class="nav-text">复杂度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%88kotlin"><span class="nav-number">2.8.</span> <span class="nav-text">代码（kotlin)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A9%BA%E9%97%B4%E4%BC%98%E5%8C%96"><span class="nav-number">2.9.</span> <span class="nav-text">空间优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E7%9A%84%E4%BB%A3%E7%A0%81%EF%BC%88kotlin%EF%BC%89"><span class="nav-number">2.10.</span> <span class="nav-text">优化的代码（kotlin）</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">题解</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -420,7 +430,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-count">49</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -555,7 +565,7 @@
   var disqus_config = function() {
     this.page.url = "http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.300.%E6%9C%80%E9%95%BF%E9%80%92%E5%A2%9E%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/";
     this.page.identifier = "算法/LeetCode.300.最长递增子序列（中等）/";
-    this.page.title = "LeetCode.221.最大正方形（中等）";
+    this.page.title = "LeetCode.300.最长递增子序列（中等）";
     };
   NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
     if (window.DISQUS) {
