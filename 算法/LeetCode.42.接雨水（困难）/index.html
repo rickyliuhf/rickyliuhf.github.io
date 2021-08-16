@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.bitbucket.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="题目LeetCode.42.接雨水（困难） 给定 n  个非负整数表示每个宽度为 1 的柱子的高度数组height，计算按此排列的柱子，下雨之后能接多少雨水。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LeetCode.42.接雨水（困难）">
+<meta property="og:url" content="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.42.%E6%8E%A5%E9%9B%A8%E6%B0%B4%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="题目LeetCode.42.接雨水（困难） 给定 n  个非负整数表示每个宽度为 1 的柱子的高度数组height，计算按此排列的柱子，下雨之后能接多少雨水。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-08-10T14:15:11.000Z">
+<meta property="article:modified_time" content="2021-08-10T15:27:51.662Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="动态规划">
+<meta property="article:tag" content="LeetCode困难">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.42.%E6%8E%A5%E9%9B%A8%E6%B0%B4%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>LeetCode.42.接雨水（困难） | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.42.%E6%8E%A5%E9%9B%A8%E6%B0%B4%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="大道至简">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LeetCode.42.接雨水（困难）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-08-10 22:15:11 / 修改时间：23:27:51" itemprop="dateCreated datePublished" datetime="2021-08-10T22:15:11+08:00">2021-08-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%AE%97%E6%B3%95/LeetCode.42.%E6%8E%A5%E9%9B%A8%E6%B0%B4%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/LeetCode.42.接雨水（困难）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/trapping-rain-water/">LeetCode.42.接雨水（困难）</a></p>
+<p>给定 <em>n</em>  个非负整数表示每个宽度为 1 的柱子的高度数组height，计算按此排列的柱子，下雨之后能接多少雨水。</p>
+<span id="more"></span>
+
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><h3 id="解法1：动态规划，O-n-空间复杂度"><a href="#解法1：动态规划，O-n-空间复杂度" class="headerlink" title="解法1：动态规划，O(n)空间复杂度"></a>解法1：动态规划，O(n)空间复杂度</h3><h4 id="拆分问题"><a href="#拆分问题" class="headerlink" title="拆分问题"></a>拆分问题</h4><p>所有的积水由每一列的积水量累加得来。</p>
+<h4 id="某一列的积水量由什么决定？"><a href="#某一列的积水量由什么决定？" class="headerlink" title="某一列的积水量由什么决定？"></a>某一列的积水量由什么决定？</h4><ol>
+<li>先要看左右两边最高的柱子有多高，这决定了当前列能积多高的水，并且最多只能积到较矮的那个柱子的高度，否则水会溢出。</li>
+<li>这个高度减去当前柱子高度，就是当前列可以积的水量。</li>
+</ol>
+<h4 id="第i列的积水量求解公式"><a href="#第i列的积水量求解公式" class="headerlink" title="第i列的积水量求解公式"></a>第i列的积水量求解公式</h4><p><code>第i列的积水量 = min(0到i - 1列中最高的柱子的高度, i + 1列到n - 1列中最高柱子的高度) - 当前列柱子高度</code></p>
+<p>所以要把每一列左边和右边最高的柱子先求出来。</p>
+<h4 id="第i列左边的最高的柱子怎么找？"><a href="#第i列左边的最高的柱子怎么找？" class="headerlink" title="第i列左边的最高的柱子怎么找？"></a>第i列左边的最高的柱子怎么找？</h4><p>从0到i - 1遍历一遍height数组，找最大的。<br>实际可以从左到右遍历一遍height数组，把前面记录的最大的柱子高度跟第i - 1个柱子高度比较，取较大值就行了。</p>
+<h4 id="第i列右边的最高的柱子的高度怎么找？"><a href="#第i列右边的最高的柱子的高度怎么找？" class="headerlink" title="第i列右边的最高的柱子的高度怎么找？"></a>第i列右边的最高的柱子的高度怎么找？</h4><p>从右向左遍历一遍height数组，把前面记录的最大的柱子高度跟第i + 1个柱子高度做对比，取较大的。</p>
+<h4 id="边界情况"><a href="#边界情况" class="headerlink" title="边界情况"></a>边界情况</h4><p>第1个柱子左边没有柱子，其左边最高柱子高度是0，也无法积水。<br>最后1个柱子右边没有柱子，其右边最高柱子高度是0，也无法积水。</p>
+<h4 id="代码（kotlin）"><a href="#代码（kotlin）" class="headerlink" title="代码（kotlin）"></a>代码（kotlin）</h4><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">trap</span><span class="params">(height: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = height.size</span><br><span class="line">        <span class="keyword">val</span> maxLeft = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">val</span> maxRight = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            maxLeft[i] = maxOf(maxLeft[i - <span class="number">1</span>], height[i - <span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> (n - <span class="number">2</span>) downTo <span class="number">0</span>) &#123;</span><br><span class="line">            maxRight[i] = maxOf(maxRight[i + <span class="number">1</span>], height[i + <span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">var</span> water = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.(n - <span class="number">2</span>)) &#123;</span><br><span class="line">            <span class="keyword">val</span> h = maxOf(maxLeft[i], maxRight[i])</span><br><span class="line">            <span class="keyword">if</span> (h &gt; height[i]) &#123;</span><br><span class="line">                water += h - height[i]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> water</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：  O(n)<br>空间复杂度：  O(n)</p>
+</blockquote>
+<h3 id="解法2：动态规划，O-1-空间复杂度"><a href="#解法2：动态规划，O-1-空间复杂度" class="headerlink" title="解法2：动态规划，O(1)空间复杂度"></a>解法2：动态规划，O(1)空间复杂度</h3><h4 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h4><p>求每一列的积水的时候，<code>maxLeft[i]</code>和<code>maxRight[i]</code>只用到了一次，后续不会再查询之前的值，所以可以用两个变量<code>leftMax</code>、<code>rightMax</code>代替数组。</p>
+<h4 id="怎么用leftMax代替maxLeft数组？"><a href="#怎么用leftMax代替maxLeft数组？" class="headerlink" title="怎么用leftMax代替maxLeft数组？"></a>怎么用leftMax代替maxLeft数组？</h4><p><code>maxLeft</code>数组是从左到右遍历数组height求得的，在从左到右遍历height数组求第i列积水量的时候，就可以顺便计算出第i个柱子左边最高的柱子的高度，即<code>leftMax</code>。</p>
+<h4 id="怎么用rightMax代替maxRight数组？"><a href="#怎么用rightMax代替maxRight数组？" class="headerlink" title="怎么用rightMax代替maxRight数组？"></a>怎么用rightMax代替maxRight数组？</h4><p><code>maxRight</code>数组是从右到左遍历数组height求得的，想办法能想办法能从右到左遍历数组就行了。</p>
+<h4 id="什么时候应该从右到左遍历？什么时候从左到右？"><a href="#什么时候应该从右到左遍历？什么时候从左到右？" class="headerlink" title="什么时候应该从右到左遍历？什么时候从左到右？"></a>什么时候应该从右到左遍历？什么时候从左到右？</h4><p>当左侧的柱子高度比右侧柱子高，需要看较矮的右侧的柱子高度，才能决定某一列能积多少水，左边不管多高都不会决定能积多少水，此时应该从右到左遍历。<br>直到右侧柱子比左侧柱子高，才需要从左边到右边检查。</p>
+<h4 id="初始情况是怎样的？怎么开始？"><a href="#初始情况是怎样的？怎么开始？" class="headerlink" title="初始情况是怎样的？怎么开始？"></a>初始情况是怎样的？怎么开始？</h4><p>第一列左边没有柱子，无法积水。<br>最后一列右边没有柱子，无法积水。<br>计算积水只考虑区间<code>[1, n - 2]</code>。<br>可以直接令：<br><code>leftMax = height[0]</code><br><code>rightMax = height[n - 1]</code></p>
+<h4 id="具体怎么判断决定height数组的遍历方向？"><a href="#具体怎么判断决定height数组的遍历方向？" class="headerlink" title="具体怎么判断决定height数组的遍历方向？"></a>具体怎么判断决定height数组的遍历方向？</h4><ol>
+<li>如果发现左边柱子比右边矮，即<code>leftMax &lt; rightMax</code>，可以先计算左边的积水，随后如果发现当前柱子高度比leftMax高，再更新leftMax。</li>
+<li>如果发现右边柱子比左边矮，即<code>leftMax &gt; rightMax</code>，先计算右边的积水，随后如果发现当前柱子高度比rightMax高，再更新rightMax。</li>
+</ol>
+<h4 id="代码（kotlin）-1"><a href="#代码（kotlin）-1" class="headerlink" title="代码（kotlin）"></a>代码（kotlin）</h4><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">trap</span><span class="params">(height: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = height.size</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">2</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> leftMax = height[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">var</span> rightMax = height[n - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">var</span> water = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> left = <span class="number">1</span></span><br><span class="line">        <span class="keyword">var</span> right = n - <span class="number">2</span></span><br><span class="line">        <span class="comment">// 要计算区间[1, n - 2]中所有列的积水情况，所以边界条件要包含left == right的情况，才能包含所有的情况</span></span><br><span class="line">        <span class="keyword">while</span> (left &lt;= right) &#123;</span><br><span class="line">            <span class="keyword">if</span> (leftMax &lt; rightMax) &#123;</span><br><span class="line">                <span class="keyword">if</span> (leftMax &gt; height[left]) &#123;</span><br><span class="line">                    water += leftMax - height[left]</span><br><span class="line">                &#125;</span><br><span class="line">                leftMax = maxOf(leftMax, height[left])</span><br><span class="line">                left++</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (rightMax &gt; height[right]) &#123;</span><br><span class="line">                    water += rightMax - height[right]</span><br><span class="line">                &#125;</span><br><span class="line">                rightMax = maxOf(rightMax, height[right])</span><br><span class="line">                right--</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> water</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度： O(n)<br>空间复杂度： O(1)</p>
+</blockquote>
+<h3 id="解法3：直观模拟-gt-单调栈"><a href="#解法3：直观模拟-gt-单调栈" class="headerlink" title="解法3：直观模拟 -&gt; 单调栈"></a>解法3：直观模拟 -&gt; 单调栈</h3><h4 id="梳理"><a href="#梳理" class="headerlink" title="梳理"></a>梳理</h4><p>要能积水，需要多根柱子形成凹槽。</p>
+<h4 id="如何判断形成了凹槽？"><a href="#如何判断形成了凹槽？" class="headerlink" title="如何判断形成了凹槽？"></a>如何判断形成了凹槽？</h4><p>朝一个方向依次看柱子高低，是否能形成高、低、高的排列。<br>在已经形成下坡的情况下，一旦发现出现了上坡，就形成了凹槽，就可以计算积水量了。<br>如果发现上坡，但是前面没有下坡，无法积水。</p>
+<h4 id="如何计算凹槽的积水量"><a href="#如何计算凹槽的积水量" class="headerlink" title="如何计算凹槽的积水量"></a>如何计算凹槽的积水量</h4><p>穷举出凹槽的所有可能情况，逐个分析，再归纳。<br>从最基本的情况看起，再添加有限的步骤，推导出更复杂的情况。</p>
+<h4 id="基本情况"><a href="#基本情况" class="headerlink" title="基本情况"></a>基本情况</h4><p>一个凹槽最少也要3个柱子，假设3个柱子从左到右依次叫L、M、R，高度排列依次是高、低、高。<br><code>凹槽积水量 = minOf(L高度, R高度) - M高度</code></p>
+<h4 id="如果有多个相同高度的M，计算方式会怎么变化？"><a href="#如果有多个相同高度的M，计算方式会怎么变化？" class="headerlink" title="如果有多个相同高度的M，计算方式会怎么变化？"></a>如果有多个相同高度的M，计算方式会怎么变化？</h4><p>就变成求矩形面积了：<br><code>凹槽积水量 = (minOf(L高度, R高度) - M高度) * L到R的距离</code><br><code>L到R的距离 = R索引 - L索引 - 1</code></p>
+<h4 id="如果有4个不同高度的柱子（多一个柱子）形成的凹槽，计算方式会怎么变化？"><a href="#如果有4个不同高度的柱子（多一个柱子）形成的凹槽，计算方式会怎么变化？" class="headerlink" title="如果有4个不同高度的柱子（多一个柱子）形成的凹槽，计算方式会怎么变化？"></a>如果有4个不同高度的柱子（多一个柱子）形成的凹槽，计算方式会怎么变化？</h4><p>因为是从左到右看柱子高度的，一旦发现上坡就触发计算，所以可以先看下坡中柱子多的情况，比如：[3,2,1,4]。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">             #   </span><br><span class="line">       # a b #</span><br><span class="line">       # # c #</span><br><span class="line">       # # # #</span><br><span class="line">index: 0 1 2 3</span><br><span class="line"></span><br><span class="line">#表示柱子，小写字母表示积水区域</span><br></pre></td></tr></table></figure>
+<p>此时积水面积不是矩形，左下方是一个阶梯型。<br>如果按之前的办法求解，从3依次回看2、1，会检测到凹槽形成，可以求得c的面积。<br>积水面积剩下a、b，可以发现刚好是一个矩形，面积为<code>(minOf(3高度, 2高度) - 1高度) * 1到3的距离</code>。<br>如果左边还有更高的柱子，会形成新的矩形，还是一样的计算过程。</p>
+<h4 id="计算规律"><a href="#计算规律" class="headerlink" title="计算规律"></a>计算规律</h4><p>这种阶梯形状的积水面积，可以按行拆分为不同的矩形，先求下面的矩形面积，再求上面的矩形面积，最后累加。</p>
+<p>然后再看右边柱子多的情况，得看右边形成新的凹槽才有讨论意义，那就是看一下有两个凹槽的情况会怎样。</p>
+<h4 id="有两个凹槽时，计算方式会怎样变化？"><a href="#有两个凹槽时，计算方式会怎样变化？" class="headerlink" title="有两个凹槽时，计算方式会怎样变化？"></a>有两个凹槽时，计算方式会怎样变化？</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">                   #</span><br><span class="line">       # b b b b b #</span><br><span class="line">       # a a # b b #</span><br><span class="line">       # # a # b b #</span><br><span class="line">       # # # # # # #</span><br><span class="line">index: 0 1 2 3 4 5 6</span><br></pre></td></tr></table></figure>
+<p>可以发现0到3的第一个凹槽中第0个最高的柱子会影响到4到6的第二个凹槽的积水面积的计算。<br>第一个凹槽积水量计算过后，1和2两个柱子对于第二个凹槽积水面积计算没有影响了。<br>在计算新凹槽积水量的时候，需要读取以前比较高的柱子高度，太低的柱子就可以忽略了。</p>
+<h4 id="怎么获取和存储计算积水量需要的信息？"><a href="#怎么获取和存储计算积水量需要的信息？" class="headerlink" title="怎么获取和存储计算积水量需要的信息？"></a>怎么获取和存储计算积水量需要的信息？</h4><p>每个矩形面积的计算，是在发现有上坡后开始的，检测上坡就是需要知道当前柱子高度和前一个柱子高度，这个在遍历height数组时可以直接获取。</p>
+<p>发现上坡后，需要知道：</p>
+<ol>
+<li>前面有没有形成下坡的柱子</li>
+<li>柱子之间的距离</li>
+<li>柱子的高度</li>
+</ol>
+<p>柱子距离必须要记录柱子索引位置；<br>形成下坡意思就是柱子高度要单调递减；<br>柱子高度可以根据柱子索引查询height数组；<br>访问下坡中柱子还要从右到左依次访问。</p>
+<p>我们遍历检查的顺序是从左到右，访问顺序反过来，符合这个特点的数据结构就是栈。<br>入栈时保存的是柱子索引。<br>栈内柱子保持高度单调递减，不存储递增的柱子，因为对于后续计算积水没有意义。<br>当前柱子前面一个柱子也算下坡中，也存储在栈中，方便统一处理。<br>判断前面有没有形成下坡，就判断栈是否不为空。</p>
+<h4 id="代码（kotlin）-2"><a href="#代码（kotlin）-2" class="headerlink" title="代码（kotlin）"></a>代码（kotlin）</h4><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">trap</span><span class="params">(height: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="comment">// 栈存储形成下坡的柱子</span></span><br><span class="line">        <span class="keyword">val</span> stack = ArrayDeque&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="keyword">var</span> water = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> height.indices) &#123;</span><br><span class="line">            <span class="comment">// 之前有下坡，现在发现上坡，形成凹槽了，可以计算积水面积了</span></span><br><span class="line">            <span class="comment">// 凹槽积水面积可能是阶梯形，所以要不停的读取前面下坡中的柱子计算矩形积水面积，这里需要一个循环</span></span><br><span class="line">            <span class="keyword">while</span> (stack.isNotEmpty() &amp;&amp; height[stack.peek()] &lt; height[i]) &#123;</span><br><span class="line">                <span class="comment">// 前面凹槽中高度低的柱子要出栈，因为其对于后面凹槽的计算没有意义</span></span><br><span class="line">                <span class="keyword">val</span> cur = stack.pop()</span><br><span class="line">                <span class="comment">// 相同高度的柱子会形成矩形面积的积水，一起计算积水量</span></span><br><span class="line">                <span class="keyword">while</span> (stack.isNotEmpty() &amp;&amp; height[stack.peek()] == height[cur]) &#123;</span><br><span class="line">                    stack.pop()</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 前面有下坡，才能形成凹槽，计算积水才有意义，所以要对栈判空，有可能之前栈里只存储了一个柱子</span></span><br><span class="line">                <span class="keyword">if</span> (stack.isNotEmpty()) &#123;</span><br><span class="line">                    <span class="comment">// 现在栈顶的柱子高度是大于curHeight的，形成凹槽了</span></span><br><span class="line">                    <span class="keyword">val</span> h = minOf(height[stack.peek()], height[i]) - height[cur]</span><br><span class="line">                    <span class="keyword">val</span> w = i - stack.peek() - <span class="number">1</span></span><br><span class="line">                    water += w * h</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;      </span><br><span class="line">            stack.push(i)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> water</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="解法4：数学拆解-gt-O-1-空间复杂度"><a href="#解法4：数学拆解-gt-O-1-空间复杂度" class="headerlink" title="解法4：数学拆解 -&gt; O(1)空间复杂度"></a>解法4：数学拆解 -&gt; O(1)空间复杂度</h3><p>从图形上看积水区域特点</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">        b  b  b  b  b  #  a  a  #  c  c  c  c  c</span><br><span class="line">        b  b  #  a  a  #  a  a  #  a  #  c  c  c</span><br><span class="line">        #  a  #  a  a  #  a  a  #  a  #  a  #  c</span><br><span class="line">index:  0  1  2  3  4  5  6  7  8  9 10 11 12 13</span><br></pre></td></tr></table></figure>
+<p>观察得知：<br><code>区间矩形面积 = a的面积 + #的面积 + b的面积 + c的面积</code></p>
+<p>区间矩形面积已知。<br><code>区间矩形面积 = 区间宽度 * 最高柱子高度</code></p>
+<p>#的面积已知。<br><code>#的面积 = 所有柱子高度的和</code></p>
+<p><strong>有没有办法知道b和c的面积？</strong><br>b和c是阶梯状的，不好单独计算。<br>可以看其处于哪个好计算的部分，再看能不能把b和c的面积拆解出来。</p>
+<ol>
+<li>如果从左到右遍历height数组，是可以知道 <code>#的面积 + a的面积 + c的面积</code>，遇到比之前高的柱子就一直累加高柱子的高度就行了，假设这个面积为left。</li>
+<li>如果从右到左遍历height数组，是可以知道 <code>#的面积 + a的面积 + b的面积</code>，也是遇到比之前高的柱子就一直累加高柱子的高度就行了，假设这个面积为right。</li>
+</ol>
+<p><code>left + right = #的面积 + a的面积 + (#的面积 + a的面积 + b的面积 + c的面积)</code><br>化简得：<br><code>left + right = #的面积 + a的面积 + 区间矩形面积</code><br>可得：<br><code>a的面积 = left + right - #的面积 - 区间矩形面积</code></p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">trap</span><span class="params">(height: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = height.size</span><br><span class="line">        <span class="keyword">var</span> left = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> right = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> maxHeight = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            maxHeight = maxOf(maxHeight, height[i])</span><br><span class="line">            left += maxHeight</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        maxHeight = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">1</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            maxHeight = maxOf(maxHeight, height[i])</span><br><span class="line">            right += maxHeight</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> rectArea = n * maxHeight</span><br><span class="line">        <span class="keyword">val</span> pillarArea = height.sum()</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> left + right - rectArea - pillarArea</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.42.%E6%8E%A5%E9%9B%A8%E6%B0%B4%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" title="LeetCode.42.接雨水（困难）">http://rickyqliu.bitbucket.io/算法/LeetCode.42.接雨水（困难）/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+              <a href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" rel="tag"># 动态规划</a>
+              <a href="/tags/LeetCode%E5%9B%B0%E9%9A%BE/" rel="tag"># LeetCode困难</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/%E7%AE%97%E6%B3%95/LeetCode.139.%E5%8D%95%E8%AF%8D%E6%8B%86%E5%88%86%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="prev" title="LeetCode.139.单词拆分（中等）">
+      <i class="fa fa-chevron-left"></i> LeetCode.139.单词拆分（中等）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/%E7%AE%97%E6%B3%95/LeetCode.413.%E7%AD%89%E5%B7%AE%E6%95%B0%E5%88%97%E5%88%92%E5%88%86%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="next" title="LeetCode.413.等差数列划分（中等）">
+      LeetCode.413.等差数列划分（中等） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">题解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%B3%951%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%EF%BC%8CO-n-%E7%A9%BA%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">2.1.</span> <span class="nav-text">解法1：动态规划，O(n)空间复杂度</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8B%86%E5%88%86%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.1.</span> <span class="nav-text">拆分问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%90%E4%B8%80%E5%88%97%E7%9A%84%E7%A7%AF%E6%B0%B4%E9%87%8F%E7%94%B1%E4%BB%80%E4%B9%88%E5%86%B3%E5%AE%9A%EF%BC%9F"><span class="nav-number">2.1.2.</span> <span class="nav-text">某一列的积水量由什么决定？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%ACi%E5%88%97%E7%9A%84%E7%A7%AF%E6%B0%B4%E9%87%8F%E6%B1%82%E8%A7%A3%E5%85%AC%E5%BC%8F"><span class="nav-number">2.1.3.</span> <span class="nav-text">第i列的积水量求解公式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%ACi%E5%88%97%E5%B7%A6%E8%BE%B9%E7%9A%84%E6%9C%80%E9%AB%98%E7%9A%84%E6%9F%B1%E5%AD%90%E6%80%8E%E4%B9%88%E6%89%BE%EF%BC%9F"><span class="nav-number">2.1.4.</span> <span class="nav-text">第i列左边的最高的柱子怎么找？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%ACi%E5%88%97%E5%8F%B3%E8%BE%B9%E7%9A%84%E6%9C%80%E9%AB%98%E7%9A%84%E6%9F%B1%E5%AD%90%E7%9A%84%E9%AB%98%E5%BA%A6%E6%80%8E%E4%B9%88%E6%89%BE%EF%BC%9F"><span class="nav-number">2.1.5.</span> <span class="nav-text">第i列右边的最高的柱子的高度怎么找？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BE%B9%E7%95%8C%E6%83%85%E5%86%B5"><span class="nav-number">2.1.6.</span> <span class="nav-text">边界情况</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%88kotlin%EF%BC%89"><span class="nav-number">2.1.7.</span> <span class="nav-text">代码（kotlin）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%B3%952%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%EF%BC%8CO-1-%E7%A9%BA%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">2.2.</span> <span class="nav-text">解法2：动态规划，O(1)空间复杂度</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A9%BA%E9%97%B4%E4%BC%98%E5%8C%96"><span class="nav-number">2.2.1.</span> <span class="nav-text">空间优化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%94%A8leftMax%E4%BB%A3%E6%9B%BFmaxLeft%E6%95%B0%E7%BB%84%EF%BC%9F"><span class="nav-number">2.2.2.</span> <span class="nav-text">怎么用leftMax代替maxLeft数组？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%94%A8rightMax%E4%BB%A3%E6%9B%BFmaxRight%E6%95%B0%E7%BB%84%EF%BC%9F"><span class="nav-number">2.2.3.</span> <span class="nav-text">怎么用rightMax代替maxRight数组？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%BA%94%E8%AF%A5%E4%BB%8E%E5%8F%B3%E5%88%B0%E5%B7%A6%E9%81%8D%E5%8E%86%EF%BC%9F%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BB%8E%E5%B7%A6%E5%88%B0%E5%8F%B3%EF%BC%9F"><span class="nav-number">2.2.4.</span> <span class="nav-text">什么时候应该从右到左遍历？什么时候从左到右？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E6%83%85%E5%86%B5%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84%EF%BC%9F%E6%80%8E%E4%B9%88%E5%BC%80%E5%A7%8B%EF%BC%9F"><span class="nav-number">2.2.5.</span> <span class="nav-text">初始情况是怎样的？怎么开始？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E6%80%8E%E4%B9%88%E5%88%A4%E6%96%AD%E5%86%B3%E5%AE%9Aheight%E6%95%B0%E7%BB%84%E7%9A%84%E9%81%8D%E5%8E%86%E6%96%B9%E5%90%91%EF%BC%9F"><span class="nav-number">2.2.6.</span> <span class="nav-text">具体怎么判断决定height数组的遍历方向？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%88kotlin%EF%BC%89-1"><span class="nav-number">2.2.7.</span> <span class="nav-text">代码（kotlin）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%B3%953%EF%BC%9A%E7%9B%B4%E8%A7%82%E6%A8%A1%E6%8B%9F-gt-%E5%8D%95%E8%B0%83%E6%A0%88"><span class="nav-number">2.3.</span> <span class="nav-text">解法3：直观模拟 -&gt; 单调栈</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A2%B3%E7%90%86"><span class="nav-number">2.3.1.</span> <span class="nav-text">梳理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E5%BD%A2%E6%88%90%E4%BA%86%E5%87%B9%E6%A7%BD%EF%BC%9F"><span class="nav-number">2.3.2.</span> <span class="nav-text">如何判断形成了凹槽？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%AE%A1%E7%AE%97%E5%87%B9%E6%A7%BD%E7%9A%84%E7%A7%AF%E6%B0%B4%E9%87%8F"><span class="nav-number">2.3.3.</span> <span class="nav-text">如何计算凹槽的积水量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%83%85%E5%86%B5"><span class="nav-number">2.3.4.</span> <span class="nav-text">基本情况</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E6%9C%89%E5%A4%9A%E4%B8%AA%E7%9B%B8%E5%90%8C%E9%AB%98%E5%BA%A6%E7%9A%84M%EF%BC%8C%E8%AE%A1%E7%AE%97%E6%96%B9%E5%BC%8F%E4%BC%9A%E6%80%8E%E4%B9%88%E5%8F%98%E5%8C%96%EF%BC%9F"><span class="nav-number">2.3.5.</span> <span class="nav-text">如果有多个相同高度的M，计算方式会怎么变化？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E6%9C%894%E4%B8%AA%E4%B8%8D%E5%90%8C%E9%AB%98%E5%BA%A6%E7%9A%84%E6%9F%B1%E5%AD%90%EF%BC%88%E5%A4%9A%E4%B8%80%E4%B8%AA%E6%9F%B1%E5%AD%90%EF%BC%89%E5%BD%A2%E6%88%90%E7%9A%84%E5%87%B9%E6%A7%BD%EF%BC%8C%E8%AE%A1%E7%AE%97%E6%96%B9%E5%BC%8F%E4%BC%9A%E6%80%8E%E4%B9%88%E5%8F%98%E5%8C%96%EF%BC%9F"><span class="nav-number">2.3.6.</span> <span class="nav-text">如果有4个不同高度的柱子（多一个柱子）形成的凹槽，计算方式会怎么变化？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E8%A7%84%E5%BE%8B"><span class="nav-number">2.3.7.</span> <span class="nav-text">计算规律</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%89%E4%B8%A4%E4%B8%AA%E5%87%B9%E6%A7%BD%E6%97%B6%EF%BC%8C%E8%AE%A1%E7%AE%97%E6%96%B9%E5%BC%8F%E4%BC%9A%E6%80%8E%E6%A0%B7%E5%8F%98%E5%8C%96%EF%BC%9F"><span class="nav-number">2.3.8.</span> <span class="nav-text">有两个凹槽时，计算方式会怎样变化？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E8%8E%B7%E5%8F%96%E5%92%8C%E5%AD%98%E5%82%A8%E8%AE%A1%E7%AE%97%E7%A7%AF%E6%B0%B4%E9%87%8F%E9%9C%80%E8%A6%81%E7%9A%84%E4%BF%A1%E6%81%AF%EF%BC%9F"><span class="nav-number">2.3.9.</span> <span class="nav-text">怎么获取和存储计算积水量需要的信息？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%88kotlin%EF%BC%89-2"><span class="nav-number">2.3.10.</span> <span class="nav-text">代码（kotlin）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%B3%954%EF%BC%9A%E6%95%B0%E5%AD%A6%E6%8B%86%E8%A7%A3-gt-O-1-%E7%A9%BA%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">2.4.</span> <span class="nav-text">解法4：数学拆解 -&gt; O(1)空间复杂度</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">大道至简</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/LeetCode.42.%E6%8E%A5%E9%9B%A8%E6%B0%B4%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/";
+    this.page.identifier = "算法/LeetCode.42.接雨水（困难）/";
+    this.page.title = "LeetCode.42.接雨水（困难）";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
