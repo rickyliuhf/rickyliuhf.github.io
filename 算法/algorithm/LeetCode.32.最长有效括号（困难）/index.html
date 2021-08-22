@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.bitbucket.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="题目LeetCode.32.最长有效括号（困难） 给你一个只包含  &#39;(&#39; 和  &#39;)&#39; 的字符串，找出最长有效（格式正确且连续）括号子串的长度。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LeetCode.32.最长有效括号（困难）">
+<meta property="og:url" content="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/algorithm/LeetCode.32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="题目LeetCode.32.最长有效括号（困难） 给你一个只包含  &#39;(&#39; 和  &#39;)&#39; 的字符串，找出最长有效（格式正确且连续）括号子串的长度。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-08-18T12:02:00.000Z">
+<meta property="article:modified_time" content="2021-08-21T15:37:43.831Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="动态规划">
+<meta property="article:tag" content="LeetCode困难">
+<meta property="article:tag" content="字符串">
+<meta property="article:tag" content="栈">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/algorithm/LeetCode.32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>LeetCode.32.最长有效括号（困难） | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/algorithm/LeetCode.32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="大道至简">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LeetCode.32.最长有效括号（困难）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-08-18 20:02:00" itemprop="dateCreated datePublished" datetime="2021-08-18T20:02:00+08:00">2021-08-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-21 23:37:43" itemprop="dateModified" datetime="2021-08-21T23:37:43+08:00">2021-08-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%AE%97%E6%B3%95/algorithm/LeetCode.32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/algorithm/LeetCode.32.最长有效括号（困难）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/longest-valid-parentheses/">LeetCode.32.最长有效括号（困难）</a></p>
+<p>给你一个只包含  <code>&#39;(&#39;</code> 和  <code>&#39;)&#39;</code> 的字符串，找出最长有效（格式正确且连续）括号子串的长度。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：双指针"><a href="#解法1：双指针" class="headerlink" title="解法1：双指针"></a>解法1：双指针</h2><p>括号匹配时，左右括号数量相等，子串长度就是左右括号之和。</p>
+<p>可以从左到右遍历字符串，记录左右括号的数量，通过数量来判断子串是否是是有效括号。</p>
+<ul>
+<li>当右括号数量大于左括号时，当前子串肯定不是有效的括号，计数对于累加有效括号子串已经无意义，可以清零，以便后续子串。</li>
+<li>当左括号数量大于右括号，有可能还有匹配的右括号在后面，只要右括号数量跟左括号相等，就可以认定当前子串是有效的括记录子串长度，并比较最长的长度。<ul>
+<li>这种情况下有可能最终左括号的数量一直大于右括号数量，导致无法触发记录，例如((((((((((())。</li>
+<li>此时可以从右向左再遍历一次字符串，就可以触发到左右括号相等的时候，当左括号数量大于右括号，括号数量计数清零。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">longestValidParentheses</span><span class="params">(s: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> left = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> right = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> s.indices) &#123;</span><br><span class="line">            <span class="keyword">when</span> (s[i]) &#123;</span><br><span class="line">                <span class="string">&#x27;(&#x27;</span> -&gt; left++</span><br><span class="line">                <span class="string">&#x27;)&#x27;</span> -&gt; right++</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">when</span> &#123;</span><br><span class="line">                left == right -&gt; maxLength = maxOf(maxLength, <span class="number">2</span> * right)</span><br><span class="line">                right &gt; left -&gt; &#123;</span><br><span class="line">                    left = <span class="number">0</span></span><br><span class="line">                    right = <span class="number">0</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        left = <span class="number">0</span></span><br><span class="line">        right = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> s.length - <span class="number">1</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">when</span> (s[i]) &#123;</span><br><span class="line">                <span class="string">&#x27;(&#x27;</span> -&gt; left++</span><br><span class="line">                <span class="string">&#x27;)&#x27;</span> -&gt; right++</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">when</span> &#123;</span><br><span class="line">                left == right -&gt; maxLength = maxOf(maxLength, <span class="number">2</span> * left)</span><br><span class="line">                right &lt; left -&gt; &#123;</span><br><span class="line">                    left = <span class="number">0</span></span><br><span class="line">                    right = <span class="number">0</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解法2：栈"><a href="#解法2：栈" class="headerlink" title="解法2：栈"></a>解法2：栈</h2><h3 id="怎么计算有效括号长度？"><a href="#怎么计算有效括号长度？" class="headerlink" title="怎么计算有效括号长度？"></a>怎么计算有效括号长度？</h3><p>从左到右遍历字符串时，发现如果有一个子串是有效括号，要计算它的长度，就是用结束索引减去起始索引得到长度。所以的想办法记录左括号的起始索引。</p>
+<h3 id="怎么存储索引比较合适？"><a href="#怎么存储索引比较合适？" class="headerlink" title="怎么存储索引比较合适？"></a>怎么存储索引比较合适？</h3><p>从左到右遍历发现右括号后，得知道左边有没有左括号，如果有，计算括号匹配长度是要知道这个左括号前面一个位置的索引。</p>
+<p>如果发现了多个右括号，是要从右到左依次访问匹配的左括号前面一个位置的索引，遍历顺序和访问顺序相反，可以用栈来存储左括号索引。</p>
+<p>遍历到右括号时，发现栈不为空说明有左括号，匹配到左括号出栈后，栈顶就是匹配的左括号的前一个位置的索引。</p>
+<p>如果匹配的左括号出栈后栈为空，就要手动记录一下第一个左括号左边的索引。</p>
+<h3 id="何时入栈？"><a href="#何时入栈？" class="headerlink" title="何时入栈？"></a>何时入栈？</h3><p>有效括号子串的第一个字符一定是一个左括号，因为如果开头是右括号则不是有效括号子串。<br>所以遇到左括号就要记录其索引，因为它有可能是一个长的有效括号子串的起始索引。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> kotlin.math.max</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">longestValidParentheses</span><span class="params">(s: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> left = Stack&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="comment">// 记录可能的有效括号子串的前一个位置，可以利用此索引计算子串的长度</span></span><br><span class="line">        <span class="keyword">var</span> prev = -<span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> s.indices) &#123;</span><br><span class="line">            <span class="keyword">when</span> (s[i]) &#123;</span><br><span class="line">                <span class="string">&#x27;(&#x27;</span> -&gt; left.push(i)</span><br><span class="line">                <span class="string">&#x27;)&#x27;</span> -&gt; &#123;</span><br><span class="line">                    <span class="comment">// 遇到右括号，如果前面有左括号，说明匹配</span></span><br><span class="line">                    <span class="keyword">if</span> (left.isNotEmpty()) &#123;</span><br><span class="line">                        <span class="comment">// 匹配的左括号从栈中移出</span></span><br><span class="line">                        left.pop()</span><br><span class="line">                        <span class="comment">// 如果前面还有左括号，这个左括号的索引是刚才有效括号子串的前一个位置</span></span><br><span class="line">                        <span class="comment">// 如果前面没有左括号了，读取遇到左括号前记录的位置，也是刚才有效括号子串的前一个位置</span></span><br><span class="line">                        <span class="keyword">val</span> prevOfStart = <span class="keyword">if</span> (left.isNotEmpty()) left.peek() <span class="keyword">else</span> prev</span><br><span class="line">                        <span class="comment">// 当前位置减去有效括号子串的前一个位置就是有效括号子串的长度</span></span><br><span class="line">                        <span class="keyword">val</span> length = i - prevOfStart</span><br><span class="line">                        <span class="comment">// 记录最大长度</span></span><br><span class="line">                        maxLength = max(maxLength, length)</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="comment">// 遇到右括号，但前面没有左括号，说明当前字符结尾的子串没办法构成有效括号</span></span><br><span class="line">                        <span class="comment">// 但后面的子串还有可能是有效的子串，记录当前位置，如果后面紧接着的子串是有效括号子串，可以利用此索引计算子串的长度</span></span><br><span class="line">                        prev = i</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解法3：动态规划"><a href="#解法3：动态规划" class="headerlink" title="解法3：动态规划"></a>解法3：动态规划</h2><p>最值问题考虑用动态规划。尝试划分为子问题+有限步骤。</p>
+<p>如果字符串s是一个有效的括号串，最后一个字符一定是右括号。</p>
+<ul>
+<li>如果最后一个字符不是右括号，去除最后一个字符查看前面的子串是不是有效括号，前面子串查看方法是一样的。</li>
+<li>如果最后一个字符是右括号：<ul>
+<li>倒数第二个字符是左括号，发生了一次匹配，有效括号长度可以加2了，再继续看前面的子串的有效括号的长度。</li>
+<li>倒数第二个字符是右括号，得看前面的有没有左括号能跟最后一个右括号匹配上才行。</li>
+</ul>
+</li>
+</ul>
+<p><strong>递归</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">longestValidParentheses</span><span class="params">(s: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">longest</span><span class="params">(i: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">            <span class="keyword">var</span> length = <span class="number">0</span></span><br><span class="line">            <span class="keyword">if</span> (s[i] == <span class="string">&#x27;)&#x27;</span>) &#123;</span><br><span class="line">                <span class="keyword">when</span> (s[i - <span class="number">1</span>]) &#123;</span><br><span class="line">                    <span class="string">&#x27;(&#x27;</span> -&gt; length = <span class="number">2</span> + longest(i - <span class="number">2</span>)</span><br><span class="line">                    <span class="string">&#x27;)&#x27;</span> -&gt; &#123;</span><br><span class="line">                        <span class="keyword">val</span> midLen = longest(i - <span class="number">1</span>)</span><br><span class="line">                        <span class="keyword">val</span> left = i - <span class="number">1</span> - midLen</span><br><span class="line">                        <span class="comment">// 看前面有没有跟s[i]这个右括号匹配的左括号</span></span><br><span class="line">                        <span class="keyword">if</span> (left &gt;= <span class="number">0</span> &amp;&amp; s[left] == <span class="string">&#x27;(&#x27;</span>) &#123;</span><br><span class="line">                            <span class="comment">// 匹配到左括号前面的有效括号子串长度还要加上</span></span><br><span class="line">                            length = <span class="number">2</span> + midLen + longest(left - <span class="number">1</span>)</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (length &gt; maxLength) maxLength = length</span><br><span class="line">            longest(i - <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">return</span> length</span><br><span class="line">        &#125;</span><br><span class="line">        longest(n - <span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span> maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>记忆化递归</strong></p>
+<p>暴力递归有很多重叠子问题。</p>
+<p>例如两次longest(i - 1)和一次longest(i - 2)计算结果是一样的，但是都重复计算了。</p>
+<p>需要记录中间计算状态。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">longestValidParentheses</span><span class="params">(s: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> memo = IntArray(n) &#123; -<span class="number">1</span> &#125;</span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">longest</span><span class="params">(i: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">            <span class="keyword">if</span> (memo[i] != -<span class="number">1</span>) <span class="keyword">return</span> memo[i]</span><br><span class="line">            <span class="keyword">var</span> length = <span class="number">0</span></span><br><span class="line">            <span class="keyword">if</span> (s[i] == <span class="string">&#x27;)&#x27;</span>) &#123;</span><br><span class="line">                <span class="keyword">when</span> (s[i - <span class="number">1</span>]) &#123;</span><br><span class="line">                    <span class="string">&#x27;(&#x27;</span> -&gt; length = <span class="number">2</span> + longest(i - <span class="number">2</span>)</span><br><span class="line">                    <span class="string">&#x27;)&#x27;</span> -&gt; &#123;</span><br><span class="line">                        <span class="keyword">val</span> midLen = longest(i - <span class="number">1</span>)</span><br><span class="line">                        <span class="keyword">val</span> left = i - <span class="number">1</span> - midLen</span><br><span class="line">                        <span class="comment">// 看前面有没有跟s[i]这个右括号匹配的左括号</span></span><br><span class="line">                        <span class="keyword">if</span> (left &gt;= <span class="number">0</span> &amp;&amp; s[left] == <span class="string">&#x27;(&#x27;</span>) &#123;</span><br><span class="line">                            <span class="comment">// 匹配到左括号前面的有效括号子串长度还要加上</span></span><br><span class="line">                            length = <span class="number">2</span> + midLen + longest(left - <span class="number">1</span>)</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            memo[i] = length</span><br><span class="line">            <span class="keyword">if</span> (length &gt; maxLength) maxLength = length</span><br><span class="line">            longest(i - <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">return</span> length</span><br><span class="line">        &#125;</span><br><span class="line">        longest(n - <span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span> maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>自底向上动态规划</strong></p>
+<p>设<code>dp[i]</code>表示以字符<code>s[i]</code>结尾的最长有效的括号子串的长度。</p>
+<p>状态转移方程按照递归的方式写就行了。</p>
+<p>边界条件单独判断一下就OK。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">longestValidParentheses</span><span class="params">(s: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="comment">// 从第2个字符开始遍历，一个字符无法形成有效括号</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s[i] == <span class="string">&#x27;)&#x27;</span>) &#123;</span><br><span class="line">                <span class="keyword">when</span> (s[i - <span class="number">1</span>]) &#123;</span><br><span class="line">                    <span class="string">&#x27;(&#x27;</span> -&gt; dp[i] = <span class="number">2</span> + <span class="keyword">if</span> (i &lt; <span class="number">2</span>) <span class="number">0</span> <span class="keyword">else</span> dp[i - <span class="number">2</span>]</span><br><span class="line">                    <span class="string">&#x27;)&#x27;</span> -&gt; &#123;</span><br><span class="line">                        <span class="keyword">val</span> midLen = dp[i - <span class="number">1</span>]</span><br><span class="line">                        <span class="keyword">val</span> left = i - <span class="number">1</span> - midLen</span><br><span class="line">                        <span class="keyword">if</span> (left &gt;= <span class="number">0</span> &amp;&amp; s[left] == <span class="string">&#x27;(&#x27;</span>) &#123;</span><br><span class="line">                            dp[i] = <span class="number">2</span> + midLen + <span class="keyword">if</span> (left == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> dp[left - <span class="number">1</span>]</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            maxLength = maxOf(maxLength, dp[i])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/algorithm/LeetCode.32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" title="LeetCode.32.最长有效括号（困难）">http://rickyqliu.bitbucket.io/算法/algorithm/LeetCode.32.最长有效括号（困难）/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+              <a href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" rel="tag"># 动态规划</a>
+              <a href="/tags/LeetCode%E5%9B%B0%E9%9A%BE/" rel="tag"># LeetCode困难</a>
+              <a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2/" rel="tag"># 字符串</a>
+              <a href="/tags/%E6%A0%88/" rel="tag"># 栈</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/%E7%AE%97%E6%B3%95/algorithm/LeetCode.30.%E4%B8%B2%E8%81%94%E6%89%80%E6%9C%89%E5%8D%95%E8%AF%8D%E7%9A%84%E5%AD%90%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="prev" title="LeetCode.30.串联所有单词的子串（困难）">
+      <i class="fa fa-chevron-left"></i> LeetCode.30.串联所有单词的子串（困难）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/%E7%AE%97%E6%B3%95/algorithm/LeetCode.37.%E8%A7%A3%E6%95%B0%E7%8B%AC%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="next" title="LeetCode.37.解数独（困难）">
+      LeetCode.37.解数独（困难） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">题解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%B3%951%EF%BC%9A%E5%8F%8C%E6%8C%87%E9%92%88"><span class="nav-number">2.1.</span> <span class="nav-text">解法1：双指针</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%B3%952%EF%BC%9A%E6%A0%88"><span class="nav-number">2.2.</span> <span class="nav-text">解法2：栈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E8%AE%A1%E7%AE%97%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7%E9%95%BF%E5%BA%A6%EF%BC%9F"><span class="nav-number">2.2.1.</span> <span class="nav-text">怎么计算有效括号长度？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E5%AD%98%E5%82%A8%E7%B4%A2%E5%BC%95%E6%AF%94%E8%BE%83%E5%90%88%E9%80%82%EF%BC%9F"><span class="nav-number">2.2.2.</span> <span class="nav-text">怎么存储索引比较合适？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%95%E6%97%B6%E5%85%A5%E6%A0%88%EF%BC%9F"><span class="nav-number">2.2.3.</span> <span class="nav-text">何时入栈？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%B3%953%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92"><span class="nav-number">2.3.</span> <span class="nav-text">解法3：动态规划</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">大道至简</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">74</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.bitbucket.io/%E7%AE%97%E6%B3%95/algorithm/LeetCode.32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/";
+    this.page.identifier = "算法/algorithm/LeetCode.32.最长有效括号（困难）/";
+    this.page.title = "LeetCode.32.最长有效括号（困难）";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
