@@ -3339,6 +3339,8 @@
 <p>内容越是重复，就可以压缩的更小。</p>
 <p>内容如果毫无重复，就很难压缩。</p>
 <h2 id="LZ77详细原理"><a href="#LZ77详细原理" class="headerlink" title="LZ77详细原理"></a>LZ77详细原理</h2><p>参见： <a href="https://www.codenong.com/cs106685915/">Linux(程序设计):28—数据流压缩原理（Deflate压缩算法、gzip、zlib）</a></p>
+<h2 id="为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？"><a href="#为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？" class="headerlink" title="为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？"></a>为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？</h2><p>LZ77编码后得到的是，距离（distance）和长度（length），还有未匹配到短语字典的原始字符（literal）。</p>
+<p>比较短的距离和长度可能是频繁出现的，就可以用变长编码来压缩，且文本已经确定下来不会变动，可以做词频统计，就可以用到哈夫曼编码了。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
 <li><a href="https://www.codenong.com/cs106685915/">Linux(程序设计):28—数据流压缩原理（Deflate压缩算法、gzip、zlib）</a></li>
 <li><a href="https://www.cnblogs.com/en-heng/p/4992916.html">【数据压缩】LZ77算法原理及实现</a></li>
@@ -3351,6 +3353,7 @@
       <tags>
         <tag>算法</tag>
         <tag>LZ77</tag>
+        <tag>GZIP</tag>
       </tags>
   </entry>
   <entry>
