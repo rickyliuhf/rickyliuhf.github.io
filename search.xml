@@ -1169,7 +1169,7 @@
 
 <h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><ul>
 <li>时间复杂度<code>O(n * k)</code>。</li>
-<li><code>k &gt; n / 2</code>时，空间复杂度<code>O(1)</code>；<code>k &lt;= n / 2</code>时，空间复杂度<code>O(n * k)</code>。</li>
+<li><code>k &gt;= n / 2</code>时，空间复杂度<code>O(1)</code>；<code>k &lt; n / 2</code>时，空间复杂度<code>O(n * k)</code>。</li>
 </ul>
 ]]></content>
       <categories>
@@ -2957,37 +2957,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.746.使用最小花费爬楼梯（简单）</title>
-    <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.746.%E4%BD%BF%E7%94%A8%E6%9C%80%E5%B0%8F%E8%8A%B1%E8%B4%B9%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
-    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p> <a href="https://leetcode-cn.com/problems/min-cost-climbing-stairs/">LeetCode.746.使用最小花费爬楼梯（简单）</a></p>
-<p>数组的每个下标作为一个阶梯，第 i 个阶梯对应着一个非负数的体力花费值 cost[i]（下标从 0 开始）。</p>
-<p>每当你爬上一个阶梯你都要花费对应的体力值，一旦支付了相应的体力值，你就可以选择向上爬一个阶梯或者爬两个阶梯。</p>
-<p>请你找出达到楼层顶部的最低花费。在开始时，你可以选择从下标为 0 或 1 的元素作为初始阶梯。</p>
-<span id="more"></span>
-
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>最优化问题，往动态规划上考虑，看是否符合动态规划的条件：最优子结构、重叠子问题、无后效性。<br>一般从最终状态做倒推，拆分步骤，列出所有到达最终状态的步骤，看能否拆分为上一个同性质的子问题+有限步骤，拆分步骤的过程得出状态转移方程。</p>
-<p>cost数组长度为n，到达楼顶就是到达下标n的地方。<br>设<code>dp[i]</code>表示达到到达下标i所需的最小花费，<code>0 &lt;= i &lt;= n</code>。</p>
-<h3 id="初始边界"><a href="#初始边界" class="headerlink" title="初始边界"></a>初始边界</h3><p>可以从下标为0或1的阶梯开始爬，说明<code>dp[0] = dp[1] = 0</code>。</p>
-<h3 id="划分子问题"><a href="#划分子问题" class="headerlink" title="划分子问题"></a>划分子问题</h3><p>达到第i个阶梯，最后一步有两种选择：</p>
-<ol>
-<li>在第i-1层爬1个阶梯。</li>
-<li>在第i-2层爬2个阶梯。</li>
-</ol>
-<p>到达第i-1层的最小花费是<code>dp[i-1]</code>，爬1个阶梯需要耗费<code>cost[i-1]</code><br>到达第i-2层的最小花费是<code>dp[i-2]</code>，爬2个阶梯需要耗费<code>cost[i-2]</code><br>那么，到达第i层阶梯就是取两者中较小值。</p>
-<h3 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h3><p><code>dp[i] = min(dp[i - 1] + cost[i - 1], dp[i - 2] + cost[i - 2])</code></p>
-<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p><code>dp[i]</code>只与前两项值有关，所以不需要数组，用两个变量保存前面两项值即可。</p>
-<h3 id="代码（Kotlin）"><a href="#代码（Kotlin）" class="headerlink" title="代码（Kotlin）"></a>代码（Kotlin）</h3><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minCostClimbingStairs</span><span class="params">(cost: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> cur = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> pre1 = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> pre2 = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">2.</span>.cost.size) &#123;</span><br><span class="line">            cur = minOf(pre1 + cost[i - <span class="number">1</span>], pre2 + cost[i - <span class="number">2</span>])</span><br><span class="line">            pre2 = pre1</span><br><span class="line">            pre1 = cur</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cur</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>动态规划</tag>
-        <tag>LeetCode简单</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.76.最小覆盖子串（困难）</title>
     <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.76.%E6%9C%80%E5%B0%8F%E8%A6%86%E7%9B%96%E5%AD%90%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/minimum-window-substring/">LeetCode.76.最小覆盖子串（困难）</a></p>
@@ -3022,6 +2991,37 @@
         <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>滑动窗口</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.746.使用最小花费爬楼梯（简单）</title>
+    <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.746.%E4%BD%BF%E7%94%A8%E6%9C%80%E5%B0%8F%E8%8A%B1%E8%B4%B9%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
+    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p> <a href="https://leetcode-cn.com/problems/min-cost-climbing-stairs/">LeetCode.746.使用最小花费爬楼梯（简单）</a></p>
+<p>数组的每个下标作为一个阶梯，第 i 个阶梯对应着一个非负数的体力花费值 cost[i]（下标从 0 开始）。</p>
+<p>每当你爬上一个阶梯你都要花费对应的体力值，一旦支付了相应的体力值，你就可以选择向上爬一个阶梯或者爬两个阶梯。</p>
+<p>请你找出达到楼层顶部的最低花费。在开始时，你可以选择从下标为 0 或 1 的元素作为初始阶梯。</p>
+<span id="more"></span>
+
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>最优化问题，往动态规划上考虑，看是否符合动态规划的条件：最优子结构、重叠子问题、无后效性。<br>一般从最终状态做倒推，拆分步骤，列出所有到达最终状态的步骤，看能否拆分为上一个同性质的子问题+有限步骤，拆分步骤的过程得出状态转移方程。</p>
+<p>cost数组长度为n，到达楼顶就是到达下标n的地方。<br>设<code>dp[i]</code>表示达到到达下标i所需的最小花费，<code>0 &lt;= i &lt;= n</code>。</p>
+<h3 id="初始边界"><a href="#初始边界" class="headerlink" title="初始边界"></a>初始边界</h3><p>可以从下标为0或1的阶梯开始爬，说明<code>dp[0] = dp[1] = 0</code>。</p>
+<h3 id="划分子问题"><a href="#划分子问题" class="headerlink" title="划分子问题"></a>划分子问题</h3><p>达到第i个阶梯，最后一步有两种选择：</p>
+<ol>
+<li>在第i-1层爬1个阶梯。</li>
+<li>在第i-2层爬2个阶梯。</li>
+</ol>
+<p>到达第i-1层的最小花费是<code>dp[i-1]</code>，爬1个阶梯需要耗费<code>cost[i-1]</code><br>到达第i-2层的最小花费是<code>dp[i-2]</code>，爬2个阶梯需要耗费<code>cost[i-2]</code><br>那么，到达第i层阶梯就是取两者中较小值。</p>
+<h3 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h3><p><code>dp[i] = min(dp[i - 1] + cost[i - 1], dp[i - 2] + cost[i - 2])</code></p>
+<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p><code>dp[i]</code>只与前两项值有关，所以不需要数组，用两个变量保存前面两项值即可。</p>
+<h3 id="代码（Kotlin）"><a href="#代码（Kotlin）" class="headerlink" title="代码（Kotlin）"></a>代码（Kotlin）</h3><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minCostClimbingStairs</span><span class="params">(cost: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> cur = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> pre1 = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> pre2 = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">2.</span>.cost.size) &#123;</span><br><span class="line">            cur = minOf(pre1 + cost[i - <span class="number">1</span>], pre2 + cost[i - <span class="number">2</span>])</span><br><span class="line">            pre2 = pre1</span><br><span class="line">            pre1 = cur</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cur</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>动态规划</tag>
+        <tag>LeetCode简单</tag>
       </tags>
   </entry>
   <entry>
