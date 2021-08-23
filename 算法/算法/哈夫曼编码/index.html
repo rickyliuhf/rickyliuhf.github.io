@@ -20,23 +20,21 @@
     var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="题目LeetCode.518.零钱兑换 II（中等） 给你一个整数数组 coins 表示不同面额的硬币，另给一个整数 amount 表示总金额。 请你计算并返回可以凑成总金额的硬币组合数。如果任何硬币组合都无法凑出总金额，返回 0 。 假设每一种面额的硬币有无限个。  题目数据保证结果符合 32 位带符号整数。">
+  <meta name="description" content="什么是哈夫曼编码出现频次越高的字符，编码长度越小。 哈夫曼编码的价值变长编码，使得编码的平均长度最短，实现压缩率大的无损压缩。 因为哈夫曼树是最优的，每次的选择都是贪心选择，这个局部最优也是全局最优。 哈夫曼编码过程 把文本中字符按出现的频次排序。 每个字符作为一个结点放入一个集合。 取集合最小的两个频次的结点，为左右子结点，生成一个父结点，父结点的频次是两个子结点频次之和，把父结点再加入到集合中">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LeetCode.518.零钱兑换 II（中等）">
-<meta property="og:url" content="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/index.html">
+<meta property="og:title" content="哈夫曼编码">
+<meta property="og:url" content="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/index.html">
 <meta property="og:site_name" content="Ricky.L的随笔">
-<meta property="og:description" content="题目LeetCode.518.零钱兑换 II（中等） 给你一个整数数组 coins 表示不同面额的硬币，另给一个整数 amount 表示总金额。 请你计算并返回可以凑成总金额的硬币组合数。如果任何硬币组合都无法凑出总金额，返回 0 。 假设每一种面额的硬币有无限个。  题目数据保证结果符合 32 位带符号整数。">
+<meta property="og:description" content="什么是哈夫曼编码出现频次越高的字符，编码长度越小。 哈夫曼编码的价值变长编码，使得编码的平均长度最短，实现压缩率大的无损压缩。 因为哈夫曼树是最优的，每次的选择都是贪心选择，这个局部最优也是全局最优。 哈夫曼编码过程 把文本中字符按出现的频次排序。 每个字符作为一个结点放入一个集合。 取集合最小的两个频次的结点，为左右子结点，生成一个父结点，父结点的频次是两个子结点频次之和，把父结点再加入到集合中">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-08-16T02:01:10.000Z">
+<meta property="article:published_time" content="2020-07-02T12:00:00.000Z">
 <meta property="article:modified_time" content="2021-08-23T15:41:16.899Z">
 <meta property="article:author" content="Ricky.L">
-<meta property="article:tag" content="动态规划">
-<meta property="article:tag" content="LeetCode中等">
-<meta property="article:tag" content="背包问题">
-<meta property="article:tag" content="完全背包">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="哈夫曼编码">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/">
+<link rel="canonical" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/">
 
 
 <script id="page-configurations">
@@ -49,7 +47,7 @@
   };
 </script>
 
-  <title>LeetCode.518.零钱兑换 II（中等） | Ricky.L的随笔</title>
+  <title>哈夫曼编码 | Ricky.L的随笔</title>
   
 
 
@@ -192,7 +190,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpg">
@@ -205,7 +203,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          LeetCode.518.零钱兑换 II（中等）
+          哈夫曼编码
         </h1>
 
         <div class="post-meta">
@@ -215,7 +213,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-08-16 10:01:10" itemprop="dateCreated datePublished" datetime="2021-08-16T10:01:10+08:00">2021-08-16</time>
+              <time title="创建时间：2020-07-02 20:00:00" itemprop="dateCreated datePublished" datetime="2020-07-02T20:00:00+08:00">2020-07-02</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
@@ -230,7 +228,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
                 </span>
             </span>
 
@@ -243,8 +241,8 @@
       </span>
       <span class="post-meta-item-text">Disqus：</span>
     
-    <a title="disqus" href="/LeetCode/LeetCode/LeetCode.518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode/LeetCode.518.零钱兑换 II（中等）/" itemprop="commentCount"></span>
+    <a title="disqus" href="/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/算法/哈夫曼编码/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -259,17 +257,34 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/coin-change-2/">LeetCode.518.零钱兑换 II（中等）</a></p>
-<p>给你一个整数数组 coins 表示不同面额的硬币，另给一个整数 amount 表示总金额。</p>
-<p>请你计算并返回可以凑成总金额的硬币组合数。如果任何硬币组合都无法凑出总金额，返回 0 。</p>
-<p>假设每一种面额的硬币有无限个。 </p>
-<p>题目数据保证结果符合 32 位带符号整数。</p>
-<span id="more"></span>
-
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p><strong>划分子问题</strong><br>设<code>dp[i]</code>为凑成总金额<code>i</code>的硬币组合数。<br>假设<code>coins = [1, 2, 5]</code>，那么<code>dp[i]</code>其实就是硬币总额<code>i - 1</code>、<code>i - 2</code>、<code>i - 5</code>子问题之和。</p>
-<p><strong>状态转移方程</strong><br><code>for (coin: coins) dp[i] += dp[i - coin]</code></p>
-<p><strong>注意点</strong><br>所求的是硬币的组合数，不是排列数。<br>比如<code>coins = [1, 2]</code>，<code>amount = 3</code>，<code>1 + 2</code>和<code>2 + 1</code>是同一种组合，但是两个排列。<br>如果我们是先确定一个<code>amount</code>，再去用所有硬币去凑，就会凑出来不同的排列。<br>所以要锁定硬币使用的顺序，同一个金额下就不会有不同顺序的硬币的使用情况了。</p>
-<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">change</span><span class="params">(amount: <span class="type">Int</span>, coins: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(amount + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        dp[<span class="number">0</span>] = <span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> (coin <span class="keyword">in</span> coins) &#123;</span><br><span class="line">            <span class="keyword">for</span> (a <span class="keyword">in</span> coin..amount) &#123;</span><br><span class="line">                dp[a] += dp[a - coin]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[amount]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <h2 id="什么是哈夫曼编码"><a href="#什么是哈夫曼编码" class="headerlink" title="什么是哈夫曼编码"></a>什么是哈夫曼编码</h2><p>出现频次越高的字符，编码长度越小。</p>
+<h2 id="哈夫曼编码的价值"><a href="#哈夫曼编码的价值" class="headerlink" title="哈夫曼编码的价值"></a>哈夫曼编码的价值</h2><p>变长编码，使得编码的平均长度最短，实现压缩率大的无损压缩。</p>
+<p>因为哈夫曼树是最优的，每次的选择都是贪心选择，这个局部最优也是全局最优。</p>
+<h2 id="哈夫曼编码过程"><a href="#哈夫曼编码过程" class="headerlink" title="哈夫曼编码过程"></a>哈夫曼编码过程</h2><ul>
+<li>把文本中字符按出现的频次排序。</li>
+<li>每个字符作为一个结点放入一个集合。</li>
+<li>取集合最小的两个频次的结点，为左右子结点，生成一个父结点，父结点的频次是两个子结点频次之和，把父结点再加入到集合中。</li>
+<li>重复这个构造过程，生成一个最优二叉树。</li>
+<li>给二叉树所有左边设置0，所有右边设置1。</li>
+<li>字符都在叶子结点。</li>
+<li>根结点到叶子结点路径上的0和1组成的码字就是该字符的编码。</li>
+</ul>
+<p>因为所有字符都出现在叶子结点，保证了哈夫曼编码当中的任何一个字符的编码都不能是另一个字符编码的前缀。也就是说哈夫曼编码是一种前缀编码。</p>
+<hr>
+<h2 id="如何证明哈夫曼编码是最优的？"><a href="#如何证明哈夫曼编码是最优的？" class="headerlink" title="如何证明哈夫曼编码是最优的？"></a>如何证明哈夫曼编码是最优的？</h2><p>哈夫曼编码过程每次的选择都是贪心选择，这个局部最优也是全局最优。</p>
+<p>其正确性证明依赖于贪心选择性质和最优子结构。</p>
+<hr>
+<h2 id="哈夫曼编码的特点"><a href="#哈夫曼编码的特点" class="headerlink" title="哈夫曼编码的特点"></a>哈夫曼编码的特点</h2><ol>
+<li> 编码非等长</li>
+<li> 编码前缀不重复</li>
+</ol>
+<h2 id="哈夫曼编码的压缩效果？"><a href="#哈夫曼编码的压缩效果？" class="headerlink" title="哈夫曼编码的压缩效果？"></a>哈夫曼编码的压缩效果？</h2><p>哈夫曼编码可以很有效的压缩数据，具体压缩率依赖于数据本身的特性。</p>
+<p>齐夫定律：</p>
+<p>发现某一单词出现的频率与其在频率表里名次的常数次幂成反比，也就是说极少数的单词会被经常使用，而绝大多数单词很少被提及，这种20/80法则在很多领域都被逐步发现，这种幂律分布被称为“齐夫定律”（Zipf’s law）</p>
+<p>一般信息的分配都是幂率分布。</p>
+<p>所以用哈夫曼编码压缩的比例一般都挺高的，70%以上。</p>
+<h2 id="信息压缩的极限在哪？"><a href="#信息压缩的极限在哪？" class="headerlink" title="信息压缩的极限在哪？"></a>信息压缩的极限在哪？</h2><p>香农第一定理给出了无损的情况下数据压缩的临界值。</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2019/08/information-theory.html">信息论入门教程</a></p>
 
     </div>
 
@@ -285,7 +300,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" title="LeetCode.518.零钱兑换 II（中等）">http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.518.零钱兑换 II（中等）/</a>
+    <a href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/" title="哈夫曼编码">http://rickyqliu.github.io/算法/算法/哈夫曼编码/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -296,10 +311,8 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" rel="tag"># 动态规划</a>
-              <a href="/tags/LeetCode%E4%B8%AD%E7%AD%89/" rel="tag"># LeetCode中等</a>
-              <a href="/tags/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/" rel="tag"># 背包问题</a>
-              <a href="/tags/%E5%AE%8C%E5%85%A8%E8%83%8C%E5%8C%85/" rel="tag"># 完全背包</a>
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+              <a href="/tags/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/" rel="tag"># 哈夫曼编码</a>
           </div>
 
         
@@ -308,12 +321,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/LeetCode/LeetCode/LeetCode.322.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="prev" title="LeetCode.322.零钱兑换（中等）">
-      <i class="fa fa-chevron-left"></i> LeetCode.322.零钱兑换（中等）
+    <a href="/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/" rel="prev" title="排序算法（冒泡、选择、插入、希尔、快速、归并、堆、计数）">
+      <i class="fa fa-chevron-left"></i> 排序算法（冒泡、选择、插入、希尔、快速、归并、堆、计数）
     </a></div>
       <div class="post-nav-item">
-    <a href="/LeetCode/LeetCode/LeetCode.377.%E7%BB%84%E5%90%88%E6%80%BB%E5%92%8C%20%E2%85%A3%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="next" title="LeetCode.377.组合总和 Ⅳ（中等）">
-      LeetCode.377.组合总和 Ⅳ（中等） <i class="fa fa-chevron-right"></i>
+    <a href="/LeetCode/LeetCode/LeetCode.509.%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/" rel="next" title="LeetCode.509. 斐波那契数（简单）">
+      LeetCode.509. 斐波那契数（简单） <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -380,7 +393,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">题解</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81"><span class="nav-number">1.</span> <span class="nav-text">什么是哈夫曼编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81%E7%9A%84%E4%BB%B7%E5%80%BC"><span class="nav-number">2.</span> <span class="nav-text">哈夫曼编码的价值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81%E8%BF%87%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">哈夫曼编码过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%AF%81%E6%98%8E%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81%E6%98%AF%E6%9C%80%E4%BC%98%E7%9A%84%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">如何证明哈夫曼编码是最优的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81%E7%9A%84%E7%89%B9%E7%82%B9"><span class="nav-number">5.</span> <span class="nav-text">哈夫曼编码的特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81%E7%9A%84%E5%8E%8B%E7%BC%A9%E6%95%88%E6%9E%9C%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">哈夫曼编码的压缩效果？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%A1%E6%81%AF%E5%8E%8B%E7%BC%A9%E7%9A%84%E6%9E%81%E9%99%90%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="nav-number">7.</span> <span class="nav-text">信息压缩的极限在哪？</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -526,9 +539,9 @@
 </script>
 <script>
   var disqus_config = function() {
-    this.page.url = "http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/";
-    this.page.identifier = "LeetCode/LeetCode/LeetCode.518.零钱兑换 II（中等）/";
-    this.page.title = "LeetCode.518.零钱兑换 II（中等）";
+    this.page.url = "http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/";
+    this.page.identifier = "算法/算法/哈夫曼编码/";
+    this.page.title = "哈夫曼编码";
     };
   NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
     if (window.DISQUS) {
