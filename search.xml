@@ -1135,7 +1135,7 @@
 </ul>
 </li>
 <li>第<code>i - 1</code>天持有股票，第<code>i</code>天卖出。<ul>
-<li><code>dp[i][j][0] = dp[i - 1][j][0] + prices[i]</code></li>
+<li><code>dp[i][j][0] = dp[i - 1][j][1] + prices[i]</code></li>
 </ul>
 </li>
 </ul>
@@ -1154,14 +1154,14 @@
 </ul>
 <h3 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h3><ul>
 <li>第0天<ul>
-<li>持有股票的话，不过多少次交易，只能直接买入一次。</li>
+<li>持有股票的话，不论多少次交易，只能直接买入一次。</li>
 <li>不持有股票的话，收益就是0。</li>
 </ul>
 </li>
-<li>第<code>i</code>天之前都没有交易，即<code>j == 0</code>，第<code>i</code>天要交易就直接买入就行了。</li>
+<li>第<code>i</code>天之前都没有交易（即<code>j == 0</code>），第<code>i</code>天要交易操作就是买入。</li>
 </ul>
-<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p>如果给定的最多交易次数非常大，数组开辟空间会非常大，占用不必要的空间。</p>
-<p><strong>那么交易次数上限是多少？</strong></p>
+<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p>如果给定的最多交易次数<code>k</code>非常大，状态数组开辟空间也会非常大，考虑是否有优化的可能。</p>
+<p><strong>交易次数上限是多少？</strong></p>
 <p>一次交易要买入和卖出，总共n天，交易次数不应该超过n / 2。</p>
 <p><strong>交易次数超过n / 2要怎么办？</strong></p>
 <p>这就等于不限交易次数，与<a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/">LeetCode.122.买卖股票的最佳时机 II（简单）</a>解法相同，可以复用这种情况下最优化空间的解答。</p>
