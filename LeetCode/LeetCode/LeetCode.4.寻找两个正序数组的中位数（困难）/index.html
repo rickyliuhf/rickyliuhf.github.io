@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="题目LeetCode.4.寻找两个正序数组的中位数（困难） 给定两个大小分别为  m  和  n  的正序（从小到大）数组 nums1  和 nums2。请你找出并返回这两个正序数组的  中位数  。 进阶：你能设计一个时间复杂度为  O(log (m+n))  的算法解决此问题吗？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LeetCode.4.寻找两个正序数组的中位数（困难）">
+<meta property="og:url" content="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.4.%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="题目LeetCode.4.寻找两个正序数组的中位数（困难） 给定两个大小分别为  m  和  n  的正序（从小到大）数组 nums1  和 nums2。请你找出并返回这两个正序数组的  中位数  。 进阶：你能设计一个时间复杂度为  O(log (m+n))  的算法解决此问题吗？">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-08-17T12:00:00.000Z">
+<meta property="article:modified_time" content="2021-08-23T12:47:34.164Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="LeetCode困难">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.4.%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>LeetCode.4.寻找两个正序数组的中位数（困难） | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.4.%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="大道至简">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LeetCode.4.寻找两个正序数组的中位数（困难）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-08-17 20:00:00" itemprop="dateCreated datePublished" datetime="2021-08-17T20:00:00+08:00">2021-08-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-23 20:47:34" itemprop="dateModified" datetime="2021-08-23T20:47:34+08:00">2021-08-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode/LeetCode.4.%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode/LeetCode.4.寻找两个正序数组的中位数（困难）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/median-of-two-sorted-arrays/">LeetCode.4.寻找两个正序数组的中位数（困难）</a></p>
+<p>给定两个大小分别为  <code>m</code>  和  <code>n</code>  的正序（从小到大）数组 <code>nums1</code>  和 <code>nums2</code>。请你找出并返回这两个正序数组的  <strong>中位数</strong>  。</p>
+<p>进阶：你能设计一个时间复杂度为  <code>O(log (m+n))</code>  的算法解决此问题吗？</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1-归并"><a href="#解法1-归并" class="headerlink" title="解法1: 归并"></a>解法1: 归并</h2><h3 id="一个数组怎么找中位数？"><a href="#一个数组怎么找中位数？" class="headerlink" title="一个数组怎么找中位数？"></a>一个数组怎么找中位数？</h3><ul>
+<li>数组元素有奇数个，中位数是最中间的一个数。</li>
+<li>数组元素有偶数个，中位数是最中间的两个数的平均值。</li>
+</ul>
+<p>设数组长度为n。</p>
+<ul>
+<li>n为奇数时，中位数应该是第<code>n / 2 + 1</code>个数，由于数组索引从0开始，所以中位数是<code>nums[n / 2]</code>。</li>
+<li>n为偶数时，左中位数是第<code>n / 2</code>个数，右中位数是第<code>n / 2 + 1</code>个数；由于数组索引从0开始，左中位数为<code>nums[n / 2 - 1]</code>，右中位数为<code>nums[n / 2]</code>，实际中位数为<code>(nums[n / 2 - 1] + nums[n / 2]) / 2</code>。</li>
+</ul>
+<h3 id="两个数组怎么找中位数？"><a href="#两个数组怎么找中位数？" class="headerlink" title="两个数组怎么找中位数？"></a>两个数组怎么找中位数？</h3><p>把两个数组归并为一个有序数组。</p>
+<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><ul>
+<li>时间复杂度<code>O(m + n)</code>：需要遍历两个数组所有元素做归并。</li>
+<li>空间复杂度<code>O(m + n)</code>：额外需要一个<code>m + n</code>长度的数组存储归并后的元素。</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findMedianSortedArrays</span><span class="params">(nums1: <span class="type">IntArray</span>, nums2: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Double</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = nums1.size</span><br><span class="line">        <span class="keyword">val</span> n = nums2.size</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 二路归并</span></span><br><span class="line">        <span class="keyword">val</span> nums = IntArray(m + n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">var</span> i1 = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> i2 = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> j = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> (i1 &lt; m &amp;&amp; i2 &lt; n) &#123;</span><br><span class="line">            nums[j++] = <span class="keyword">if</span> (nums1[i1] &lt; nums2[i2]) nums1[i1++] <span class="keyword">else</span> nums2[i2++]            </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (i1 &lt; m) nums[j++] = nums1[i1++]</span><br><span class="line">        <span class="keyword">while</span> (i2 &lt; n) nums[j++] = nums2[i2++]</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 取中位数</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">if</span> ((m + n) % <span class="number">2</span> == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">val</span> mid = (m + n) / <span class="number">2</span></span><br><span class="line">            nums[mid].toDouble()</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">val</span> leftMid = (m + n) / <span class="number">2</span> - <span class="number">1</span></span><br><span class="line">            <span class="keyword">val</span> rightMid = leftMid + <span class="number">1</span></span><br><span class="line">            (nums[leftMid] + nums[rightMid]).toDouble() / <span class="number">2</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解法2：二分"><a href="#解法2：二分" class="headerlink" title="解法2：二分"></a>解法2：二分</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>归并排序产生了新数组，增加了空间复杂度。</p>
+<p>既然在一个数组中找中位数不需要额外空间，两个数组应该也能。</p>
+<p>我们的思路还是把两个数组往一个数组的情况上考虑，也就是把不熟悉的情况往熟悉的情况上靠拢。</p>
+<h3 id="合二为一"><a href="#合二为一" class="headerlink" title="合二为一"></a>合二为一</h3><p>找中位数是跟数组总个数有关的，如果把小的元素和大的元素正好能各分一半，那么看中间的数就行。</p>
+<p>可以把两个数组分割为左右两部分，两个数组的左半部分元素个数跟右半部分元素个数相等的时候，直接看中间的元素就行了。</p>
+<p>设<code>nums1</code>数组长度为<code>m</code>，<code>nums2</code>数组长度为<code>n</code>。<br>把<code>nums1</code>分为前<code>i</code>个元素和后<code>m - i</code>个元素。<br>把<code>nums2</code>分为前<code>j</code>个元素和后<code>n - j</code>个元素。</p>
+<p>如果<code>m + n</code>是偶数，<code>i + j = (m + n) / 2</code>。<br>如果<code>m + n</code>是奇数，<code>i + j = (m + n) / 2 + 1</code>。<br>知道了<code>i</code>就可以确定<code>j</code>。</p>
+<h3 id="怎么确定i-？"><a href="#怎么确定i-？" class="headerlink" title="怎么确定i ？"></a>怎么确定<code>i</code> ？</h3><p>左半部分所有元素都小于右半部分的元素。</p>
+<p>数组本身是有序的，所以要求两个数组的不同部分也保持顺序，即：<br><code>nums1[i - 1] &lt; nums2[j] &amp;&amp; nums2[j - 1] &lt; nums1[i]</code></p>
+<p>这个条件等价于在<code>nums1</code>数组中查找最大的<code>i</code>来满足<code>nums1[i - 1] &lt; nums2[j]</code>，查找过程可以用二分查找。</p>
+<h3 id="二分查找的细节"><a href="#二分查找的细节" class="headerlink" title="二分查找的细节"></a>二分查找的细节</h3><p>当发现<code>nums[i - 1] &gt; nums2[j]</code>，说明左半部分的元素多了，要减少，应当继续寻找更小的<code>i</code>。<br>当发现<code>nums[i - 1] &lt;= nums2[j]</code>，说明左半部分可能正好，也可能少了，可以尝试寻找更大的<code>i</code>。</p>
+<h3 id="查找完毕后怎么确定中位数？"><a href="#查找完毕后怎么确定中位数？" class="headerlink" title="查找完毕后怎么确定中位数？"></a>查找完毕后怎么确定中位数？</h3><p>查找到最大的<code>i</code>过后，就可以选取中位数了。</p>
+<ul>
+<li>如果<code>m + n</code>是奇数，分割数组的时候可以让左半部分多一个元素，两数组左半部分最大值即为中位数。</li>
+<li>如果<code>m + n</code>是偶数，两数组左半部分最大值和右半部分最小值的平均数即为中位数。</li>
+</ul>
+<h3 id="复杂度-1"><a href="#复杂度-1" class="headerlink" title="复杂度"></a>复杂度</h3><ul>
+<li>时间复杂度<code>O(log(min(m, n)))</code>，在短的数组里做了二分查找。</li>
+<li>空间复杂度<code>O(1)</code>，只使用了常数个的辅助变量。</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findMedianSortedArrays</span><span class="params">(nums1: <span class="type">IntArray</span>, nums2: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Double</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = nums1.size</span><br><span class="line">        <span class="keyword">val</span> n = nums2.size</span><br><span class="line">        <span class="keyword">if</span> (m &gt; n) <span class="keyword">return</span> findMedianSortedArrays(nums2, nums1)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> leftCount = <span class="keyword">if</span>((m + n) % <span class="number">2</span> == <span class="number">0</span>) (m + n) / <span class="number">2</span> <span class="keyword">else</span> (m + n) / <span class="number">2</span> + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> left = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> right = m</span><br><span class="line">        <span class="comment">// 循环结束时left == right，不用思考选取left还是right</span></span><br><span class="line">        <span class="keyword">while</span> (left &lt; right) &#123;</span><br><span class="line">            <span class="comment">// 计算mid向上取整，否则最后只剩两个元素的时候，下面一直走到else，左边界不会更新</span></span><br><span class="line">            <span class="keyword">val</span> i = left + (right - left + <span class="number">1</span>) / <span class="number">2</span></span><br><span class="line">            <span class="keyword">val</span> j = leftCount - i</span><br><span class="line">            <span class="comment">// i不满足条件，要找更小的</span></span><br><span class="line">            <span class="keyword">if</span> (nums1[i - <span class="number">1</span>] &gt; nums2[j]) right = i - <span class="number">1</span></span><br><span class="line">            <span class="comment">// i满足条件，i可能是要求解的结果，不要跳过i</span></span><br><span class="line">            <span class="keyword">else</span> left = i</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">val</span> i = left</span><br><span class="line">        <span class="keyword">val</span> j = leftCount - left</span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> nums1LeftMax = <span class="keyword">if</span> (i == <span class="number">0</span>) <span class="built_in">Int</span>.MIN_VALUE <span class="keyword">else</span> nums1[i - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">val</span> nums2LeftMax = <span class="keyword">if</span> (j == <span class="number">0</span>) <span class="built_in">Int</span>.MIN_VALUE <span class="keyword">else</span> nums2[j - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">val</span> nums1RightMin = <span class="keyword">if</span> (i == m) <span class="built_in">Int</span>.MAX_VALUE <span class="keyword">else</span> nums1[i]</span><br><span class="line">        <span class="keyword">val</span> nums2RightMin = <span class="keyword">if</span> (j == n) <span class="built_in">Int</span>.MAX_VALUE <span class="keyword">else</span> nums2[j]</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">if</span> ((m + n) % <span class="number">2</span> == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">val</span> leftMax = maxOf(nums1LeftMax, nums2LeftMax)</span><br><span class="line">            <span class="keyword">val</span> rightMin = minOf(nums1RightMin, nums2RightMin)</span><br><span class="line">            (leftMax + rightMin).toDouble() / <span class="number">2</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">val</span> leftMax = maxOf(nums1LeftMax, nums2LeftMax).toDouble()</span><br><span class="line">            leftMax</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解法3：分治"><a href="#解法3：分治" class="headerlink" title="解法3：分治"></a>解法3：分治</h2><h3 id="思路-1"><a href="#思路-1" class="headerlink" title="思路"></a>思路</h3><p>我们可以从简单理想的情况开始着手，逐步改变条件，看需要考虑的因素会发生什么变化。</p>
+<h3 id="理想情况"><a href="#理想情况" class="headerlink" title="理想情况"></a>理想情况</h3><p>假设m + n是奇数，中位数是第(m + n) / 2个数，令k = (m + n) / 2。</p>
+<p>如果两数组长度相同，那么直接比较nums1[k / 2]和nums2[k / 2]的大小，就知道应该取哪个数是中位数了，这是很自然推导。</p>
+<h3 id="如果m-n，再比较nums1-k-2-和nums2-k-2-的大小，还能直接得出中位数是哪个吗？"><a href="#如果m-n，再比较nums1-k-2-和nums2-k-2-的大小，还能直接得出中位数是哪个吗？" class="headerlink" title="如果m != n，再比较nums1[k / 2]和nums2[k / 2]的大小，还能直接得出中位数是哪个吗？"></a>如果m != n，再比较nums1[k / 2]和nums2[k / 2]的大小，还能直接得出中位数是哪个吗？</h3><p>不能，但是可以排除掉k / 2个元素不用再参与比较，这样其实就优化了时间复杂度。</p>
+<p>比如nums1[k / 2] &lt; nums2[k / 2]时，可得：</p>
+<ul>
+<li>nums2[k / 2]有可能是第k大的数字，也有可能不是。</li>
+<li>但是nums1[k / 2]绝对不是第k大的数。</li>
+<li>nums1数组的前k / 2个元素也都不可能是第k大的数，因为nums1是从小到大排序的。</li>
+</ul>
+<p>第k大的数是有可能出现在nums2的0到k / 2之中的，考虑极端情况：</p>
+<ul>
+<li>如果nums1[k / 2]后续如果正好有个k / 2 - 1个元素比nums2[0]小，那么nums2[0]就是第k大的数。</li>
+<li>如果nums1[k / 2]之后没有元素了，只能在在nums2[k / 2]后面再继续找第k大的数。</li>
+</ul>
+<h3 id="接下来怎么找第k大的数？"><a href="#接下来怎么找第k大的数？" class="headerlink" title="接下来怎么找第k大的数？"></a>接下来怎么找第k大的数？</h3><p>已经排除了k / 2个元素不用比较后，接着其实是要寻找第 k - k / 2 个数，寻找过程是一样的，这里就划分出了子问题，可以递归进行。<br>并且每次折半查找，时间复杂度是对数级别的。</p>
+<h3 id="边界"><a href="#边界" class="headerlink" title="边界"></a>边界</h3><ul>
+<li>k一直缩减到1，就是最终想要得到的中位数。</li>
+<li>如果数组没有第k / 2个数可选择，就取数组末尾的数比较。</li>
+</ul>
+<h3 id="m-n是偶数怎么办？"><a href="#m-n是偶数怎么办？" class="headerlink" title="m + n是偶数怎么办？"></a>m + n是偶数怎么办？</h3><p>可以分别查找到左中位数和右中位数，再求平均值。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findMedianSortedArrays</span><span class="params">(nums1: <span class="type">IntArray</span>, nums2: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Double</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> len1 = nums1.size</span><br><span class="line">        <span class="keyword">val</span> len2 = nums2.size</span><br><span class="line">        <span class="keyword">val</span> len = len1 + len2</span><br><span class="line">        <span class="keyword">if</span> (len % <span class="number">2</span> == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">val</span> left = len / <span class="number">2</span></span><br><span class="line">            <span class="keyword">val</span> right = left + <span class="number">1</span></span><br><span class="line">            <span class="keyword">return</span> (getKth(nums1, nums2, <span class="number">0</span>, <span class="number">0</span>, left) + getKth(nums1, nums2, <span class="number">0</span>, <span class="number">0</span>, right)) / <span class="number">2.</span>toDouble()</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">val</span> mid = len / <span class="number">2</span> + <span class="number">1</span></span><br><span class="line">            <span class="keyword">return</span> getKth(nums1, nums2, <span class="number">0</span>, <span class="number">0</span>, mid).toDouble()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getKth</span><span class="params">(nums1: <span class="type">IntArray</span>, nums2: <span class="type">IntArray</span>, i1: <span class="type">Int</span>, i2: <span class="type">Int</span>, k: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> len1 = nums1.size - i1</span><br><span class="line">        <span class="keyword">val</span> len2 = nums2.size - i2</span><br><span class="line">        <span class="keyword">if</span> (len1 &gt; len2) <span class="keyword">return</span> getKth(nums2, nums1, i2, i1, k)</span><br><span class="line">        <span class="keyword">if</span> (len1 == <span class="number">0</span>) <span class="keyword">return</span> nums2[i2 + k - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">if</span> (k == <span class="number">1</span>) <span class="keyword">return</span> minOf(nums1[i1], nums2[i2])</span><br><span class="line">        <span class="keyword">val</span> j1 = i1 + minOf(k / <span class="number">2</span>, len1) - <span class="number">1</span></span><br><span class="line">        <span class="keyword">val</span> j2 = i2 + minOf(k / <span class="number">2</span>, len2) - <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">if</span> (nums1[j1] &lt; nums2[j2]) &#123;</span><br><span class="line">            getKth(nums1, nums2, j1 + <span class="number">1</span>, i2, k - (j1 - i1 + <span class="number">1</span>))</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            getKth(nums1, nums2, i1, j2 + <span class="number">1</span>, k - (j2 - i2 + <span class="number">1</span>))</span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.4.%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" title="LeetCode.4.寻找两个正序数组的中位数（困难）">http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.4.寻找两个正序数组的中位数（困难）/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/LeetCode%E5%9B%B0%E9%9A%BE/" rel="tag"># LeetCode困难</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/LeetCode/LeetCode/LeetCode.279.%E5%AE%8C%E5%85%A8%E5%B9%B3%E6%96%B9%E6%95%B0%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="prev" title="LeetCode.279.完全平方数（中等）">
+      <i class="fa fa-chevron-left"></i> LeetCode.279.完全平方数（中等）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/LeetCode/LeetCode/LeetCode.10.%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%8C%B9%E9%85%8D%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="next" title="LeetCode.10.正则表达式匹配（困难）">
+      LeetCode.10.正则表达式匹配（困难） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">题解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%B3%951-%E5%BD%92%E5%B9%B6"><span class="nav-number">2.1.</span> <span class="nav-text">解法1: 归并</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E6%95%B0%E7%BB%84%E6%80%8E%E4%B9%88%E6%89%BE%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%9F"><span class="nav-number">2.1.1.</span> <span class="nav-text">一个数组怎么找中位数？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E4%B8%AA%E6%95%B0%E7%BB%84%E6%80%8E%E4%B9%88%E6%89%BE%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%9F"><span class="nav-number">2.1.2.</span> <span class="nav-text">两个数组怎么找中位数？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">2.1.3.</span> <span class="nav-text">复杂度</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%B3%952%EF%BC%9A%E4%BA%8C%E5%88%86"><span class="nav-number">2.2.</span> <span class="nav-text">解法2：二分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF"><span class="nav-number">2.2.1.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%88%E4%BA%8C%E4%B8%BA%E4%B8%80"><span class="nav-number">2.2.2.</span> <span class="nav-text">合二为一</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%A1%AE%E5%AE%9Ai-%EF%BC%9F"><span class="nav-number">2.2.3.</span> <span class="nav-text">怎么确定i ？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE%E7%9A%84%E7%BB%86%E8%8A%82"><span class="nav-number">2.2.4.</span> <span class="nav-text">二分查找的细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE%E5%AE%8C%E6%AF%95%E5%90%8E%E6%80%8E%E4%B9%88%E7%A1%AE%E5%AE%9A%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%9F"><span class="nav-number">2.2.5.</span> <span class="nav-text">查找完毕后怎么确定中位数？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E6%9D%82%E5%BA%A6-1"><span class="nav-number">2.2.6.</span> <span class="nav-text">复杂度</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%B3%953%EF%BC%9A%E5%88%86%E6%B2%BB"><span class="nav-number">2.3.</span> <span class="nav-text">解法3：分治</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF-1"><span class="nav-number">2.3.1.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%90%86%E6%83%B3%E6%83%85%E5%86%B5"><span class="nav-number">2.3.2.</span> <span class="nav-text">理想情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9Cm-n%EF%BC%8C%E5%86%8D%E6%AF%94%E8%BE%83nums1-k-2-%E5%92%8Cnums2-k-2-%E7%9A%84%E5%A4%A7%E5%B0%8F%EF%BC%8C%E8%BF%98%E8%83%BD%E7%9B%B4%E6%8E%A5%E5%BE%97%E5%87%BA%E4%B8%AD%E4%BD%8D%E6%95%B0%E6%98%AF%E5%93%AA%E4%B8%AA%E5%90%97%EF%BC%9F"><span class="nav-number">2.3.3.</span> <span class="nav-text">如果m !&#x3D; n，再比较nums1[k &#x2F; 2]和nums2[k &#x2F; 2]的大小，还能直接得出中位数是哪个吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E4%B8%8B%E6%9D%A5%E6%80%8E%E4%B9%88%E6%89%BE%E7%AC%ACk%E5%A4%A7%E7%9A%84%E6%95%B0%EF%BC%9F"><span class="nav-number">2.3.4.</span> <span class="nav-text">接下来怎么找第k大的数？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%B9%E7%95%8C"><span class="nav-number">2.3.5.</span> <span class="nav-text">边界</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#m-n%E6%98%AF%E5%81%B6%E6%95%B0%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="nav-number">2.3.6.</span> <span class="nav-text">m + n是偶数怎么办？</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">大道至简</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">78</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu-blog.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.4.%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/";
+    this.page.identifier = "LeetCode/LeetCode/LeetCode.4.寻找两个正序数组的中位数（困难）/";
+    this.page.title = "LeetCode.4.寻找两个正序数组的中位数（困难）";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu-blog.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

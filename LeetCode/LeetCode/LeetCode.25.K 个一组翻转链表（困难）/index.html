@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="题目LeetCode.25.K 个一组翻转链表（困难） 给你一个链表，每 k 个节点一组进行翻转，请你返回翻转后的链表。 k 是一个正整数，它的值小于或等于链表的长度。 如果节点总数不是 k 的整数倍，那么请将最后剩余的节点保持原有顺序。 进阶： 你可以设计一个只使用常数额外空间的算法来解决此问题吗？你不能只是单纯的改变节点内部的值，而是需要实际进行节点交换。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LeetCode.25.K 个一组翻转链表（困难）">
+<meta property="og:url" content="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.25.K%20%E4%B8%AA%E4%B8%80%E7%BB%84%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="题目LeetCode.25.K 个一组翻转链表（困难） 给你一个链表，每 k 个节点一组进行翻转，请你返回翻转后的链表。 k 是一个正整数，它的值小于或等于链表的长度。 如果节点总数不是 k 的整数倍，那么请将最后剩余的节点保持原有顺序。 进阶： 你可以设计一个只使用常数额外空间的算法来解决此问题吗？你不能只是单纯的改变节点内部的值，而是需要实际进行节点交换。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-08-18T12:00:00.000Z">
+<meta property="article:modified_time" content="2021-08-23T12:47:34.164Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="LeetCode困难">
+<meta property="article:tag" content="递归">
+<meta property="article:tag" content="链表">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.25.K%20%E4%B8%AA%E4%B8%80%E7%BB%84%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>LeetCode.25.K 个一组翻转链表（困难） | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.25.K%20%E4%B8%AA%E4%B8%80%E7%BB%84%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="大道至简">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LeetCode.25.K 个一组翻转链表（困难）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-08-18 20:00:00" itemprop="dateCreated datePublished" datetime="2021-08-18T20:00:00+08:00">2021-08-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-23 20:47:34" itemprop="dateModified" datetime="2021-08-23T20:47:34+08:00">2021-08-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode/LeetCode.25.K%20%E4%B8%AA%E4%B8%80%E7%BB%84%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode/LeetCode.25.K 个一组翻转链表（困难）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/reverse-nodes-in-k-group/">LeetCode.25.K 个一组翻转链表（困难）</a></p>
+<p>给你一个链表，每 k 个节点一组进行翻转，请你返回翻转后的链表。</p>
+<p>k 是一个正整数，它的值小于或等于链表的长度。</p>
+<p>如果节点总数不是 k 的整数倍，那么请将最后剩余的节点保持原有顺序。</p>
+<p>进阶：</p>
+<p>你可以设计一个只使用常数额外空间的算法来解决此问题吗？<br>你不能只是单纯的改变节点内部的值，而是需要实际进行节点交换。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>每组翻转后最关键的在于每一组的头尾节点变化了，要把每组重新正确的连接上，梳理整个翻转过程就比较清楚了。</p>
+<p>从左到右找到第k个节点，相当于知道了一组节点的头节点和尾节点，对这一组节点进行翻转，记录翻转后的尾节点，在下一组翻转过后，把上一组记录的新尾节点指向下一组的新头节点即可。</p>
+<p><strong>边界处理</strong></p>
+<p>如果发现最后一组不足k个，不做翻转。</p>
+<p><strong>递归</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">reverseKGroup</span><span class="params">(head: <span class="type">ListNode</span>?, k: <span class="type">Int</span>)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">if</span> (head == <span class="literal">null</span>) <span class="keyword">return</span> <span class="literal">null</span></span><br><span class="line">        <span class="keyword">var</span> tail: ListNode? = head</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.k) &#123;</span><br><span class="line">            <span class="keyword">if</span> (tail == <span class="literal">null</span>) <span class="keyword">return</span> head</span><br><span class="line">            tail = tail.next</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">val</span> newHead = reverse(head, tail)</span><br><span class="line">        head.next = reverseKGroup(tail, k)</span><br><span class="line">        <span class="keyword">return</span> newHead</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 翻转链表，返回新链表头节点</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">reverse</span><span class="params">(head: <span class="type">ListNode</span>?, tail: <span class="type">ListNode</span>?)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">var</span> pre: ListNode? = <span class="literal">null</span></span><br><span class="line">        <span class="keyword">var</span> cur: ListNode? = head</span><br><span class="line">        <span class="keyword">while</span> (cur != tail) &#123;</span><br><span class="line">            <span class="keyword">val</span> next = cur?.next</span><br><span class="line">            cur?.next = pre</span><br><span class="line">            pre = cur</span><br><span class="line">            cur = next</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> pre</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度O(n)：n为链表节点总数。<br>空间复杂度O(n/k)：递归一次占用一个方法栈，空间占用多少就看递归深度多少，n个节点每次划分k个一组，一共要递归n/k次。</p>
+</blockquote>
+<p><strong>迭代</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 如果一边遍历一边翻转，最后一段长度不足k时也反转了就不对了，所以得先有一个指针往后探路，探到有路了再进行反转</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">reverseKGroup</span><span class="params">(head: <span class="type">ListNode</span>, k: <span class="type">Int</span>)</span></span>: ListNode &#123;</span><br><span class="line">        <span class="comment">// 1. 创建一个虚节点，这样可以统一操作链表的代码，不用做边界情况处理</span></span><br><span class="line">        <span class="keyword">val</span> dummyHead = ListNode(<span class="number">0</span>)</span><br><span class="line">        dummyHead.next = head</span><br><span class="line">        <span class="comment">// 2. 开拓者指针，往后走k次，如果走了k次后，开拓者不为null，说明是有k个节点，可以翻转；初始时还没走，所以应该在头节点的前一个位置</span></span><br><span class="line">        <span class="keyword">var</span> pioneer: ListNode? = dummyHead</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 7. 记录当前待翻转区域前面的一个节点，用于把之前已反转的部分跟当前区域反转后重新连接起来，初始时是头节点的前一个节点</span></span><br><span class="line">        <span class="keyword">var</span> predecessor: ListNode? = dummyHead</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3. while循环一开始可能不知道是什么条件，可以先写while(true)，先写遍历代码</span></span><br><span class="line">        <span class="comment">// 13. pioneer探路前，指向的是要翻转的区域的前驱结点，如果不存在要翻转的区域，就不用遍历了，如果还有要翻转的区域则需要继续探路；如果后面不足k个节点，会在循环内break</span></span><br><span class="line">        <span class="keyword">while</span> (pioneer?.next != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 4. 开拓者要探k次路，如果后面不足k个结点，pioneer应当为null</span></span><br><span class="line">            <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until k) &#123;</span><br><span class="line">                pioneer = pioneer?.next</span><br><span class="line">                <span class="keyword">if</span> (pioneer == <span class="literal">null</span>) <span class="keyword">break</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 5. 一开始还没开始翻转，就发现链表不足k个节点的话，按照题意不用翻转，所以就什么都不用做了，先break</span></span><br><span class="line">            <span class="keyword">if</span> (pioneer == <span class="literal">null</span>) <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 6. pioneer不为null，说明是有k个节点的，可以翻转</span></span><br><span class="line">            <span class="comment">// 翻转主要是要解决翻转区域前后节点的连接问题，翻转后翻转区域的头尾都变了</span></span><br><span class="line">            <span class="comment">// 需要把翻转区域前后节点先保存下来，翻转后再重新连接翻转区域到主链表上</span></span><br><span class="line">            <span class="comment">// 当前待翻转区域尾节点就是pioneer，翻转区域后面的节点就是pioneer.next</span></span><br><span class="line">            <span class="keyword">val</span> successor = pioneer?.next</span><br><span class="line">            <span class="comment">// 翻转区域前面的节点还没有记录过，需要有个变量记录一下，到上面定义一下</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 8. 翻转链表链表需要知道头结点，需要记录待翻转区域头节点，翻转后这个节点就变成了尾节点</span></span><br><span class="line">            <span class="keyword">val</span> newTail = predecessor?.next</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 9. 把当前正要翻转区域跟主链表断开连接再做翻转，这样会比较方便，因为本来就是要重新连接的，最后再重新连接上</span></span><br><span class="line">            predecessor?.next = <span class="literal">null</span></span><br><span class="line">            pioneer?.next = <span class="literal">null</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 10. 翻转链表</span></span><br><span class="line">            <span class="keyword">val</span> newHead = reverse(newTail)</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 11. 重新把翻转后的链表连接到原链表</span></span><br><span class="line">            predecessor?.next = newHead</span><br><span class="line">            newTail?.next = successor</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 12. 重置前驱指针和开拓者指针，都指向当前翻转区域的尾节点</span></span><br><span class="line">            predecessor = newTail</span><br><span class="line">            pioneer = newTail</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 返回新的头节点</span></span><br><span class="line">        <span class="keyword">val</span> newHead = dummyHead.next</span><br><span class="line">        dummyHead.next = <span class="literal">null</span></span><br><span class="line">        <span class="keyword">return</span> newHead</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 翻转链表，返回翻转后的头节点</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">reverse</span><span class="params">(head: <span class="type">ListNode</span>?)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">var</span> pre: ListNode? = <span class="literal">null</span></span><br><span class="line">        <span class="keyword">var</span> cur: ListNode? = head</span><br><span class="line">        <span class="keyword">while</span> (cur != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">val</span> next = cur.next</span><br><span class="line">            cur.next = pre</span><br><span class="line">            pre = cur</span><br><span class="line">            cur = next</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> pre</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度O(n)：n为链表节点总数，需要遍历所有节点。<br>空间复杂度O(1)：只用了常数个变量。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.25.K%20%E4%B8%AA%E4%B8%80%E7%BB%84%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" title="LeetCode.25.K 个一组翻转链表（困难）">http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.25.K 个一组翻转链表（困难）/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/LeetCode%E5%9B%B0%E9%9A%BE/" rel="tag"># LeetCode困难</a>
+              <a href="/tags/%E9%80%92%E5%BD%92/" rel="tag"># 递归</a>
+              <a href="/tags/%E9%93%BE%E8%A1%A8/" rel="tag"># 链表</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/LeetCode/LeetCode/LeetCode.23.%E5%90%88%E5%B9%B6K%E4%B8%AA%E5%8D%87%E5%BA%8F%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="prev" title="LeetCode.23.合并K个升序链表（困难）">
+      <i class="fa fa-chevron-left"></i> LeetCode.23.合并K个升序链表（困难）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/LeetCode/LeetCode/LeetCode.30.%E4%B8%B2%E8%81%94%E6%89%80%E6%9C%89%E5%8D%95%E8%AF%8D%E7%9A%84%E5%AD%90%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="next" title="LeetCode.30.串联所有单词的子串（困难）">
+      LeetCode.30.串联所有单词的子串（困难） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">题解</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">大道至简</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">78</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu-blog.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.github.io/LeetCode/LeetCode/LeetCode.25.K%20%E4%B8%AA%E4%B8%80%E7%BB%84%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/";
+    this.page.identifier = "LeetCode/LeetCode/LeetCode.25.K 个一组翻转链表（困难）/";
+    this.page.title = "LeetCode.25.K 个一组翻转链表（困难）";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu-blog.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
