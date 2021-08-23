@@ -1290,6 +1290,49 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.214.最短回文串（困难）</title>
+    <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.214.%E6%9C%80%E7%9F%AD%E5%9B%9E%E6%96%87%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/shortest-palindrome/">LeetCode.214.最短回文串（困难）</a></p>
+<p>给定一个字符串  _<strong>s</strong>_，你可以通过在字符串前面添加字符将其转换为回文串。找到并返回可以用这种方式转换的最短回文串。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>回文串的特点是左右两端字符相同，要在<code>s</code>前面添加字符串使得新字符串是回文串，那就把<code>s</code>的倒置字符串放在前面就可以形成回文了。</p>
+<h3 id="s的倒置字符串添加在s前面会有什么问题？"><a href="#s的倒置字符串添加在s前面会有什么问题？" class="headerlink" title="s的倒置字符串添加在s前面会有什么问题？"></a>s的倒置字符串添加在s前面会有什么问题？</h3><p>这样添加还不是最短的回文。</p>
+<p>比如s是abbacd，添加dcabba到开头，形成dcabbaabbacd，可以发现abba是多余的，不用添加，dcabbacd是更短的回文串，只要添加dc就行了。</p>
+<h3 id="应该添加什么样的字符串才能获得最短回文？"><a href="#应该添加什么样的字符串才能获得最短回文？" class="headerlink" title="应该添加什么样的字符串才能获得最短回文？"></a>应该添加什么样的字符串才能获得最短回文？</h3><p>得找到abbacd的前缀和dcabba的后缀最长的重合的部分的长度，然后找到不重复的部分，添加到字符串前面。</p>
+<p>标准化描述：</p>
+<ul>
+<li>设<code>s&#39;</code>是<code>s</code>的倒置字符串。</li>
+<li>求<code>s</code>的前缀和<code>s&#39;</code>的后缀中相同部分最长的长度<code>x</code>。</li>
+<li>取<code>s</code>的子串<code>s[x, n - 1]</code>，倒置后添加到<code>s</code>前面，形成最短回文。</li>
+</ul>
+<h3 id="怎么寻找s和s的倒置字符串最长前后缀？"><a href="#怎么寻找s和s的倒置字符串最长前后缀？" class="headerlink" title="怎么寻找s和s的倒置字符串最长前后缀？"></a>怎么寻找s和s的倒置字符串最长前后缀？</h3><p>联想到kmp做字符串匹配时，要先求一个前缀函数，前缀函数<code>prefix[i]</code>表示<code>s[0, i]</code>中最长的公共前后缀的长度，只要求出前缀函数就可以求解题目。</p>
+<h3 id="前缀函数怎么求？"><a href="#前缀函数怎么求？" class="headerlink" title="前缀函数怎么求？"></a>前缀函数怎么求？</h3><p>一句话：让<code>s[0, n - 1]</code>匹配<code>s[1, n - 1]</code>。</p>
+<p>算法步骤：</p>
+<ul>
+<li>双指针<code>i</code>和<code>j</code>遍历<code>s</code>。</li>
+<li><code>i</code>从1开始，<code>j</code>从0开始。</li>
+<li>s匹配自己，字符能匹配上，双指针都前进。</li>
+<li>当前<code>s[i]</code>和<code>s[j]</code>不匹配，要把<code>j</code>往回退。<ul>
+<li><code>j</code>退到前一个位置（<code>j - 1</code>）的最长公共前后缀的前缀的下一个字符的位置。继续拿<code>s[j]</code>跟<code>s[i]</code>尝试匹配，如果能匹配的上，<code>prefix[i]</code>就求出来了。</li>
+<li>如果<code>j</code>一直回退，最坏也就是回退到0，因为<code>prefix[0] = 0</code>（一个字符不存在前后缀），没的退了，只能比较<code>s[i]</code>和<code>s[0]</code>，没匹配的话公共前后缀长度就是0。</li>
+</ul>
+</li>
+</ul>
+<h3 id="前缀函数应该针对哪个字符串求？"><a href="#前缀函数应该针对哪个字符串求？" class="headerlink" title="前缀函数应该针对哪个字符串求？"></a>前缀函数应该针对哪个字符串求？</h3><p>我们要求<code>s</code>的前缀和<code>s</code>的倒置字符串的后缀最长的公共部分。<br>所以弄一个新字符串 <code>s&#39; + s</code>。</p>
+<p><strong>这样存在一个问题</strong>，如果所有字符都相同，此时最长公共前后缀就是整个字符串<code>s&#39; + s</code>本身，这不是期望的结果，所以连接<code>s&#39;</code>和<code>s</code>时，中间隔一个用不到的字符，比如<code>#</code>。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">shortestPalindrome</span><span class="params">(s: <span class="type">String</span>)</span></span>: String &#123;</span><br><span class="line">        <span class="keyword">if</span> (s.isEmpty()) <span class="keyword">return</span> <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="comment">// 加#是为了防止出现全部重复的字符，这样最长公共前后缀的长度就不是期望的了</span></span><br><span class="line">        <span class="keyword">val</span> maxLength = (s + <span class="string">&quot;#&quot;</span> + s.reversed()).prefixArray().last()</span><br><span class="line">        <span class="keyword">return</span> s.substring(maxLength).reversed() + s</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> String.<span class="title">prefixArray</span><span class="params">()</span></span>: IntArray &#123;</span><br><span class="line">        <span class="keyword">val</span> s = <span class="keyword">this</span></span><br><span class="line">        <span class="keyword">val</span> n = length</span><br><span class="line">        <span class="keyword">val</span> prefix = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">var</span> j = prefix[i - <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; s[i] != s[j]) j = prefix[j - <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">if</span> (s[i] == s[j]) j++</span><br><span class="line">            prefix[i] = j</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> prefix</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>LeetCode困难</tag>
+        <tag>KMP</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.221.最大正方形（中等）</title>
     <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.221.%E6%9C%80%E5%A4%A7%E6%AD%A3%E6%96%B9%E5%BD%A2%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/maximal-square/">LeetCode.221.最大正方形（中等）</a></p>
@@ -1501,6 +1544,36 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.304.二维区域和检索 - 矩阵不可变（中等）</title>
+    <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.304.%E4%BA%8C%E7%BB%B4%E5%8C%BA%E5%9F%9F%E5%92%8C%E6%A3%80%E7%B4%A2%20-%20%E7%9F%A9%E9%98%B5%E4%B8%8D%E5%8F%AF%E5%8F%98%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/range-sum-query-2d-immutable/">LeetCode.304.二维区域和检索 - 矩阵不可变（中等）</a></p>
+<p>给定一个二维矩阵 matrix，以下类型的多个请求：</p>
+<ul>
+<li>计算其子矩形范围内元素的总和，该子矩阵的左上角为 (row1, col1) ，右下角为 (row2, col2) 。<br>实现 NumMatrix 类：</li>
+<li>NumMatrix(int[][] matrix) 给定整数矩阵 matrix 进行初始化</li>
+<li>int sumRegion(int row1, int col1, int row2, int col2) 返回左上角 (row1, col1) 、右下角 (row2, col2) 的子矩阵的元素总和。<span id="more"></span></li>
+</ul>
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>与<a href="https://leetcode-cn.com/problems/matrix-block-sum/">LeetCode.1314.矩阵区域和</a>思路相同。</p>
+<p>NumMatrix.sumRegion()要想做到O(1)时间复杂度查询，就要提前计算好二位前缀和。</p>
+<p>设<code>preSum[i][j]</code>为<code>[0, 0]</code>到<code>[i, j]</code>矩形区域所有元素和。</p>
+<p>求矩形区域d的元素和</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">a a a b b b b b   </span><br><span class="line">a a a b b b b b</span><br><span class="line">c c c d d d d d</span><br><span class="line">c c c d d d d d</span><br><span class="line">c c c d d d d d</span><br></pre></td></tr></table></figure>
+<p><code>区域d所有元素和 = 整个区域所有元素和 - 区域a所有元素和- 区域b所有元素和 - 区域c所有元素和</code></p>
+<p>设矩形d左上角坐标<code>(x1, y1)</code>，右下角坐标<code>(x2, y2)</code>。<br><code>整个区域所有元素和 = preSum[x2][y2]</code><br><code>区域a所有元素和 + 区域b所有元素和 = preSum[x1 - 1][y2]</code><br><code>区域a所有元素和 + 区域c所有元素和 = preSum[x2][y1 - 1]</code></p>
+<p>所以:<br><code>区域d所有元素和 = preSum[x2][y2] - preSum[x1 - 1][y2] - preSum[x2][y1 - 1] + preSum[x1 - 1][y1 - 1]</code></p>
+<p>遇到边界特殊处理一下就行。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NumMatrix</span></span>(matrix: Array&lt;IntArray&gt;) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> m = matrix.size</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> preSum = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">init</span> &#123;</span><br><span class="line">        <span class="comment">// 求二维前缀和</span></span><br><span class="line">        preSum[<span class="number">0</span>][<span class="number">0</span>] = matrix[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            preSum[<span class="number">0</span>][j] = preSum[<span class="number">0</span>][j - <span class="number">1</span>] + matrix[<span class="number">0</span>][j]</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            preSum[i][<span class="number">0</span>] = preSum[i - <span class="number">1</span>][<span class="number">0</span>] + matrix[i][<span class="number">0</span>]</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">                <span class="keyword">val</span> left = preSum[i][j - <span class="number">1</span>]</span><br><span class="line">                <span class="keyword">val</span> top = preSum[i - <span class="number">1</span>][j]</span><br><span class="line">                <span class="keyword">val</span> leftTop = preSum[i - <span class="number">1</span>][j - <span class="number">1</span>]</span><br><span class="line">                preSum[i][j] = left + top - leftTop + matrix[i][j]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">sumRegion</span><span class="params">(row1: <span class="type">Int</span>, col1: <span class="type">Int</span>, row2: <span class="type">Int</span>, col2: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> all = preSum[row2][col2]</span><br><span class="line">        <span class="keyword">val</span> left = <span class="keyword">if</span> (col1 == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> preSum[row2][col1 - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">val</span> top = <span class="keyword">if</span> (row1 == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> preSum[row1 - <span class="number">1</span>][col2]</span><br><span class="line">        <span class="keyword">val</span> leftTop = <span class="keyword">if</span> (row1 == <span class="number">0</span> || col1 == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> preSum[row1 - <span class="number">1</span>][col1 - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">return</span> all - left - top + leftTop</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>动态规划</tag>
+        <tag>LeetCode中等</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.300.最长递增子序列（中等）</title>
     <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.300.%E6%9C%80%E9%95%BF%E9%80%92%E5%A2%9E%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/longest-increasing-subsequence/">LeetCode.300.最长递增子序列（中等）</a></p>
@@ -1550,36 +1623,6 @@
 <p>可以发现，如果相同长度的子序列只保留最小的末尾数字，那么长度大的子序列的末尾元素一定比长度小的子序列的末尾元素大。<br>因为只有新的数字比原来短的递增子序列的末尾元素大，才能形成长度更长的递增子序列；如果新的数字比原来短的递增子序列的末尾元素小，是无法形成长度更长的递增子序列的；如果新数字比某长度的递增子序列的最小的末尾数字都要小，那肯定是无法接在它后面形成长度更长的递增子子序列了。</p>
 <p>所以二分查找是可行的，可以保存每个长度的递增子序列的最小末尾数字形成数组，递增子序列长度作为数组索引，数组元素默认就是严格递增。<br>遇到新的数字用二分查找，就可以知道应该更新哪个长度的子序列的末尾元素。</p>
 <figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">lengthOfLIS</span><span class="params">(nums: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (nums.isEmpty()) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (nums.size == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">val</span> n = nums.size</span><br><span class="line">        <span class="comment">// dp[i]表示以长度为i + 1的所有上升子序列中结尾最小的数，0 &lt;= i &lt;= n - 1，n为数组长度</span></span><br><span class="line">        <span class="comment">// 由于上升子序列的长度可能是小于n的，所以这里创建动态列表来作为状态存储</span></span><br><span class="line">        <span class="keyword">val</span> dp = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        dp.add(nums[<span class="number">0</span>])</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="comment">// 可以形成更长的子序列</span></span><br><span class="line">            <span class="keyword">if</span> (nums[i] &gt; dp.last()) &#123;</span><br><span class="line">                dp.add(nums[i])</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// 不能形成更长的子序列，但是要更新之前子序列末尾的元素为更小的，方便后续快速比较</span></span><br><span class="line">                <span class="keyword">var</span> left = <span class="number">0</span></span><br><span class="line">                <span class="keyword">var</span> right = dp.size - <span class="number">1</span></span><br><span class="line">                <span class="keyword">while</span> (left &lt;= right) &#123;</span><br><span class="line">                    <span class="keyword">val</span> mid = left + (right - left) / <span class="number">2</span></span><br><span class="line">                    <span class="keyword">when</span> &#123;</span><br><span class="line">                        <span class="comment">// 要找比子序列末尾元素大的位置，所以不会是mid本身，要mid + 1</span></span><br><span class="line">                        dp[mid] &lt; nums[i] -&gt; left = mid + <span class="number">1</span></span><br><span class="line">                        <span class="comment">// dp[mid] &gt; nums[i]，dp严格递增，不存在dp[mid] == nums[i]</span></span><br><span class="line">                        <span class="keyword">else</span> -&gt; right = mid - <span class="number">1</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 熟悉二分法可知，循环结束后，一定会有 nums[left - 1] &lt; nums[i] &lt; nums[left]</span></span><br><span class="line">                <span class="comment">// 更新子序列末尾元素为更小的</span></span><br><span class="line">                dp[left] = nums[i]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp.size</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.304.二维区域和检索 - 矩阵不可变（中等）</title>
-    <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.304.%E4%BA%8C%E7%BB%B4%E5%8C%BA%E5%9F%9F%E5%92%8C%E6%A3%80%E7%B4%A2%20-%20%E7%9F%A9%E9%98%B5%E4%B8%8D%E5%8F%AF%E5%8F%98%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/range-sum-query-2d-immutable/">LeetCode.304.二维区域和检索 - 矩阵不可变（中等）</a></p>
-<p>给定一个二维矩阵 matrix，以下类型的多个请求：</p>
-<ul>
-<li>计算其子矩形范围内元素的总和，该子矩阵的左上角为 (row1, col1) ，右下角为 (row2, col2) 。<br>实现 NumMatrix 类：</li>
-<li>NumMatrix(int[][] matrix) 给定整数矩阵 matrix 进行初始化</li>
-<li>int sumRegion(int row1, int col1, int row2, int col2) 返回左上角 (row1, col1) 、右下角 (row2, col2) 的子矩阵的元素总和。<span id="more"></span></li>
-</ul>
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>与<a href="https://leetcode-cn.com/problems/matrix-block-sum/">LeetCode.1314.矩阵区域和</a>思路相同。</p>
-<p>NumMatrix.sumRegion()要想做到O(1)时间复杂度查询，就要提前计算好二位前缀和。</p>
-<p>设<code>preSum[i][j]</code>为<code>[0, 0]</code>到<code>[i, j]</code>矩形区域所有元素和。</p>
-<p>求矩形区域d的元素和</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">a a a b b b b b   </span><br><span class="line">a a a b b b b b</span><br><span class="line">c c c d d d d d</span><br><span class="line">c c c d d d d d</span><br><span class="line">c c c d d d d d</span><br></pre></td></tr></table></figure>
-<p><code>区域d所有元素和 = 整个区域所有元素和 - 区域a所有元素和- 区域b所有元素和 - 区域c所有元素和</code></p>
-<p>设矩形d左上角坐标<code>(x1, y1)</code>，右下角坐标<code>(x2, y2)</code>。<br><code>整个区域所有元素和 = preSum[x2][y2]</code><br><code>区域a所有元素和 + 区域b所有元素和 = preSum[x1 - 1][y2]</code><br><code>区域a所有元素和 + 区域c所有元素和 = preSum[x2][y1 - 1]</code></p>
-<p>所以:<br><code>区域d所有元素和 = preSum[x2][y2] - preSum[x1 - 1][y2] - preSum[x2][y1 - 1] + preSum[x1 - 1][y1 - 1]</code></p>
-<p>遇到边界特殊处理一下就行。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NumMatrix</span></span>(matrix: Array&lt;IntArray&gt;) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> m = matrix.size</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> preSum = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">init</span> &#123;</span><br><span class="line">        <span class="comment">// 求二维前缀和</span></span><br><span class="line">        preSum[<span class="number">0</span>][<span class="number">0</span>] = matrix[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            preSum[<span class="number">0</span>][j] = preSum[<span class="number">0</span>][j - <span class="number">1</span>] + matrix[<span class="number">0</span>][j]</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            preSum[i][<span class="number">0</span>] = preSum[i - <span class="number">1</span>][<span class="number">0</span>] + matrix[i][<span class="number">0</span>]</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">                <span class="keyword">val</span> left = preSum[i][j - <span class="number">1</span>]</span><br><span class="line">                <span class="keyword">val</span> top = preSum[i - <span class="number">1</span>][j]</span><br><span class="line">                <span class="keyword">val</span> leftTop = preSum[i - <span class="number">1</span>][j - <span class="number">1</span>]</span><br><span class="line">                preSum[i][j] = left + top - leftTop + matrix[i][j]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">sumRegion</span><span class="params">(row1: <span class="type">Int</span>, col1: <span class="type">Int</span>, row2: <span class="type">Int</span>, col2: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> all = preSum[row2][col2]</span><br><span class="line">        <span class="keyword">val</span> left = <span class="keyword">if</span> (col1 == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> preSum[row2][col1 - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">val</span> top = <span class="keyword">if</span> (row1 == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> preSum[row1 - <span class="number">1</span>][col2]</span><br><span class="line">        <span class="keyword">val</span> leftTop = <span class="keyword">if</span> (row1 == <span class="number">0</span> || col1 == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> preSum[row1 - <span class="number">1</span>][col1 - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">return</span> all - left - top + leftTop</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>算法</category>
@@ -1905,6 +1948,42 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.41.缺失的第一个正数（困难）</title>
+    <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.41.%E7%BC%BA%E5%A4%B1%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%AD%A3%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/first-missing-positive/">LeetCode.41.缺失的第一个正数（困难）</a></p>
+<p>给你一个未排序的整数数组  <code>nums</code>  ，请你找出其中没有出现的最小的正整数。</p>
+<p>请你实现时间复杂度为 <code>O(n)</code> 并且只使用常数级别额外空间的解决方案。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="普通解法"><a href="#普通解法" class="headerlink" title="普通解法"></a>普通解法</h3><ul>
+<li>如果用哈希表记录，空间复杂度超过<code>O(1)</code>。</li>
+<li>如果用排序，时间复杂度超过<code>O(n)</code> 。</li>
+</ul>
+<h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><ul>
+<li>虽然不能用排序，但是可以先看正常判断过程是怎样的，看能不能换一种方式达到同样的目的。</li>
+<li>如果排序完了，从左到右遍历数组，如果发现<code>nums[i] != i + 1</code>，<code>i + 1</code>就是没有出现的最小正整数。</li>
+<li>换句话说有没有办法不用排序也能把数组中<code>i + 1</code>这个数放到第<code>i</code>个位置存储，这样就能判断了。</li>
+<li>可以在遍历的时候直接把数字放到对应位置上，只耗费常数级别时间复杂度。</li>
+</ul>
+<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><p>设<code>nums</code>数组长度为<code>n</code>，如果<code>nums[i]</code>是<code>1</code>到<code>n</code>之间的数，就把<code>nums[i]</code>放到<code>nums[i] - 1</code>的索引位置上。</p>
+<p>这样从左到右遍历数组就可以知道没有出现的最小正整数是哪个了。</p>
+<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><h4 id="时间复杂度O-n"><a href="#时间复杂度O-n" class="headerlink" title="时间复杂度O(n)"></a>时间复杂度O(n)</h4><ul>
+<li><code>1</code>到<code>n</code>之间的数交换到数组对应索引上只需要一次交换。</li>
+<li>需要遍历整个数组检查每个元素是否在对应索引位置上。</li>
+</ul>
+<h4 id="空间复杂度O-1"><a href="#空间复杂度O-1" class="headerlink" title="空间复杂度O(1)"></a>空间复杂度O(1)</h4><p>没有额外的空间开辟，只用了常数个变量。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">firstMissingPositive</span><span class="params">(nums: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">        把1放到索引0</span></span><br><span class="line"><span class="comment">        把2放到索引1</span></span><br><span class="line"><span class="comment">        把3放到索引2</span></span><br><span class="line"><span class="comment">        把4放到索引3</span></span><br><span class="line"><span class="comment">        ...</span></span><br><span class="line"><span class="comment">        如[3,4,-1,1]</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> nums.indices) &#123;</span><br><span class="line">            <span class="keyword">while</span> (nums[i] <span class="keyword">in</span> <span class="number">1.</span>.nums.size &amp;&amp; nums[i] != nums[nums[i] - <span class="number">1</span>]) &#123;</span><br><span class="line">                nums.swap(i, nums[i] - <span class="number">1</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> nums.indices) &#123;</span><br><span class="line">            <span class="keyword">if</span> (nums[i] != i + <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> i + <span class="number">1</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 所求一定是在[1,n+1]之间</span></span><br><span class="line">        <span class="comment">// 如果是[1,2,3,4]，最小的就是n+1</span></span><br><span class="line">        <span class="comment">// 如果是[7,8,9,10]，最小的是1</span></span><br><span class="line">        <span class="keyword">return</span> nums.size + <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> IntArray.<span class="title">swap</span><span class="params">(i: <span class="type">Int</span>, j: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> tmp = <span class="keyword">this</span>[i]</span><br><span class="line">        <span class="keyword">this</span>[i] = <span class="keyword">this</span>[j]</span><br><span class="line">        <span class="keyword">this</span>[j] = tmp</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>LeetCode困难</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.4.寻找两个正序数组的中位数（困难）</title>
     <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.4.%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/median-of-two-sorted-arrays/">LeetCode.4.寻找两个正序数组的中位数（困难）</a></p>
@@ -1972,42 +2051,6 @@
 </ul>
 <h3 id="m-n是偶数怎么办？"><a href="#m-n是偶数怎么办？" class="headerlink" title="m + n是偶数怎么办？"></a>m + n是偶数怎么办？</h3><p>可以分别查找到左中位数和右中位数，再求平均值。</p>
 <figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findMedianSortedArrays</span><span class="params">(nums1: <span class="type">IntArray</span>, nums2: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Double</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> len1 = nums1.size</span><br><span class="line">        <span class="keyword">val</span> len2 = nums2.size</span><br><span class="line">        <span class="keyword">val</span> len = len1 + len2</span><br><span class="line">        <span class="keyword">if</span> (len % <span class="number">2</span> == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">val</span> left = len / <span class="number">2</span></span><br><span class="line">            <span class="keyword">val</span> right = left + <span class="number">1</span></span><br><span class="line">            <span class="keyword">return</span> (getKth(nums1, nums2, <span class="number">0</span>, <span class="number">0</span>, left) + getKth(nums1, nums2, <span class="number">0</span>, <span class="number">0</span>, right)) / <span class="number">2.</span>toDouble()</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">val</span> mid = len / <span class="number">2</span> + <span class="number">1</span></span><br><span class="line">            <span class="keyword">return</span> getKth(nums1, nums2, <span class="number">0</span>, <span class="number">0</span>, mid).toDouble()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getKth</span><span class="params">(nums1: <span class="type">IntArray</span>, nums2: <span class="type">IntArray</span>, i1: <span class="type">Int</span>, i2: <span class="type">Int</span>, k: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> len1 = nums1.size - i1</span><br><span class="line">        <span class="keyword">val</span> len2 = nums2.size - i2</span><br><span class="line">        <span class="keyword">if</span> (len1 &gt; len2) <span class="keyword">return</span> getKth(nums2, nums1, i2, i1, k)</span><br><span class="line">        <span class="keyword">if</span> (len1 == <span class="number">0</span>) <span class="keyword">return</span> nums2[i2 + k - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">if</span> (k == <span class="number">1</span>) <span class="keyword">return</span> minOf(nums1[i1], nums2[i2])</span><br><span class="line">        <span class="keyword">val</span> j1 = i1 + minOf(k / <span class="number">2</span>, len1) - <span class="number">1</span></span><br><span class="line">        <span class="keyword">val</span> j2 = i2 + minOf(k / <span class="number">2</span>, len2) - <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">if</span> (nums1[j1] &lt; nums2[j2]) &#123;</span><br><span class="line">            getKth(nums1, nums2, j1 + <span class="number">1</span>, i2, k - (j1 - i1 + <span class="number">1</span>))</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            getKth(nums1, nums2, i1, j2 + <span class="number">1</span>, k - (j2 - i2 + <span class="number">1</span>))</span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>LeetCode困难</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.41.缺失的第一个正数（困难）</title>
-    <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.41.%E7%BC%BA%E5%A4%B1%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%AD%A3%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/first-missing-positive/">LeetCode.41.缺失的第一个正数（困难）</a></p>
-<p>给你一个未排序的整数数组  <code>nums</code>  ，请你找出其中没有出现的最小的正整数。</p>
-<p>请你实现时间复杂度为 <code>O(n)</code> 并且只使用常数级别额外空间的解决方案。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="普通解法"><a href="#普通解法" class="headerlink" title="普通解法"></a>普通解法</h3><ul>
-<li>如果用哈希表记录，空间复杂度超过<code>O(1)</code>。</li>
-<li>如果用排序，时间复杂度超过<code>O(n)</code> 。</li>
-</ul>
-<h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><ul>
-<li>虽然不能用排序，但是可以先看正常判断过程是怎样的，看能不能换一种方式达到同样的目的。</li>
-<li>如果排序完了，从左到右遍历数组，如果发现<code>nums[i] != i + 1</code>，<code>i + 1</code>就是没有出现的最小正整数。</li>
-<li>换句话说有没有办法不用排序也能把数组中<code>i + 1</code>这个数放到第<code>i</code>个位置存储，这样就能判断了。</li>
-<li>可以在遍历的时候直接把数字放到对应位置上，只耗费常数级别时间复杂度。</li>
-</ul>
-<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><p>设<code>nums</code>数组长度为<code>n</code>，如果<code>nums[i]</code>是<code>1</code>到<code>n</code>之间的数，就把<code>nums[i]</code>放到<code>nums[i] - 1</code>的索引位置上。</p>
-<p>这样从左到右遍历数组就可以知道没有出现的最小正整数是哪个了。</p>
-<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><h4 id="时间复杂度O-n"><a href="#时间复杂度O-n" class="headerlink" title="时间复杂度O(n)"></a>时间复杂度O(n)</h4><ul>
-<li><code>1</code>到<code>n</code>之间的数交换到数组对应索引上只需要一次交换。</li>
-<li>需要遍历整个数组检查每个元素是否在对应索引位置上。</li>
-</ul>
-<h4 id="空间复杂度O-1"><a href="#空间复杂度O-1" class="headerlink" title="空间复杂度O(1)"></a>空间复杂度O(1)</h4><p>没有额外的空间开辟，只用了常数个变量。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">firstMissingPositive</span><span class="params">(nums: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">        把1放到索引0</span></span><br><span class="line"><span class="comment">        把2放到索引1</span></span><br><span class="line"><span class="comment">        把3放到索引2</span></span><br><span class="line"><span class="comment">        把4放到索引3</span></span><br><span class="line"><span class="comment">        ...</span></span><br><span class="line"><span class="comment">        如[3,4,-1,1]</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> nums.indices) &#123;</span><br><span class="line">            <span class="keyword">while</span> (nums[i] <span class="keyword">in</span> <span class="number">1.</span>.nums.size &amp;&amp; nums[i] != nums[nums[i] - <span class="number">1</span>]) &#123;</span><br><span class="line">                nums.swap(i, nums[i] - <span class="number">1</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> nums.indices) &#123;</span><br><span class="line">            <span class="keyword">if</span> (nums[i] != i + <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> i + <span class="number">1</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 所求一定是在[1,n+1]之间</span></span><br><span class="line">        <span class="comment">// 如果是[1,2,3,4]，最小的就是n+1</span></span><br><span class="line">        <span class="comment">// 如果是[7,8,9,10]，最小的是1</span></span><br><span class="line">        <span class="keyword">return</span> nums.size + <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> IntArray.<span class="title">swap</span><span class="params">(i: <span class="type">Int</span>, j: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> tmp = <span class="keyword">this</span>[i]</span><br><span class="line">        <span class="keyword">this</span>[i] = <span class="keyword">this</span>[j]</span><br><span class="line">        <span class="keyword">this</span>[j] = tmp</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 ]]></content>
       <categories>
         <category>算法</category>
@@ -3193,6 +3236,46 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.91.解码方法（中等）</title>
+    <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.91.%E8%A7%A3%E7%A0%81%E6%96%B9%E6%B3%95%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h2 id="题意"><a href="#题意" class="headerlink" title="题意"></a>题意</h2><p><a href="https://leetcode-cn.com/problems/decode-ways/">LeetCode.91.解码方法（中等）</a></p>
+<p>一条包含字母 A-Z 的消息通过以下映射进行了 编码 ：</p>
+<blockquote>
+<p>‘A’ -&gt; 1<br>‘B’ -&gt; 2<br>…<br>‘Z’ -&gt; 26</p>
+</blockquote>
+<p>要 解码 已编码的消息，所有数字必须基于上述映射的方法，反向映射回字母（可能有多种方法）。例如，”11106” 可以映射为：</p>
+<ul>
+<li>“AAJF” ，将消息分组为 (1 1 10 6)</li>
+<li>“KJF” ，将消息分组为 (11 10 6)</li>
+</ul>
+<p>注意，消息不能分组为  (1 11 06) ，因为 “06” 不能映射为 “F” ，这是由于 “6” 和 “06” 在映射中并不等价。</p>
+<p>给你一个只含数字的 非空 字符串 s ，请计算并返回 解码 方法的 总数 。</p>
+<p>题目数据保证答案肯定是一个 32 位 的整数。</p>
+<span id="more"></span>
+
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>思考能否将某个状态下的问题拆分为子问题+有限步骤。</p>
+<p>设<code>a[i]</code>为<code>s[0..i]</code>中解码方法总数。</p>
+<h3 id="a-i-取值受什么影响？"><a href="#a-i-取值受什么影响？" class="headerlink" title="a[i]取值受什么影响？"></a>a[i]取值受什么影响？</h3><p>受<code>s[i - 1]</code>和<code>s[i - 2]</code>的取值影响，因为要决定是解析一个字符还是两个字符。<br><code>a[i]</code>可以通过<code>a[i - 1]</code>或<code>a[i - 2]</code>递推而来。</p>
+<h3 id="s-i-1-和s-i-2-组合的数有哪些情况？"><a href="#s-i-1-和s-i-2-组合的数有哪些情况？" class="headerlink" title="s[i - 1]和s[i - 2]组合的数有哪些情况？"></a><code>s[i - 1]</code>和<code>s[i - 2]</code>组合的数有哪些情况？</h3><p>根据题意，没有直接映射到0的情况，要注意：</p>
+<ol>
+<li>不能单独映射0，只能作为10或者20整体解析，方案数不变，<code>a[i] = a[i - 1]</code>。一旦出现0的前面不是1或2，整个s无法解析，直接返回0方案数。</li>
+<li>06这样的0处在十位数的也不能作为个位数解析，只能一个个解析，方案数不变，<code>a[i] = a[i - 1]</code></li>
+</ol>
+<p>两个数字剩余的合法取值范围在[11, 19]、[21, 26]，此时可以映射一个字母，也可以映射两个字母。<br><code>a[i] = a[i - 1] + a[i - 2]</code></p>
+<p>其他大于26的情况，只能映射一个字母，方案数不变，<code>a[i] = a[i - 1]</code></p>
+<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p><code>a[i]</code>只与前两个状态有关，只用两个保存状态即可，不需要数组记录所有状态。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numDecodings</span><span class="params">(s: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (s[<span class="number">0</span>] == <span class="string">&#x27;0&#x27;</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始的一个字符只有一种映射方案</span></span><br><span class="line">        <span class="keyword">var</span> prepre = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始时，前两个字符的解析方案数</span></span><br><span class="line">        <span class="keyword">var</span> pre = <span class="keyword">if</span> (s[<span class="number">1</span>] == <span class="string">&#x27;0&#x27;</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s[<span class="number">0</span>] == <span class="string">&#x27;1&#x27;</span> || s[<span class="number">0</span>] == <span class="string">&#x27;2&#x27;</span>) prepre</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">val</span> num = parseInt(s[<span class="number">0</span>], s[<span class="number">1</span>])</span><br><span class="line">            <span class="keyword">if</span> (num <span class="keyword">in</span> <span class="number">11.</span><span class="number">.19</span> || num <span class="keyword">in</span> <span class="number">21.</span><span class="number">.26</span>) <span class="number">2</span> <span class="keyword">else</span> <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> cur = pre</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 从第3个字符开始解析</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">2</span> until n) &#123;</span><br><span class="line">            cur = <span class="keyword">if</span> (s[i] == <span class="string">&#x27;0&#x27;</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (s[i - <span class="number">1</span>] == <span class="string">&#x27;1&#x27;</span> || s[i - <span class="number">1</span>] == <span class="string">&#x27;2&#x27;</span>) prepre</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">val</span> num = parseInt(s[i - <span class="number">1</span>], s[i])</span><br><span class="line">                <span class="keyword">if</span> (num <span class="keyword">in</span> <span class="number">11.</span><span class="number">.19</span> || num <span class="keyword">in</span> <span class="number">21.</span><span class="number">.26</span>) pre + prepre <span class="keyword">else</span> pre</span><br><span class="line">            &#125;</span><br><span class="line">            prepre = pre</span><br><span class="line">            pre = cur</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> cur</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">parseInt</span><span class="params">(a: <span class="type">Char</span>, b: <span class="type">Char</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> tens = (a.toInt() - <span class="string">&#x27;0&#x27;</span>.toInt()) * <span class="number">10</span></span><br><span class="line">        <span class="keyword">val</span> units = b.toInt() - <span class="string">&#x27;0&#x27;</span>.toInt()</span><br><span class="line">        <span class="keyword">return</span> tens + units</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>动态规划</tag>
+        <tag>LeetCode中等</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.87.扰乱字符串（困难）</title>
     <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.87.%E6%89%B0%E4%B9%B1%E5%AD%97%E7%AC%A6%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/scramble-string/">LeetCode.87.扰乱字符串（困难）</a></p>
@@ -3263,46 +3346,6 @@
       <tags>
         <tag>算法</tag>
         <tag>LeetCode困难</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.91.解码方法（中等）</title>
-    <url>/%E7%AE%97%E6%B3%95/algorithm/LeetCode.91.%E8%A7%A3%E7%A0%81%E6%96%B9%E6%B3%95%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h2 id="题意"><a href="#题意" class="headerlink" title="题意"></a>题意</h2><p><a href="https://leetcode-cn.com/problems/decode-ways/">LeetCode.91.解码方法（中等）</a></p>
-<p>一条包含字母 A-Z 的消息通过以下映射进行了 编码 ：</p>
-<blockquote>
-<p>‘A’ -&gt; 1<br>‘B’ -&gt; 2<br>…<br>‘Z’ -&gt; 26</p>
-</blockquote>
-<p>要 解码 已编码的消息，所有数字必须基于上述映射的方法，反向映射回字母（可能有多种方法）。例如，”11106” 可以映射为：</p>
-<ul>
-<li>“AAJF” ，将消息分组为 (1 1 10 6)</li>
-<li>“KJF” ，将消息分组为 (11 10 6)</li>
-</ul>
-<p>注意，消息不能分组为  (1 11 06) ，因为 “06” 不能映射为 “F” ，这是由于 “6” 和 “06” 在映射中并不等价。</p>
-<p>给你一个只含数字的 非空 字符串 s ，请计算并返回 解码 方法的 总数 。</p>
-<p>题目数据保证答案肯定是一个 32 位 的整数。</p>
-<span id="more"></span>
-
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>思考能否将某个状态下的问题拆分为子问题+有限步骤。</p>
-<p>设<code>a[i]</code>为<code>s[0..i]</code>中解码方法总数。</p>
-<h3 id="a-i-取值受什么影响？"><a href="#a-i-取值受什么影响？" class="headerlink" title="a[i]取值受什么影响？"></a>a[i]取值受什么影响？</h3><p>受<code>s[i - 1]</code>和<code>s[i - 2]</code>的取值影响，因为要决定是解析一个字符还是两个字符。<br><code>a[i]</code>可以通过<code>a[i - 1]</code>或<code>a[i - 2]</code>递推而来。</p>
-<h3 id="s-i-1-和s-i-2-组合的数有哪些情况？"><a href="#s-i-1-和s-i-2-组合的数有哪些情况？" class="headerlink" title="s[i - 1]和s[i - 2]组合的数有哪些情况？"></a><code>s[i - 1]</code>和<code>s[i - 2]</code>组合的数有哪些情况？</h3><p>根据题意，没有直接映射到0的情况，要注意：</p>
-<ol>
-<li>不能单独映射0，只能作为10或者20整体解析，方案数不变，<code>a[i] = a[i - 1]</code>。一旦出现0的前面不是1或2，整个s无法解析，直接返回0方案数。</li>
-<li>06这样的0处在十位数的也不能作为个位数解析，只能一个个解析，方案数不变，<code>a[i] = a[i - 1]</code></li>
-</ol>
-<p>两个数字剩余的合法取值范围在[11, 19]、[21, 26]，此时可以映射一个字母，也可以映射两个字母。<br><code>a[i] = a[i - 1] + a[i - 2]</code></p>
-<p>其他大于26的情况，只能映射一个字母，方案数不变，<code>a[i] = a[i - 1]</code></p>
-<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p><code>a[i]</code>只与前两个状态有关，只用两个保存状态即可，不需要数组记录所有状态。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numDecodings</span><span class="params">(s: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (s[<span class="number">0</span>] == <span class="string">&#x27;0&#x27;</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始的一个字符只有一种映射方案</span></span><br><span class="line">        <span class="keyword">var</span> prepre = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始时，前两个字符的解析方案数</span></span><br><span class="line">        <span class="keyword">var</span> pre = <span class="keyword">if</span> (s[<span class="number">1</span>] == <span class="string">&#x27;0&#x27;</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s[<span class="number">0</span>] == <span class="string">&#x27;1&#x27;</span> || s[<span class="number">0</span>] == <span class="string">&#x27;2&#x27;</span>) prepre</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">val</span> num = parseInt(s[<span class="number">0</span>], s[<span class="number">1</span>])</span><br><span class="line">            <span class="keyword">if</span> (num <span class="keyword">in</span> <span class="number">11.</span><span class="number">.19</span> || num <span class="keyword">in</span> <span class="number">21.</span><span class="number">.26</span>) <span class="number">2</span> <span class="keyword">else</span> <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> cur = pre</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 从第3个字符开始解析</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">2</span> until n) &#123;</span><br><span class="line">            cur = <span class="keyword">if</span> (s[i] == <span class="string">&#x27;0&#x27;</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (s[i - <span class="number">1</span>] == <span class="string">&#x27;1&#x27;</span> || s[i - <span class="number">1</span>] == <span class="string">&#x27;2&#x27;</span>) prepre</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">val</span> num = parseInt(s[i - <span class="number">1</span>], s[i])</span><br><span class="line">                <span class="keyword">if</span> (num <span class="keyword">in</span> <span class="number">11.</span><span class="number">.19</span> || num <span class="keyword">in</span> <span class="number">21.</span><span class="number">.26</span>) pre + prepre <span class="keyword">else</span> pre</span><br><span class="line">            &#125;</span><br><span class="line">            prepre = pre</span><br><span class="line">            pre = cur</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> cur</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">parseInt</span><span class="params">(a: <span class="type">Char</span>, b: <span class="type">Char</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> tens = (a.toInt() - <span class="string">&#x27;0&#x27;</span>.toInt()) * <span class="number">10</span></span><br><span class="line">        <span class="keyword">val</span> units = b.toInt() - <span class="string">&#x27;0&#x27;</span>.toInt()</span><br><span class="line">        <span class="keyword">return</span> tens + units</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
       </tags>
   </entry>
   <entry>
