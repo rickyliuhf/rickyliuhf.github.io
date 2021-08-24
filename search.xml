@@ -3800,6 +3800,114 @@
       </tags>
   </entry>
   <entry>
+    <title>Java运行时内存结构</title>
+    <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%BF%90%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/</url>
+    <content><![CDATA[<h1 id="Java运行时数据区域有哪些？"><a href="#Java运行时数据区域有哪些？" class="headerlink" title="Java运行时数据区域有哪些？"></a>Java运行时数据区域有哪些？</h1><ol>
+<li> 程序计数器</li>
+<li> 虚拟机栈</li>
+<li> 本地方法栈</li>
+<li> 方法区</li>
+<li> 堆</li>
+</ol>
+<p>其中程序计数器、虚拟机栈、本地方法栈是每个线程私有的，方法区和堆是线程间共享的。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824234546.png"></p>
+<h1 id="程序计数器（Program-Counter-Register）是做什么的？"><a href="#程序计数器（Program-Counter-Register）是做什么的？" class="headerlink" title="程序计数器（Program Counter Register）是做什么的？"></a>程序计数器（Program Counter Register）是做什么的？</h1><p>可以看作是当前线程所执行的字节码的行号指示器。</p>
+<p>作用：</p>
+<ol>
+<li> 字节码解释器通过改变程序计数器来依次读取指令，从而实现代码的流程控制，如：顺序执行、选择、循环、异常处理。</li>
+<li> 在多线程的情况下，程序计数器用于记录当前线程执行的位置，从而当线程被切换回来的时候能够知道该线程上次运行到哪儿了。</li>
+</ol>
+<h1 id="程序计数器（Program-Counter-Register）为什么不能在线程间共享，为什么必须每个线程都要单独弄一个？"><a href="#程序计数器（Program-Counter-Register）为什么不能在线程间共享，为什么必须每个线程都要单独弄一个？" class="headerlink" title="程序计数器（Program Counter Register）为什么不能在线程间共享，为什么必须每个线程都要单独弄一个？"></a>程序计数器（Program Counter Register）为什么不能在线程间共享，为什么必须每个线程都要单独弄一个？</h1><p>因为多线程是通过轮流切换占用CPU时间片来实现的，线程数量大于CPU数量时，就会有线程处于等待状态，等到可以占用CPU时间片了，会恢复线程的执行，这时就必须要回到线程等待前的指令执行位置，以便接下来继续执行后面的指令，每个线程运行的指令又不一样，所以必须对每个线程都要保存当前执行的指令位置。</p>
+<h1 id="虚拟机栈（VM-Stack）是做什么的？"><a href="#虚拟机栈（VM-Stack）是做什么的？" class="headerlink" title="虚拟机栈（VM Stack）是做什么的？"></a>虚拟机栈（VM Stack）是做什么的？</h1><p>虚拟机栈对应Java中的方法执行的内存模型。</p>
+<p>栈中的每个元素称为栈帧，每个方法执行的时候都会创建一个栈帧，存储局部变量表、操作数栈、动态链接、方法出口等信息。每个方法从开始执行到执行完成的过程，对应着一个栈帧在虚拟机栈中入栈到出栈的过程。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824234622.png"></p>
+<h1 id="虚拟机栈中的局部变量表（Local-Variable-Table）是做什么的？"><a href="#虚拟机栈中的局部变量表（Local-Variable-Table）是做什么的？" class="headerlink" title="虚拟机栈中的局部变量表（Local Variable Table）是做什么的？"></a>虚拟机栈中的局部变量表（Local Variable Table）是做什么的？</h1><p>存放方法参数和方法内的局部变量。</p>
+<p>局部变量表中存放了编译期可知的各种基本数据类型（boolean、byte、char、short、int、long、float、double）、对象引用（reference类型，可能指向一个对象的起始地址的指针，也可能是指向一个对象的句柄）和returnAddress类型（指向一条字节码指令的地址）</p>
+<p>局部变量表的基本存储单位是变量槽（Variable Slot），每个槽的大小是4个字节，64位的long和double会占用局部变量表的两个槽位（slot），其余数据类型占用一个槽位。</p>
+<p>局部变量表所需的内存空间在编译阶段完全确定，因为数据类型的大小是确定的，方法运行期间不会改变局部变量表的大小。字节码中方法的Code属性的max_locals数据项中确定了需要分配的局部变量表的最大容量，在编译时写入。</p>
+<p>局部变量表存储顺序：变量表从索引0开始，依次存放方法所属的对象引用（如果为静态方法则没有）、方法参数变量（按照顺序声明）、方法内局部变量（按照顺序声明）。对于byte、short、char这三种数据类型需要转换为int类型存储在局部变量表中。</p>
+<p>一个代码示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class IntegerDemo &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        Integer a = 1;</span><br><span class="line">        Integer b = 2;</span><br><span class="line">        Integer c = 3;</span><br><span class="line">        Integer d = 3;</span><br><span class="line">        Integer e = 321;</span><br><span class="line">        Integer f = 321;</span><br><span class="line">        Long g = 3L;</span><br><span class="line">        System.out.println(c == d);</span><br><span class="line">        System.out.println(e == f);</span><br><span class="line">        System.out.println(c == (a + b));</span><br><span class="line">        System.out.println(c.equals(a + b));</span><br><span class="line">        System.out.println(g == a + b);</span><br><span class="line">        System.out.println(g.equals(a + b));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>局部变量表为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">LocalVariableTable:</span><br><span class="line">  Start  Length  Slot  Name   Signature</span><br><span class="line">      0     183     0  args   [Ljava/lang/String;</span><br><span class="line">      5     178     1     a   Ljava/lang/Integer;</span><br><span class="line">     10     173     2     b   Ljava/lang/Integer;</span><br><span class="line">     15     168     3     c   Ljava/lang/Integer;</span><br><span class="line">     21     162     4     d   Ljava/lang/Integer;</span><br><span class="line">     29     154     5     e   Ljava/lang/Integer;</span><br><span class="line">     37     146     6     f   Ljava/lang/Integer;</span><br><span class="line">     45     138     7     g   Ljava/lang/Long;</span><br></pre></td></tr></table></figure>
+
+<h1 id="局部变量表有什么用？没有它不行吗？"><a href="#局部变量表有什么用？没有它不行吗？" class="headerlink" title="局部变量表有什么用？没有它不行吗？"></a>局部变量表有什么用？没有它不行吗？</h1><p>参考《深入理解Java虚拟机（第2版）》190页 6.3.7 属性表集合。</p>
+<blockquote>
+<p>LocalVariableTable属性用于描述栈帧中局部变量表中的变量与Java源码中定义的变量之间关系。<br>注：LocalVariableTable属性不是必须的，在javac编译时，可通过-g：none或-h：vars来取消或关闭这项信息。如果没有生成这项信息，最大的影响就是当别人引用这个方法时，所有的参数名称都将失去，IDE将会使用诸如arg0、arg1之类的占位符来代替原有的参数名，这对程序没什么影响，但是会对代码编写带来较大不便，而且在调试期间无法根据参数名称从上下文中获取参数值。</p>
+</blockquote>
+<h1 id="操作数栈是做什么的？"><a href="#操作数栈是做什么的？" class="headerlink" title="操作数栈是做什么的？"></a>操作数栈是做什么的？</h1><p>用于保存计算过程中的中间结果，作为计算的临时数据存储区。</p>
+<p>大多数指令都要从这里弹出数据，执行运算后将结果再压回操作数栈。</p>
+<p>操作数栈最大深度在编译时也是写入到字节码中方法的Code属性的max_stacks数据项中。</p>
+<p>操作数栈的基本单位是4个字节，32位数据类型占用一个单位，64位数据类型占用两个单位，对于byte、short、char这三种数据类型需要转换为int类型再存入栈中。</p>
+<p><a href="https://www.jianshu.com/p/0333144544e2">操作数栈的特点</a></p>
+<p>java的指令是基于栈的指令集架构（Instruction Set Architecture，ISA），指令流中的指令大部分都是零地址指令，指令依赖操作数栈进行工作。</p>
+<p>另外一种常用的指令集架构是基于寄存器的指令集。</p>
+<p>基于栈的指令集  优点（反过来就是  基于寄存器的指令集  缺点）：</p>
+<ol>
+<li> 可移植性强，直接依赖硬件寄存器将会受到硬件条件的约束</li>
+<li> 代码相对紧凑，因为指令没有操作数</li>
+<li> 编译器实现更简单，因为不用考虑空间分配，栈大小固定，编译时可知</li>
+</ol>
+<p>基于栈的指令集  缺点（反过来就是  基于寄存器的指令集  优点）：</p>
+<ol>
+<li> 速度稍慢，因为栈实现在内存中，频繁访问栈意味着频繁访问内存，访问内存是比访问寄存器慢很多的</li>
+<li> 指令数量多，因为访问数据频繁，入栈和出栈这两个指令就很多</li>
+</ol>
+<p>参考《深入理解Java虚拟机（第2版）》270页 8.4.2 <a href="https://www.jianshu.com/p/20c2b6f5fe59">基于栈的指令集与基于寄存器的指令集</a>。</p>
+<h1 id="虚拟机栈中的方法返回地址是做什么的？"><a href="#虚拟机栈中的方法返回地址是做什么的？" class="headerlink" title="虚拟机栈中的方法返回地址是做什么的？"></a>虚拟机栈中的方法返回地址是做什么的？</h1><p>方法退出的过程实际上等同于把当前栈帧出栈。</p>
+<p>因此退出时可能执行的操作有：恢复上层方法的局部变量表和操作数栈，如果有返回值，则把它压入调用者栈帧的操作数栈中，调整PC计数器的值以指向方法调用指令后面的一条指令</p>
+<p>参考《深入理解Java虚拟机（第2版）》 8.2.4 方法返回地址</p>
+<h1 id="虚拟机栈会有什么潜在的问题？"><a href="#虚拟机栈会有什么潜在的问题？" class="headerlink" title="虚拟机栈会有什么潜在的问题？"></a>虚拟机栈会有什么潜在的问题？</h1><ul>
+<li>某个线程中方法嵌套执行的太多了，超过虚拟机栈允许的最大深度，将会抛出StackOverflow（栈溢出）异常。<ul>
+<li>一个典型的场景是递归方法，递归深度过大，会引起栈溢出，某些语言下可以采用尾递归优化。</li>
+</ul>
+</li>
+<li>当线程不断增多，不停的申请虚拟机栈，内存可能不够用了，会引发OutOfMemoryError异常，即内存溢出。<ul>
+<li>一个典型的场景是，程序中的同时运行的线程不停的增多。</li>
+</ul>
+</li>
+</ul>
+<h1 id="本地方法栈是做什么的？"><a href="#本地方法栈是做什么的？" class="headerlink" title="本地方法栈是做什么的？"></a>本地方法栈是做什么的？</h1><p>虚拟机栈对应的是java方法的执行过程，本地方法栈对应native方法的执行过程。</p>
+<h1 id="堆（Heap）是做什么的？"><a href="#堆（Heap）是做什么的？" class="headerlink" title="堆（Heap）是做什么的？"></a>堆（Heap）是做什么的？</h1><p>创建一个对象实例便存储在堆，所有线程共享。</p>
+<p>物理上可以不连续，逻辑上是连续的即可。</p>
+<p>是虚拟机管理的内存区域最大的一块，是虚拟机垃圾回收的主要区域。</p>
+<p>现代垃圾回收收集器基本都采用分代回收，堆被划分为新生代和老年代，新生代又分为Eden区、From Survivor区、To Survivor区。划分特定区域是为了更高效的进行垃圾回收。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824235449.png"></p>
+<h1 id="对象都是在堆上分配的吗？"><a href="#对象都是在堆上分配的吗？" class="headerlink" title="对象都是在堆上分配的吗？"></a>对象都是在堆上分配的吗？</h1><p>创建新对象实例也可能分配在TLAB和栈上。</p>
+<p>对象不在堆上分配主要的原因还是堆是共享的，在堆上分配有锁的开销。无论是TLAB还是栈都是线程私有的，私有即避免了竞争（当然也可能产生额外的问题例如可见性问题），这是典型的用空间换效率的做法。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://blog.csdn.net/yangzl2008/java/article/details/43202969">Java中的逃逸分析和TLAB以及Java对象分配</a></li>
+<li><a href="https://hesey.wang/2011/07/object-allocation-on-non-heap.html">对象都是在堆上分配的吗</a></li>
+</ul>
+<h1 id="方法区（Method-Area）是做什么的？"><a href="#方法区（Method-Area）是做什么的？" class="headerlink" title="方法区（Method Area）是做什么的？"></a>方法区（Method Area）是做什么的？</h1><p>存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。</p>
+<p>各线程共享的区域。</p>
+<h1 id="为什么要存在方法区？方法区里的东西放在堆里不行吗？"><a href="#为什么要存在方法区？方法区里的东西放在堆里不行吗？" class="headerlink" title="为什么要存在方法区？方法区里的东西放在堆里不行吗？"></a>为什么要存在方法区？方法区里的东西放在堆里不行吗？</h1><p>因为方法区存储的类信息、常量等数据都是生命周期比较长的，要放在堆，也只能放在老年代，但可能生命周期比老年代的对象还要长。</p>
+<p>故而单独开辟一个空间，单独管理，提高垃圾回收的效率。</p>
+<h1 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h1><p>《深入理解 Java 虚拟机 第三版》2.2.7 小节 关于 Java 直接内存的描述。</p>
+<blockquote>
+<p>直接内存（Direct Memory）并不是虚拟机运行时数据区的一部分，也不是《Java虚拟机规范》中定义的内存区域。但是这部分内存也被频繁地使用，而且也可能导致 OutOfMemoryError 异常出现，所以我们放到这里一起讲解。  </p>
+<p>在 JDK 1.4 中新加入了 NIO（New Input/Output）类，引入了一种基于通道（Channel）与缓冲区（Buffer）的 I/O 方式，它可以使用 Native 函数库直接分配堆外内存，然后通过一个存储在 Java 堆里面的 DirectByteBuffer 对象作为这块内存的引用进行操作。这样能在一些场景中显著提高性能，因为避免了在 Java 堆和 Native 堆中来回复制数据。  </p>
+<p>显然，本机直接内存的分配不会受到 Java 堆大小的限制，但是，既然是内存，则肯定还是会受到本机总内存（包括物理内存、SWAP分区或者分页文件）大小以及处理器寻址空间的限制，一般服务器管理员配置虚拟机参数时，会根据实际内存去设置 <code>-Xmx</code> 等参数信息，但经常忽略掉直接内存，使得各个内存区域总和大于物理内存限制（包括物理的和操作系统级的限制），从而导致动态扩展时出现 OutOfMemoryError 异常。</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>虚拟机</category>
+      </categories>
+      <tags>
+        <tag>虚拟机</tag>
+        <tag>内存结构</tag>
+        <tag>程序计数器</tag>
+        <tag>虚拟机栈</tag>
+        <tag>局部变量表</tag>
+        <tag>操作数栈</tag>
+        <tag>方法区</tag>
+        <tag>堆</tag>
+        <tag>直接内存</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>排序算法（冒泡、选择、插入、希尔、快速、归并、堆、计数）</title>
     <url>/%E7%AE%97%E6%B3%95/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/</url>
     <content><![CDATA[<h1 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h1><h3 id="一句话描述"><a href="#一句话描述" class="headerlink" title="一句话描述"></a>一句话描述</h3><p>左侧无序区域中的最大数字交换到右侧已排序区域的最左侧。</p>
