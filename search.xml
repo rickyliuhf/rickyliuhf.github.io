@@ -3918,6 +3918,37 @@
       </tags>
   </entry>
   <entry>
+    <title>强引用、软引用、弱引用、虚引用</title>
+    <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%BC%BA%E5%BC%95%E7%94%A8%E3%80%81%E8%BD%AF%E5%BC%95%E7%94%A8%E3%80%81%E5%BC%B1%E5%BC%95%E7%94%A8%E3%80%81%E8%99%9A%E5%BC%95%E7%94%A8/</url>
+    <content><![CDATA[<h1 id="强引用（StrongReference）"><a href="#强引用（StrongReference）" class="headerlink" title="强引用（StrongReference）"></a>强引用（StrongReference）</h1><p>正常的赋值语句生成的引用，只要强引用存在，与GC Roots对象有引用链，就不会被垃圾回收。</p>
+<h1 id="软引用（SoftReference）"><a href="#软引用（SoftReference）" class="headerlink" title="软引用（SoftReference）"></a>软引用（SoftReference）</h1><p>虚拟机内存不够用时才会尝试回收软引用链接的对象，此次回收后还是不够用，才会抛出内存溢出的异常。</p>
+<h1 id="弱引用（WeakReference）"><a href="#弱引用（WeakReference）" class="headerlink" title="弱引用（WeakReference）"></a>弱引用（WeakReference）</h1><p>发生垃圾回收时，不论当前内存是否足够，都会回收弱引用链接的对象。</p>
+<h1 id="弱引用应用场景"><a href="#弱引用应用场景" class="headerlink" title="弱引用应用场景"></a>弱引用应用场景</h1><p>官方文档：</p>
+<blockquote>
+<p>假设垃圾收集器在某个时间点决定一个对象是弱可达的(weakly reachable)（也就是说当前指向它的全都是弱引用），这时垃圾收集器会清除所有指向该对象的弱引用，然后垃圾收集器会把这个弱可达对象标记为可终结(finalizable)的，这样它们随后就会被回收。与此同时或稍后，垃圾收集器会把那些刚清除的弱引用放入创建弱引用对象时所登记到的引用队列(Reference Queue)中。</p>
+</blockquote>
+<p>实际上，WeakReference类有两个构造函数：</p>
+<ul>
+<li>WeakReference(T referent) //创建一个指向给定对象的弱引用</li>
+<li>WeakReference(T referent, ReferenceQueue&lt;? super T&gt; q) //创建一个指向给定对象并且登记到给定引用队列的弱引用</li>
+</ul>
+<p>我们可以看到第二个构造方法中提供了一个ReferenceQueue类型的参数，通过提供这个参数，我们便把创建的弱引用对象注册到了一个引用队列上，这样当它被垃圾回收器清除时，就会把它送入这个引用队列中，我们便可以对这些被清除的弱引用对象进行统一管理。</p>
+<p>参考：<a href="https://www.jianshu.com/p/dac0958778e0">WeakReference才是LeakCanary真正的核心</a></p>
+<h1 id="虚引用（PhantomReference）"><a href="#虚引用（PhantomReference）" class="headerlink" title="虚引用（PhantomReference）"></a>虚引用（PhantomReference）</h1><p>在虚引用链接的对象被垃圾回收后，虚引用会受到虚拟机的通知，并不能通过虚引用直接获得对象的实例，虚引用也不会影响对象的生命周期。</p>
+<h1 id="虚引用应用场景"><a href="#虚引用应用场景" class="headerlink" title="虚引用应用场景"></a>虚引用应用场景</h1><p>DirectByteBuffer中对堆外内存的释放，通过虚引用监听DirectByteBuffer对象被GC回收后，再调用释放堆外内存的方法。</p>
+]]></content>
+      <categories>
+        <category>虚拟机</category>
+      </categories>
+      <tags>
+        <tag>虚拟机</tag>
+        <tag>StrongReference</tag>
+        <tag>SoftReference</tag>
+        <tag>WeakReference</tag>
+        <tag>PhantomReference</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>排序算法（冒泡、选择、插入、希尔、快速、归并、堆、计数）</title>
     <url>/%E7%AE%97%E6%B3%95/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/</url>
     <content><![CDATA[<h1 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h1><h3 id="一句话描述"><a href="#一句话描述" class="headerlink" title="一句话描述"></a>一句话描述</h3><p>左侧无序区域中的最大数字交换到右侧已排序区域的最左侧。</p>
@@ -4176,10 +4207,10 @@
       </categories>
       <tags>
         <tag>虚拟机</tag>
+        <tag>WeakReference</tag>
         <tag>垃圾回收</tag>
         <tag>分代收集</tag>
         <tag>CardTable</tag>
-        <tag>WeakReference</tag>
         <tag>Object.finalize()</tag>
         <tag>System.gc()</tag>
       </tags>
