@@ -4589,7 +4589,7 @@
       </tags>
   </entry>
   <entry>
-    <title>Java Class常量池</title>
+    <title>Class常量池、运行时常量池、字符串常量池</title>
     <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/Class%E5%B8%B8%E9%87%8F%E6%B1%A0%E3%80%81%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0%E3%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%B8%B8%E9%87%8F%E6%B1%A0/</url>
     <content><![CDATA[<h1 id="Class常量池"><a href="#Class常量池" class="headerlink" title="Class常量池"></a>Class常量池</h1><h2 id="Class常量池在哪，是做什么的？"><a href="#Class常量池在哪，是做什么的？" class="headerlink" title="Class常量池在哪，是做什么的？"></a>Class常量池在哪，是做什么的？</h2><p>每个Class文件中都有常量池，位于魔数和主次版本号之后，是Class文件中第一个出现的表类型的数据项，占用空间最大的数据项之一，也是与其他项目关联最多的数据类型。</p>
 <p>Class常量池主要存放：</p>
