@@ -5332,6 +5332,40 @@
       </tags>
   </entry>
   <entry>
+    <title>Java集合类-LinkedHashMap</title>
+    <url>/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-LinkedHashMap/</url>
+    <content><![CDATA[<h1 id="LinkedHashMap特点"><a href="#LinkedHashMap特点" class="headerlink" title="LinkedHashMap特点"></a>LinkedHashMap特点</h1><p>作用：记录HashMap插入元素的顺序或访问元素的顺序</p>
+<p>原理：双向链表和哈希表的结合</p>
+<p>使用场景：适用于实现缓存，用空间换时间，如LRU</p>
+<p>继承HashMap，大部分操作和HashMap实现一致</p>
+<h1 id="元素的顺序在访问时是怎样体现的？"><a href="#元素的顺序在访问时是怎样体现的？" class="headerlink" title="元素的顺序在访问时是怎样体现的？"></a>元素的顺序在访问时是怎样体现的？</h1><p>构造函数可以指定accessOrder：</p>
+<ul>
+<li>true表示记录元素访问顺序。</li>
+<li>false表示记录元素插入的顺序，默认为false。</li>
+</ul>
+<p>创建一个记录元素访问顺序的LinkedHashMap：<br><code>new LinkedHashMap(16, 0.75f, true)</code></p>
+<ul>
+<li>记录元素插入顺序时，通过迭代器遍历时，先插入的元素会先访问到。</li>
+<li>记录元素访问顺序时，刚访问过的元素会调整到链表末尾，通过迭代器遍历时，先遍历到的是最久没有被访问过的元素。</li>
+</ul>
+<h1 id="为什么最新插入和最后访问的要放在末尾？"><a href="#为什么最新插入和最后访问的要放在末尾？" class="headerlink" title="为什么最新插入和最后访问的要放在末尾？"></a>为什么最新插入和最后访问的要放在末尾？</h1><p>插入新元素默认就是在链表尾部插入，是符合常规逻辑的，最新访问的放在末尾也就是统一这个规则了。</p>
+<h1 id="LinkedHashMap实现原理？"><a href="#LinkedHashMap实现原理？" class="headerlink" title="LinkedHashMap实现原理？"></a>LinkedHashMap实现原理？</h1><p>双向链表的结点类继承HashMap桶中链表的结点类，增加了前后指针，实际效果如下：</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825215429.png"></p>
+<h1 id="LinkedHashMap有什么应用？"><a href="#LinkedHashMap有什么应用？" class="headerlink" title="LinkedHashMap有什么应用？"></a>LinkedHashMap有什么应用？</h1><p>LRU缓存。</p>
+<p>用LinkedHashMap手撕 <a href="https://leetcode-cn.com/problems/lru-cache/">LeetCode.146. LRU 缓存机制（难度：中等）</a></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LRUCache</span></span>(<span class="keyword">private</span> <span class="keyword">val</span> capacity: <span class="built_in">Int</span>) &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> map = LinkedHashMap&lt;<span class="built_in">Int</span>, <span class="built_in">Int</span>&gt;(<span class="number">16</span>, <span class="number">0.75f</span>, <span class="literal">true</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">get</span><span class="params">(key: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> map[key] ?: -<span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">put</span><span class="params">(key: <span class="type">Int</span>, value: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (map.size == capacity &amp;&amp; !map.containsKey(key)) &#123;</span><br><span class="line">            <span class="keyword">val</span> oldest = map.iterator().next()</span><br><span class="line">            map.remove(oldest.key)</span><br><span class="line">        &#125;</span><br><span class="line">        map[key] = value</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>集合类</category>
+      </categories>
+      <tags>
+        <tag>哈希表</tag>
+        <tag>集合类</tag>
+        <tag>LinkedHashMap</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Java集合类-TreeMap、ConcurrentSkipListMap</title>
     <url>/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/</url>
     <content><![CDATA[<h1 id="TreeMap作用"><a href="#TreeMap作用" class="headerlink" title="TreeMap作用"></a>TreeMap作用</h1><ul>
