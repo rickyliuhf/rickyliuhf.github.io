@@ -5276,6 +5276,33 @@
       </tags>
   </entry>
   <entry>
+    <title>Java集合类-ArrayDeque</title>
+    <url>/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/</url>
+    <content><![CDATA[<h1 id="ArrayDeque特点"><a href="#ArrayDeque特点" class="headerlink" title="ArrayDeque特点"></a>ArrayDeque特点</h1><p>基于数组的双端队列。</p>
+<p>分别用两个索引指针指示头尾元素位置，循环访问数组元素，访问头尾元素时间复杂度为O(1)</p>
+<p>容量不够时扩容，容量增加一倍。</p>
+<p>也可以当栈使用。</p>
+<h1 id="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"><a href="#有了LinkedList实现双端队列，为什么还要用ArrayDeque？" class="headerlink" title="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"></a>有了LinkedList实现双端队列，为什么还要用ArrayDeque？</h1><p>数组在内存中是连续存储的，CPU访问内存数据具有空间局部性特点，数组对CPU缓存很友好，可以大大提升访问速度。</p>
+<p>链表每个节点存储位置是分散不连续的，CPU缓存命中率低，CPU访问主存次数增加，速度慢。</p>
+<p>所以需要栈和队列时，优先选择用ArrayDeque。</p>
+<h1 id="ArrayDeque缺点"><a href="#ArrayDeque缺点" class="headerlink" title="ArrayDeque缺点"></a>ArrayDeque缺点</h1><ol>
+<li> ArrayDeque较于链表的方式的缺点就是容量不够时需要扩容，耗费O(n)的时间</li>
+<li> 删除元素后不会缩容，所以不适合数据量变化大且长期处于少数据状态的情况，会浪费空间</li>
+</ol>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a href="https://stackoverflow.com/questions/6163166/why-is-arraydeque-better-than-linkedlist">Why is ArrayDeque better than LinkedList</a></li>
+<li><a href="https://mp.weixin.qq.com/s/PG6NOMgXS6Slh0aXRv9W-g">死磕 java集合之ArrayDeque源码分析</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>集合类</category>
+      </categories>
+      <tags>
+        <tag>集合类</tag>
+        <tag>ArrayDeque</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Java集合类-ArrayList</title>
     <url>/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayList/</url>
     <content><![CDATA[<h1 id="ArrayList如何扩容的？"><a href="#ArrayList如何扩容的？" class="headerlink" title="ArrayList如何扩容的？"></a>ArrayList如何扩容的？</h1><p>无参构造函数中初始化一个空数组</p>
