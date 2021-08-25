@@ -3800,6 +3800,158 @@
       </tags>
   </entry>
   <entry>
+    <title>ASM字节码插桩</title>
+    <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/ASM%E5%AD%97%E8%8A%82%E7%A0%81%E6%8F%92%E6%A1%A9/</url>
+    <content><![CDATA[<h1 id="ASM是干什么的？"><a href="#ASM是干什么的？" class="headerlink" title="ASM是干什么的？"></a>ASM是干什么的？</h1><p>ASM 是一个 Java 字节码操控框架。</p>
+<p>ASM 可以直接产生二进制 class 文件，也可以在类被加载入 Java 虚拟机之前动态改变类行为。</p>
+<p>Java class 被存储在严格格式定义的 .class 文件里，这些类文件拥有足够的元数据来解析类中的所有元素：类名称、方法、属性以及 Java 字节码（指令）。</p>
+<p>ASM 从类文件中读入信息后，能够改变类行为，分析类信息，甚至能够根据用户要求生成新类。</p>
+<p>ASM的应用场景有AOP（CGLIB就是基于ASM）、热部署、修改其他jar包中的类等。</p>
+<h1 id="用ASM修改类的好处？"><a href="#用ASM修改类的好处？" class="headerlink" title="用ASM修改类的好处？"></a>用ASM修改类的好处？</h1><ul>
+<li>类的修改是硬编码在新生成的类文件内部的，没有反射带来性能上的付出。</li>
+<li>越过Java常规语法限制，做出代码编写无法实现的事情。</li>
+</ul>
+<h1 id="字节码操纵操作工具很多，ASM有什么优势？"><a href="#字节码操纵操作工具很多，ASM有什么优势？" class="headerlink" title="字节码操纵操作工具很多，ASM有什么优势？"></a>字节码操纵操作工具很多，ASM有什么优势？</h1><p>常见的字节码操作工具有：</p>
+<ul>
+<li>ASM</li>
+<li>JavaAssist</li>
+<li>AspectJ（基于BCEL）</li>
+<li>CGLIB（基于ASM）</li>
+<li>ByteBuddy（基于ASM）</li>
+</ul>
+<p>ASM优势：</p>
+<ul>
+<li>体积小</li>
+<li>性能高</li>
+</ul>
+<p>ASM劣势：</p>
+<ul>
+<li>需要熟悉字节码原理，API易用性低</li>
+</ul>
+<p>JavaAssist优势：</p>
+<ul>
+<li>不需要熟悉字节码原理，API易用性高</li>
+</ul>
+<p>JavaAssist劣势：</p>
+<ul>
+<li>体积大</li>
+<li>性能差</li>
+</ul>
+<p>所以ASM适用于对性能和体积敏感的场景。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/9167436/dynamic-java-bytecode-manipulation-framework-comparison">Dynamic Java Bytecode Manipulation Framework Comparison</a></li>
+</ul>
+<h1 id="Visitor模式怎么理解？"><a href="#Visitor模式怎么理解？" class="headerlink" title="Visitor模式怎么理解？"></a>Visitor模式怎么理解？</h1><p>把可变的和不变的分离。</p>
+<p>具体而言，被访问者是不变的，而访问者是可变的。举个例子来说，我是不变的，而不同的人看我会有不同的眼光，这个看我的眼光是可变的。</p>
+<p>访问者模式把数据结构和作用于结构上的操作解耦合，使得操作集合可相对自由地演化。</p>
+<p>访问者模式适用于数据结构相对稳定，算法又易变化的系统。<br>因为访问者模式使得算法操作增加变得容易。</p>
+<p>若系统数据结构对象易于变化，经常有新的数据对象增加进来，则不适合使用访问者模式。</p>
+<p>访问者模式的优点：</p>
+<p>增加操作很容易，因为增加操作意味着增加新的访问者。访问者模式将有关行为集中到一个访问者对象中，其改变不影响系统数据结构。</p>
+<p>访问者模式的缺点：</p>
+<p>增加新的数据结构很困难。</p>
+<p>简单来说，访问者模式就是一种分离对象数据结构与行为的方法，通过这种分离，可达到为一个被访问者动态添加新的操作而无需做其它的修改的效果。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://codeleading.com/article/42914263436/">设计模式之 Visitor（访问者模式）通俗理解</a></li>
+<li><a href="https://www.jianshu.com/p/e4b8cb0b3204">访问者模式和 ASM</a></li>
+<li><a href="https://www.iteye.com/blog/mybeautiful-1160374">Visitor模式通俗化</a></li>
+</ul>
+<h1 id="ASM为什么用Visitor模式？"><a href="#ASM为什么用Visitor模式？" class="headerlink" title="ASM为什么用Visitor模式？"></a>ASM为什么用Visitor模式？</h1><p>.class 文件的结构是固定的，主要有常量池、字段表、方法表、属性表等内容，通过使用访问者模式在扫描 .class 文件中各个表的内容时，就可以修改这些内容了。</p>
+<h1 id="ASM的思想是什么？"><a href="#ASM的思想是什么？" class="headerlink" title="ASM的思想是什么？"></a>ASM的思想是什么？</h1><p>ClassReader 的 accept 方法中传进来了一个参数ClassVisitor。在内部，ClassVisitor会不断的读取ClassReader的二进制byte[]，然后在解析后通过参数classVisitor的抽象visitXXX方法将属性全部转发出去。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20180825235523.png"></p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20180825235623.png"></p>
+<p>参考：</p>
+<ul>
+<li><a href="https://blog.csdn.net/CSqingchen/article/details/106483693">Android 中使用ASM，对Activity生命周期打点统计</a></li>
+</ul>
+<h1 id="ASM-API"><a href="#ASM-API" class="headerlink" title="ASM API"></a>ASM API</h1><p>分为核心API和树形API</p>
+<h2 id="核心API"><a href="#核心API" class="headerlink" title="核心API"></a>核心API</h2><p>ASM Core API可以类比解析XML文件中的SAX方式，不需要把这个类的整个结构读取进来，就可以用流式的方法来处理字节码文件。好处是非常节约内存，但是编程难度较大。然而出于性能考虑，一般情况下编程都使用Core API。在Core API中有以下几个关键类：</p>
+<ul>
+<li>ClassReader：用于读取已经编译好的.class文件。</li>
+<li>ClassWriter：用于重新构建编译后的类，如修改类名、属性以及方法，也可以生成新的类的字节码文件。</li>
+<li>  各种Visitor类：如上所述，CoreAPI根据字节码从上到下依次处理，对于字节码文件中不同的区域有不同的Visitor，比如用于访问方法的MethodVisitor、用于访问类变量的FieldVisitor、用于访问注解的AnnotationVisitor等。为了实现AOP，重点要使用的是MethodVisitor。</li>
+</ul>
+<h2 id="树形API"><a href="#树形API" class="headerlink" title="树形API"></a>树形API</h2><p>ASM Tree API可以类比解析XML文件中的DOM方式，把整个类的结构读取到内存中，缺点是消耗内存多，但是编程比较简单。TreeApi不同于CoreAPI，TreeAPI通过各种Node类来映射字节码的各个区域，类比DOM节点，就可以很好地理解这种编程方式。</p>
+<h1 id="Intellij-Idea-中-ASM-Bytecode-Outline-插件"><a href="#Intellij-Idea-中-ASM-Bytecode-Outline-插件" class="headerlink" title="Intellij Idea 中 ASM Bytecode Outline 插件"></a>Intellij Idea 中 ASM Bytecode Outline 插件</h1><p>可以把java代码转为ASM框架的代码。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://blog.csdn.net/ForwardSailing/article/details/106494116">Android Studio 使用 ASM Bytecode Outline 插件来研究Java字节码</a></li>
+</ul>
+<h1 id="ASM如何使用？"><a href="#ASM如何使用？" class="headerlink" title="ASM如何使用？"></a>ASM如何使用？</h1><p>ClassWriter是ClassVistor的实现类。</p>
+<p>处理逻辑都写自定义ClassVisitor里。</p>
+<p>模板的拦截代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ClassReader classReader = <span class="keyword">new</span> ClassReader(<span class="string">&quot;meituan/bytecode/asm/Base&quot;</span>);</span><br><span class="line">ClassWriter classWriter = <span class="keyword">new</span> ClassWriter(ClassWriter.COMPUTE_MAXS);</span><br><span class="line"></span><br><span class="line"><span class="comment">//处理</span></span><br><span class="line">ClassVisitor classVisitor = <span class="keyword">new</span> MyClassVisitor(classWriter);</span><br><span class="line">classReader.accept(classVisitor, ClassReader.SKIP_DEBUG);</span><br><span class="line"><span class="keyword">byte</span>[] data = classWriter.toByteArray();</span><br><span class="line"></span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line">File f = <span class="keyword">new</span> File(<span class="string">&quot;/classes/meituan/bytecode/asm/Base.class&quot;</span>);</span><br><span class="line">FileOutputStream fout = <span class="keyword">new</span> FileOutputStream(f);</span><br><span class="line">fout.write(data);</span><br><span class="line">fout.close();</span><br></pre></td></tr></table></figure>
+
+<p>代码示例：在一个方法前后分别插入方法</p>
+<p>例如有一个类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestBean</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">halloAop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        AopInterceptor.beforeInvoke();</span><br><span class="line">        System.out.println(<span class="string">&quot;Hello Aop&quot;</span>);</span><br><span class="line">        AopInterceptor.afterInvoke();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>要插入AopInterceptor的beforeInvoke()和afterInvoke()在TestBean的halloAop()的执行前后。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AopInterceptor</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">beforeInvoke</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;before&quot;</span>);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">afterInvoke</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;after&quot;</span>);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在自定义ClassVisitor的visitMethod方法中拦截halloAop方法，对不是halloAop的方法返回null表示不处理，对halloAop的拦截处理交给AopMethod类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AopClassAdapter</span> <span class="keyword">extends</span> <span class="title">ClassVisitor</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AopClassAdapter</span><span class="params">(<span class="keyword">int</span> api, ClassVisitor cv)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(api, cv);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> MethodVisitor <span class="title">visitMethod</span><span class="params">(<span class="keyword">int</span> access, String name,</span></span></span><br><span class="line"><span class="params"><span class="function">    String desc, String signature, String[] exceptions)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="string">&quot;&lt;init&gt;&quot;</span>.equals(name))</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;<span class="comment">//放弃原有类中所有构造方法</span></span><br><span class="line">        <span class="keyword">if</span> (!name.equals(<span class="string">&quot;halloAop&quot;</span>))</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;<span class="comment">// 只对halloAop方法执行代理</span></span><br><span class="line">        MethodVisitor mv = <span class="keyword">super</span>.visitMethod(access, name, desc, signature, exceptions);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> AopMethod(<span class="keyword">this</span>.api, mv);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>MethodVisitor中</p>
+<p>visitCode方法，它会在ASM开始访问某一个方法的Code区时被调用，重写visitCode方法，将AOP中的前置逻辑就放在这里。</p>
+<p>每当ASM访问到无参数指令时，都会调用MyMethodVisitor中的visitInsn方法。我们判断了当前指令是否为无参数的“return”指令，如果是就在它的前面添加一些指令，也就是将AOP的后置逻辑放在该方法中。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AopMethod</span> <span class="keyword">extends</span> <span class="title">MethodVisitor</span> <span class="keyword">implements</span> <span class="title">Opcodes</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AopMethod</span><span class="params">(<span class="keyword">int</span> api, MethodVisitor mv)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(api, mv);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.visitCode();    </span><br><span class="line">        <span class="keyword">this</span>.visitMethodInsn(INVOKESTATIC,<span class="string">&quot;org/more/test/asm/AopInterceptor&quot;</span>, <span class="string">&quot;beforeInvoke&quot;</span>, <span class="string">&quot;()V&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitInsn</span><span class="params">(<span class="keyword">int</span> opcode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (opcode == RETURN) &#123;<span class="comment">//在返回之前安插after 代码。</span></span><br><span class="line">            mv.visitMethodInsn(INVOKESTATIC, <span class="string">&quot;org/more/test/asm/AopInterceptor&quot;</span>, <span class="string">&quot;afterInvoke&quot;</span>, <span class="string">&quot;()V&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">super</span>.visitInsn(opcode);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>参考：</p>
+<ul>
+<li><a href="https://tech.meituan.com/2019/09/05/java-bytecode-enhancement.html">美团：字节码增强技术探索</a></li>
+<li><a href="https://my.oschina.net/ta8210/blog/162796">深入字节码 – 使用 ASM 实现 AOP</a></li>
+<li><a href="https://blog.csdn.net/s127838498/article/details/107968840">Android 通过ASM实现多次点击拦截</a></li>
+</ul>
+<h1 id="invokevirtual指令执行方法后，方法的返回值存放在哪？"><a href="#invokevirtual指令执行方法后，方法的返回值存放在哪？" class="headerlink" title="invokevirtual指令执行方法后，方法的返回值存放在哪？"></a>invokevirtual指令执行方法后，方法的返回值存放在哪？</h1><p>存放在栈帧的操作栈中。</p>
+<blockquote>
+<p>当一个方法刚刚开始执行的时候，这个方法的操作数栈是空的，在方法的执行过程中，会有各种字节码指令往操作数栈中写入和提取内容，也就是出栈和入栈操作。</p>
+<p>举个例子，例如整数加法的字节码指令iadd，这条指令在运行的时候要求操作数栈中最接近栈顶的两个元素已经存入了两个int型的数值，当执行这个指令时，会把这两个int值出栈并相加，然后将相加的结果重新入栈。</p>
+</blockquote>
+<p>参考</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Java_bytecode_instruction_listings">Java bytecode instruction listings 中对指令的descrpitoin</a></li>
+<li><a href="http://gityuan.com/2015/10/24/jvm-bytecode-grammar/">Jvm系列3—字节码指令</a></li>
+</ul>
+<h1 id="局部变量表的执行过程？"><a href="#局部变量表的执行过程？" class="headerlink" title="局部变量表的执行过程？"></a>局部变量表的执行过程？</h1><p>参考：</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/58f876f2e8b8">虚拟机字节码执行引擎</a></li>
+<li>深入理解Java虚拟机（第2版）第8章  虚拟机字节码执行引擎<ul>
+<li>8.2.1 局部变量表</li>
+<li>8.4.3 基于栈的解释器的执行过程</li>
+</ul>
+</li>
+</ul>
+<h1 id="MethodNode有什么作用？"><a href="#MethodNode有什么作用？" class="headerlink" title="MethodNode有什么作用？"></a>MethodNode有什么作用？</h1><p>可以获取方法体内部的字节码指令等方法的一切信息</p>
+<h1 id="MethodNode有什么使用场景？"><a href="#MethodNode有什么使用场景？" class="headerlink" title="MethodNode有什么使用场景？"></a>MethodNode有什么使用场景？</h1><p><a href="https://github.com/Tencent/matrix/wiki/Matrix-Android-TraceCanary">微信Android客户端卡顿检测工具：Matrix-Android-TraceCanary</a></p>
+<h2 id="判断一个方法是空方法？"><a href="#判断一个方法是空方法？" class="headerlink" title="判断一个方法是空方法？"></a>判断一个方法是空方法？</h2><p>遍历字节码指令，没有有效的字节码指令就是空</p>
+<p>代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isEmptyMethod</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">    ListIterator&lt;AbstractInsnNode&gt; iterator = instructions.iterator();  </span><br><span class="line">    <span class="keyword">while</span> (iterator.hasNext()) &#123;  </span><br><span class="line">        AbstractInsnNode insnNode = iterator.next();  </span><br><span class="line">        <span class="keyword">int</span> opcode = insnNode.getOpcode();  </span><br><span class="line">        <span class="keyword">if</span> (-<span class="number">1</span> == opcode) &#123;  </span><br><span class="line">            <span class="keyword">continue</span>;  </span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="判断扫描的函数是否只含有-PUT-READ-FIELD-等简单的指令"><a href="#判断扫描的函数是否只含有-PUT-READ-FIELD-等简单的指令" class="headerlink" title="判断扫描的函数是否只含有 PUT/READ FIELD 等简单的指令"></a>判断扫描的函数是否只含有 PUT/READ FIELD 等简单的指令</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isGetSetMethod</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ignoreCount = <span class="number">0</span>;</span><br><span class="line">    ListIterator&lt;AbstractInsnNode&gt; iterator = instructions.iterator();</span><br><span class="line">    <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">        AbstractInsnNode insnNode = iterator.next();</span><br><span class="line">        <span class="keyword">int</span> opcode = insnNode.getOpcode();</span><br><span class="line">        <span class="keyword">if</span> (-<span class="number">1</span> == opcode) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (opcode != Opcodes.GETFIELD</span><br><span class="line">                &amp;&amp; opcode != Opcodes.GETSTATIC</span><br><span class="line">                &amp;&amp; opcode != Opcodes.H_GETFIELD</span><br><span class="line">                &amp;&amp; opcode != Opcodes.H_GETSTATIC</span><br><span class="line">                &amp;&amp; opcode != Opcodes.RETURN</span><br><span class="line">                &amp;&amp; opcode != Opcodes.ARETURN</span><br><span class="line">                &amp;&amp; opcode != Opcodes.DRETURN</span><br><span class="line">                &amp;&amp; opcode != Opcodes.FRETURN</span><br><span class="line">                &amp;&amp; opcode != Opcodes.LRETURN</span><br><span class="line">                &amp;&amp; opcode != Opcodes.IRETURN</span><br><span class="line">                &amp;&amp; opcode != Opcodes.PUTFIELD</span><br><span class="line">                &amp;&amp; opcode != Opcodes.PUTSTATIC</span><br><span class="line">                &amp;&amp; opcode != Opcodes.H_PUTFIELD</span><br><span class="line">                &amp;&amp; opcode != Opcodes.H_PUTSTATIC</span><br><span class="line">                &amp;&amp; opcode &gt; Opcodes.SALOAD) &#123;</span><br><span class="line">            <span class="keyword">if</span> (isConstructor &amp;&amp; opcode == Opcodes.INVOKESPECIAL) &#123;</span><br><span class="line">                ignoreCount++;</span><br><span class="line">                <span class="keyword">if</span> (ignoreCount &gt; <span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<h2 id="判断一个方法是不是仅调用另外一个方法"><a href="#判断一个方法是不是仅调用另外一个方法" class="headerlink" title="判断一个方法是不是仅调用另外一个方法"></a>判断一个方法是不是仅调用另外一个方法</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isSingleMethod</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ListIterator&lt;AbstractInsnNode&gt; iterator = instructions.iterator();</span><br><span class="line">    <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">        AbstractInsnNode insnNode = iterator.next();</span><br><span class="line">        <span class="keyword">int</span> opcode = insnNode.getOpcode();</span><br><span class="line">        <span class="keyword">if</span> (-<span class="number">1</span> == opcode) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (Opcodes.INVOKEVIRTUAL &lt;= opcode &amp;&amp; opcode &lt;= Opcodes.INVOKEDYNAMIC) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>虚拟机</category>
+      </categories>
+      <tags>
+        <tag>虚拟机</tag>
+        <tag>ASM</tag>
+        <tag>字节码</tag>
+        <tag>插桩</tag>
+        <tag>Gradle</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>JIT编译、HotSpot虚拟机</title>
     <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/JIT%E7%BC%96%E8%AF%91/</url>
     <content><![CDATA[<h1 id="静态编译和动态编译分别是什么？"><a href="#静态编译和动态编译分别是什么？" class="headerlink" title="静态编译和动态编译分别是什么？"></a>静态编译和动态编译分别是什么？</h1><p>动态编译（dynamic compilation），指的是“在运行时进行编译”；</p>
