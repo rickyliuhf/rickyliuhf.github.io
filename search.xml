@@ -4605,6 +4605,71 @@
       </tags>
   </entry>
   <entry>
+    <title>Java静态分派、动态分派</title>
+    <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/</url>
+    <content><![CDATA[<p>静态类型：变量被声明时的类型；例如，Animal a = new Dog(), 静态类型为Animal, 实际类型为Dog</p>
+<p>实际类型：变量所引用的对象的真实类型</p>
+<p>重载方法是静态分派，即编译时多态</p>
+<p>重写方法是动态分派，即运行时多态</p>
+<h1 id="单分派和多分派"><a href="#单分派和多分派" class="headerlink" title="单分派和多分派"></a>单分派和多分派</h1><p>方法的接收者：一个方法所属的对象</p>
+<p>宗量：方法的接收者和方法的参数，只有这两种宗量</p>
+<p>单分派：根据一个宗量进行对方法的选择</p>
+<p>多分派：根据多于一个的宗量对方法进行选择</p>
+<p>单分派和多分派取决于宗量,  方法调用者和方法参数都是宗量.</p>
+<p>静态分派的方法调用：首先确定调用者的静态类型是什么,然后根据要调用的方法参数的静态类型(声明类型)确定所有重载方法中要调用哪一个, 需要根据这两个宗量来编译, 所以是静态多分派(多个宗量确定).</p>
+<p>动态分派的方法调用：在运行期间,虚拟机会根据调用者的实际类型调用对应的方法, 只需根据这一个宗量就可以确定要调用的方法,所以是动态单分派(一个宗量)</p>
+<p>到目前为止，Java 语言还是一门 “静态多分派、动态单分派” 的语言，也就是说在执行静态分派时是根据多个宗量判断调用哪个方法的，因为在静态分派时要根据不同的静态类型和不同的方法描述符选择目标方法，在动态分派的时候，是根据单宗量选择目标方法的，因为在运行期，方法的描述符已经确定好，invokevirtual 字节码指令根据变量的实际类型选择目标方法。</p>
+<p>方法的描述符：方法参数类型+返回值类型</p>
+<h1 id="静态分派"><a href="#静态分派" class="headerlink" title="静态分派"></a>静态分派</h1> <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">classStaticDispatch &#123; </span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Man</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Woman</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Humanguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,guy&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Manguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,man&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Womanguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,woman&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[]args)</span> </span>&#123; </span><br><span class="line">        Humanman=newMan(); </span><br><span class="line">        Humanwoman=newWoman(); </span><br><span class="line">        StaticDispatchdispatch=newStaticDispatch(); </span><br><span class="line">        dispatch.sayHello(man); </span><br><span class="line">        dispatch.sayHello(woman); </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>静态类型：是指对象 man 的 Human 类型， 静态类型本身是不会发送变化的，只有在使用时才会发送变化，静态类型在编译期间就可以确定一个变量的静态类型 </p>
+<p>实际类型：是指对象 man 的 Man 类型，实际类型在编译期间是不可确定的，只有在运行期才可确定 </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 实际类型变化 </span></span><br><span class="line">Human man = <span class="keyword">new</span> Man(); </span><br><span class="line">man = <span class="keyword">new</span> Woman(); </span><br><span class="line"> </span><br><span class="line"><span class="comment">// 静态类型变化 </span></span><br><span class="line">dispatch.sayHello((Man) man); </span><br><span class="line">dispatch.sayHello((Woman) man); </span><br></pre></td></tr></table></figure>
+
+<p>所以第一段代码中，方法接收者是 StaticDispatch 对象，虽然两个变量的实际类型不同，但是静态类型是相同的都是 Human，虚拟机（准确的说是编译器）在实现重载时是通过参数的静态类型而不是实际类型做出判定的，并且在编译阶段，变量的静态类型是可以确定的，所以编译器会根据变量的静态类型决定使用哪个重载方法。 </p>
+<p>所有依赖静态类型定位目标方法的分派动作称为静态分派，静态分派典型的应用就是方法的重载。静态分派发生在编译阶段，所以方法的静态分派动作是由编译器执行的。 </p>
+<h1 id="动态分派"><a href="#动态分派" class="headerlink" title="动态分派"></a>动态分派</h1><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DynamicDispatch</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span></span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Man</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;hello, man&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Woman</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;hello, woman&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">		Human man = <span class="keyword">new</span> Man();</span><br><span class="line">		Human woman = <span class="keyword">new</span> Woman();</span><br><span class="line">		man.sayHello();</span><br><span class="line">		woman.sayHello();</span><br><span class="line">		man = <span class="keyword">new</span> Woman();</span><br><span class="line">		man.sayHello();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20200325235523.png"></p>
+<p>从上图中，我们可以看到 main() 方法的字节码指令执行过程：</p>
+<ul>
+<li>0 ~ 7 句是调用 Man 类的实例构造器创建一个 Man 类的对象，并将对象的引用压入到局部变量表的第 1 个 Slot 中</li>
+<li>8 ~ 15 句是调用 Woman 类的实例构造器创建一个 Woman 类的对象，并将对象的引用压入到局部变量表的第 2 个 Slot 中</li>
+<li>16 ~ 17 句是将第 1 个 Slot 中的变量（也就是 man）加载到局部变量表中，并调用 sayHello() 方法，关键的就是第 17 句指令 invokevirtual</li>
+</ul>
+<p>虽然第 17 句指令调用的常量池中的 Human.sayHello() 方法，但是最终执行的却是 Man.sayHello() 方法，这就要从 invokevirtual 指令的多态查找说起，invokevirtual 的查找过程如下所示：</p>
+<ul>
+<li>找到操作数栈顶的引用所指的对象的实际类型，记做 C</li>
+<li>在类型 C 中查找与常量中的描述符和简单名称相同的方法，如果找到则进行访问权限的判断，如果通过则返回这个方法的直接引用，查找结束；如果权限不通过，则返回 java.lang.IllegalAccessError 的异常</li>
+<li>如果在 C 中没有找到描述符和简单名称都符合的方法，则按照继承关系从下往上依次在 C 的父类中进行查找和验证过程</li>
+<li>如果最终还是没有找到该方法，则抛出 java.lang.AbstractMethodError 的异常</li>
+</ul>
+<p>在上述 invokespecial 查找方法的过程中，最重要的就是第一步，根据对象的引用确定对象的实际类型，这个方法重写的本质。如上所述，在运行期内，根据对象的实际类型确定方法执行版本的分派过程叫做动态分派。</p>
+<h1 id="如何理解Java是静态多分派、动态单分派？"><a href="#如何理解Java是静态多分派、动态单分派？" class="headerlink" title="如何理解Java是静态多分派、动态单分派？"></a>如何理解Java是静态多分派、动态单分派？</h1><p>编译时期确定方法有两点依据：</p>
+<ol>
+<li>调用方法的静态类型</li>
+<li>方法的参数</li>
+</ol>
+<p>所以说是静态多分派。</p>
+<p>运行时期再确定方法只有一点依据,就是调用方法的实际类型,所以说是动态单分派。</p>
+<p>所以最后实际的方法调用是编译和运行的结合,即调用方法的实际类型和参数(运行时期直接引用会根据调用方法的实际类型确定,编译时期调用方法的静态类型只不过是虚引用),按书上说法,在编译时期,方法名和参数就被确定了,运行时只需要确定调用者即可;所以方法选择上,编译时期缩小了范围,运行时期确定了具体的方法。</p>
+<p>对于静态分派（重载），肯定会依赖接收者的静态类型与参数的静态类型（参数肯定存在，同名无参的方法只会有一个，不存在分派）。</p>
+<p>对于动态分派（重写），虚拟机只会根据接收者的实际类型选择，而不会理睬参数的实际类型。</p>
+<h1 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h1><ul>
+<li>深入理解Java虚拟机（第2版）  第8章  虚拟机字节码执行引擎 8.3.2 分派</li>
+<li><a href="https://www.jianshu.com/p/58f876f2e8b8">虚拟机字节码执行引擎（读书笔记）</a></li>
+<li><a href="https://www.zhihu.com/question/28462483/answer/398040520">如何理解java是一门静态多分派且动态单分派的语言？</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>虚拟机</category>
+      </categories>
+      <tags>
+        <tag>虚拟机</tag>
+        <tag>静态分派</tag>
+        <tag>动态分派</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Object.finalize()</title>
     <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/</url>
     <content><![CDATA[<h1 id="Object的finalize-方法什么时候被执行？"><a href="#Object的finalize-方法什么时候被执行？" class="headerlink" title="Object的finalize()方法什么时候被执行？"></a>Object的finalize()方法什么时候被执行？</h1><p>当垃圾回收器要宣告一个对象死亡时，至少要经过两次标记过程：</p>
