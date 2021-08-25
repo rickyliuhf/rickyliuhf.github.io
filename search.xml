@@ -4488,6 +4488,7 @@
 </ol>
 <p>其中程序计数器、虚拟机栈、本地方法栈是每个线程私有的，方法区和堆是线程间共享的。</p>
 <p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824234546.png"></p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20200325265523.png"></p>
 <h1 id="程序计数器（Program-Counter-Register）"><a href="#程序计数器（Program-Counter-Register）" class="headerlink" title="程序计数器（Program Counter Register）"></a>程序计数器（Program Counter Register）</h1><p>可以看作是当前线程所执行的字节码的行号指示器。</p>
 <h2 id="程序计数器的作用"><a href="#程序计数器的作用" class="headerlink" title="程序计数器的作用"></a>程序计数器的作用</h2><ol>
 <li> 字节码解释器通过改变程序计数器来依次读取指令，从而实现代码的流程控制，如：顺序执行、选择、循环、异常处理。</li>
