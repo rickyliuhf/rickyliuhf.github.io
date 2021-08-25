@@ -186,6 +186,110 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/" class="post-title-link" itemprop="url">Object.finalize()</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-10 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-10T20:00:00+08:00">2018-01-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-25 11:19:07" itemprop="dateModified" datetime="2021-08-25T11:19:07+08:00">2021-08-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Object.finalize()/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Object的finalize-方法什么时候被执行？"><a href="#Object的finalize-方法什么时候被执行？" class="headerlink" title="Object的finalize()方法什么时候被执行？"></a>Object的finalize()方法什么时候被执行？</h1><p>当垃圾回收器要宣告一个对象死亡时，至少要经过两次标记过程：</p>
+<p>如果对象在进行可达性分析后发现没有和GC Roots相连接的引用链，就会被第一次标记。</p>
+<p>GC会再判断该对象是否覆盖了finalize方法，若未覆盖，则直接将其回收。</p>
+<p>如果对象覆盖finalize()方法且未被虚拟机调用过，那么这个对象会被放置在F-Queue队列中，并在稍后由一个虚拟机自动建立的低优先级的Finalizer线程区执行触发finalize()方法，但不承诺等待其运行结束。</p>
+<p>执行finalize方法完毕后，GC会再次判断该对象是否可达，若不可达，则进行回收，否则，对象“复活”。</p>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数
+</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1082673">是时候忘掉finalize方法了</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/questionTerminal/d8eab06913084e42b515633604eef7cd">finalize()方法什么时候被调用？析构函数(finalization)的目的是什么？</a></li>
+<li>《深入理解Java虚拟机》</li>
+</ul>
+<h1 id="Object-finalize-设计目的？"><a href="#Object-finalize-设计目的？" class="headerlink" title="Object.finalize()设计目的？"></a>Object.finalize()设计目的？</h1><p>f对象逃脱死亡的最后一次机会。（只要重新与引用链上的任何一个对象建立关联即可。）但是不建议使用，运行代价高昂，不确定性大，且无法保证各个对象的调用顺序。可用try-finally或其他替代。</p>
+<h1 id="Object-finalize-使用场景"><a href="#Object-finalize-使用场景" class="headerlink" title="Object.finalize()使用场景"></a>Object.finalize()使用场景</h1><p>由于发生垃圾回收就会调用finalize()，所以它可以作为垃圾回收的监听回调。</p>
+<p>在Android framework源码中BinderInternal实现了gc监听的功能，ActivityThread在gc发生时，如果当前内存不足时，则清理一些不必要的activity以释放内存。</p>
+<p>再比如你调用了一些native的方法，可以要在finalize()里去调用C的释放函数。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +321,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 11:03:04" itemprop="dateModified" datetime="2021-08-25T11:03:04+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 11:19:07" itemprop="dateModified" datetime="2021-08-25T11:19:07+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -449,7 +553,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 11:03:04" itemprop="dateModified" datetime="2021-08-25T11:03:04+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 11:19:07" itemprop="dateModified" datetime="2021-08-25T11:19:07+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -552,7 +656,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 11:03:04" itemprop="dateModified" datetime="2021-08-25T11:03:04+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 11:19:07" itemprop="dateModified" datetime="2021-08-25T11:19:07+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -738,7 +842,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 11:03:04" itemprop="dateModified" datetime="2021-08-25T11:03:04+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 11:19:07" itemprop="dateModified" datetime="2021-08-25T11:19:07+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -837,7 +941,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 11:03:04" itemprop="dateModified" datetime="2021-08-25T11:03:04+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 11:19:07" itemprop="dateModified" datetime="2021-08-25T11:19:07+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -973,7 +1077,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -986,7 +1090,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-count">62</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
