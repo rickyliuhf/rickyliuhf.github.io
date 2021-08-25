@@ -3943,12 +3943,18 @@
 <ul>
 <li><a href="https://blog.csdn.net/huanxianglove/article/details/90247994">JDK8默认垃圾回收器详解</a></li>
 </ul>
-<hr>
 <h1 id="JDK9默认垃圾收集器是什么？"><a href="#JDK9默认垃圾收集器是什么？" class="headerlink" title="JDK9默认垃圾收集器是什么？"></a>JDK9默认垃圾收集器是什么？</h1><p>G1。</p>
 <p>采用G1因为性能优越。</p>
 <p>参考：</p>
 <ul>
 <li><a href="https://cloud.tencent.com/developer/article/1429131">为什么G1 GC从JDK 9之后成为默认的垃圾回收器？</a></li>
+</ul>
+<h1 id="Android-ART虚拟机垃圾回收机制是怎样的？"><a href="#Android-ART虚拟机垃圾回收机制是怎样的？" class="headerlink" title="Android  ART虚拟机垃圾回收机制是怎样的？"></a>Android  ART虚拟机垃圾回收机制是怎样的？</h1><p>参考：</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/89536376">Android ART 并行拷贝垃圾回收
+</a></li>
+<li><a href="https://www.kancloud.cn/alex_wsc/androids/473625">老罗的Android之旅：ART运行时垃圾收集机制简要介绍和学习计划
+</a></li>
 </ul>
 ]]></content>
       <categories>
