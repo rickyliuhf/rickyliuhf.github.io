@@ -5056,13 +5056,7 @@
   <entry>
     <title>Android集合类-ArrayMap原理</title>
     <url>/%E9%9B%86%E5%90%88%E7%B1%BB/Android%E9%9B%86%E5%90%88%E7%B1%BB-ArrayMap%E5%8E%9F%E7%90%86/</url>
-    <content><![CDATA[<h1 id="ArrayMap、SparseArray、HashMap的区别？"><a href="#ArrayMap、SparseArray、HashMap的区别？" class="headerlink" title="ArrayMap、SparseArray、HashMap的区别？"></a>ArrayMap、SparseArray、HashMap的区别？</h1><p>HashMap的查找和插入时间复杂度为O(1)的代价是牺牲大量的内存来实现的。</p>
-<p>而SparseArray和ArrayMap性能略逊于HashMap，但更节省内存。</p>
-<p>SparseArray的key是int类型，ArrayMap的key是任意类型。</p>
-<p>SparseArray删除元素是延迟删除，减少数组拷贝的频次</p>
-<p>ArrayMap有对容量4和8的缓存机制，避免频繁的内存分配和垃圾回收</p>
-<p>Android中的小数据量的哈希表，Google推荐数据量小于1000使用ArrayMap，大于1000使用HashMap</p>
-<ul>
+    <content><![CDATA[<h1 id="ArrayMap、SparseArray、HashMap的区别？"><a href="#ArrayMap、SparseArray、HashMap的区别？" class="headerlink" title="ArrayMap、SparseArray、HashMap的区别？"></a>ArrayMap、SparseArray、HashMap的区别？</h1><ul>
 <li><p>数据结构</p>
 <ul>
 <li>  ArrayMap和SparseArray采用的都是两个数组，Android专门针对内存优化而设计的</li>
@@ -5103,6 +5097,15 @@
 </ul>
 </li>
 </ul>
+<p>总结：</p>
+<ul>
+<li>HashMap的查找和插入时间复杂度为O(1)的代价是牺牲大量的内存来实现的。</li>
+<li>而SparseArray和ArrayMap性能略逊于HashMap，但更节省内存。</li>
+<li>SparseArray的key是int类型，ArrayMap的key是任意类型。</li>
+<li>SparseArray删除元素是延迟删除，减少数组拷贝的频次。</li>
+<li>ArrayMap有对容量4和8的缓存机制，避免频繁的内存分配和垃圾回收。</li>
+</ul>
+<p>Android中的小数据量的哈希表，Google推荐数据量小于1000使用ArrayMap，大于1000使用HashMap。</p>
 <h1 id="为什么ArrayMap数据量大了性能不如HashMap？数据量小了性能比HashMap好？"><a href="#为什么ArrayMap数据量大了性能不如HashMap？数据量小了性能比HashMap好？" class="headerlink" title="为什么ArrayMap数据量大了性能不如HashMap？数据量小了性能比HashMap好？"></a>为什么ArrayMap数据量大了性能不如HashMap？数据量小了性能比HashMap好？</h1><p>ArrayMap中的 mHashs 数组以升序的方式保存了所有的 hash code，在查找数据时则通过二分查找 hash code 所对应的 index。这也是它的 get() 比 HashMap 慢的根据原因所在。</p>
 <p>插入、删除需要移动数组的元素，数据多了的话，速度也相对较慢，数据少了影响较小。</p>
 <h1 id="ArrayMap底层存储结构是怎样的？"><a href="#ArrayMap底层存储结构是怎样的？" class="headerlink" title="ArrayMap底层存储结构是怎样的？"></a>ArrayMap底层存储结构是怎样的？</h1><ul>
