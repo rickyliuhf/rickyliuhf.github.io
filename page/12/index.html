@@ -186,6 +186,122 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/" class="post-title-link" itemprop="url">Java并发-synchronized、锁升级、wait和notify</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-15 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-15T20:00:00+08:00">2017-10-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-25 22:27:36" itemprop="dateModified" datetime="2021-08-25T22:27:36+08:00">2021-08-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-synchronized、锁升级、wait和notify/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><p>让一段代码在多线程之间互斥访问，保证原子性、有序性、可见性，并且是可重入的。</p>
+<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><ul>
+<li>synchronized修饰代码块时需要传入一个对象作为锁，这个对象可以是任意的，进入同步代码块前要获取这个锁，没有获得锁的线程就要阻塞等待，同步代码块执行完释放锁。</li>
+<li>修饰成员方法时，锁是对象实例。</li>
+<li>修饰静态方法时，锁是类的class实例。</li>
+</ul>
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>每个Java对象都关联一个监视器锁对象，同步代码块在字节码层面是通过在代码块的指令前后加上monitorenter和monitorexit指令来标识的。</p>
+<p>当线程执行到monitorenter指令时，当前线程试图获取监视器对象所有权，如果未加锁或者已被当前线程持有，就把锁计数加1；执行到monitorexit指令的时候，锁计数减1。锁计数为0时，锁就被释放了。</p>
+<p>如果当前线程获取监视器对象失败，线程会阻塞等待，线程会作为一个结点存入监视器对象的锁池队列中，等待唤醒。</p>
+<p>监视器对象还有一个等待池队列，在同步代码块中调用锁对象的wait方法的时候，线程会阻塞，并被封装为一个结点，进入监视器对象的等待池队列，调用锁对象的notify和notifyAll的时候，会把等待池队列中的线程放入锁池队列中，只有锁池中的线程才能参与竞争锁。</p>
+<p>wait和notify用来线程之间同步过程的，比如实现生产者消费者模型。</p>
+<p>监视器锁底层是通过操作系统的互斥锁实现的，操作系统做线程切换需要从用户态转换到内核态，所以比较消耗性能。这种依赖于操作系统互斥锁而实现的锁叫做重量级锁。</p>
+<p>如果线程竞争并不激烈，切换线程的开销是不划算的，特别是多个线程在不同的时段获取同一把锁，可以用自旋锁，就是CAS+循环，CAS由硬件之间实现，开销比切换线程开销要小，这就是轻量级锁，在JDK6引入。</p>
+<p>锁信息具体存储在对象头的MarkWord里，一个对象在虚拟机的内存布局分为三部分，对象头、实例数据、对齐填充，其中对象头又分为MarkWord、类型指针、数组长度，MarkWord存储了锁相关的信息、hashCode、垃圾回收的分代年龄等。</p>
+<p>轻量级锁的CAS操作具体修改的是锁对象头的mark word，修改为指向当前线程栈帧中的锁记录的指针。虚拟机会为每个线程在当前线程栈帧中创建一块锁记录空间，存储锁对象的对象头中的mark word的拷贝。</p>
+<p>如果CAS修改成功，当前线程就获得了轻量级锁。</p>
+<p>如果更新失败，说明有线程竞争，开始自旋，自旋超过一定次数，升级为重量级锁。避免竞争激烈的情况下自旋空耗CPU。</p>
+<p>如果压根都没有线程竞争，只有单线程访问同步代码块，其实每次进行CAS操作获取轻量级锁也是没有必要的开销，所以JDK6又引入了偏向锁，只在第一次申请锁的时候，对Java对象头的MARK WORD做CAS操作，记录下当前申请锁的线程ID，退出同步代码块后，也不释放锁，锁对象的对象头中记录的还是当前的线程ID，同一个线程再次进入这个锁的同步代码块的时候，检查锁的对象头中记录的线程ID是否还是自己，是的话就直接进入，不用再CAS了。当有多个线程要申请锁的时候，就会升级到轻量级锁。</p>
+<p>轻量级锁是为了在线程交替执行同步块时提高性能，而偏向锁则是在只有一个线程执行同步块时进一步提高性能。</p>
+<h1 id="与ReentrantLock区别？该用哪个？"><a href="#与ReentrantLock区别？该用哪个？" class="headerlink" title="与ReentrantLock区别？该用哪个？"></a>与ReentrantLock区别？该用哪个？</h1><p>synchronized一般情况下是够用的，而且写起来比较简单，不会忘记释放锁，如果需要更灵活的功能，可以用ReentrantLock，ReentrantLock也是可重入的锁。</p>
+<ol>
+<li> 实现也是基于CAS+自旋去竞争一个int类型的state变量，性能比较好</li>
+<li> 支持公平锁和非公平锁</li>
+<li> 获取锁的时候可以设置超时时间避免发生死锁</li>
+<li> 获取锁的方法还可以响应线程中断</li>
+<li> 还可以尝试获取锁，获取不不到就不阻塞</li>
+<li> 加锁和解锁完全自己控制，可以跨方法执行解锁</li>
+<li> 可以关联多个条件队列</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/2015-07-20-android-task-about/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +333,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 22:13:02" itemprop="dateModified" datetime="2021-08-25T22:13:02+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 22:27:36" itemprop="dateModified" datetime="2021-08-25T22:27:36+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -316,7 +432,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 22:13:02" itemprop="dateModified" datetime="2021-08-25T22:13:02+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 22:27:36" itemprop="dateModified" datetime="2021-08-25T22:27:36+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -452,20 +568,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-count">113</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">99</span>
+        <span class="site-state-item-count">106</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
