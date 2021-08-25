@@ -5386,6 +5386,7 @@
 <h1 id="什么对象适合做为HashMap的key"><a href="#什么对象适合做为HashMap的key" class="headerlink" title="什么对象适合做为HashMap的key?"></a>什么对象适合做为HashMap的key?</h1><p>使用String，Integer等系统类比较好，因为他们的hashCode方法实现是比较均匀的，可以减少散列冲突。</p>
 <p>其次这些类一旦创建都是不可变的，一来可以缓存hashCode，二来保证唯一性，三来线程安全。</p>
 <h1 id="自定义对象实现hashCode-方法有什么注意事项？"><a href="#自定义对象实现hashCode-方法有什么注意事项？" class="headerlink" title="自定义对象实现hashCode()方法有什么注意事项？"></a>自定义对象实现hashCode()方法有什么注意事项？</h1><p><strong>原则：</strong><br>一个对象的hashCode应该认为有均等的机会得到2的32次方中的任意一个32位整数值。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825205744.png" alt="《算法4》节选"></p>
 <p>一个优秀的散列方法需要满足三个条件：</p>
 <ul>
 <li>一致性 - 等价的键必然产生相等的散列值</li>
@@ -5474,6 +5475,7 @@
 <p>所以红黑树是专门应对元素key糟糕的（分布不均匀）的散列函数而准备的。</p>
 <p>二项分布：n次重复独立伯努利试验，一次伯努利实验只有两种对立的结果。</p>
 <p>泊松分布：当二项分布的n很大，p很小时，可以近似为泊松分布。</p>
+<p>算法第四版465页：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210825205936.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210825205952.png"></p>
 <p>散列均匀时，每个桶的链表的平均长度为  实际元素总数  / 哈希表大小，这个就是装载因子λ</p>
 <p>现在的问题就是，将N个元素随机放入M个桶，每个桶的元素平均个数为λ（N/M），求每个桶元素个数为k的概率。</p>
 <p>对于某一个桶而言，一个元素放入桶中是一个二元结果，要么放入，要么不放入，散列均匀的情况下，不管有多少个桶，每个元素出现在同一个桶的概率是相同，每个桶中平均有λ个元素时，那么一个元素出现在同一个桶的概率就是λ/N，就是桶元素数量占元素总数的比值，理解很直观。</p>
