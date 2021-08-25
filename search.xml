@@ -1341,33 +1341,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.23.合并K个升序链表（困难）</title>
-    <url>/LeetCode/LeetCode.23.%E5%90%88%E5%B9%B6K%E4%B8%AA%E5%8D%87%E5%BA%8F%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/merge-k-sorted-lists/">LeetCode.23.合并K个升序链表（困难）</a></p>
-<p>给你一个链表数组，每个链表都已经按升序排列。</p>
-<p>请你将所有链表合并到一个升序链表中，返回合并后的链表。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：优先队列"><a href="#解法1：优先队列" class="headerlink" title="解法1：优先队列"></a>解法1：优先队列</h2><p>普通二路归并排序直接比较两个链表首元素即可。</p>
-<p><strong>多个链表首元素怎么比较？</strong></p>
-<p>用优先队列，构建小顶堆，每次加入一个节点，优先队列会调整堆把最小的元素放在堆顶。</p>
-<p>调整一次堆需要<code>O(log k)</code>时间，<code>k</code>为列表个数。</p>
-<p>由于要把所有节点都加入堆中，设链表节点总数为<code>n</code>，总时间复杂度为<code>O(n * log k)</code>。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">mergeKLists</span><span class="params">(lists: <span class="type">Array</span>&lt;<span class="type">ListNode</span>?&gt;)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">val</span> pq = PriorityQueue&lt;ListNode&gt; &#123; n1, n2 -&gt; n1.`<span class="keyword">val</span>` - n2.`<span class="keyword">val</span>` &#125;</span><br><span class="line">        <span class="keyword">val</span> dummy = ListNode(<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">var</span> p: ListNode? = dummy</span><br><span class="line">        lists.forEach &#123; node -&gt; <span class="keyword">if</span> (node != <span class="literal">null</span>) pq.add(node) &#125;</span><br><span class="line">        <span class="keyword">while</span> (pq.isNotEmpty()) &#123;</span><br><span class="line">            <span class="keyword">val</span> smallest = pq.poll()</span><br><span class="line">            <span class="keyword">if</span> (smallest.next != <span class="literal">null</span>) &#123;</span><br><span class="line">                pq.add(smallest.next)</span><br><span class="line">            &#125;</span><br><span class="line">            p?.next = smallest</span><br><span class="line">            p = p?.next</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">val</span> newHead = dummy.next</span><br><span class="line">        dummy.next = <span class="literal">null</span></span><br><span class="line">        <span class="keyword">return</span> newHead</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="解法2：分治"><a href="#解法2：分治" class="headerlink" title="解法2：分治"></a>解法2：分治</h2><p>对所有链表两两归并，这样每次链表数量减半，假设总共有k个链表，需要归并<code>log k</code>次。</p>
-<p>假设所有链表结点总数为<code>n</code>，每一次的两两归并都要遍历所有结点，所以总时间复杂度为<code>O(n * log k)</code>。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">mergeKLists</span><span class="params">(lists: <span class="type">Array</span>&lt;<span class="type">ListNode</span>?&gt;)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">if</span> (lists.isEmpty()) <span class="keyword">return</span> <span class="literal">null</span></span><br><span class="line">        <span class="keyword">return</span> merge(lists, <span class="number">0</span>, lists.size - <span class="number">1</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">merge</span><span class="params">(lists: <span class="type">Array</span>&lt;<span class="type">ListNode</span>?&gt;, low: <span class="type">Int</span>, high: <span class="type">Int</span>)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">if</span> (low == high) <span class="keyword">return</span> lists[low]</span><br><span class="line">        <span class="keyword">val</span> mid = low + (high - low) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">val</span> l1 = merge(lists, low, mid);</span><br><span class="line">        <span class="keyword">val</span> l2 = merge(lists, mid + <span class="number">1</span>, high);</span><br><span class="line">        <span class="keyword">return</span> mergeTwoList(l1, l2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">mergeTwoList</span><span class="params">(l1: <span class="type">ListNode</span>?, l2: <span class="type">ListNode</span>?)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">val</span> dummy = ListNode(<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">var</span> tail: ListNode? = dummy</span><br><span class="line">        <span class="keyword">var</span> p1 = l1</span><br><span class="line">        <span class="keyword">var</span> p2 = l2</span><br><span class="line">        <span class="keyword">while</span> (p1 != <span class="literal">null</span> &amp;&amp; p2 != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (p1.`<span class="keyword">val</span>` &lt; p2.`<span class="keyword">val</span>`) &#123;</span><br><span class="line">                tail?.next = p1</span><br><span class="line">                p1 = p1?.next</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                tail?.next = p2</span><br><span class="line">                p2 = p2?.next</span><br><span class="line">            &#125;</span><br><span class="line">            tail = tail?.next</span><br><span class="line">        &#125;</span><br><span class="line">        tail?.next = <span class="keyword">if</span> (p1 != <span class="literal">null</span>) p1 <span class="keyword">else</span> p2</span><br><span class="line">        <span class="keyword">val</span> newHead = dummy.next</span><br><span class="line">        dummy.next = <span class="literal">null</span></span><br><span class="line">        <span class="keyword">return</span> newHead</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>优先队列</tag>
-        <tag>分治</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.25.K 个一组翻转链表（困难）</title>
     <url>/LeetCode/LeetCode.25.K%20%E4%B8%AA%E4%B8%80%E7%BB%84%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/reverse-nodes-in-k-group/">LeetCode.25.K 个一组翻转链表（困难）</a></p>
@@ -1400,6 +1373,33 @@
         <tag>LeetCode困难</tag>
         <tag>递归</tag>
         <tag>链表</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.23.合并K个升序链表（困难）</title>
+    <url>/LeetCode/LeetCode.23.%E5%90%88%E5%B9%B6K%E4%B8%AA%E5%8D%87%E5%BA%8F%E9%93%BE%E8%A1%A8%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/merge-k-sorted-lists/">LeetCode.23.合并K个升序链表（困难）</a></p>
+<p>给你一个链表数组，每个链表都已经按升序排列。</p>
+<p>请你将所有链表合并到一个升序链表中，返回合并后的链表。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：优先队列"><a href="#解法1：优先队列" class="headerlink" title="解法1：优先队列"></a>解法1：优先队列</h2><p>普通二路归并排序直接比较两个链表首元素即可。</p>
+<p><strong>多个链表首元素怎么比较？</strong></p>
+<p>用优先队列，构建小顶堆，每次加入一个节点，优先队列会调整堆把最小的元素放在堆顶。</p>
+<p>调整一次堆需要<code>O(log k)</code>时间，<code>k</code>为列表个数。</p>
+<p>由于要把所有节点都加入堆中，设链表节点总数为<code>n</code>，总时间复杂度为<code>O(n * log k)</code>。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">mergeKLists</span><span class="params">(lists: <span class="type">Array</span>&lt;<span class="type">ListNode</span>?&gt;)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">val</span> pq = PriorityQueue&lt;ListNode&gt; &#123; n1, n2 -&gt; n1.`<span class="keyword">val</span>` - n2.`<span class="keyword">val</span>` &#125;</span><br><span class="line">        <span class="keyword">val</span> dummy = ListNode(<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">var</span> p: ListNode? = dummy</span><br><span class="line">        lists.forEach &#123; node -&gt; <span class="keyword">if</span> (node != <span class="literal">null</span>) pq.add(node) &#125;</span><br><span class="line">        <span class="keyword">while</span> (pq.isNotEmpty()) &#123;</span><br><span class="line">            <span class="keyword">val</span> smallest = pq.poll()</span><br><span class="line">            <span class="keyword">if</span> (smallest.next != <span class="literal">null</span>) &#123;</span><br><span class="line">                pq.add(smallest.next)</span><br><span class="line">            &#125;</span><br><span class="line">            p?.next = smallest</span><br><span class="line">            p = p?.next</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">val</span> newHead = dummy.next</span><br><span class="line">        dummy.next = <span class="literal">null</span></span><br><span class="line">        <span class="keyword">return</span> newHead</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解法2：分治"><a href="#解法2：分治" class="headerlink" title="解法2：分治"></a>解法2：分治</h2><p>对所有链表两两归并，这样每次链表数量减半，假设总共有k个链表，需要归并<code>log k</code>次。</p>
+<p>假设所有链表结点总数为<code>n</code>，每一次的两两归并都要遍历所有结点，所以总时间复杂度为<code>O(n * log k)</code>。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">mergeKLists</span><span class="params">(lists: <span class="type">Array</span>&lt;<span class="type">ListNode</span>?&gt;)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">if</span> (lists.isEmpty()) <span class="keyword">return</span> <span class="literal">null</span></span><br><span class="line">        <span class="keyword">return</span> merge(lists, <span class="number">0</span>, lists.size - <span class="number">1</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">merge</span><span class="params">(lists: <span class="type">Array</span>&lt;<span class="type">ListNode</span>?&gt;, low: <span class="type">Int</span>, high: <span class="type">Int</span>)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">if</span> (low == high) <span class="keyword">return</span> lists[low]</span><br><span class="line">        <span class="keyword">val</span> mid = low + (high - low) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">val</span> l1 = merge(lists, low, mid);</span><br><span class="line">        <span class="keyword">val</span> l2 = merge(lists, mid + <span class="number">1</span>, high);</span><br><span class="line">        <span class="keyword">return</span> mergeTwoList(l1, l2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">mergeTwoList</span><span class="params">(l1: <span class="type">ListNode</span>?, l2: <span class="type">ListNode</span>?)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">val</span> dummy = ListNode(<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">var</span> tail: ListNode? = dummy</span><br><span class="line">        <span class="keyword">var</span> p1 = l1</span><br><span class="line">        <span class="keyword">var</span> p2 = l2</span><br><span class="line">        <span class="keyword">while</span> (p1 != <span class="literal">null</span> &amp;&amp; p2 != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (p1.`<span class="keyword">val</span>` &lt; p2.`<span class="keyword">val</span>`) &#123;</span><br><span class="line">                tail?.next = p1</span><br><span class="line">                p1 = p1?.next</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                tail?.next = p2</span><br><span class="line">                p2 = p2?.next</span><br><span class="line">            &#125;</span><br><span class="line">            tail = tail?.next</span><br><span class="line">        &#125;</span><br><span class="line">        tail?.next = <span class="keyword">if</span> (p1 != <span class="literal">null</span>) p1 <span class="keyword">else</span> p2</span><br><span class="line">        <span class="keyword">val</span> newHead = dummy.next</span><br><span class="line">        dummy.next = <span class="literal">null</span></span><br><span class="line">        <span class="keyword">return</span> newHead</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>优先队列</tag>
+        <tag>分治</tag>
       </tags>
   </entry>
   <entry>
@@ -1464,41 +1464,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.30.串联所有单词的子串（困难）</title>
-    <url>/LeetCode/LeetCode.30.%E4%B8%B2%E8%81%94%E6%89%80%E6%9C%89%E5%8D%95%E8%AF%8D%E7%9A%84%E5%AD%90%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/substring-with-concatenation-of-all-words/">LeetCode.30.串联所有单词的子串（困难）</a></p>
-<p>给定一个字符串 s 和一些 长度相同 的单词 words 。找出 s 中恰好可以由 words 中所有单词串联形成的子串的起始位置。</p>
-<p>注意子串要与 words 中的单词完全匹配，中间不能有其他字符 ，但不需要考虑 words 中单词串联的顺序。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="暴力推导"><a href="#暴力推导" class="headerlink" title="暴力推导"></a>暴力推导</h3><ol>
-<li>穷举出所有s可能的子串。</li>
-<li>对每个子串检查能不能拿words中所有单词串联得出。</li>
-</ol>
-<h3 id="穷举出所有s可能的子串，有什么优化？"><a href="#穷举出所有s可能的子串，有什么优化？" class="headerlink" title="穷举出所有s可能的子串，有什么优化？"></a>穷举出所有s可能的子串，有什么优化？</h3><p>题目要求恰好可以用words中所有单词串联形成的子串，所以子串的长度是确定的，只要穷举这个特定长度所有子串就行了，不需要穷举所有长度的子串。</p>
-<p>其实这就相当于弄一个滑动窗口依次检测。</p>
-<h3 id="怎么检查子串能不能拿words中所有单词串联得出？"><a href="#怎么检查子串能不能拿words中所有单词串联得出？" class="headerlink" title="怎么检查子串能不能拿words中所有单词串联得出？"></a>怎么检查子串能不能拿words中所有单词串联得出？</h3><p>按道理得组合所有words中单词的情况。</p>
-<p>但是题目说所有单词长度相同，假设长度为n，可以把大子串再分割成m分长度为n的小子串，看小子串是不是在words里。</p>
-<p>检查一个东西是不是在某个集合里，可以想到用哈希表，用O(1)时间查询得出结果。</p>
-<p>但是哈希表不能存储相同的单词，所以要给重复出现的单词计数。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findSubstring</span><span class="params">(s: <span class="type">String</span>, words: <span class="type">Array</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;<span class="built_in">Int</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> (words.isEmpty()) <span class="keyword">return</span> emptyList()</span><br><span class="line">        <span class="keyword">val</span> result = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="keyword">val</span> wordCount = words.size</span><br><span class="line">        <span class="comment">// 每个单词的长度</span></span><br><span class="line">        <span class="keyword">val</span> wordLength = words.first().length</span><br><span class="line">        <span class="comment">// 生成哈希表：记录每个单词有多少个</span></span><br><span class="line">        <span class="keyword">val</span> allWords = words.groupingBy &#123; it &#125;.eachCount()</span><br><span class="line">        <span class="comment">// 穷举所有可能的子串</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0.</span>.(s.length - wordCount * wordLength)) &#123;</span><br><span class="line">            <span class="keyword">val</span> countMap = mutableMapOf&lt;String, <span class="built_in">Int</span>&gt;()</span><br><span class="line">            <span class="keyword">var</span> j = <span class="number">0</span></span><br><span class="line">            <span class="keyword">while</span> (j &lt; wordCount) &#123;</span><br><span class="line">	            <span class="comment">// 子串按单词长度切片，检查每一片是否在单词列表里</span></span><br><span class="line">                <span class="keyword">val</span> word = s.substring(i + j * wordLength, i + (j + <span class="number">1</span>) * wordLength)</span><br><span class="line">                <span class="keyword">if</span> (allWords.containsKey(word)) &#123;</span><br><span class="line">                    <span class="comment">// 注意对重复单词计数，单词在子串中出现过的次数与在words出现的次数应该一致</span></span><br><span class="line">                    <span class="keyword">val</span> count = countMap.getOrDefault(word, <span class="number">0</span>)</span><br><span class="line">                    countMap[word] = count + <span class="number">1</span></span><br><span class="line">                    <span class="keyword">if</span> (countMap[word]!! &gt; allWords[word]!!) &#123;</span><br><span class="line">                        <span class="keyword">break</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">break</span></span><br><span class="line">                j++</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (j == wordCount) &#123;</span><br><span class="line">                result.add(i)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>时间复杂度O(mn)：<br>假设字符串s长度为m，滑动窗口穿过整个s，最坏情况下滑动窗口大小为1，需要移动m次。<br>判断每个滑动窗口的子串是不是能由words所有单词组成，最坏情况需要遍历words所有单词，假设words长度为n，就就要遍历n次。</p>
-<p>空间复杂度O(n)：<br>用哈希表记录words中所有单词出现的次数。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>滑动窗口</tag>
-        <tag>哈希表</tag>
-        <tag>字符串</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.300.最长递增子序列（中等）</title>
     <url>/LeetCode/LeetCode.300.%E6%9C%80%E9%95%BF%E9%80%92%E5%A2%9E%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/longest-increasing-subsequence/">LeetCode.300.最长递增子序列（中等）</a></p>
@@ -1554,6 +1519,41 @@
       <tags>
         <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.30.串联所有单词的子串（困难）</title>
+    <url>/LeetCode/LeetCode.30.%E4%B8%B2%E8%81%94%E6%89%80%E6%9C%89%E5%8D%95%E8%AF%8D%E7%9A%84%E5%AD%90%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/substring-with-concatenation-of-all-words/">LeetCode.30.串联所有单词的子串（困难）</a></p>
+<p>给定一个字符串 s 和一些 长度相同 的单词 words 。找出 s 中恰好可以由 words 中所有单词串联形成的子串的起始位置。</p>
+<p>注意子串要与 words 中的单词完全匹配，中间不能有其他字符 ，但不需要考虑 words 中单词串联的顺序。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="暴力推导"><a href="#暴力推导" class="headerlink" title="暴力推导"></a>暴力推导</h3><ol>
+<li>穷举出所有s可能的子串。</li>
+<li>对每个子串检查能不能拿words中所有单词串联得出。</li>
+</ol>
+<h3 id="穷举出所有s可能的子串，有什么优化？"><a href="#穷举出所有s可能的子串，有什么优化？" class="headerlink" title="穷举出所有s可能的子串，有什么优化？"></a>穷举出所有s可能的子串，有什么优化？</h3><p>题目要求恰好可以用words中所有单词串联形成的子串，所以子串的长度是确定的，只要穷举这个特定长度所有子串就行了，不需要穷举所有长度的子串。</p>
+<p>其实这就相当于弄一个滑动窗口依次检测。</p>
+<h3 id="怎么检查子串能不能拿words中所有单词串联得出？"><a href="#怎么检查子串能不能拿words中所有单词串联得出？" class="headerlink" title="怎么检查子串能不能拿words中所有单词串联得出？"></a>怎么检查子串能不能拿words中所有单词串联得出？</h3><p>按道理得组合所有words中单词的情况。</p>
+<p>但是题目说所有单词长度相同，假设长度为n，可以把大子串再分割成m分长度为n的小子串，看小子串是不是在words里。</p>
+<p>检查一个东西是不是在某个集合里，可以想到用哈希表，用O(1)时间查询得出结果。</p>
+<p>但是哈希表不能存储相同的单词，所以要给重复出现的单词计数。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findSubstring</span><span class="params">(s: <span class="type">String</span>, words: <span class="type">Array</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;<span class="built_in">Int</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> (words.isEmpty()) <span class="keyword">return</span> emptyList()</span><br><span class="line">        <span class="keyword">val</span> result = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="keyword">val</span> wordCount = words.size</span><br><span class="line">        <span class="comment">// 每个单词的长度</span></span><br><span class="line">        <span class="keyword">val</span> wordLength = words.first().length</span><br><span class="line">        <span class="comment">// 生成哈希表：记录每个单词有多少个</span></span><br><span class="line">        <span class="keyword">val</span> allWords = words.groupingBy &#123; it &#125;.eachCount()</span><br><span class="line">        <span class="comment">// 穷举所有可能的子串</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0.</span>.(s.length - wordCount * wordLength)) &#123;</span><br><span class="line">            <span class="keyword">val</span> countMap = mutableMapOf&lt;String, <span class="built_in">Int</span>&gt;()</span><br><span class="line">            <span class="keyword">var</span> j = <span class="number">0</span></span><br><span class="line">            <span class="keyword">while</span> (j &lt; wordCount) &#123;</span><br><span class="line">	            <span class="comment">// 子串按单词长度切片，检查每一片是否在单词列表里</span></span><br><span class="line">                <span class="keyword">val</span> word = s.substring(i + j * wordLength, i + (j + <span class="number">1</span>) * wordLength)</span><br><span class="line">                <span class="keyword">if</span> (allWords.containsKey(word)) &#123;</span><br><span class="line">                    <span class="comment">// 注意对重复单词计数，单词在子串中出现过的次数与在words出现的次数应该一致</span></span><br><span class="line">                    <span class="keyword">val</span> count = countMap.getOrDefault(word, <span class="number">0</span>)</span><br><span class="line">                    countMap[word] = count + <span class="number">1</span></span><br><span class="line">                    <span class="keyword">if</span> (countMap[word]!! &gt; allWords[word]!!) &#123;</span><br><span class="line">                        <span class="keyword">break</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">break</span></span><br><span class="line">                j++</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (j == wordCount) &#123;</span><br><span class="line">                result.add(i)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>时间复杂度O(mn)：<br>假设字符串s长度为m，滑动窗口穿过整个s，最坏情况下滑动窗口大小为1，需要移动m次。<br>判断每个滑动窗口的子串是不是能由words所有单词组成，最坏情况需要遍历words所有单词，假设words长度为n，就就要遍历n次。</p>
+<p>空间复杂度O(n)：<br>用哈希表记录words中所有单词出现的次数。</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>滑动窗口</tag>
+        <tag>哈希表</tag>
+        <tag>字符串</tag>
       </tags>
   </entry>
   <entry>
@@ -2401,31 +2401,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.518.零钱兑换 II（中等）</title>
-    <url>/LeetCode/LeetCode.518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/coin-change-2/">LeetCode.518.零钱兑换 II（中等）</a></p>
-<p>给你一个整数数组 coins 表示不同面额的硬币，另给一个整数 amount 表示总金额。</p>
-<p>请你计算并返回可以凑成总金额的硬币组合数。如果任何硬币组合都无法凑出总金额，返回 0 。</p>
-<p>假设每一种面额的硬币有无限个。 </p>
-<p>题目数据保证结果符合 32 位带符号整数。</p>
-<span id="more"></span>
-
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p><strong>划分子问题</strong><br>设<code>dp[i]</code>为凑成总金额<code>i</code>的硬币组合数。<br>假设<code>coins = [1, 2, 5]</code>，那么<code>dp[i]</code>其实就是硬币总额<code>i - 1</code>、<code>i - 2</code>、<code>i - 5</code>子问题之和。</p>
-<p><strong>状态转移方程</strong><br><code>for (coin: coins) dp[i] += dp[i - coin]</code></p>
-<p><strong>注意点</strong><br>所求的是硬币的组合数，不是排列数。<br>比如<code>coins = [1, 2]</code>，<code>amount = 3</code>，<code>1 + 2</code>和<code>2 + 1</code>是同一种组合，但是两个排列。<br>如果我们是先确定一个<code>amount</code>，再去用所有硬币去凑，就会凑出来不同的排列。<br>所以要锁定硬币使用的顺序，同一个金额下就不会有不同顺序的硬币的使用情况了。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">change</span><span class="params">(amount: <span class="type">Int</span>, coins: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(amount + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        dp[<span class="number">0</span>] = <span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> (coin <span class="keyword">in</span> coins) &#123;</span><br><span class="line">            <span class="keyword">for</span> (a <span class="keyword">in</span> coin..amount) &#123;</span><br><span class="line">                dp[a] += dp[a - coin]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[amount]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
-        <tag>背包问题</tag>
-        <tag>完全背包</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.52.N皇后 II（困难）</title>
     <url>/LeetCode/LeetCode.52.N%E7%9A%87%E5%90%8E%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/n-queens-ii/">LeetCode.52.N皇后 II（困难）</a></p>
@@ -2490,6 +2465,31 @@
         <tag>回溯</tag>
         <tag>二进制</tag>
         <tag>位运算</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.518.零钱兑换 II（中等）</title>
+    <url>/LeetCode/LeetCode.518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/coin-change-2/">LeetCode.518.零钱兑换 II（中等）</a></p>
+<p>给你一个整数数组 coins 表示不同面额的硬币，另给一个整数 amount 表示总金额。</p>
+<p>请你计算并返回可以凑成总金额的硬币组合数。如果任何硬币组合都无法凑出总金额，返回 0 。</p>
+<p>假设每一种面额的硬币有无限个。 </p>
+<p>题目数据保证结果符合 32 位带符号整数。</p>
+<span id="more"></span>
+
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p><strong>划分子问题</strong><br>设<code>dp[i]</code>为凑成总金额<code>i</code>的硬币组合数。<br>假设<code>coins = [1, 2, 5]</code>，那么<code>dp[i]</code>其实就是硬币总额<code>i - 1</code>、<code>i - 2</code>、<code>i - 5</code>子问题之和。</p>
+<p><strong>状态转移方程</strong><br><code>for (coin: coins) dp[i] += dp[i - coin]</code></p>
+<p><strong>注意点</strong><br>所求的是硬币的组合数，不是排列数。<br>比如<code>coins = [1, 2]</code>，<code>amount = 3</code>，<code>1 + 2</code>和<code>2 + 1</code>是同一种组合，但是两个排列。<br>如果我们是先确定一个<code>amount</code>，再去用所有硬币去凑，就会凑出来不同的排列。<br>所以要锁定硬币使用的顺序，同一个金额下就不会有不同顺序的硬币的使用情况了。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">change</span><span class="params">(amount: <span class="type">Int</span>, coins: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(amount + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        dp[<span class="number">0</span>] = <span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> (coin <span class="keyword">in</span> coins) &#123;</span><br><span class="line">            <span class="keyword">for</span> (a <span class="keyword">in</span> coin..amount) &#123;</span><br><span class="line">                dp[a] += dp[a - coin]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[amount]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode中等</tag>
+        <tag>背包问题</tag>
+        <tag>完全背包</tag>
       </tags>
   </entry>
   <entry>
@@ -4075,6 +4075,144 @@
       </tags>
   </entry>
   <entry>
+    <title>Java垃圾回收算法</title>
+    <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<h1 id="如何判定一个对象是否可以被垃圾回收？"><a href="#如何判定一个对象是否可以被垃圾回收？" class="headerlink" title="如何判定一个对象是否可以被垃圾回收？"></a>如何判定一个对象是否可以被垃圾回收？</h1><h2 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h2><p>记录每个对象被引用数量，产生新引用计数加1，引用失效计数减1</p>
+<p>优点：实现简单<br>缺点：无法解决环形依赖引用</p>
+<h2 id="可达性分析"><a href="#可达性分析" class="headerlink" title="可达性分析"></a>可达性分析</h2><p>一个对象到GC Roots对象没有引用链，表示此对象是没有地方使用，可以被回收。</p>
+<h3 id="可以作为GC-Roots的对象"><a href="#可以作为GC-Roots的对象" class="headerlink" title="可以作为GC Roots的对象"></a>可以作为GC Roots的对象</h3><ol>
+<li> 虚拟机栈中的引用的对象，即栈帧中的局部变量表中引用的对象</li>
+<li> 本地方法栈中引用的对象，即native方法中引用的对象</li>
+<li> 方法区中类的静态属性引用的对象</li>
+<li> 方法区中常量引用的对象</li>
+</ol>
+<p>优点：</p>
+<ul>
+<li>分析更加精确，解决了环形引用的问题</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li> 实现复杂，分析时间长</li>
+<li>分析过程需要保证引用关系不能发生变化，需要GC停顿，即让所有线程的执行都暂停（Stop the world）</li>
+</ul>
+<p>参考《深入理解Java虚拟机（第2版）》3.2 对象已死吗</p>
+<h1 id="GC停顿是什么？"><a href="#GC停顿是什么？" class="headerlink" title="GC停顿是什么？"></a>GC停顿是什么？</h1><p>对象的可达性分析需要枚举GC Roots节点对象，必须要保证对象之间的引用关系不能一直变化，必须要停顿所有线程的执行，这就是Stop the world，也是垃圾回收的性能瓶颈所在。暂停线程的工作，需要等到安全点才能暂停。</p>
+<h1 id="怎么让线程在安全点暂停？"><a href="#怎么让线程在安全点暂停？" class="headerlink" title="怎么让线程在安全点暂停？"></a>怎么让线程在安全点暂停？</h1><p>主动式中断（Voluntary  Suspension），GC需要中断线程时，不直接中断线程，仅仅给每个线程设置一个标志，各线程主动轮询这个标志，发现中断标志为true就自己中断挂起。</p>
+<h1 id="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"><a href="#线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？" class="headerlink" title="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"></a>线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？</h1><p>如果一段代码中引用关系不会变化，称为这一段为安全区域，线程执行到安全区域的代码时，会标记自己已经进入了安全区域；虚拟机发起垃圾回收时，就不用管已经位于安全区域的线程了。</p>
+<p>线程离开安全区域时，要检查系统是否已经完成了GC Roots的枚举（或者是检查整个垃圾回收是否已结束），如果还没有完成，就必须要等待，直到收到可以安全离开安全区域的信号为止。</p>
+<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><h1 id="垃圾回收算法有哪些？分别有什么优缺点-？"><a href="#垃圾回收算法有哪些？分别有什么优缺点-？" class="headerlink" title="垃圾回收算法有哪些？分别有什么优缺点  ？"></a>垃圾回收算法有哪些？分别有什么优缺点  ？</h1><p>垃圾回收算法主要有：</p>
+<ol>
+<li> 标记-清除（Mark-Sweep）</li>
+<li> 复制（Copying）</li>
+<li> 标记-整理（Mark-Compact）</li>
+<li> 分代收集</li>
+</ol>
+<h2 id="标记-清除（Mark-Sweep）"><a href="#标记-清除（Mark-Sweep）" class="headerlink" title="标记-清除（Mark-Sweep）"></a>标记-清除（Mark-Sweep）</h2><p>先标记出内存中所有需要回收的对象，再统一回收所有被标记的对象。标记过程就是对象到GC Roots对象的可达性分析。</p>
+<p>缺点：</p>
+<ol>
+<li>记和清除两个过程都不高效。</li>
+<li>容易产生大量不连续的空间碎片，分配大对象的时候无法找到连续的内存空间时会再次触发垃圾回收。</li>
+</ol>
+<h2 id="复制（Copying）"><a href="#复制（Copying）" class="headerlink" title="复制（Copying）"></a>复制（Copying）</h2><p>将内存分为大小相等的两块，每次只使用其中一块，当这一块内存用完后，将还存活的对象复制到另外一块内存上，再把已使用过的那块内存一次清理掉。</p>
+<p>优点：</p>
+<ol>
+<li> 每次对整半块的内存清理，实现简单</li>
+<li> 内存分配时也没有内存碎片的问题，整体上更高效</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li> 有一半的内存空间闲置不用浪费了</li>
+<li> 对象存活率较高时，就要进行较多的复制操作，效率降低</li>
+</ol>
+<h2 id="标记-整理（Mark-Compact）"><a href="#标记-整理（Mark-Compact）" class="headerlink" title="标记-整理（Mark-Compact）"></a>标记-整理（Mark-Compact）</h2><p>先标记出内存中所有存活的对象，再统一向内存的一端移动，最后直接清理掉边界以外的内存</p>
+<p>优点：</p>
+<ol>
+<li> 不会产生不连续的内存碎片</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li> 标记和整理的速度较慢</li>
+</ol>
+<h2 id="分代收集（Generational-Collection）"><a href="#分代收集（Generational-Collection）" class="headerlink" title="分代收集（Generational Collection）"></a>分代收集（Generational Collection）</h2><p>根据对象的存活周期将堆内存划分为几块，这样可以针对不同的区域的特性使用最合适最高效的垃圾回收算法，一般把堆划分为新生代和老年代，默认新生代占堆的三分之一空间，老年代占堆的三分之二空间。</p>
+<p>新生代又被划分为一块较大的Eden区域和两个较小的Survivor区域，每次使用Eden区和其中一个Survivor区。</p>
+<p>在新生代中每次垃圾回收时都有大量的对象死去，只有少量对象存活，采用复制算法，当开始垃圾回收时，将Eden和Survivor中还存活的对象一次性复制到另一块Survivor空间，只要付出少量存活对象的复制成本就可以完成内存回收。在HotSpot虚拟机中Eden区和Survivor区大小比值默认为8:1，新生代只有10%的内存空间被浪费。当新生代空间不够时，需要老年代空间做分配担保，大对象直接存入老年代。</p>
+<p>老年代中对象存活率高，必须使用标记清除或标记整理来进行回收。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824235449.png"></p>
+<p>参考《深入理解Java虚拟机（第2版）》 3.3 垃圾收集算法</p>
+<h1 id="分代收集有什么好处？"><a href="#分代收集有什么好处？" class="headerlink" title="分代收集有什么好处？"></a>分代收集有什么好处？</h1><p>对传统的、基本的GC实现来说，由于它们在GC的整个工作过程中都要“stop-the-world”，如果能想办法缩短GC一次工作的时间长度就是件重要的事情。如果说收集整个GC堆耗时太长，那不如只收集其中的一部分？<br>于是就有好几种不同的划分（partition）GC堆的方式来实现部分收集，而分代式GC就是这其中的一个思路。</p>
+<p>这个思路所基于的基本假设大家都很熟悉了：weak generational hypothesis——大部分对象的生命期很短（die young），而没有die young的对象则很可能会存活很长时间（live long）。</p>
+<p>这是对过往的很多应用行为分析之后得出的一个假设。基于这个假设，如果让新创建的对象都在young gen里创建，然后频繁收集young gen，则大部分垃圾都能在young GC中被收集掉。由于young gen的大小配置通常只占整个GC堆的较小部分，而且较高的对象死亡率（或者说较低的对象存活率）让它非常适合使用copying算法来收集，这样就不但能降低单次GC的时间长度，还可以提高GC的工作效率。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://www.zhihu.com/question/53613423/answer/135743258">java的gc为什么要分代？ - RednaxelaFX的回答 - 知乎 </a></li>
+</ul>
+<h1 id="基于分代收集回收算法，堆上的内存分配策略是怎样的？"><a href="#基于分代收集回收算法，堆上的内存分配策略是怎样的？" class="headerlink" title="基于分代收集回收算法，堆上的内存分配策略是怎样的？"></a>基于分代收集回收算法，堆上的内存分配策略是怎样的？</h1><p>参考《深入理解Java虚拟机（第2版）》 3.6 内存分配与回收策略</p>
+<h2 id="对象优先在新生代Eden区分配"><a href="#对象优先在新生代Eden区分配" class="headerlink" title="对象优先在新生代Eden区分配"></a>对象优先在新生代Eden区分配</h2><p>当Eden区没有足够的空间分配时，虚拟机发起一次Minor GC。</p>
+<h2 id="大对象直接进入老年代"><a href="#大对象直接进入老年代" class="headerlink" title="大对象直接进入老年代"></a>大对象直接进入老年代</h2><p>例如很长的字符串或很长的数组。</p>
+<h2 id="长期存活的对象进入老年代"><a href="#长期存活的对象进入老年代" class="headerlink" title="长期存活的对象进入老年代"></a>长期存活的对象进入老年代</h2><p>每个对象都有一个年龄计数器，对象在Eden区出生，经过一次Minor GC仍然存活，并能被Survivor容纳，年龄就增加1岁，年龄增加到一定程度（默认为15），就会晋升到老年代。</p>
+<h2 id="动态对象年龄判定"><a href="#动态对象年龄判定" class="headerlink" title="动态对象年龄判定"></a>动态对象年龄判定</h2><p>Survivor空间中相同年龄的对象大小总和大于Survivor空间的一半，年龄大于或等于该年龄的对象就可以直接进入老年代。</p>
+<h2 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h2><p>因为Eden区不足时会触发Minor GC，如果Minor GC后新生代空间仍然不足，需要老年代做分配担保，将存活的对象移动到老年代，如果老年代也没空间了，就要进行Full  GC了，清理整个堆（包括老年代和新生代）。</p>
+<p>Minor  GC  前检查老年代剩余空间是否大于新生代所有对象的大小总和，如果大于，说明进行Minor  GC是安全的，因为最坏情况下新生代对象全部存活并且达到年龄上限，可以安全的移动到老年代；如果老年代剩余空间小于新生代所有对象大小总和，最坏情况下老年代容纳不了新生代所有对象，新的对象也没有办法分配在Eden区了，这个时候按道理就要触发Full  GC了，清理整个堆（包括老年代和新生代）。</p>
+<h1 id="Minor-GC、Full-GC分别是什么？有什么区别？分别在什么时候触发？"><a href="#Minor-GC、Full-GC分别是什么？有什么区别？分别在什么时候触发？" class="headerlink" title="Minor  GC、Full GC分别是什么？有什么区别？分别在什么时候触发？"></a>Minor  GC、Full GC分别是什么？有什么区别？分别在什么时候触发？</h1><ul>
+<li>Minor GC 回收新生代</li>
+<li>Full GC 回收整个堆，包括新生代、老年代、元空间（Java8新增）</li>
+</ul>
+<p>Eden区不足时会触发Minor GC，如果Minor GC后新生代空间仍然不足，需要老年代做分配担保，将存活的对象移动到老年代，如果老年代也没空间了，就要进行Full  GC了，清理整个堆（包括老年代和新生代）。</p>
+<p>如果一开始就能知道老年代空间不足，就不需要先Minor  GC再Full  GC，直接进行Full  GC更省事，所以Minor GC前会判断老年代剩余空间是否大于新生代所有对象大小总和，如果大于，最坏情况下新生代对象全部存活，全部放到老年代还是可以放得下的，如果小于，最坏情况下肯定是放不下，但也有可能经过Minor  GC后，剩余存活对象Survivor放不下但老年代可以放的下，这是不确定的，此时如果设置了允许分配担保失败，会检查老年代剩余空间是否大于历次新生代晋升到老年代的对象的平均总大小，如果大于说明Minor  GC应该是安全，这样也不会频繁触发Full GC，如果小于就直接进行Full GC了。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://www.zhihu.com/question/41922036/answer/93079526">Major GC和Full GC的区别是什么？触发条件呢？ - RednaxelaFX的回答 - 知乎 </a></li>
+<li>参考《深入理解Java虚拟机（第2版）》 3.6 内存分配与回收策略</li>
+</ul>
+<h1 id="JVM是如何避免Minor-GC时扫描全堆的？"><a href="#JVM是如何避免Minor-GC时扫描全堆的？" class="headerlink" title="JVM是如何避免Minor GC时扫描全堆的？"></a>JVM是如何避免Minor GC时扫描全堆的？</h1><p>垃圾回收时要判断哪些对象可以被回收，要做可达性分析，跟GC Root有引用关系的对象是存活对象，分析引用关系的时候，是不知道一个类被谁引用的，但是反过来可以知道一个类引用了别的什么类。</p>
+<p>这就带来了一个问题，年轻代的Minor GC很频繁，做可达性分析的时候，如果有老年代的对象引用了年轻代的对象，为了找出这个引用关系，你得去扫描整个老年代，一个个检查老年代的对象是否对年轻代的对象有引用，这样效率太低了，扫描了全堆。</p>
+<p>如果能记录下老年代有哪些类引用了年轻代类，那就不用扫描整个老年代了。这就是卡表（Card Table）的作用。</p>
+<p>参考：<a href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></p>
+<h1 id="Minor-GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？"><a href="#Minor-GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？" class="headerlink" title="Minor GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？"></a>Minor GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？</h1><p>Minor GC时检查老年代中有没有引用新生代对象是通过检查卡表来完成的，老年代内存被划分为等长的卡页，每个卡页有一个编号，卡表中每一项代表某个卡页是否有对象引用新生代对象，这样Minor GC时就不用扫描整个老年代了，保证频繁进行Minor  GC不会占用太多CPU时间，提高了CPU的吞吐量。</p>
+<p>虚拟机在对老年代中的对象更新引用时，会加入写屏障，暂时中断写操作，检查老年代的对象是否引用了新生代的对象，如果是的话，便更新CardTable，标记这一块卡页为脏。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://juejin.im/post/5c39920b6fb9a049e82bbf94">JVM之卡表（Card Table）</a></li>
+<li><a href="https://segmentfault.com/a/1190000004682407">jvm的card table数据结构</a></li>
+</ul>
+<hr>
+<h1 id="卡表（CardTable）是什么？"><a href="#卡表（CardTable）是什么？" class="headerlink" title="卡表（CardTable）是什么？"></a>卡表（CardTable）是什么？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825001223.png"></p>
+<p>讲老年代的空间划分为大小为512B的若干张卡。</p>
+<p>卡表是单字节的数组，数组中每个元素对应着一张卡，当发生老年代对象引用新生代时，虚拟机将该卡对应的卡片元素设置为适当的值。之后Minor GC时通过扫描卡表就可以很快识别出哪些卡中存在老年代指向新生代的引用。用空间换时间，避免了全堆扫描。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></li>
+</ul>
+<h1 id="System-gc-是什么使用场景？"><a href="#System-gc-是什么使用场景？" class="headerlink" title="System.gc()是什么使用场景？"></a>System.gc()是什么使用场景？</h1><p>调用此方法只会建议虚拟机进行垃圾回收，并不会强制执行垃圾回收。</p>
+<p>由于频繁垃圾回收会导致频繁的线程暂停导致性能下降，因此应当尽量让虚拟机自动管理垃圾回收，对不用的对象置为null。</p>
+<p>所以System.gc()可以当作不存在，需要测试垃圾回收时可能需要，平时不应当主动依赖这个方法做垃圾回收。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/66540/when-does-system-gc-do-something">When does System.gc() do something?</a></li>
+<li><a href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数</a></li>
+</ul>
+<h1 id="垃圾回收的性能瓶颈在哪"><a href="#垃圾回收的性能瓶颈在哪" class="headerlink" title="垃圾回收的性能瓶颈在哪"></a>垃圾回收的性能瓶颈在哪</h1><p>性能瓶颈在于需要暂停所有的线程，影响程序正常运行。</p>
+<p>根据程序特性合理配置各个区域大小，减少垃圾回收触发次数，可以提高性能，因为每次垃圾回收都要暂停所有线程的工作。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li>《深入理解Java虚拟机（第2版）》第3章  垃圾回收器与内存分配策略</li>
+<li><a href="https://www.zhihu.com/question/53613423/answer/135743258">java的gc为什么要分代？ - RednaxelaFX的回答 - 知乎 </a></li>
+<li><a href="https://www.cnblogs.com/zhxiansheng/p/11294529.html">新生代和老年代垃圾回收的细节
+</a></li>
+<li><a href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>虚拟机</category>
+      </categories>
+      <tags>
+        <tag>虚拟机</tag>
+        <tag>垃圾回收</tag>
+        <tag>分代收集</tag>
+        <tag>CardTable</tag>
+        <tag>System.gc()</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Java的Class结构</title>
     <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%9A%84Class%E7%BB%93%E6%9E%84/</url>
     <content><![CDATA[<h1 id="如何方便的查看class结构？"><a href="#如何方便的查看class结构？" class="headerlink" title="如何方便的查看class结构？"></a>如何方便的查看class结构？</h1><ul>
@@ -4586,168 +4724,6 @@
         <tag>字符串常量池</tag>
         <tag>驻留字符串</tag>
         <tag>String.intern()</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java垃圾回收机制</title>
-    <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/</url>
-    <content><![CDATA[<h1 id="如何判定一个对象是否可以被垃圾回收？"><a href="#如何判定一个对象是否可以被垃圾回收？" class="headerlink" title="如何判定一个对象是否可以被垃圾回收？"></a>如何判定一个对象是否可以被垃圾回收？</h1><h2 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h2><p>记录每个对象被引用数量，产生新引用计数加1，引用失效计数减1</p>
-<p>优点：实现简单<br>缺点：无法解决环形依赖引用</p>
-<h2 id="可达性分析"><a href="#可达性分析" class="headerlink" title="可达性分析"></a>可达性分析</h2><p>一个对象到GC Roots对象没有引用链，表示此对象是没有地方使用，可以被回收。</p>
-<h3 id="可以作为GC-Roots的对象"><a href="#可以作为GC-Roots的对象" class="headerlink" title="可以作为GC Roots的对象"></a>可以作为GC Roots的对象</h3><ol>
-<li> 虚拟机栈中的引用的对象，即栈帧中的局部变量表中引用的对象</li>
-<li> 本地方法栈中引用的对象，即native方法中引用的对象</li>
-<li> 方法区中类的静态属性引用的对象</li>
-<li> 方法区中常量引用的对象</li>
-</ol>
-<p>优点：</p>
-<ul>
-<li>分析更加精确，解决了环形引用的问题</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li> 实现复杂，分析时间长</li>
-<li>分析过程需要保证引用关系不能发生变化，需要GC停顿，即让所有线程的执行都暂停（Stop the world）</li>
-</ul>
-<p>参考《深入理解Java虚拟机（第2版）》3.2 对象已死吗</p>
-<h1 id="GC停顿是什么？Stop-the-world是怎么回事？"><a href="#GC停顿是什么？Stop-the-world是怎么回事？" class="headerlink" title="GC停顿是什么？Stop the world是怎么回事？"></a>GC停顿是什么？Stop the world是怎么回事？</h1><p>对象的可达性分析需要枚举GC Roots节点对象，必须要保证对象之间的引用关系不能一直变化，必须要停顿所有线程的执行，这就是Stop the world，也是垃圾回收的性能瓶颈所在。暂停线程的工作，需要等到安全点才能暂停。</p>
-<h1 id="怎么让线程在安全点暂停？"><a href="#怎么让线程在安全点暂停？" class="headerlink" title="怎么让线程在安全点暂停？"></a>怎么让线程在安全点暂停？</h1><p>主动式中断（Voluntary  Suspension），GC需要中断线程时，不直接中断线程，仅仅给每个线程设置一个标志，各线程主动轮询这个标志，发现中断标志为true就自己中断挂起。</p>
-<h1 id="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"><a href="#线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？" class="headerlink" title="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"></a>线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？</h1><p>如果一段代码中引用关系不会变化，称为这一段为安全区域，线程执行到安全区域的代码时，会标记自己已经进入了安全区域；虚拟机发起垃圾回收时，就不用管已经位于安全区域的线程了；线程离开安全区域时，要检查系统是否已经完成了GC Roots的枚举（或者是检查整个垃圾回收是否已结束），如果还没有完成，就必须要等待，直到收到可以安全离开安全区域的信号为止。</p>
-<h1 id="StrongReference（强引用）、SoftReference（软引用）、WeakReference（弱引用）、PhantomReference（虚引用）之间的区别？"><a href="#StrongReference（强引用）、SoftReference（软引用）、WeakReference（弱引用）、PhantomReference（虚引用）之间的区别？" class="headerlink" title="StrongReference（强引用）、SoftReference（软引用）、WeakReference（弱引用）、PhantomReference（虚引用）之间的区别？"></a>StrongReference（强引用）、SoftReference（软引用）、WeakReference（弱引用）、PhantomReference（虚引用）之间的区别？</h1><h2 id="强引用（StrongReference）"><a href="#强引用（StrongReference）" class="headerlink" title="强引用（StrongReference）"></a>强引用（StrongReference）</h2><p>正常的赋值语句生成的引用，只要强引用存在，与GC Roots对象有引用链，就不会被垃圾回收。</p>
-<h2 id="软引用（SoftReference）"><a href="#软引用（SoftReference）" class="headerlink" title="软引用（SoftReference）"></a>软引用（SoftReference）</h2><p>虚拟机内存不够用时才会尝试回收软引用链接的对象，此次回收后还是不够用，才会抛出内存溢出的异常。</p>
-<h2 id="弱引用（WeakReference）"><a href="#弱引用（WeakReference）" class="headerlink" title="弱引用（WeakReference）"></a>弱引用（WeakReference）</h2><p>发生垃圾回收时，不论当前内存是否足够，都会回收弱引用链接的对象。</p>
-<h2 id="虚引用（PhantomReference）"><a href="#虚引用（PhantomReference）" class="headerlink" title="虚引用（PhantomReference）"></a>虚引用（PhantomReference）</h2><p>在虚引用链接的对象被垃圾回收后，虚引用会受到虚拟机的通知，并不能通过虚引用直接获得对象的实例，虚引用也不会影响对象的生命周期。</p>
-<h1 id="弱引用（WeakReference）的使用场景"><a href="#弱引用（WeakReference）的使用场景" class="headerlink" title="弱引用（WeakReference）的使用场景"></a>弱引用（WeakReference）的使用场景</h1><p>官方文档：</p>
-<blockquote>
-<p>假设垃圾收集器在某个时间点决定一个对象是弱可达的(weakly reachable)（也就是说当前指向它的全都是弱引用），这时垃圾收集器会清除所有指向该对象的弱引用，然后垃圾收集器会把这个弱可达对象标记为可终结(finalizable)的，这样它们随后就会被回收。与此同时或稍后，垃圾收集器会把那些刚清除的弱引用放入创建弱引用对象时所登记到的引用队列(Reference Queue)中。</p>
-</blockquote>
-<p>实际上，WeakReference类有两个构造函数：</p>
-<ul>
-<li>WeakReference(T referent) //创建一个指向给定对象的弱引用</li>
-<li>WeakReference(T referent, ReferenceQueue&lt;? super T&gt; q) //创建一个指向给定对象并且登记到给定引用队列的弱引用</li>
-</ul>
-<p>我们可以看到第二个构造方法中提供了一个ReferenceQueue类型的参数，通过提供这个参数，我们便把创建的弱引用对象注册到了一个引用队列上，这样当它被垃圾回收器清除时，就会把它送入这个引用队列中，我们便可以对这些被清除的弱引用对象进行统一管理。</p>
-<p>参考：<a href="https://www.jianshu.com/p/dac0958778e0">WeakReference才是LeakCanary真正的核心</a></p>
-<h1 id="虚引用（PhantomReference）有什么应用场景？"><a href="#虚引用（PhantomReference）有什么应用场景？" class="headerlink" title="虚引用（PhantomReference）有什么应用场景？"></a>虚引用（PhantomReference）有什么应用场景？</h1><p>DirectByteBuffer中对堆外内存的释放，通过虚引用监听DirectByteBuffer对象被GC回收后，再调用释放堆外内存的方法。</p>
-<h1 id="垃圾回收算法有哪些？分别有什么优缺点-？"><a href="#垃圾回收算法有哪些？分别有什么优缺点-？" class="headerlink" title="垃圾回收算法有哪些？分别有什么优缺点  ？"></a>垃圾回收算法有哪些？分别有什么优缺点  ？</h1><p>垃圾回收算法主要有：</p>
-<ol>
-<li> 标记-清除（Mark-Sweep）</li>
-<li> 复制（Copying）</li>
-<li> 标记-整理（Mark-Compact）</li>
-<li> 分代收集</li>
-</ol>
-<h2 id="标记-清除（Mark-Sweep）"><a href="#标记-清除（Mark-Sweep）" class="headerlink" title="标记-清除（Mark-Sweep）"></a>标记-清除（Mark-Sweep）</h2><p>先标记出内存中所有需要回收的对象，再统一回收所有被标记的对象。标记过程就是对象到GC Roots对象的可达性分析。</p>
-<p>缺点：</p>
-<ol>
-<li>记和清除两个过程都不高效。</li>
-<li>容易产生大量不连续的空间碎片，分配大对象的时候无法找到连续的内存空间时会再次触发垃圾回收。</li>
-</ol>
-<h2 id="复制（Copying）"><a href="#复制（Copying）" class="headerlink" title="复制（Copying）"></a>复制（Copying）</h2><p>将内存分为大小相等的两块，每次只使用其中一块，当这一块内存用完后，将还存活的对象复制到另外一块内存上，再把已使用过的那块内存一次清理掉。</p>
-<p>优点：</p>
-<ol>
-<li> 每次对整半块的内存清理，实现简单</li>
-<li> 内存分配时也没有内存碎片的问题，整体上更高效</li>
-</ol>
-<p>缺点：</p>
-<ol>
-<li> 有一半的内存空间闲置不用浪费了</li>
-<li> 对象存活率较高时，就要进行较多的复制操作，效率降低</li>
-</ol>
-<h2 id="标记-整理（Mark-Compact）"><a href="#标记-整理（Mark-Compact）" class="headerlink" title="标记-整理（Mark-Compact）"></a>标记-整理（Mark-Compact）</h2><p>先标记出内存中所有存活的对象，再统一向内存的一端移动，最后直接清理掉边界以外的内存</p>
-<p>优点：</p>
-<ol>
-<li> 不会产生不连续的内存碎片</li>
-</ol>
-<p>缺点：</p>
-<ol>
-<li> 标记和整理的速度较慢</li>
-</ol>
-<h2 id="分代收集（Generational-Collection）"><a href="#分代收集（Generational-Collection）" class="headerlink" title="分代收集（Generational Collection）"></a>分代收集（Generational Collection）</h2><p>根据对象的存活周期将堆内存划分为几块，这样可以针对不同的区域的特性使用最合适最高效的垃圾回收算法，一般把堆划分为新生代和老年代，默认新生代占堆的三分之一空间，老年代占堆的三分之二空间。</p>
-<p>新生代又被划分为一块较大的Eden区域和两个较小的Survivor区域，每次使用Eden区和其中一个Survivor区。</p>
-<p>在新生代中每次垃圾回收时都有大量的对象死去，只有少量对象存活，采用复制算法，当开始垃圾回收时，将Eden和Survivor中还存活的对象一次性复制到另一块Survivor空间，只要付出少量存活对象的复制成本就可以完成内存回收。在HotSpot虚拟机中Eden区和Survivor区大小比值默认为8:1，新生代只有10%的内存空间被浪费。当新生代空间不够时，需要老年代空间做分配担保，大对象直接存入老年代。</p>
-<p>老年代中对象存活率高，必须使用标记清除或标记整理来进行回收。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824235449.png"></p>
-<p>参考《深入理解Java虚拟机（第2版）》 3.3 垃圾收集算法</p>
-<h1 id="分代收集有什么好处？"><a href="#分代收集有什么好处？" class="headerlink" title="分代收集有什么好处？"></a>分代收集有什么好处？</h1><p>对传统的、基本的GC实现来说，由于它们在GC的整个工作过程中都要“stop-the-world”，如果能想办法缩短GC一次工作的时间长度就是件重要的事情。如果说收集整个GC堆耗时太长，那不如只收集其中的一部分？<br>于是就有好几种不同的划分（partition）GC堆的方式来实现部分收集，而分代式GC就是这其中的一个思路。</p>
-<p>这个思路所基于的基本假设大家都很熟悉了：weak generational hypothesis——大部分对象的生命期很短（die young），而没有die young的对象则很可能会存活很长时间（live long）。</p>
-<p>这是对过往的很多应用行为分析之后得出的一个假设。基于这个假设，如果让新创建的对象都在young gen里创建，然后频繁收集young gen，则大部分垃圾都能在young GC中被收集掉。由于young gen的大小配置通常只占整个GC堆的较小部分，而且较高的对象死亡率（或者说较低的对象存活率）让它非常适合使用copying算法来收集，这样就不但能降低单次GC的时间长度，还可以提高GC的工作效率。</p>
-<p>参考：</p>
-<ul>
-<li><a href="https://www.zhihu.com/question/53613423/answer/135743258">java的gc为什么要分代？ - RednaxelaFX的回答 - 知乎 </a></li>
-</ul>
-<h1 id="基于分代收集回收算法，堆上的内存分配策略是怎样的？"><a href="#基于分代收集回收算法，堆上的内存分配策略是怎样的？" class="headerlink" title="基于分代收集回收算法，堆上的内存分配策略是怎样的？"></a>基于分代收集回收算法，堆上的内存分配策略是怎样的？</h1><p>参考《深入理解Java虚拟机（第2版）》 3.6 内存分配与回收策略</p>
-<h2 id="对象优先在新生代Eden区分配"><a href="#对象优先在新生代Eden区分配" class="headerlink" title="对象优先在新生代Eden区分配"></a>对象优先在新生代Eden区分配</h2><p>当Eden区没有足够的空间分配时，虚拟机发起一次Minor GC。</p>
-<h2 id="大对象直接进入老年代"><a href="#大对象直接进入老年代" class="headerlink" title="大对象直接进入老年代"></a>大对象直接进入老年代</h2><p>例如很长的字符串或很长的数组。</p>
-<h2 id="长期存活的对象进入老年代"><a href="#长期存活的对象进入老年代" class="headerlink" title="长期存活的对象进入老年代"></a>长期存活的对象进入老年代</h2><p>每个对象都有一个年龄计数器，对象在Eden区出生，经过一次Minor GC仍然存活，并能被Survivor容纳，年龄就增加1岁，年龄增加到一定程度（默认为15），就会晋升到老年代。</p>
-<h2 id="动态对象年龄判定"><a href="#动态对象年龄判定" class="headerlink" title="动态对象年龄判定"></a>动态对象年龄判定</h2><p>Survivor空间中相同年龄的对象大小总和大于Survivor空间的一半，年龄大于或等于该年龄的对象就可以直接进入老年代。</p>
-<h2 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h2><p>因为Eden区不足时会触发Minor GC，如果Minor GC后新生代空间仍然不足，需要老年代做分配担保，将存活的对象移动到老年代，如果老年代也没空间了，就要进行Full  GC了，清理整个堆（包括老年代和新生代）。</p>
-<p>Minor  GC  前检查老年代剩余空间是否大于新生代所有对象的大小总和，如果大于，说明进行Minor  GC是安全的，因为最坏情况下新生代对象全部存活并且达到年龄上限，可以安全的移动到老年代；如果老年代剩余空间小于新生代所有对象大小总和，最坏情况下老年代容纳不了新生代所有对象，新的对象也没有办法分配在Eden区了，这个时候按道理就要触发Full  GC了，清理整个堆（包括老年代和新生代）。</p>
-<h1 id="Minor-GC、Full-GC分别是什么？有什么区别？分别在什么时候触发？"><a href="#Minor-GC、Full-GC分别是什么？有什么区别？分别在什么时候触发？" class="headerlink" title="Minor  GC、Full GC分别是什么？有什么区别？分别在什么时候触发？"></a>Minor  GC、Full GC分别是什么？有什么区别？分别在什么时候触发？</h1><ul>
-<li>Minor GC 回收新生代</li>
-<li>Full GC 回收整个堆，包括新生代、老年代、元空间（Java8新增）</li>
-</ul>
-<p>Eden区不足时会触发Minor GC，如果Minor GC后新生代空间仍然不足，需要老年代做分配担保，将存活的对象移动到老年代，如果老年代也没空间了，就要进行Full  GC了，清理整个堆（包括老年代和新生代）。</p>
-<p>如果一开始就能知道老年代空间不足，就不需要先Minor  GC再Full  GC，直接进行Full  GC更省事，所以Minor GC前会判断老年代剩余空间是否大于新生代所有对象大小总和，如果大于，最坏情况下新生代对象全部存活，全部放到老年代还是可以放得下的，如果小于，最坏情况下肯定是放不下，但也有可能经过Minor  GC后，剩余存活对象Survivor放不下但老年代可以放的下，这是不确定的，此时如果设置了允许分配担保失败，会检查老年代剩余空间是否大于历次新生代晋升到老年代的对象的平均总大小，如果大于说明Minor  GC应该是安全，这样也不会频繁触发Full GC，如果小于就直接进行Full GC了。</p>
-<p>参考：</p>
-<ul>
-<li><a href="https://www.zhihu.com/question/41922036/answer/93079526">Major GC和Full GC的区别是什么？触发条件呢？ - RednaxelaFX的回答 - 知乎 </a></li>
-<li>参考《深入理解Java虚拟机（第2版）》 3.6 内存分配与回收策略</li>
-</ul>
-<h1 id="JVM是如何避免Minor-GC时扫描全堆的？"><a href="#JVM是如何避免Minor-GC时扫描全堆的？" class="headerlink" title="JVM是如何避免Minor GC时扫描全堆的？"></a>JVM是如何避免Minor GC时扫描全堆的？</h1><p>垃圾回收时要判断哪些对象可以被回收，要做可达性分析，跟GC Root有引用关系的对象是存活对象，分析引用关系的时候，是不知道一个类被谁引用的，但是反过来可以知道一个类引用了别的什么类。</p>
-<p>这就带来了一个问题，年轻代的Minor GC很频繁，做可达性分析的时候，如果有老年代的对象引用了年轻代的对象，为了找出这个引用关系，你得去扫描整个老年代，一个个检查老年代的对象是否对年轻代的对象有引用，这样效率太低了，扫描了全堆。</p>
-<p>如果能记录下老年代有哪些类引用了年轻代类，那就不用扫描整个老年代了。这就是卡表（Card Table）的作用。</p>
-<p>参考：<a href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></p>
-<h1 id="Minor-GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？"><a href="#Minor-GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？" class="headerlink" title="Minor GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？"></a>Minor GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？</h1><p>Minor GC时检查老年代中有没有引用新生代对象是通过检查卡表来完成的，老年代内存被划分为等长的卡页，每个卡页有一个编号，卡表中每一项代表某个卡页是否有对象引用新生代对象，这样Minor GC时就不用扫描整个老年代了，保证频繁进行Minor  GC不会占用太多CPU时间，提高了CPU的吞吐量。</p>
-<p>虚拟机在对老年代中的对象更新引用时，会加入写屏障，暂时中断写操作，检查老年代的对象是否引用了新生代的对象，如果是的话，便更新CardTable，标记这一块卡页为脏。</p>
-<p>参考：</p>
-<ul>
-<li><a href="https://juejin.im/post/5c39920b6fb9a049e82bbf94">JVM之卡表（Card Table）</a></li>
-<li><a href="https://segmentfault.com/a/1190000004682407">jvm的card table数据结构</a></li>
-</ul>
-<hr>
-<h1 id="卡表（CardTable）是什么？"><a href="#卡表（CardTable）是什么？" class="headerlink" title="卡表（CardTable）是什么？"></a>卡表（CardTable）是什么？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825001223.png"></p>
-<p>讲老年代的空间划分为大小为512B的若干张卡。</p>
-<p>卡表是单字节的数组，数组中每个元素对应着一张卡，当发生老年代对象引用新生代时，虚拟机将该卡对应的卡片元素设置为适当的值。之后Minor GC时通过扫描卡表就可以很快识别出哪些卡中存在老年代指向新生代的引用。用空间换时间，避免了全堆扫描。</p>
-<p>参考：</p>
-<ul>
-<li><a href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></li>
-</ul>
-<h1 id="System-gc-是什么使用场景？"><a href="#System-gc-是什么使用场景？" class="headerlink" title="System.gc()是什么使用场景？"></a>System.gc()是什么使用场景？</h1><p>调用此方法只会建议虚拟机进行垃圾回收，并不会强制执行垃圾回收。</p>
-<p>由于频繁垃圾回收会导致频繁的线程暂停导致性能下降，因此应当尽量让虚拟机自动管理垃圾回收，对不用的对象置为null。</p>
-<p>所以System.gc()可以当作不存在，需要测试垃圾回收时可能需要，平时不应当主动依赖这个方法做垃圾回收。</p>
-<p>参考：</p>
-<ul>
-<li><a href="https://stackoverflow.com/questions/66540/when-does-system-gc-do-something">When does System.gc() do something?</a></li>
-<li><a href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数</a></li>
-</ul>
-<h1 id="Object的finalize方法是做什么的？"><a href="#Object的finalize方法是做什么的？" class="headerlink" title="Object的finalize方法是做什么的？"></a>Object的finalize方法是做什么的？</h1><p>finalize()工作流程：当对象变成(GC Roots)不可达时，GC会判断该对象是否覆盖了finalize方法，若未覆盖，则直接将其回收。否则，若对象未执行过finalize方法，将其放入F-Queue队列，由一低优先级线程执行该队列中对象的finalize方法。执行finalize方法完毕后，GC会再次判断该对象是否可达，若不可达，则进行回收，否则，对象“复活”。</p>
-<p>参考：</p>
-<ul>
-<li><a href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数
-</a></li>
-<li><a href="https://cloud.tencent.com/developer/article/1082673">是时候忘掉finalize方法了</a></li>
-</ul>
-<h1 id="垃圾回收的性能瓶颈在哪"><a href="#垃圾回收的性能瓶颈在哪" class="headerlink" title="垃圾回收的性能瓶颈在哪"></a>垃圾回收的性能瓶颈在哪</h1><p>性能瓶颈在于需要暂停所有的线程，影响程序正常运行。</p>
-<p>根据程序特性合理配置各个区域大小，减少垃圾回收触发次数，可以提高性能，因为每次垃圾回收都要暂停所有线程的工作。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li>《深入理解Java虚拟机（第2版）》第3章  垃圾回收器与内存分配策略</li>
-<li><a href="https://www.zhihu.com/question/53613423/answer/135743258">java的gc为什么要分代？ - RednaxelaFX的回答 - 知乎 </a></li>
-<li><a href="https://www.cnblogs.com/zhxiansheng/p/11294529.html">新生代和老年代垃圾回收的细节
-</a></li>
-<li><a href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>虚拟机</category>
-      </categories>
-      <tags>
-        <tag>虚拟机</tag>
-        <tag>垃圾回收</tag>
-        <tag>Object.finalize()</tag>
-        <tag>WeakReference</tag>
-        <tag>分代收集</tag>
-        <tag>CardTable</tag>
-        <tag>System.gc()</tag>
       </tags>
   </entry>
   <entry>

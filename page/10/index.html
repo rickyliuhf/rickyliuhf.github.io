@@ -217,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 13:53:02" itemprop="dateModified" datetime="2021-08-25T13:53:02+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 13:53:35" itemprop="dateModified" datetime="2021-08-25T13:53:35+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -327,7 +327,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 13:53:02" itemprop="dateModified" datetime="2021-08-25T13:53:02+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 13:53:35" itemprop="dateModified" datetime="2021-08-25T13:53:35+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -432,7 +432,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 13:53:02" itemprop="dateModified" datetime="2021-08-25T13:53:02+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 13:53:35" itemprop="dateModified" datetime="2021-08-25T13:53:35+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -656,7 +656,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Java垃圾回收机制</a>
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Java垃圾回收算法</a>
         </h2>
 
         <div class="post-meta">
@@ -673,7 +673,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 13:53:02" itemprop="dateModified" datetime="2021-08-25T13:53:02+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 13:53:35" itemprop="dateModified" datetime="2021-08-25T13:53:35+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -729,26 +729,11 @@
 <li>分析过程需要保证引用关系不能发生变化，需要GC停顿，即让所有线程的执行都暂停（Stop the world）</li>
 </ul>
 <p>参考《深入理解Java虚拟机（第2版）》3.2 对象已死吗</p>
-<h1 id="GC停顿是什么？Stop-the-world是怎么回事？"><a href="#GC停顿是什么？Stop-the-world是怎么回事？" class="headerlink" title="GC停顿是什么？Stop the world是怎么回事？"></a>GC停顿是什么？Stop the world是怎么回事？</h1><p>对象的可达性分析需要枚举GC Roots节点对象，必须要保证对象之间的引用关系不能一直变化，必须要停顿所有线程的执行，这就是Stop the world，也是垃圾回收的性能瓶颈所在。暂停线程的工作，需要等到安全点才能暂停。</p>
+<h1 id="GC停顿是什么？"><a href="#GC停顿是什么？" class="headerlink" title="GC停顿是什么？"></a>GC停顿是什么？</h1><p>对象的可达性分析需要枚举GC Roots节点对象，必须要保证对象之间的引用关系不能一直变化，必须要停顿所有线程的执行，这就是Stop the world，也是垃圾回收的性能瓶颈所在。暂停线程的工作，需要等到安全点才能暂停。</p>
 <h1 id="怎么让线程在安全点暂停？"><a href="#怎么让线程在安全点暂停？" class="headerlink" title="怎么让线程在安全点暂停？"></a>怎么让线程在安全点暂停？</h1><p>主动式中断（Voluntary  Suspension），GC需要中断线程时，不直接中断线程，仅仅给每个线程设置一个标志，各线程主动轮询这个标志，发现中断标志为true就自己中断挂起。</p>
-<h1 id="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"><a href="#线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？" class="headerlink" title="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"></a>线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？</h1><p>如果一段代码中引用关系不会变化，称为这一段为安全区域，线程执行到安全区域的代码时，会标记自己已经进入了安全区域；虚拟机发起垃圾回收时，就不用管已经位于安全区域的线程了；线程离开安全区域时，要检查系统是否已经完成了GC Roots的枚举（或者是检查整个垃圾回收是否已结束），如果还没有完成，就必须要等待，直到收到可以安全离开安全区域的信号为止。</p>
-<h1 id="StrongReference（强引用）、SoftReference（软引用）、WeakReference（弱引用）、PhantomReference（虚引用）之间的区别？"><a href="#StrongReference（强引用）、SoftReference（软引用）、WeakReference（弱引用）、PhantomReference（虚引用）之间的区别？" class="headerlink" title="StrongReference（强引用）、SoftReference（软引用）、WeakReference（弱引用）、PhantomReference（虚引用）之间的区别？"></a>StrongReference（强引用）、SoftReference（软引用）、WeakReference（弱引用）、PhantomReference（虚引用）之间的区别？</h1><h2 id="强引用（StrongReference）"><a href="#强引用（StrongReference）" class="headerlink" title="强引用（StrongReference）"></a>强引用（StrongReference）</h2><p>正常的赋值语句生成的引用，只要强引用存在，与GC Roots对象有引用链，就不会被垃圾回收。</p>
-<h2 id="软引用（SoftReference）"><a href="#软引用（SoftReference）" class="headerlink" title="软引用（SoftReference）"></a>软引用（SoftReference）</h2><p>虚拟机内存不够用时才会尝试回收软引用链接的对象，此次回收后还是不够用，才会抛出内存溢出的异常。</p>
-<h2 id="弱引用（WeakReference）"><a href="#弱引用（WeakReference）" class="headerlink" title="弱引用（WeakReference）"></a>弱引用（WeakReference）</h2><p>发生垃圾回收时，不论当前内存是否足够，都会回收弱引用链接的对象。</p>
-<h2 id="虚引用（PhantomReference）"><a href="#虚引用（PhantomReference）" class="headerlink" title="虚引用（PhantomReference）"></a>虚引用（PhantomReference）</h2><p>在虚引用链接的对象被垃圾回收后，虚引用会受到虚拟机的通知，并不能通过虚引用直接获得对象的实例，虚引用也不会影响对象的生命周期。</p>
-<h1 id="弱引用（WeakReference）的使用场景"><a href="#弱引用（WeakReference）的使用场景" class="headerlink" title="弱引用（WeakReference）的使用场景"></a>弱引用（WeakReference）的使用场景</h1><p>官方文档：</p>
-<blockquote>
-<p>假设垃圾收集器在某个时间点决定一个对象是弱可达的(weakly reachable)（也就是说当前指向它的全都是弱引用），这时垃圾收集器会清除所有指向该对象的弱引用，然后垃圾收集器会把这个弱可达对象标记为可终结(finalizable)的，这样它们随后就会被回收。与此同时或稍后，垃圾收集器会把那些刚清除的弱引用放入创建弱引用对象时所登记到的引用队列(Reference Queue)中。</p>
-</blockquote>
-<p>实际上，WeakReference类有两个构造函数：</p>
-<ul>
-<li>WeakReference(T referent) //创建一个指向给定对象的弱引用</li>
-<li>WeakReference(T referent, ReferenceQueue&lt;? super T&gt; q) //创建一个指向给定对象并且登记到给定引用队列的弱引用</li>
-</ul>
-<p>我们可以看到第二个构造方法中提供了一个ReferenceQueue类型的参数，通过提供这个参数，我们便把创建的弱引用对象注册到了一个引用队列上，这样当它被垃圾回收器清除时，就会把它送入这个引用队列中，我们便可以对这些被清除的弱引用对象进行统一管理。</p>
-<p>参考：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/dac0958778e0">WeakReference才是LeakCanary真正的核心</a></p>
-<h1 id="虚引用（PhantomReference）有什么应用场景？"><a href="#虚引用（PhantomReference）有什么应用场景？" class="headerlink" title="虚引用（PhantomReference）有什么应用场景？"></a>虚引用（PhantomReference）有什么应用场景？</h1><p>DirectByteBuffer中对堆外内存的释放，通过虚引用监听DirectByteBuffer对象被GC回收后，再调用释放堆外内存的方法。</p>
-<h1 id="垃圾回收算法有哪些？分别有什么优缺点-？"><a href="#垃圾回收算法有哪些？分别有什么优缺点-？" class="headerlink" title="垃圾回收算法有哪些？分别有什么优缺点  ？"></a>垃圾回收算法有哪些？分别有什么优缺点  ？</h1><p>垃圾回收算法主要有：</p>
+<h1 id="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"><a href="#线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？" class="headerlink" title="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"></a>线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？</h1><p>如果一段代码中引用关系不会变化，称为这一段为安全区域，线程执行到安全区域的代码时，会标记自己已经进入了安全区域；虚拟机发起垃圾回收时，就不用管已经位于安全区域的线程了。</p>
+<p>线程离开安全区域时，要检查系统是否已经完成了GC Roots的枚举（或者是检查整个垃圾回收是否已结束），如果还没有完成，就必须要等待，直到收到可以安全离开安全区域的信号为止。</p>
+<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><h1 id="垃圾回收算法有哪些？分别有什么优缺点-？"><a href="#垃圾回收算法有哪些？分别有什么优缺点-？" class="headerlink" title="垃圾回收算法有哪些？分别有什么优缺点  ？"></a>垃圾回收算法有哪些？分别有什么优缺点  ？</h1><p>垃圾回收算法主要有：</p>
 <ol>
 <li> 标记-清除（Mark-Sweep）</li>
 <li> 复制（Copying）</li>
@@ -839,13 +824,6 @@
 <li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/66540/when-does-system-gc-do-something">When does System.gc() do something?</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数</a></li>
 </ul>
-<h1 id="Object的finalize方法是做什么的？"><a href="#Object的finalize方法是做什么的？" class="headerlink" title="Object的finalize方法是做什么的？"></a>Object的finalize方法是做什么的？</h1><p>finalize()工作流程：当对象变成(GC Roots)不可达时，GC会判断该对象是否覆盖了finalize方法，若未覆盖，则直接将其回收。否则，若对象未执行过finalize方法，将其放入F-Queue队列，由一低优先级线程执行该队列中对象的finalize方法。执行finalize方法完毕后，GC会再次判断该对象是否可达，若不可达，则进行回收，否则，对象“复活”。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数
-</a></li>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1082673">是时候忘掉finalize方法了</a></li>
-</ul>
 <h1 id="垃圾回收的性能瓶颈在哪"><a href="#垃圾回收的性能瓶颈在哪" class="headerlink" title="垃圾回收的性能瓶颈在哪"></a>垃圾回收的性能瓶颈在哪</h1><p>性能瓶颈在于需要暂停所有的线程，影响程序正常运行。</p>
 <p>根据程序特性合理配置各个区域大小，减少垃圾回收触发次数，可以提高性能，因为每次垃圾回收都要暂停所有线程的工作。</p>
 <h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
@@ -905,7 +883,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 13:53:02" itemprop="dateModified" datetime="2021-08-25T13:53:02+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 13:53:35" itemprop="dateModified" datetime="2021-08-25T13:53:35+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1101,7 +1079,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 13:53:02" itemprop="dateModified" datetime="2021-08-25T13:53:02+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 13:53:35" itemprop="dateModified" datetime="2021-08-25T13:53:35+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1200,7 +1178,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-25 13:53:02" itemprop="dateModified" datetime="2021-08-25T13:53:02+08:00">2021-08-25</time>
+                <time title="修改时间：2021-08-25 13:53:35" itemprop="dateModified" datetime="2021-08-25T13:53:35+08:00">2021-08-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
