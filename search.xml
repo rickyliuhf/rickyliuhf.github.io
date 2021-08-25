@@ -4263,18 +4263,17 @@
 <p>GC会再判断该对象是否覆盖了finalize方法，若未覆盖，则直接将其回收。</p>
 <p>如果对象覆盖finalize()方法且未被虚拟机调用过，那么这个对象会被放置在F-Queue队列中，并在稍后由一个虚拟机自动建立的低优先级的Finalizer线程区执行触发finalize()方法，但不承诺等待其运行结束。</p>
 <p>执行finalize方法完毕后，GC会再次判断该对象是否可达，若不可达，则进行回收，否则，对象“复活”。</p>
-<p>参考：</p>
-<ul>
+<h1 id="Object-finalize-设计目的？"><a href="#Object-finalize-设计目的？" class="headerlink" title="Object.finalize()设计目的？"></a>Object.finalize()设计目的？</h1><p>f对象逃脱死亡的最后一次机会。（只要重新与引用链上的任何一个对象建立关联即可。）但是不建议使用，运行代价高昂，不确定性大，且无法保证各个对象的调用顺序。可用try-finally或其他替代。</p>
+<h1 id="Object-finalize-使用场景"><a href="#Object-finalize-使用场景" class="headerlink" title="Object.finalize()使用场景"></a>Object.finalize()使用场景</h1><p>由于发生垃圾回收就会调用finalize()，所以它可以作为垃圾回收的监听回调。</p>
+<p>在Android framework源码中BinderInternal实现了gc监听的功能，ActivityThread在gc发生时，如果当前内存不足时，则清理一些不必要的activity以释放内存。</p>
+<p>再比如你调用了一些native的方法，可以要在finalize()里去调用C的释放函数。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
 <li><a href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数
 </a></li>
 <li><a href="https://cloud.tencent.com/developer/article/1082673">是时候忘掉finalize方法了</a></li>
 <li><a href="https://www.nowcoder.com/questionTerminal/d8eab06913084e42b515633604eef7cd">finalize()方法什么时候被调用？析构函数(finalization)的目的是什么？</a></li>
 <li>《深入理解Java虚拟机》</li>
 </ul>
-<h1 id="Object-finalize-设计目的？"><a href="#Object-finalize-设计目的？" class="headerlink" title="Object.finalize()设计目的？"></a>Object.finalize()设计目的？</h1><p>f对象逃脱死亡的最后一次机会。（只要重新与引用链上的任何一个对象建立关联即可。）但是不建议使用，运行代价高昂，不确定性大，且无法保证各个对象的调用顺序。可用try-finally或其他替代。</p>
-<h1 id="Object-finalize-使用场景"><a href="#Object-finalize-使用场景" class="headerlink" title="Object.finalize()使用场景"></a>Object.finalize()使用场景</h1><p>由于发生垃圾回收就会调用finalize()，所以它可以作为垃圾回收的监听回调。</p>
-<p>在Android framework源码中BinderInternal实现了gc监听的功能，ActivityThread在gc发生时，如果当前内存不足时，则清理一些不必要的activity以释放内存。</p>
-<p>再比如你调用了一些native的方法，可以要在finalize()里去调用C的释放函数。</p>
 ]]></content>
       <categories>
         <category>虚拟机</category>
@@ -4320,7 +4319,7 @@
     <content><![CDATA[<h1 id="强引用（StrongReference）"><a href="#强引用（StrongReference）" class="headerlink" title="强引用（StrongReference）"></a>强引用（StrongReference）</h1><p>正常的赋值语句生成的引用，只要强引用存在，与GC Roots对象有引用链，就不会被垃圾回收。</p>
 <h1 id="软引用（SoftReference）"><a href="#软引用（SoftReference）" class="headerlink" title="软引用（SoftReference）"></a>软引用（SoftReference）</h1><p>虚拟机内存不够用时才会尝试回收软引用链接的对象，此次回收后还是不够用，才会抛出内存溢出的异常。</p>
 <h1 id="弱引用（WeakReference）"><a href="#弱引用（WeakReference）" class="headerlink" title="弱引用（WeakReference）"></a>弱引用（WeakReference）</h1><p>发生垃圾回收时，不论当前内存是否足够，都会回收弱引用链接的对象。</p>
-<h1 id="弱引用应用场景"><a href="#弱引用应用场景" class="headerlink" title="弱引用应用场景"></a>弱引用应用场景</h1><p>官方文档：</p>
+<h2 id="弱引用应用场景"><a href="#弱引用应用场景" class="headerlink" title="弱引用应用场景"></a>弱引用应用场景</h2><p>官方文档：</p>
 <blockquote>
 <p>假设垃圾收集器在某个时间点决定一个对象是弱可达的(weakly reachable)（也就是说当前指向它的全都是弱引用），这时垃圾收集器会清除所有指向该对象的弱引用，然后垃圾收集器会把这个弱可达对象标记为可终结(finalizable)的，这样它们随后就会被回收。与此同时或稍后，垃圾收集器会把那些刚清除的弱引用放入创建弱引用对象时所登记到的引用队列(Reference Queue)中。</p>
 </blockquote>
@@ -4332,7 +4331,7 @@
 <p>我们可以看到第二个构造方法中提供了一个ReferenceQueue类型的参数，通过提供这个参数，我们便把创建的弱引用对象注册到了一个引用队列上，这样当它被垃圾回收器清除时，就会把它送入这个引用队列中，我们便可以对这些被清除的弱引用对象进行统一管理。</p>
 <p>参考：<a href="https://www.jianshu.com/p/dac0958778e0">WeakReference才是LeakCanary真正的核心</a></p>
 <h1 id="虚引用（PhantomReference）"><a href="#虚引用（PhantomReference）" class="headerlink" title="虚引用（PhantomReference）"></a>虚引用（PhantomReference）</h1><p>在虚引用链接的对象被垃圾回收后，虚引用会受到虚拟机的通知，并不能通过虚引用直接获得对象的实例，虚引用也不会影响对象的生命周期。</p>
-<h1 id="虚引用应用场景"><a href="#虚引用应用场景" class="headerlink" title="虚引用应用场景"></a>虚引用应用场景</h1><p>DirectByteBuffer中对堆外内存的释放，通过虚引用监听DirectByteBuffer对象被GC回收后，再调用释放堆外内存的方法。</p>
+<h2 id="虚引用应用场景"><a href="#虚引用应用场景" class="headerlink" title="虚引用应用场景"></a>虚引用应用场景</h2><p>DirectByteBuffer中对堆外内存的释放，通过虚引用监听DirectByteBuffer对象被GC回收后，再调用释放堆外内存的方法。</p>
 ]]></content>
       <categories>
         <category>虚拟机</category>
