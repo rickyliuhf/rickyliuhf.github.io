@@ -186,6 +186,272 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/" class="post-title-link" itemprop="url">句柄、直接指针</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-08 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-08T20:00:00+08:00">2018-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/句柄、直接指针/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="句柄是什么？"><a href="#句柄是什么？" class="headerlink" title="句柄是什么？"></a>句柄是什么？</h1><p>指针的指针。</p>
+<p>jvm中内存里的对象都有一个指针指向对象的开始地址，句柄就是指向对象的指针。</p>
+<h1 id="句柄解决了什么问题"><a href="#句柄解决了什么问题" class="headerlink" title="句柄解决了什么问题?"></a>句柄解决了什么问题?</h1><p>对实际的对象资源做了一层代理，屏蔽细节，避免了直接操控资源可能的危险。</p>
+<p>弄了句柄，对象实际位置在内存中可以随意变化，比如标记整理垃圾回收后对象被移动到其他地方。</p>
+<p>虚拟内存机制，可能会将已经载入内存的数据换到外存硬盘上，这样对象的地址就会变动，其他地方引用这块被换走的地址也要更新，如果使用这块数据的地方引用的是句柄，这样实际数据在内存的位置可以随意变化，使用数据的地方还是引用固定的地址，不用更新。</p>
+<p>Windows系统中有许多内核对象（这里的对象不完全等价于”面向对象程序设计”一词中的”对象”，虽然实质上还真差不多），比如打开的文件，创建的线程，程序的窗口，等等。这些重要的对象肯定不是4个字节或者8个字节足以完全描述的，他们拥有大量的属性。为了保存这样一个”对象”的状态，往往需要上百甚至上千字节的内存空间，那么怎么在程序间或程序内部的子过程（函数）之间传递这些数据呢？拖着这成百上千的字节拷贝来拷贝去吗？显然会浪费效率。那么怎么办？当然传递这些对象的首地址是一个办法，但这至少有两个缺点：</p>
+<ol>
+<li><p>暴露了内核对象本身，使得程序（而不是操作系统内核）也可以任意地修改对象地内部状态（首地址都知道了，还有什么不能改的？），这显然是操作系统内核所不允许的；</p>
+</li>
+<li><p>操作系统有定期整理内存的责任，如果一些内存整理过一次后，对象被搬走了怎么办？</p>
+</li>
+</ol>
+<p>所以，Windows操作系统就采用进一步的间接（可以理解为进一步的抽象的过程）：在进程的地址空间中设一张表，表里头专门保存一些编号和由这个编号对应一个地址，而由那个地址去引用实际的对象，这个编号跟那个地址在数值上没有任何规律性的联系，纯粹是个映射而已。</p>
+<p>在Windows系统中，这个编号就叫做”句柄”。</p>
+<p>参考：<br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/klb561/p/10555571.html">句柄的概念</a></p>
+<h1 id="为什么叫句柄这个名字？"><a href="#为什么叫句柄这个名字？" class="headerlink" title="为什么叫句柄这个名字？"></a>为什么叫句柄这个名字？</h1><p>从名字上说，handle是指中间媒介，例如门把手是door handle，刀柄是knife handle。</p>
+<p>所以文件句柄file handle以即其他资源句柄，也是这个中间媒介的意思，通过这个媒介操作资源。</p>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/27656256/answer/943130123">句柄是什么？ - 黄兢成的回答 - 知乎 解释句柄这个词语的表面含义</a></li>
+</ul>
+<h1 id="JVM对象访问定位"><a href="#JVM对象访问定位" class="headerlink" title="JVM对象访问定位"></a>JVM对象访问定位</h1><p>JVM通过栈上的reference类型数据来操作堆上的具体对象。</p>
+<p>由于reference数据只是规定了一个指向对象的引用，没有定义如何去定位访问对象的具体位置。</p>
+<p>主流的实现方式有两种：</p>
+<ul>
+<li>句柄<br>  在堆中划分句柄池，reference存储对象的句柄地址，句柄包含对象实例数据和类型数据的各自具体地址信息。<ul>
+<li>好处：reference中的数据是稳定的句柄地址 对象被移动只会改变句柄中的信息 不会改变句柄的地址 reference不需要变化。</li>
+<li>坏处：增加了指针定位的开销。</li>
+</ul>
+</li>
+<li>直接指针<br>  栈上reference类型数据槽中直接存储堆对象的地址。<ul>
+<li>好处：直接访问对象 减少指针定位开销。</li>
+<li>坏处：当对象内存地址发生变化 reference中数据也需要调整。</li>
+</ul>
+</li>
+</ul>
+<p>参考：</p>
+<ul>
+<li>《深入理解Java虚拟机（第2版）》 2.3.3 对象的访问定位 48页</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/" class="post-title-link" itemprop="url">Java静态分派、动态分派</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-07 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-07T20:00:00+08:00">2018-03-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java静态分派、动态分派/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>静态类型：变量被声明时的类型；例如，Animal a = new Dog(), 静态类型为Animal, 实际类型为Dog</p>
+<p>实际类型：变量所引用的对象的真实类型</p>
+<p>重载方法是静态分派，即编译时多态</p>
+<p>重写方法是动态分派，即运行时多态</p>
+<h1 id="单分派和多分派"><a href="#单分派和多分派" class="headerlink" title="单分派和多分派"></a>单分派和多分派</h1><p>方法的接收者：一个方法所属的对象</p>
+<p>宗量：方法的接收者和方法的参数，只有这两种宗量</p>
+<p>单分派：根据一个宗量进行对方法的选择</p>
+<p>多分派：根据多于一个的宗量对方法进行选择</p>
+<p>单分派和多分派取决于宗量,  方法调用者和方法参数都是宗量.</p>
+<p>静态分派的方法调用：首先确定调用者的静态类型是什么,然后根据要调用的方法参数的静态类型(声明类型)确定所有重载方法中要调用哪一个, 需要根据这两个宗量来编译, 所以是静态多分派(多个宗量确定).</p>
+<p>动态分派的方法调用：在运行期间,虚拟机会根据调用者的实际类型调用对应的方法, 只需根据这一个宗量就可以确定要调用的方法,所以是动态单分派(一个宗量)</p>
+<p>到目前为止，Java 语言还是一门 “静态多分派、动态单分派” 的语言，也就是说在执行静态分派时是根据多个宗量判断调用哪个方法的，因为在静态分派时要根据不同的静态类型和不同的方法描述符选择目标方法，在动态分派的时候，是根据单宗量选择目标方法的，因为在运行期，方法的描述符已经确定好，invokevirtual 字节码指令根据变量的实际类型选择目标方法。</p>
+<p>方法的描述符：方法参数类型+返回值类型</p>
+<h1 id="静态分派"><a href="#静态分派" class="headerlink" title="静态分派"></a>静态分派</h1> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">classStaticDispatch &#123; </span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Man</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Woman</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Humanguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,guy&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Manguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,man&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Womanguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,woman&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[]args)</span> </span>&#123; </span><br><span class="line">        Humanman=newMan(); </span><br><span class="line">        Humanwoman=newWoman(); </span><br><span class="line">        StaticDispatchdispatch=newStaticDispatch(); </span><br><span class="line">        dispatch.sayHello(man); </span><br><span class="line">        dispatch.sayHello(woman); </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>静态类型：是指对象 man 的 Human 类型， 静态类型本身是不会发送变化的，只有在使用时才会发送变化，静态类型在编译期间就可以确定一个变量的静态类型 </p>
+<p>实际类型：是指对象 man 的 Man 类型，实际类型在编译期间是不可确定的，只有在运行期才可确定 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 实际类型变化 </span></span><br><span class="line">Human man = <span class="keyword">new</span> Man(); </span><br><span class="line">man = <span class="keyword">new</span> Woman(); </span><br><span class="line"> </span><br><span class="line"><span class="comment">// 静态类型变化 </span></span><br><span class="line">dispatch.sayHello((Man) man); </span><br><span class="line">dispatch.sayHello((Woman) man); </span><br></pre></td></tr></table></figure>
+
+<p>所以第一段代码中，方法接收者是 StaticDispatch 对象，虽然两个变量的实际类型不同，但是静态类型是相同的都是 Human，虚拟机（准确的说是编译器）在实现重载时是通过参数的静态类型而不是实际类型做出判定的，并且在编译阶段，变量的静态类型是可以确定的，所以编译器会根据变量的静态类型决定使用哪个重载方法。 </p>
+<p>所有依赖静态类型定位目标方法的分派动作称为静态分派，静态分派典型的应用就是方法的重载。静态分派发生在编译阶段，所以方法的静态分派动作是由编译器执行的。 </p>
+<h1 id="动态分派"><a href="#动态分派" class="headerlink" title="动态分派"></a>动态分派</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DynamicDispatch</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span></span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Man</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;hello, man&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Woman</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;hello, woman&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">		Human man = <span class="keyword">new</span> Man();</span><br><span class="line">		Human woman = <span class="keyword">new</span> Woman();</span><br><span class="line">		man.sayHello();</span><br><span class="line">		woman.sayHello();</span><br><span class="line">		man = <span class="keyword">new</span> Woman();</span><br><span class="line">		man.sayHello();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20200325235523.png"></p>
+<p>从上图中，我们可以看到 main() 方法的字节码指令执行过程：</p>
+<ul>
+<li>0 ~ 7 句是调用 Man 类的实例构造器创建一个 Man 类的对象，并将对象的引用压入到局部变量表的第 1 个 Slot 中</li>
+<li>8 ~ 15 句是调用 Woman 类的实例构造器创建一个 Woman 类的对象，并将对象的引用压入到局部变量表的第 2 个 Slot 中</li>
+<li>16 ~ 17 句是将第 1 个 Slot 中的变量（也就是 man）加载到局部变量表中，并调用 sayHello() 方法，关键的就是第 17 句指令 invokevirtual</li>
+</ul>
+<p>虽然第 17 句指令调用的常量池中的 Human.sayHello() 方法，但是最终执行的却是 Man.sayHello() 方法，这就要从 invokevirtual 指令的多态查找说起，invokevirtual 的查找过程如下所示：</p>
+<ul>
+<li>找到操作数栈顶的引用所指的对象的实际类型，记做 C</li>
+<li>在类型 C 中查找与常量中的描述符和简单名称相同的方法，如果找到则进行访问权限的判断，如果通过则返回这个方法的直接引用，查找结束；如果权限不通过，则返回 java.lang.IllegalAccessError 的异常</li>
+<li>如果在 C 中没有找到描述符和简单名称都符合的方法，则按照继承关系从下往上依次在 C 的父类中进行查找和验证过程</li>
+<li>如果最终还是没有找到该方法，则抛出 java.lang.AbstractMethodError 的异常</li>
+</ul>
+<p>在上述 invokespecial 查找方法的过程中，最重要的就是第一步，根据对象的引用确定对象的实际类型，这个方法重写的本质。如上所述，在运行期内，根据对象的实际类型确定方法执行版本的分派过程叫做动态分派。</p>
+<h1 id="如何理解Java是静态多分派、动态单分派？"><a href="#如何理解Java是静态多分派、动态单分派？" class="headerlink" title="如何理解Java是静态多分派、动态单分派？"></a>如何理解Java是静态多分派、动态单分派？</h1><p>编译时期确定方法有两点依据：</p>
+<ol>
+<li>调用方法的静态类型</li>
+<li>方法的参数</li>
+</ol>
+<p>所以说是静态多分派。</p>
+<p>运行时期再确定方法只有一点依据,就是调用方法的实际类型,所以说是动态单分派。</p>
+<p>所以最后实际的方法调用是编译和运行的结合,即调用方法的实际类型和参数(运行时期直接引用会根据调用方法的实际类型确定,编译时期调用方法的静态类型只不过是虚引用),按书上说法,在编译时期,方法名和参数就被确定了,运行时只需要确定调用者即可;所以方法选择上,编译时期缩小了范围,运行时期确定了具体的方法。</p>
+<p>对于静态分派（重载），肯定会依赖接收者的静态类型与参数的静态类型（参数肯定存在，同名无参的方法只会有一个，不存在分派）。</p>
+<p>对于动态分派（重写），虚拟机只会根据接收者的实际类型选择，而不会理睬参数的实际类型。</p>
+<h1 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h1><ul>
+<li>深入理解Java虚拟机（第2版）  第8章  虚拟机字节码执行引擎 8.3.2 分派</li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/58f876f2e8b8">虚拟机字节码执行引擎（读书笔记）</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/28462483/answer/398040520">如何理解java是一门静态多分派且动态单分派的语言？</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%EF%BC%88ClassLoader%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +483,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -359,7 +625,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -574,7 +840,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -784,7 +1050,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -912,7 +1178,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1015,7 +1281,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1118,7 +1384,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1265,7 +1531,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 17:50:35" itemprop="dateModified" datetime="2021-08-26T17:50:35+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1324,352 +1590,6 @@
 <p>参考：</p>
 <ul>
 <li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a9ff882337d4">Java内存分配与回收机制</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/" class="post-title-link" itemprop="url">TLAB（线程本地分配缓存 ）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-01-12 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-12T20:00:00+08:00">2018-01-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/TLAB（线程本地分配缓存 ）/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="TLAB全称"><a href="#TLAB全称" class="headerlink" title="TLAB全称"></a>TLAB全称</h1><p>Thread Local Allocation Buffer</p>
-<p>线程本地分配缓存</p>
-<h1 id="TLAB作用"><a href="#TLAB作用" class="headerlink" title="TLAB作用"></a>TLAB作用</h1><p>线程私有的内存分配区域，默认占Eden区1%，是为了避免多线程间在堆上分配内存时发生指针碰撞而降低性能。</p>
-<p>Java中很多对象都是小对象，并且即用即丢，小对象分配在TLAB上，没有锁的开销，效率比分配在堆上要高。</p>
-<h1 id="Java对象分配的过程"><a href="#Java对象分配的过程" class="headerlink" title="Java对象分配的过程"></a>Java对象分配的过程</h1><ol>
-<li>编译器通过逃逸分析，确定对象是在栈上分配还是在堆上分配。如果是在堆上分配，则进入选项2.</li>
-<li>如果tlab_top + size &lt;= tlab_end，则在在TLAB上直接分配对象并增加tlab_top 的值，如果现有的TLAB不足以存放当前对象则3.</li>
-<li>重新申请一个TLAB，并再次尝试存放当前对象。如果放不下，则4.</li>
-<li>在Eden区加锁（这个区是多线程共享的），如果eden_top + size &lt;= eden_end则将对象存放在Eden区，增加eden_top 的值，如果Eden区不足以存放，则5.</li>
-<li>执行一次Young GC（minor collection）。</li>
-<li>经过Young GC之后，如果Eden区任然不足以存放当前对象，则直接分配到老年代。</li>
-</ol>
-<p>对象不在堆上分配主要的原因还是堆是共享的，在堆上分配有锁的开销。无论是TLAB还是栈都是线程私有的，私有即避免了竞争（当然也可能产生额外的问题例如可见性问题），这是典型的用空间换效率的做法。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/yangzl2008/java/article/details/43202969">Java中的逃逸分析和TLAB以及Java对象分配</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8be816cbb5ed">浅析java中的TLAB
-</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/" class="post-title-link" itemprop="url">Java垃圾回收器</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-01-05 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-05T20:00:00+08:00">2018-01-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java垃圾回收器/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="常见的垃圾回收器有哪些？"><a href="#常见的垃圾回收器有哪些？" class="headerlink" title="常见的垃圾回收器有哪些？"></a>常见的垃圾回收器有哪些？</h1><ol>
-<li><p>串行（Serial）回收器是单线程的一个回收器，简单、易实现、效率高。</p>
-</li>
-<li><p>并行（ParNew）回收器是Serial的多线程版，可以充分的利用CPU资源，减少回收的时间。</p>
-</li>
-<li><p>吞吐量优先（Parallel Scavenge）回收器，侧重于吞吐量的控制。</p>
-</li>
-<li><p> 并发标记清除（CMS，Concurrent Mark Sweep）回收器是一种以获取最短回收停顿时间为目标的回收器，该回收器是基于“标记-清除”算法实现的。</p>
-</li>
-<li><p>G1（Garbage First）收集器是一款在server端运行的垃圾收集器，专门针对于拥有多核处理器和大内存的机器，在JDK 7u4版本发行时被正式推出，在JDK9中更被指定为官方GC收集器。它满足高吞吐量的同时满足GC停顿的时间尽可能短。</p>
-</li>
-</ol>
-<p>参考《深入理解Java虚拟机（第2版）》 76页 3.5 垃圾收集器。</p>
-<h1 id="Serial收集器"><a href="#Serial收集器" class="headerlink" title="Serial收集器"></a>Serial收集器</h1><p>新生代收集器，单线程收集，收集时Stop the world（暂停所有线程），采取复制算法</p>
-<p>客户端新生代默认收集器，因为用户桌面应用场景中，分配给虚拟机的内存不会很大，停顿时间较短，只要不是频繁发生，可以接受，这样就发挥出Serial收集器简单而高效的优点。</p>
-<h1 id="Serial-Old收集器"><a href="#Serial-Old收集器" class="headerlink" title="Serial Old收集器"></a>Serial Old收集器</h1><p>老生代收集器，单线程收集，收集时Stop the world（暂停所有线程），采取标记整理算法</p>
-<h1 id="Parallel-New收集器"><a href="#Parallel-New收集器" class="headerlink" title="Parallel New收集器"></a>Parallel New收集器</h1><p>新生代收集器，Serial收集器的多线程版本，多个GC线程同时进行回收</p>
-<h1 id="Parallel-Scavenge收集器"><a href="#Parallel-Scavenge收集器" class="headerlink" title="Parallel Scavenge收集器"></a>Parallel Scavenge收集器</h1><p>新生代收集器，采用复制算法多线程收集</p>
-<p>目标是达到一个可控的吞吐量，吞吐量优先的收集器</p>
-<p>吞吐量=程序运行时间/(程序运行时间+垃圾回收时间)</p>
-<p>适合后台运算不需要太多实时交互响应的场景</p>
-<p>适合对吞吐量和CPU资源很在意，对交互响应不敏感的的场景，例如后台服务，可以尽可能的多执行任务</p>
-<p>可以开启自适应调解策略，让虚拟机根据系统运行情况动态调节内存分配的参数（如新生代大小、Eden与Survivor比例、晋升到老年代的年龄阈值等），以达到最佳的吞吐量，这是与Parallel New的重要区别。</p>
-<p>还可以设置最大GC停顿时间和吞吐量给虚拟机设定优化的目标，由虚拟机自动调解最适合的参数来进行内存分配管理。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/764f93fac5f3">GC之Parallel Scavenge收集器</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.sohu.com/a/217647656_812245">详细介绍JVM吞吐量优先收集器以及各种可以配置的参数</a></li>
-</ul>
-<h1 id="Parallel-Old收集器"><a href="#Parallel-Old收集器" class="headerlink" title="Parallel Old收集器"></a>Parallel Old收集器</h1><p>老年代收集器，Parallel Scavenge的老年代版本，使用多线程和标记整理，吞吐量优先</p>
-<h1 id="Concurrent-Mark-Sweep收集器"><a href="#Concurrent-Mark-Sweep收集器" class="headerlink" title="Concurrent Mark Sweep收集器"></a>Concurrent Mark Sweep收集器</h1><p>老年代收集器，以获得最短的GC停顿时间为目标的收集器，适合卡顿容忍度低的场景，例如有用户交互的情景（如Android手机交互）</p>
-<p>收集过程为：</p>
-<ol>
-<li> 初始标记</li>
-<li> 并发标记</li>
-<li> 重新标记</li>
-<li> 并发清除</li>
-</ol>
-<p>初始标记和重新标记需要Stop the world（暂停所有线程）。初始标记仅标记跟GC Roots直接关联的对象，速度很快；并发标记就是进行完整的可达性分析（GC Roots Tracing）；重新标记是为了修正并发标记期间进程继续运行而导致对象关系变动而重新标记这些变动的对象关系，运行时间比初始标记稍长，但是远比并发标记时间短，要扫描全堆。</p>
-<p>缺点：</p>
-<ol>
-<li> 并发标记和并发清除所启用的多个GC线程占用了CPU资源，降低系统吞吐量。</li>
-<li> 无法处理并发清除期间程序继续运行而产生的浮动垃圾，不能等待老年代满了才收集，等到老年代占用的空间达到一个阈值，就要启用CMS清理，这样就预留了一定的空间来容纳并发清除期间产生的浮动垃圾，如果预留的空间无法满足程序继续运行的需要，则改用Serial Old执行清理。</li>
-<li>标记清除算法会产生大量不连续的内存碎片，整理碎片只能串行执行，所以比较耗时，采用标记清除也是因为老年代的回收次数比较少，每次回收都标记整理性价比不高，可以在几次标记清除后再执行一次标记整理，调节一个可控的执行频率。</li>
-</ol>
-<p>参考</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/29114369/answer/387208380">minor gc 会发生stop the world 现象吗？ - wuxinliulei的回答 - 知乎</a></li>
-</ul>
-<h2 id="为什么CMS只能用作老年代收集器，而不能应用在新生代的收集？"><a href="#为什么CMS只能用作老年代收集器，而不能应用在新生代的收集？" class="headerlink" title="为什么CMS只能用作老年代收集器，而不能应用在新生代的收集？"></a>为什么CMS只能用作老年代收集器，而不能应用在新生代的收集？</h2><p>因为要并发清除，所以用的是标记清理算法，而标记清理算法会产生大量内存碎片，对新生代难以接受，新生代适合用复制算法，或者需要整理内存，以腾出连续的空间以供分配大对象。</p>
-<p>因此新生代的收集器并未提供CMS版本。</p>
-<h2 id="为什么CMS不能用标记整理而要用标记清理？"><a href="#为什么CMS不能用标记整理而要用标记清理？" class="headerlink" title="为什么CMS不能用标记整理而要用标记清理？"></a>为什么CMS不能用标记整理而要用标记清理？</h2><p>因为老年代存活时间长，每次清理后，要整理的存活的对象太多了，比较耗时。</p>
-<p>CMS主要关注低延迟，如果采用压缩算法，则涉及到要移动应用程序的存活对象，此时不停顿，是很难处理的，通常须要停顿下，移动存活对象，再让应用程序继续运行，但这样停顿时间变长，延迟变大。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.shangmayuan.com/a/b18e72c952e749e0a8a21664.html">CMS为何采用标记-清除算法</a></li>
-<li><a target="_blank" rel="noopener" href="https://hllvm-group.iteye.com/group/forum?tag_id=690">[讨论]</a>  <a target="_blank" rel="noopener" href="https://hllvm-group.iteye.com/group/topic/38223">并发垃圾收集器（CMS）为什么没有采用标记-整理算法来实现？</a></li>
-</ul>
-<h1 id="Garbage-First（G1）收集器"><a href="#Garbage-First（G1）收集器" class="headerlink" title="Garbage First（G1）收集器"></a>Garbage First（G1）收集器</h1><p>JVM内部知道，哪些region的对象最少（即：该区域最空），总是会优先收集这些region(因为对象少，内存相对较空，肯定快），这也是Garbage-First得名的由来，G即是Garbage的缩写， 1即First(第1)。</p>
-<p>G1 根据存活对象的字节数统计每个区域的 活跃度liveness，然后根据期望停顿时间来确定该 CSet 的大小，并保证那些垃圾多（活跃度低）的区域会被优先回收，故此得名 垃圾优先。</p>
-<h2 id="设计目的"><a href="#设计目的" class="headerlink" title="设计目的"></a>设计目的</h2><p>G1 能够在大内存、多处理器计算机上，保证 GC 暂停时间可控，并实现高吞吐量。</p>
-<p>其最终目的是取代 CMS 成为服务端 GC 更好的解决方案：</p>
-<ol>
-<li> 采用 标记-整理 算法，可以避免使用细粒度的空闲列表进行分配。简化了收集器设计并消除了潜在的碎片问题。</li>
-<li>提供可预测的GC暂停时间，无需牺牲很多吞吐量。</li>
-</ol>
-<h2 id="G1相对于CMS的优势"><a href="#G1相对于CMS的优势" class="headerlink" title="G1相对于CMS的优势"></a>G1相对于CMS的优势</h2><ol>
-<li>CMS是标记清理，回收过后有大量内存碎片；G1从整体来看是基于标记-整理算法实现的，从局部（两=08u ym,ghvtbfrcRegion之间）上来看是基于“复制”算法实现的，避免了过多的内存碎片</li>
-<li>G1在逻辑上虽然也Eden、Survivor、Old区，但是都是以Region为单位，不需要扫描整个内存空间，只要扫描有存活对象的Region，减少了扫描的时间</li>
-<li>G1可以通过设置预期停顿时间( Pause Time) 来控制垃圾收集时间，在垃圾回收时尽量满足设置的停顿时间。G1会通过一个合理的计算模型，计算出每个Region的收集成本并量化，这样一来，收集器在给定了“停顿”时间限制的情况下，总是能选择一组恰当的Regions作为收集目标，让其收集开销满足这个限制条件，以此达到实时收集的目的。</li>
-<li>G1会在Young GC中使用，而CMS只能在Old区使用，因为年轻代需要用复制算法以腾出大量连续内存空间，CMS是标记清理算法会产生大量内存碎片</li>
-</ol>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/heyonggang/p/11718170.html">弄明白CMS和G1，就靠这一篇了</a></li>
-</ul>
-<h2 id="G1的适合场景"><a href="#G1的适合场景" class="headerlink" title="G1的适合场景"></a>G1的适合场景</h2><ol>
-<li> 服务端多核CPU、JVM内存占用较大的应用。</li>
-<li> 应用在运行过程中会产生大量内存碎片、需要经常压缩空间。</li>
-<li> 想要更可控、可预期的GC停顿周期:防止高并发下应用的雪崩现象，实现高吞吐量。 </li>
-</ol>
-<p>一句话总结：实现高吞吐、没有内存碎片、收集时间可控。</p>
-<p>G1收集器是server-style的垃圾收集器，适用于具有大内存的多处理器计算机。它极有可能满足垃圾回收（GC）暂停时间目标，同时实现高吞吐量。</p>
-<p>对于打算从CMS或者ParallelOld收集器迁移过来的应用，按照<a target="_blank" rel="noopener" href="https://www.oracle.com/technetwork/java/javase/tech/g1-intro-jsp-135488.html">官方</a> 的建议，如果发现符合如下特征，可以考虑更换成G1收集器以追求更佳性能：</p>
-<ol>
-<li> 实时数据占用了超过半数的堆空间；</li>
-<li> 对象分配率或“晋升”的速度变化明显； </li>
-<li> 期望消除耗时较长的GC或停顿（超过0.5——1秒）。</li>
-</ol>
-<h2 id="G1内存划分"><a href="#G1内存划分" class="headerlink" title="G1内存划分"></a>G1内存划分</h2><p>G1把内存分为大约2000个左右的一个个大小固定的小块，小块叫Region，每个Region被标记为分代标志，如Eden、Survivor、Old、Humongous，每个Region在物理内存中可以不连续</p>
-<h3 id="G1把内存划分为Region区域有什么好处？"><a href="#G1把内存划分为Region区域有什么好处？" class="headerlink" title="G1把内存划分为Region区域有什么好处？"></a>G1把内存划分为Region区域有什么好处？</h3><ol>
-<li>其他收集器会在全堆做扫描，导致gc停顿时间会比较长，而G1只是整理特定几个region，不必扫描全堆</li>
-<li>在物理，上不需要连续，则带来了额外的好处有的分区内垃圾对象特别多，有的分区内垃圾对象很少，G1会优先回收垃圾对象特别多的分区，这样可以花费较少的时间来回收这些分区的垃圾；停顿时间可预测，用户可以指定收集操作在多长时间内完成</li>
-<li> G1还是一种带压缩的收集器，在回收老年代的分区时，是将存活的对象从一个分区拷贝到另一个可用分区，这个拷贝的过程就实现了局部的压缩，避免了内存碎片。</li>
-</ol>
-<h3 id="G1收集器中大对象怎么分配"><a href="#G1收集器中大对象怎么分配" class="headerlink" title="G1收集器中大对象怎么分配"></a>G1收集器中大对象怎么分配</h3><ol>
-<li>对象的大小&lt;0.5个RegionSize直接存在新生代Eden Region区</li>
-<li>对象的大小&gt;=0.5个RegionSize且对象的大小&lt;1个RegionSize,存到大对象区Humongous Region</li>
-<li> 对象的大小&gt;=1个RegionSize存到连续的大对象区Humongous Region</li>
-</ol>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000038430433">总结G1垃圾收集器面试题</a></li>
-</ul>
-<h2 id="G1预测停顿时间是怎么做到的？"><a href="#G1预测停顿时间是怎么做到的？" class="headerlink" title="G1预测停顿时间是怎么做到的？"></a>G1预测停顿时间是怎么做到的？</h2><p>G1收集器之所以能建立可预测的停顿时间模型，是因为它可以有计划地避免在整个Java堆中进行全区域的垃圾收集。</p>
-<p>G1会通过一个合理的计算模型，计算出每个Region的收集成本并量化，这样一来，收集器在给定了“停顿”时间限制的情况下，总是能选择一组恰当的Regions作为收集目标，让其收集开销满足这个限制条件，以此达到实时收集的目的。</p>
-<h2 id="G1为什么高效？"><a href="#G1为什么高效？" class="headerlink" title="G1为什么高效？"></a>G1为什么高效？</h2><p>为了提高扫描根对象和标记的效率，G1使用了二个新的辅助存储结构：</p>
-<ul>
-<li>Remembered Sets：简称RSets，用于根据每个region里的对象，是从哪指向过来的(即：谁引用了我)，每个Region都有独立的RSets。（Other Region -&gt; Self Region)</li>
-<li>Collection Sets ：简称CSets，记录了等待回收的Region集合，GC时这些Region中的对象会被回收(copied or moved)。</li>
-</ul>
-<h3 id="Rememberred-Set是什么？"><a href="#Rememberred-Set是什么？" class="headerlink" title="Rememberred Set是什么？"></a>Rememberred Set是什么？</h3><p>记录哪些分区引用了当前的Region。</p>
-<p>使得垃圾回收器不需要扫描整个堆，就可以找到谁引用了当前分区的对象，扫描RSet就行了。</p>
-<p>Young区到Old区的引用则不需要单独处理，因为Young区中的对象本身变化比较大，没必要浪费空间去记录下来。</p>
-<ol>
-<li> RSet：全称Remembered Sets, 用来记录外部指向本Region的所有引用，每个Region维护一个RSet。    </li>
-<li> Card: JVM将内存划分成了固定大小的Card。这里可以类比物理内存上page的概念。</li>
-</ol>
-<p>每个Region初始化时，会初始化一个remembered set（已记忆集合），这个翻译有点拗口，以下简称RSet，该集合用来记录并跟踪其它Region指向该Region中对象的引用，每个Region默认按照512Kb划分成多个Card，所以RSet需要记录的东西应该是 xx Region的 xx Card。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/luzhensmart/article/details/106052574">G1-Card Table和Remember Set</a></li>
-<li><a target="_blank" rel="noopener" href="https://club.perfma.com/article/1933770">CardTable和Remeberred Set区别？</a></li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000021878102">“对象消失”、“三色标记”、“增量更新”</a></li>
-</ul>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/heyonggang/p/11718170.html">弄明白CMS和G1，就靠这一篇了</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/GrimMjx/p/12234564.html">搞懂G1垃圾收集器</a></li>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2016/09/23/g1.html">Java Hotspot G1 GC的一些关键技术</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/94477796">JVM G1收集器</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/buttercup/p/13829881.html#g1-%E7%AE%97%E6%B3%95">G1收集器</a></li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000021878102">面试官问我G1回收器怎么知道你是什么时候的垃圾？</a></li>
-</ul>
-<h1 id="JDK8默认垃圾回收器是什么？"><a href="#JDK8默认垃圾回收器是什么？" class="headerlink" title="JDK8默认垃圾回收器是什么？"></a>JDK8默认垃圾回收器是什么？</h1><p>Parallel Scavenge + Parallel Old</p>
-<p>Parallel Scavenge是吞吐量优先的垃圾收集器，采用复制算法，多线程收集。</p>
-<p>Parallel Old是Parallel Scavenge的老年代版本，采用标记整理算法，多线程收集。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/huanxianglove/article/details/90247994">JDK8默认垃圾回收器详解</a></li>
-</ul>
-<h1 id="JDK9默认垃圾收集器是什么？"><a href="#JDK9默认垃圾收集器是什么？" class="headerlink" title="JDK9默认垃圾收集器是什么？"></a>JDK9默认垃圾收集器是什么？</h1><p>G1。</p>
-<p>采用G1因为性能优越。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1429131">为什么G1 GC从JDK 9之后成为默认的垃圾回收器？</a></li>
-</ul>
-<h1 id="Android-ART虚拟机垃圾回收机制是怎样的？"><a href="#Android-ART虚拟机垃圾回收机制是怎样的？" class="headerlink" title="Android  ART虚拟机垃圾回收机制是怎样的？"></a>Android  ART虚拟机垃圾回收机制是怎样的？</h1><p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/89536376">Android ART 并行拷贝垃圾回收
-</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.kancloud.cn/alex_wsc/androids/473625">老罗的Android之旅：ART运行时垃圾收集机制简要介绍和学习计划
-</a></li>
 </ul>
 
       
@@ -1757,7 +1677,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">115</span>
+          <span class="site-state-item-count">117</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
