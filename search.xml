@@ -3869,6 +3869,40 @@
       </tags>
   </entry>
   <entry>
+    <title>Java并发-CyclicBarrier</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/</url>
+    <content><![CDATA[<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><ul>
+<li>CyclicBarrier构造函数传入一个数字N。</li>
+<li>线程调用CyclicBarrier.await()会阻塞等待，直到有第N个线程调用CyclicBarrier.await()，所有线程一起执行await()方法后续逻辑。</li>
+<li>再次调用await()可以继续这一波操作，循环使用。</li>
+</ul>
+<p>比喻：</p>
+<ul>
+<li>人到齐了一起走，没到齐每个人都一直等着不走。</li>
+<li>走完了过后，下一波人来了继续这个流程。</li>
+</ul>
+<p>可循环利用的屏障。</p>
+<p>举例：</p>
+<p>CyclicBarrier barrier = new CyclicBarrier(5);</p>
+<p>然后各个线程调用barrier.await();</p>
+<p>当有5个线程await()过后，会继续执行await()后续代码</p>
+<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
+<p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
+<p>然后重新计数，继续同样的过程。</p>
+<h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
+<p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
+<p>CountDownLatch是一次性的，而CyclicBarrier则可以被重置而重复使用。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>CyclicBarrier</tag>
+        <tag>AQS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Java并发-ReadWriteLock、StampedLock</title>
     <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/</url>
     <content><![CDATA[<h1 id="读写锁存在的意义？解决了什么问题？"><a href="#读写锁存在的意义？解决了什么问题？" class="headerlink" title="读写锁存在的意义？解决了什么问题？"></a>读写锁存在的意义？解决了什么问题？</h1><p>synchronzied和ReentraintLock的锁是排他锁，同一时刻只允许一个线程访问同一个资源。</p>
@@ -3906,9 +3940,9 @@
       </categories>
       <tags>
         <tag>并发</tag>
+        <tag>AQS</tag>
         <tag>ReadWriteLock</tag>
         <tag>StampedLock</tag>
-        <tag>AQS</tag>
       </tags>
   </entry>
   <entry>
