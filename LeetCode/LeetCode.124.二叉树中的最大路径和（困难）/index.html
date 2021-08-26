@@ -27,10 +27,11 @@
 <meta property="og:site_name" content="Ricky.L的随笔">
 <meta property="og:description" content="题目LeetCode.124.二叉树中的最大路径和（困难） 路径 被定义为一条从树中任意节点出发，沿父节点-子节点连接，达到任意节点的序列。同一个节点在一条路径序列中 至多出现一次 。该路径 至少包含一个 节点，且不一定经过根节点。 路径和 是路径中各节点值的总和。 给你一个二叉树的根节点 root ，返回其 最大路径和 。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-08-20T12:03:00.000Z">
-<meta property="article:modified_time" content="2021-08-26T08:11:26.855Z">
+<meta property="article:published_time" content="2020-02-22T02:35:00.000Z">
+<meta property="article:modified_time" content="2021-08-26T08:11:59.599Z">
 <meta property="article:author" content="Ricky.L">
 <meta property="article:tag" content="LeetCode困难">
+<meta property="article:tag" content="算法">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://rickyqliu.github.io/LeetCode/LeetCode.124.%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E7%9A%84%E6%9C%80%E5%A4%A7%E8%B7%AF%E5%BE%84%E5%92%8C%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
@@ -212,14 +213,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-08-20 20:03:00" itemprop="dateCreated datePublished" datetime="2021-08-20T20:03:00+08:00">2021-08-20</time>
+              <time title="创建时间：2020-02-22 10:35:00" itemprop="dateCreated datePublished" datetime="2020-02-22T10:35:00+08:00">2020-02-22</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:11:26" itemprop="dateModified" datetime="2021-08-26T16:11:26+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:11:59" itemprop="dateModified" datetime="2021-08-26T16:11:59+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -227,7 +228,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
                 </span>
             </span>
 
@@ -268,6 +269,7 @@
 <h3 id="左右子树最大路径和怎么求？"><a href="#左右子树最大路径和怎么求？" class="headerlink" title="左右子树最大路径和怎么求？"></a>左右子树最大路径和怎么求？</h3><p>对于某个节点x来说，若其左子树路径和为leftSum，右子树路径和为rightSum，对于x的父节点来说，只能选用leftSum和rightSum种较大的那个，再加上x的值，作为x的父节点的子树路径和。否则就路径就有分叉了，不满足题意。</p>
 <h3 id="怎么求最大路径和？"><a href="#怎么求最大路径和？" class="headerlink" title="怎么求最大路径和？"></a>怎么求最大路径和？</h3><p>计算每个节点路径和时，记录最大的那个路径和的值。</p>
 <figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Example:</span></span><br><span class="line"><span class="comment"> * var ti = TreeNode(5)</span></span><br><span class="line"><span class="comment"> * var v = ti.`val`</span></span><br><span class="line"><span class="comment"> * Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"> * class TreeNode(var `val`: Int) &#123;</span></span><br><span class="line"><span class="comment"> *     var left: TreeNode? = null</span></span><br><span class="line"><span class="comment"> *     var right: TreeNode? = null</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxPathSum</span><span class="params">(root: <span class="type">TreeNode</span>?)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> maxSum = <span class="built_in">Int</span>.MIN_VALUE</span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">maxGain</span><span class="params">(root: <span class="type">TreeNode</span>?)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (root == <span class="literal">null</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">            <span class="keyword">val</span> leftSum = maxOf(<span class="number">0</span>, maxGain(root.left))</span><br><span class="line">            <span class="keyword">val</span> rightSum = maxOf(<span class="number">0</span>, maxGain(root.right))</span><br><span class="line">            <span class="keyword">val</span> currentPathSum = root.`<span class="keyword">val</span>` + leftSum + rightSum</span><br><span class="line">            maxSum = maxOf(maxSum, currentPathSum)</span><br><span class="line">            <span class="keyword">return</span> root.`<span class="keyword">val</span>` + maxOf(leftSum, rightSum)</span><br><span class="line">        &#125;</span><br><span class="line">        maxGain(root)</span><br><span class="line">        <span class="keyword">return</span> maxSum</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
     </div>
 
     
@@ -294,6 +296,7 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/LeetCode%E5%9B%B0%E9%9A%BE/" rel="tag"># LeetCode困难</a>
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
           </div>
 
         
@@ -302,12 +305,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/LeetCode/LeetCode.87.%E6%89%B0%E4%B9%B1%E5%AD%97%E7%AC%A6%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="prev" title="LeetCode.87.扰乱字符串（困难）">
-      <i class="fa fa-chevron-left"></i> LeetCode.87.扰乱字符串（困难）
+    <a href="/LeetCode/LeetCode.218.%E5%A4%A9%E9%99%85%E7%BA%BF%E9%97%AE%E9%A2%98%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="prev" title="LeetCode.218.天际线问题（困难）">
+      <i class="fa fa-chevron-left"></i> LeetCode.218.天际线问题（困难）
     </a></div>
       <div class="post-nav-item">
-    <a href="/LeetCode/LeetCode.188.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%20IV%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="next" title="LeetCode.188.买卖股票的最佳时机 IV（困难）">
-      LeetCode.188.买卖股票的最佳时机 IV（困难） <i class="fa fa-chevron-right"></i>
+    <a href="/LeetCode/LeetCode.127.%E5%8D%95%E8%AF%8D%E6%8E%A5%E9%BE%99%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="next" title="LeetCode.127.单词接龙（困难）">
+      LeetCode.127.单词接龙（困难） <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
