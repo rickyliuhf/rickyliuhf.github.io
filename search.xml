@@ -4071,6 +4071,37 @@
       </tags>
   </entry>
   <entry>
+    <title>Java并发-happens-before</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/</url>
+    <content><![CDATA[<h1 id="什么是happens-before原则？"><a href="#什么是happens-before原则？" class="headerlink" title="什么是happens-before原则？"></a>什么是happens-before原则？</h1><p>前一个操作的结果对后续操作是可见的</p>
+<h1 id="为什么需要happens-before原则？"><a href="#为什么需要happens-before原则？" class="headerlink" title="为什么需要happens-before原则？"></a>为什么需要happens-before原则？</h1><p>虚拟机会做编译优化，进行指令重排序，以提高CPU利用率，防止CPU出现空等待；但有些情况是不能重排序的，否则并发下会出问题，所以就要规定这些情况，happens-before原则就是这个规定.</p>
+<h1 id="典型场景？"><a href="#典型场景？" class="headerlink" title="典型场景？"></a>典型场景？</h1><p>比如写一个单例，new一个对象，指令执行的步骤是：</p>
+<ol>
+<li> 给对象分配内存</li>
+<li> 对象初始化</li>
+<li> 将对象内存地址关联</li>
+</ol>
+<p>指令重排序，可能会导致对象还没初始化，就会已经被使用了，所以需要volatile来禁止指令重排序</p>
+<h1 id="有哪些happens-before原则？"><a href="#有哪些happens-before原则？" class="headerlink" title="有哪些happens-before原则？"></a>有哪些happens-before原则？</h1><ol>
+<li> 程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作；</li>
+<li> 锁定规则：一个unLock操作先行发生于后面对同一个锁额lock操作；</li>
+<li> volatile变量规则：对一个变量的写操作先行发生于后面对这个变量的读操作；</li>
+<li> 传递规则：如果操作A先行发生于操作B，而操作B又先行发生于操作C，则可以得出操作A先行发生于操作C；</li>
+<li> 线程启动规则：Thread对象的start()方法先行发生于此线程的每个一个动作；</li>
+<li> 线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生；</li>
+<li> 线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结束、Thread.isAlive()的返回值手段检测到线程已经终止执行；</li>
+<li> 对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始；</li>
+</ol>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>happens-before</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Java并发-synchronized、ReentrantLock</title>
     <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/</url>
     <content><![CDATA[<h1 id="synchronized作用"><a href="#synchronized作用" class="headerlink" title="synchronized作用"></a>synchronized作用</h1><p>让一段代码在多线程之间互斥访问，保证原子性、有序性、可见性，并且是可重入的。</p>
@@ -4386,7 +4417,7 @@
       </tags>
   </entry>
   <entry>
-    <title>指令重排序、指令流水线</title>
+    <title>Java并发-指令重排序、指令流水线</title>
     <url>/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/</url>
     <content><![CDATA[<h1 id="如何验证指令发生了重排序？"><a href="#如何验证指令发生了重排序？" class="headerlink" title="如何验证指令发生了重排序？"></a>如何验证指令发生了重排序？</h1><p>定义两个变量设置初始值，在两个线程中分别赋新的值，然后打印在赋值语句后面打印另外一个线程修改的变量。</p>
 <p>执行很多次，如果发生了打印的都是变量的初始值，就是发生重排序了，违反直觉，但是编译器觉得两条语句没有依赖关系，允许指令重排序</p>
