@@ -4197,6 +4197,9 @@
         <tag>伪共享</tag>
         <tag>False Sharing</tag>
         <tag>虚拟内存</tag>
+        <tag>冯诺依曼瓶颈</tag>
+        <tag>字节填充</tag>
+        <tag>计算机结构</tag>
       </tags>
   </entry>
   <entry>
