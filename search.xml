@@ -223,6 +223,233 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.188.买卖股票的最佳时机 IV（困难）</title>
+    <url>/algorithm/LeetCode.188.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%20IV%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv/">LeetCode.188.买卖股票的最佳时机 IV（困难）</a></p>
+<p>给定一个整数数组 prices ，它的第 i 个元素 prices[i] 是一支给定的股票在第 i 天的价格。</p>
+<p>设计一个算法来计算你所能获取的最大利润。你最多可以完成 k 笔交易。</p>
+<p>注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>最优化问题考虑用动态规划。</p>
+<p>看最终结果受哪些因素影响，穷举不同因素的所有状态值，就可以推导出最终结果。</p>
+<h3 id="最终收益受哪些维度的状态变化影响？"><a href="#最终收益受哪些维度的状态变化影响？" class="headerlink" title="最终收益受哪些维度的状态变化影响？"></a>最终收益受哪些维度的状态变化影响？</h3><ul>
+<li>在第几天买入或卖出肯定是会影响最终收益，可能某一天突然暴涨。</li>
+<li>交易次数越多，可能赚取的收益越大。</li>
+<li>在第<code>i</code>天可以选择的操作有三种：买入、卖出、什么也不做。<br>什么也不做包含了两种状态：买入过后什么也不做、卖出过后什么也不做。归纳合并一下，这些操作会产生的结果状态是：第<code>i</code>天持有或不持有股票。股票持有状态也会影响最终收益。</li>
+</ul>
+<p>所以从结果上看，一共有三种纬度的状态变化：</p>
+<ul>
+<li>第几天做出选择</li>
+<li>已经交易了多少次</li>
+<li>当前是否持有股票</li>
+</ul>
+<h3 id="买入的时候算一次交易，还是卖出的时候算一次交易？"><a href="#买入的时候算一次交易，还是卖出的时候算一次交易？" class="headerlink" title="买入的时候算一次交易，还是卖出的时候算一次交易？"></a>买入的时候算一次交易，还是卖出的时候算一次交易？</h3><p>其实都可以，不影响最终结果，只是状态转移过程会有所变化。<br>这里定义买入的时候算一次交易。</p>
+<h3 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h3><p><code>dp[i][j][k]</code>表示，前<code>i</code>天，交易了<code>j</code>次，在第<code>i</code>天持有或不持有股票，所获得最大的收益。其中<code>k == 0</code>表示不持有，<code>k == 1</code>表示持有。</p>
+<ul>
+<li><code>dp[i][j][0]</code>怎么得来？<ul>
+<li>第<code>i - 1</code>天没有持有股票，第<code>i</code>天什么也不操作。<ul>
+<li><code>dp[i][j][0] = dp[i - 1][j][0]</code></li>
+</ul>
+</li>
+<li>第<code>i - 1</code>天持有股票，第<code>i</code>天卖出。<ul>
+<li><code>dp[i][j][0] = dp[i - 1][j][1] + prices[i]</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>dp[i][j][1]</code>怎么得来？<ul>
+<li>第<code>i - 1</code>天持有股票，第<code>i</code>天什么也不操作。<ul>
+<li><code>dp[i][j][1] = dp[i - 1][j][1]</code></li>
+</ul>
+</li>
+<li>第<code>i - 1</code>天没有持有股票，第<code>i</code>天买入。<ul>
+<li><code>dp[i][j][1] = dp[i - 1][j - 1][0] - prices[i]</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h3><ul>
+<li>第0天<ul>
+<li>持有股票的话，不论多少次交易，只能直接买入一次。</li>
+<li>不持有股票的话，收益就是0。</li>
+</ul>
+</li>
+<li>第<code>i</code>天之前都没有交易（即<code>j == 0</code>），第<code>i</code>天要交易操作就是买入。</li>
+</ul>
+<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p>如果给定的最多交易次数<code>k</code>非常大，状态数组开辟空间也会非常大，考虑是否有优化的可能。</p>
+<p><strong>交易次数上限是多少？</strong></p>
+<p>一次交易要买入和卖出，总共n天，交易次数不应该超过n / 2。</p>
+<p><strong>交易次数超过n / 2要怎么办？</strong></p>
+<p>这就等于不限交易次数，与<a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/">LeetCode.122.买卖股票的最佳时机 II（简单）</a>解法相同，可以复用这种情况下最优化空间的解答。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxProfit</span><span class="params">(k: <span class="type">Int</span>, prices: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (prices.isEmpty() || k == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="keyword">if</span> (k &gt;= n / <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> maxProfitNonLimitCount(prices)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 三种状态：第几天买入或卖出、已经交易了多少次、当前是否持有股票</span></span><br><span class="line">        <span class="comment">// dp[i][j][0或1]表示，前i天，交易了j次，在第i天持有或不持有股票，所获得最大的收益</span></span><br><span class="line">        <span class="comment">// 这里定义买入的时候算一次交易</span></span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; Array(k) &#123; IntArray(<span class="number">2</span>) &#123; <span class="number">0</span> &#125; &#125; &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until k) &#123;</span><br><span class="line">                <span class="keyword">if</span> (i == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="comment">// 第0天持有股票的话，最多k次交易，只能直接买入</span></span><br><span class="line">                    dp[i][j][<span class="number">1</span>] = -prices[i]</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// 第i天，交易了j次，持有股票</span></span><br><span class="line">                    <span class="comment">// 可能是前i-1天就交易了j次并持有股票，也可能前i-1天交易了j-1次在今天买入了</span></span><br><span class="line">                    <span class="comment">// 如果之前没有交易，今天就直接买入就好了</span></span><br><span class="line">                    <span class="keyword">if</span> (j == <span class="number">0</span>) &#123;</span><br><span class="line">                        dp[i][j][<span class="number">1</span>] = maxOf(dp[i - <span class="number">1</span>][j][<span class="number">1</span>], -prices[i])</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        dp[i][j][<span class="number">1</span>] = maxOf(dp[i - <span class="number">1</span>][j][<span class="number">1</span>], dp[i - <span class="number">1</span>][j - <span class="number">1</span>][<span class="number">0</span>] - prices[i])</span><br><span class="line">                    &#125;</span><br><span class="line">                    dp[i][j][<span class="number">0</span>] = maxOf(dp[i - <span class="number">1</span>][j][<span class="number">0</span>], dp[i - <span class="number">1</span>][j][<span class="number">1</span>] + prices[i])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n - <span class="number">1</span>][k - <span class="number">1</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">maxProfitNonLimitCount</span><span class="params">(prices: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> holdProfit = -prices[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">var</span> noholdProfit = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">val</span> newHoldProfit = maxOf(holdProfit, noholdProfit - prices[i])</span><br><span class="line">            <span class="keyword">val</span> newNoholdProfit = maxOf(noholdProfit, holdProfit + prices[i])</span><br><span class="line">            holdProfit = newHoldProfit</span><br><span class="line">            noholdProfit = newNoholdProfit</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> noholdProfit</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><ul>
+<li>时间复杂度<code>O(n * k)</code>。</li>
+<li><code>k &gt;= n / 2</code>时，空间复杂度<code>O(1)</code>；<code>k &lt; n / 2</code>时，空间复杂度<code>O(n * k)</code>。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>动态规划</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.212.单词搜索 II（困难）</title>
+    <url>/algorithm/LeetCode.212.%E5%8D%95%E8%AF%8D%E6%90%9C%E7%B4%A2%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/word-search-ii/">LeetCode.212.单词搜索 II（困难）</a></p>
+<p>给定一个 m x n 二维字符网格 board 和一个单词（字符串）列表 words，找出所有同时在二维网格和字典中出现的单词。</p>
+<p>单词必须按照字母顺序，通过 相邻的单元格 内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母在一个单词中不允许被重复使用。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：回溯"><a href="#解法1：回溯" class="headerlink" title="解法1：回溯"></a>解法1：回溯</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><ul>
+<li>网格中找字典单词，而且还是往相邻单元格找，用深度优先搜索。</li>
+<li>单词必须按照字母顺序，所以必须尝试从每个单元格开始搜索。</li>
+<li>只要在网格中找到了一个单词，接下来就不用再找这个单词了。</li>
+</ul>
+<h3 id="算法步骤"><a href="#算法步骤" class="headerlink" title="算法步骤"></a>算法步骤</h3><ul>
+<li>遍历所有单词。</li>
+<li>遍历网格所有的单元格，在每个单元格用回溯找指定单词，找到一个就停止。</li>
+</ul>
+<h3 id="回溯怎么写？"><a href="#回溯怎么写？" class="headerlink" title="回溯怎么写？"></a>回溯怎么写？</h3><p>标准的回溯模板写法。</p>
+<ul>
+<li>用一个访问数组记录已访问过的元素，避免循环搜索。</li>
+<li>用方向数组简化代码，做好边界检查。</li>
+<li>回溯结束条件就是单词所有字符遍历完了。</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 各索引从小到大依次代表 上、右、下、左</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> deltaRow = intArrayOf(-<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> deltaColumn = intArrayOf(<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findWords</span><span class="params">(board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;, words: <span class="type">Array</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;String&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> result = mutableListOf&lt;String&gt;()</span><br><span class="line">        <span class="keyword">for</span> (word <span class="keyword">in</span> words) &#123;</span><br><span class="line">            <span class="keyword">if</span> (findWord(board, word)) &#123;</span><br><span class="line">                result.add(word)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">findWord</span><span class="params">(board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;, word: <span class="type">String</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> rows = board.size</span><br><span class="line">        <span class="keyword">val</span> columns = board[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> visited = Array(rows) &#123; BooleanArray(columns) &#123; <span class="literal">false</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">for</span> (row <span class="keyword">in</span> <span class="number">0</span> until rows) &#123;</span><br><span class="line">            <span class="keyword">for</span> (column <span class="keyword">in</span> <span class="number">0</span> until columns) &#123;</span><br><span class="line">                <span class="keyword">val</span> found = backtrack(board, row, column, visited, word, <span class="number">0</span>)</span><br><span class="line">                <span class="keyword">if</span> (found) <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">backtrack</span><span class="params">(board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;, row: <span class="type">Int</span>, column: <span class="type">Int</span>, visited: <span class="type">Array</span>&lt;<span class="type">BooleanArray</span>&gt;, word: <span class="type">String</span>, wordIndex: <span class="type">Int</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (board[row][column] == word[wordIndex]) &#123;</span><br><span class="line">            <span class="comment">// 期待的正确情况的边界条件</span></span><br><span class="line">            <span class="keyword">if</span> (wordIndex == word.length - <span class="number">1</span>) <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">            <span class="comment">// 单词还没搜完，就继续尝试下一个位置</span></span><br><span class="line">            visited[row][column] = <span class="literal">true</span></span><br><span class="line">            <span class="keyword">for</span> (direction <span class="keyword">in</span> <span class="number">0.</span><span class="number">.3</span>) &#123;</span><br><span class="line">                <span class="keyword">val</span> newRow = row + deltaRow[direction]</span><br><span class="line">                <span class="keyword">val</span> newColumn = column + deltaColumn[direction]</span><br><span class="line">                <span class="keyword">val</span> rows = board.size</span><br><span class="line">                <span class="keyword">val</span> columns = board[<span class="number">0</span>].size</span><br><span class="line">                <span class="keyword">val</span> isInBound = newRow <span class="keyword">in</span> <span class="number">0</span> until rows &amp;&amp; newColumn <span class="keyword">in</span> <span class="number">0</span> until columns</span><br><span class="line">                <span class="keyword">if</span> (isInBound &amp;&amp; !visited[newRow][newColumn]) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (backtrack(board, newRow, newColumn, visited, word, wordIndex + <span class="number">1</span>)) &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            visited[row][column] = <span class="literal">false</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解法2：字典树-回溯"><a href="#解法2：字典树-回溯" class="headerlink" title="解法2：字典树 + 回溯"></a>解法2：字典树 + 回溯</h2><p>解法1 的步骤是</p>
+<ul>
+<li>遍历单词列表选一个单词。</li>
+<li>从网格中的每个位置开始回溯，看能否找到这个单词。</li>
+</ul>
+<p>如果能在网格中的每个位置开始回溯时：</p>
+<ul>
+<li>发现找到了单词，就能直接记录下来。</li>
+<li>所走的字符不能构成单词就不要继续做没有意义的搜索了。</li>
+</ul>
+<p>这样就是最省时间的。</p>
+<p>符合这个访问特点的就是字典树，所以得吧words所有单词先构建出一个字典树。</p>
+<p>在网格中的每个位置开始回溯时，用字典树匹配回溯发现的字符，如果能组成单词，就记录下来。</p>
+<p><strong>字典树匹配的问题</strong></p>
+<p>如果在每个递归层都从字典数的根节点开始匹配，那么会有很多重复判断，可以在回溯递归时，传递字典树的节点给每个递归层，就不会重复判断了。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span></span>(</span><br><span class="line">        <span class="keyword">var</span> isEnd: <span class="built_in">Boolean</span> = <span class="literal">false</span>,</span><br><span class="line">        <span class="keyword">val</span> next: Array&lt;Node?&gt; = Array(<span class="number">26</span>) &#123; <span class="literal">null</span> &#125;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Trie</span> </span>&#123;</span><br><span class="line">    <span class="keyword">val</span> root = Node()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">insert</span><span class="params">(word: <span class="type">String</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">var</span> p = root</span><br><span class="line">        <span class="keyword">for</span> (c <span class="keyword">in</span> word) &#123;</span><br><span class="line">            <span class="keyword">val</span> i = c - <span class="string">&#x27;a&#x27;</span></span><br><span class="line">            <span class="keyword">if</span> (p.next[i] == <span class="literal">null</span>) &#123;</span><br><span class="line">                p.next[i] = Node()</span><br><span class="line">            &#125;</span><br><span class="line">            p = p.next[i]!!</span><br><span class="line">        &#125;</span><br><span class="line">        p.isEnd = <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 各索引从小到大依次代表 上、右、下、左</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> deltaRow = intArrayOf(-<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> deltaColumn = intArrayOf(<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findWords</span><span class="params">(board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;, words: <span class="type">Array</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;String&gt; &#123;</span><br><span class="line">        <span class="comment">// 所有单词构建字典树</span></span><br><span class="line">        <span class="keyword">val</span> trie = Trie()</span><br><span class="line">        <span class="keyword">for</span> (word <span class="keyword">in</span> words) &#123;</span><br><span class="line">            trie.insert(word)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 回溯</span></span><br><span class="line">        <span class="keyword">val</span> result = HashSet&lt;String&gt;()</span><br><span class="line">        <span class="keyword">val</span> rows = board.size</span><br><span class="line">        <span class="keyword">val</span> columns = board[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> visited = Array(rows) &#123; BooleanArray(columns) &#123; <span class="literal">false</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">val</span> path = Stack&lt;<span class="built_in">Char</span>&gt;()</span><br><span class="line">        <span class="keyword">for</span> (row <span class="keyword">in</span> <span class="number">0</span> until rows) &#123;</span><br><span class="line">            <span class="keyword">for</span> (column <span class="keyword">in</span> <span class="number">0</span> until columns) &#123;</span><br><span class="line">                backtrack(board, row, column, visited, trie.root, path, result)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result.toList()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">backtrack</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">            board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;,</span></span></span><br><span class="line"><span class="params"><span class="function">            row: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">            column: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">            visited: <span class="type">Array</span>&lt;<span class="type">BooleanArray</span>&gt;,</span></span></span><br><span class="line"><span class="params"><span class="function">            node: <span class="type">Node</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">            path: <span class="type">Stack</span>&lt;<span class="type">Char</span>&gt;,</span></span></span><br><span class="line"><span class="params"><span class="function">            result: <span class="type">HashSet</span>&lt;<span class="type">String</span>&gt;</span></span></span><br><span class="line"><span class="params"><span class="function">    )</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> c = board[row][column]</span><br><span class="line">        <span class="keyword">val</span> currentNode = node.next[c - <span class="string">&#x27;a&#x27;</span>]</span><br><span class="line">        <span class="keyword">if</span> (currentNode != <span class="literal">null</span>) &#123;</span><br><span class="line">            path.push(c)</span><br><span class="line">            visited[row][column] = <span class="literal">true</span></span><br><span class="line">            <span class="comment">// 找到一个单词</span></span><br><span class="line">            <span class="keyword">if</span> (currentNode.isEnd) &#123;</span><br><span class="line">                <span class="comment">// 添加结果</span></span><br><span class="line">                <span class="keyword">val</span> sb = StringBuilder()</span><br><span class="line">                <span class="keyword">for</span> (i <span class="keyword">in</span> path.indices) &#123;</span><br><span class="line">                    sb.append(path[i])</span><br><span class="line">                &#125;</span><br><span class="line">                result.add(sb.toString())</span><br><span class="line">                <span class="comment">// 不能中断搜索，因为字典树当前结点可能还有子树，所以这里找到了一个单词不做return</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 单词还没搜完，就继续尝试下一个位置</span></span><br><span class="line">            <span class="keyword">for</span> (direction <span class="keyword">in</span> <span class="number">0.</span><span class="number">.3</span>) &#123;</span><br><span class="line">                <span class="keyword">val</span> newRow = row + deltaRow[direction]</span><br><span class="line">                <span class="keyword">val</span> newColumn = column + deltaColumn[direction]</span><br><span class="line">                <span class="keyword">val</span> rows = board.size</span><br><span class="line">                <span class="keyword">val</span> columns = board[<span class="number">0</span>].size</span><br><span class="line">                <span class="keyword">val</span> isInBound = newRow <span class="keyword">in</span> <span class="number">0</span> until rows &amp;&amp; newColumn <span class="keyword">in</span> <span class="number">0</span> until columns</span><br><span class="line">                <span class="keyword">if</span> (isInBound &amp;&amp; !visited[newRow][newColumn]) &#123;</span><br><span class="line">                    backtrack(board, newRow, newColumn, visited, currentNode, path, result)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            path.pop()</span><br><span class="line">            visited[row][column] = <span class="literal">false</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>深度优先搜索</tag>
+        <tag>回溯</tag>
+        <tag>字典树</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.214.最短回文串（困难）</title>
+    <url>/algorithm/LeetCode.214.%E6%9C%80%E7%9F%AD%E5%9B%9E%E6%96%87%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/shortest-palindrome/">LeetCode.214.最短回文串（困难）</a></p>
+<p>给定一个字符串  _<strong>s</strong>_，你可以通过在字符串前面添加字符将其转换为回文串。找到并返回可以用这种方式转换的最短回文串。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>回文串的特点是左右两端字符相同，要在<code>s</code>前面添加字符串使得新字符串是回文串，那就把<code>s</code>的倒置字符串放在前面就可以形成回文了。</p>
+<h3 id="s的倒置字符串添加在s前面会有什么问题？"><a href="#s的倒置字符串添加在s前面会有什么问题？" class="headerlink" title="s的倒置字符串添加在s前面会有什么问题？"></a>s的倒置字符串添加在s前面会有什么问题？</h3><p>这样添加还不是最短的回文。</p>
+<p>比如s是abbacd，添加dcabba到开头，形成dcabbaabbacd，可以发现abba是多余的，不用添加，dcabbacd是更短的回文串，只要添加dc就行了。</p>
+<h3 id="应该添加什么样的字符串才能获得最短回文？"><a href="#应该添加什么样的字符串才能获得最短回文？" class="headerlink" title="应该添加什么样的字符串才能获得最短回文？"></a>应该添加什么样的字符串才能获得最短回文？</h3><p>得找到abbacd的前缀和dcabba的后缀最长的重合的部分的长度，然后找到不重复的部分，添加到字符串前面。</p>
+<p>标准化描述：</p>
+<ul>
+<li>设<code>s&#39;</code>是<code>s</code>的倒置字符串。</li>
+<li>求<code>s</code>的前缀和<code>s&#39;</code>的后缀中相同部分最长的长度<code>x</code>。</li>
+<li>取<code>s</code>的子串<code>s[x, n - 1]</code>，倒置后添加到<code>s</code>前面，形成最短回文。</li>
+</ul>
+<h3 id="怎么寻找s和s的倒置字符串最长前后缀？"><a href="#怎么寻找s和s的倒置字符串最长前后缀？" class="headerlink" title="怎么寻找s和s的倒置字符串最长前后缀？"></a>怎么寻找s和s的倒置字符串最长前后缀？</h3><p>联想到kmp做字符串匹配时，要先求一个前缀函数，前缀函数<code>prefix[i]</code>表示<code>s[0, i]</code>中最长的公共前后缀的长度，只要求出前缀函数就可以求解题目。</p>
+<h3 id="前缀函数怎么求？"><a href="#前缀函数怎么求？" class="headerlink" title="前缀函数怎么求？"></a>前缀函数怎么求？</h3><p>一句话：让<code>s[0, n - 1]</code>匹配<code>s[1, n - 1]</code>。</p>
+<p>算法步骤：</p>
+<ul>
+<li>双指针<code>i</code>和<code>j</code>遍历<code>s</code>。</li>
+<li><code>i</code>从1开始，<code>j</code>从0开始。</li>
+<li>s匹配自己，字符能匹配上，双指针都前进。</li>
+<li>当前<code>s[i]</code>和<code>s[j]</code>不匹配，要把<code>j</code>往回退。<ul>
+<li><code>j</code>退到前一个位置（<code>j - 1</code>）的最长公共前后缀的前缀的下一个字符的位置。继续拿<code>s[j]</code>跟<code>s[i]</code>尝试匹配，如果能匹配的上，<code>prefix[i]</code>就求出来了。</li>
+<li>如果<code>j</code>一直回退，最坏也就是回退到0，因为<code>prefix[0] = 0</code>（一个字符不存在前后缀），没的退了，只能比较<code>s[i]</code>和<code>s[0]</code>，没匹配的话公共前后缀长度就是0。</li>
+</ul>
+</li>
+</ul>
+<h3 id="前缀函数应该针对哪个字符串求？"><a href="#前缀函数应该针对哪个字符串求？" class="headerlink" title="前缀函数应该针对哪个字符串求？"></a>前缀函数应该针对哪个字符串求？</h3><p>我们要求<code>s</code>的前缀和<code>s</code>的倒置字符串的后缀最长的公共部分。<br>所以弄一个新字符串 <code>s&#39; + s</code>。</p>
+<p><strong>这样存在一个问题</strong>，如果所有字符都相同，此时最长公共前后缀就是整个字符串<code>s&#39; + s</code>本身，这不是期望的结果，所以连接<code>s&#39;</code>和<code>s</code>时，中间隔一个用不到的字符，比如<code>#</code>。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">shortestPalindrome</span><span class="params">(s: <span class="type">String</span>)</span></span>: String &#123;</span><br><span class="line">        <span class="keyword">if</span> (s.isEmpty()) <span class="keyword">return</span> <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="comment">// 加#是为了防止出现全部重复的字符，这样最长公共前后缀的长度就不是期望的了</span></span><br><span class="line">        <span class="keyword">val</span> maxLength = (s + <span class="string">&quot;#&quot;</span> + s.reversed()).prefixArray().last()</span><br><span class="line">        <span class="keyword">return</span> s.substring(maxLength).reversed() + s</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> String.<span class="title">prefixArray</span><span class="params">()</span></span>: IntArray &#123;</span><br><span class="line">        <span class="keyword">val</span> s = <span class="keyword">this</span></span><br><span class="line">        <span class="keyword">val</span> n = length</span><br><span class="line">        <span class="keyword">val</span> prefix = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">var</span> j = prefix[i - <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; s[i] != s[j]) j = prefix[j - <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">if</span> (s[i] == s[j]) j++</span><br><span class="line">            prefix[i] = j</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> prefix</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><p>设字符串<code>s</code>长度为n。</p>
+<ul>
+<li>时间复杂度O(n)：求前缀函数最坏情况需要O(n + n) = O(n)时间；还要遍历整个<code>s&#39; + s</code>，有2n的长度，需要O(n)时间。</li>
+<li>空间复杂度O(n)：前缀函数占用O(n)空间。</li>
+</ul>
+<p>kmp时间复杂度推导可参考：</p>
+<ul>
+<li><a href="https://blog.csdn.net/niukai1768/article/details/79579709">KMP时间复杂度分析</a></li>
+<li><a href="https://segmentfault.com/q/1010000014560162">KMP算法的时间复杂度是如何计算的？</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>KMP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-synchronized、锁升级、wait和notify</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/</url>
+    <content><![CDATA[<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><p>让一段代码在多线程之间互斥访问，保证原子性、有序性、可见性，并且是可重入的。</p>
+<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><ul>
+<li>synchronized修饰代码块时需要传入一个对象作为锁，这个对象可以是任意的，进入同步代码块前要获取这个锁，没有获得锁的线程就要阻塞等待，同步代码块执行完释放锁。</li>
+<li>修饰成员方法时，锁是对象实例。</li>
+<li>修饰静态方法时，锁是类的class实例。</li>
+</ul>
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>每个Java对象都关联一个监视器锁对象，同步代码块在字节码层面是通过在代码块的指令前后加上monitorenter和monitorexit指令来标识的。</p>
+<p>当线程执行到monitorenter指令时，当前线程试图获取监视器对象所有权，如果未加锁或者已被当前线程持有，就把锁计数加1；执行到monitorexit指令的时候，锁计数减1。锁计数为0时，锁就被释放了。</p>
+<p>如果当前线程获取监视器对象失败，线程会阻塞等待，线程会作为一个结点存入监视器对象的锁池队列中，等待唤醒。</p>
+<p>监视器对象还有一个等待池队列，在同步代码块中调用锁对象的wait方法的时候，线程会阻塞，并被封装为一个结点，进入监视器对象的等待池队列，调用锁对象的notify和notifyAll的时候，会把等待池队列中的线程放入锁池队列中，只有锁池中的线程才能参与竞争锁。</p>
+<p>wait和notify用来线程之间同步过程的，比如实现生产者消费者模型。</p>
+<p>监视器锁底层是通过操作系统的互斥锁实现的，操作系统做线程切换需要从用户态转换到内核态，所以比较消耗性能。这种依赖于操作系统互斥锁而实现的锁叫做重量级锁。</p>
+<p>如果线程竞争并不激烈，切换线程的开销是不划算的，特别是多个线程在不同的时段获取同一把锁，可以用自旋锁，就是CAS+循环，CAS由硬件之间实现，开销比切换线程开销要小，这就是轻量级锁，在JDK6引入。</p>
+<p>锁信息具体存储在对象头的MarkWord里，一个对象在虚拟机的内存布局分为三部分，对象头、实例数据、对齐填充，其中对象头又分为MarkWord、类型指针、数组长度，MarkWord存储了锁相关的信息、hashCode、垃圾回收的分代年龄等。</p>
+<p>轻量级锁的CAS操作具体修改的是锁对象头的mark word，修改为指向当前线程栈帧中的锁记录的指针。虚拟机会为每个线程在当前线程栈帧中创建一块锁记录空间，存储锁对象的对象头中的mark word的拷贝。</p>
+<p>如果CAS修改成功，当前线程就获得了轻量级锁。</p>
+<p>如果更新失败，说明有线程竞争，开始自旋，自旋超过一定次数，升级为重量级锁。避免竞争激烈的情况下自旋空耗CPU。</p>
+<p>如果压根都没有线程竞争，只有单线程访问同步代码块，其实每次进行CAS操作获取轻量级锁也是没有必要的开销，所以JDK6又引入了偏向锁，只在第一次申请锁的时候，对Java对象头的MARK WORD做CAS操作，记录下当前申请锁的线程ID，退出同步代码块后，也不释放锁，锁对象的对象头中记录的还是当前的线程ID，同一个线程再次进入这个锁的同步代码块的时候，检查锁的对象头中记录的线程ID是否还是自己，是的话就直接进入，不用再CAS了。当有多个线程要申请锁的时候，就会升级到轻量级锁。</p>
+<p>轻量级锁是为了在线程交替执行同步块时提高性能，而偏向锁则是在只有一个线程执行同步块时进一步提高性能。</p>
+<h1 id="与ReentrantLock区别？该用哪个？"><a href="#与ReentrantLock区别？该用哪个？" class="headerlink" title="与ReentrantLock区别？该用哪个？"></a>与ReentrantLock区别？该用哪个？</h1><p>synchronized一般情况下是够用的，而且写起来比较简单，不会忘记释放锁，如果需要更灵活的功能，可以用ReentrantLock，ReentrantLock也是可重入的锁。</p>
+<ol>
+<li> 实现也是基于CAS+自旋去竞争一个int类型的state变量，性能比较好</li>
+<li> 支持公平锁和非公平锁</li>
+<li> 获取锁的时候可以设置超时时间避免发生死锁</li>
+<li> 获取锁的方法还可以响应线程中断</li>
+<li> 还可以尝试获取锁，获取不不到就不阻塞</li>
+<li> 加锁和解锁完全自己控制，可以跨方法执行解锁</li>
+<li> 可以关联多个条件队列</li>
+</ol>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>synchronized</tag>
+        <tag>偏向锁</tag>
+        <tag>轻量级锁</tag>
+        <tag>重量级锁</tag>
+        <tag>wait</tag>
+        <tag>notify</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.10.正则表达式匹配（困难）</title>
     <url>/LeetCode/LeetCode.10.%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%8C%B9%E9%85%8D%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/regular-expression-matching/">LeetCode.10.正则表达式匹配（困难）</a></p>
@@ -276,9 +503,9 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -555,9 +782,9 @@
       </categories>
       <tags>
         <tag>LeetCode困难</tag>
+        <tag>深度优先搜索</tag>
         <tag>图</tag>
         <tag>广度优先搜索</tag>
-        <tag>深度优先搜索</tag>
       </tags>
   </entry>
   <entry>
@@ -1437,8 +1664,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -1508,8 +1735,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
         <tag>优先队列</tag>
         <tag>分治</tag>
       </tags>
@@ -1544,8 +1771,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
         <tag>递归</tag>
         <tag>链表</tag>
       </tags>
@@ -1640,8 +1867,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
         <tag>滑动窗口</tag>
         <tag>哈希表</tag>
         <tag>字符串</tag>
@@ -1920,9 +2147,9 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
+        <tag>算法</tag>
         <tag>字符串</tag>
         <tag>栈</tag>
       </tags>
@@ -2031,9 +2258,9 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>回溯</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -2208,8 +2435,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -2244,8 +2471,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -2402,9 +2629,9 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -2515,9 +2742,9 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>回溯</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -2649,9 +2876,9 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>回溯</tag>
+        <tag>算法</tag>
         <tag>二进制</tag>
         <tag>位运算</tag>
       </tags>
@@ -3018,10 +3245,9 @@
 
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>正则表达式</tag>
         <tag>DFA</tag>
@@ -3064,11 +3290,11 @@
 
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
+        <tag>贪心</tag>
       </tags>
   </entry>
   <entry>
@@ -3321,10 +3547,9 @@
 <figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    滑动窗口两步走:</span></span><br><span class="line"><span class="comment">    1. 不停的扩大窗口，直至窗口中包含了t中所有字符；如果不能再扩大了就不扩大了</span></span><br><span class="line"><span class="comment">    2. 不停的缩小窗口，直至窗口中没有包含t中所有字符，缩小前记录最小的符合答案条件的子串</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minWindow</span><span class="params">(s: <span class="type">String</span>, t: <span class="type">String</span>)</span></span>: String &#123;</span><br><span class="line">        <span class="comment">// S中包含T所有字符的最小子串</span></span><br><span class="line">        <span class="keyword">var</span> minSubstr = <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="keyword">val</span> window = Window(s, t)</span><br><span class="line">        <span class="keyword">while</span> (window.extend()) &#123;</span><br><span class="line">            <span class="keyword">while</span> (window.match()) &#123;</span><br><span class="line">                <span class="comment">// 有更小的满足答案的窗口，那就要记录下来</span></span><br><span class="line">                <span class="comment">// 但是初始时minSubstr是长度为0，需要特殊对待，因为一旦发现了满足答案的窗口，就要更新记录</span></span><br><span class="line">                <span class="keyword">if</span> (minSubstr.isEmpty() || window.windowSize() &lt; minSubstr.length) &#123;</span><br><span class="line">                    minSubstr = window.windowString()</span><br><span class="line">                &#125;</span><br><span class="line">                window.shorten()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> minSubstr</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Window</span></span>(</span><br><span class="line">            <span class="keyword">private</span> <span class="keyword">val</span> s: String,</span><br><span class="line">            <span class="keyword">private</span> <span class="keyword">val</span> t: String</span><br><span class="line">    ) &#123;</span><br><span class="line">        <span class="comment">// 记录t中所有字符出现的次数</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">val</span> tMap = mutableMapOf&lt;<span class="built_in">Char</span>, <span class="built_in">Int</span>&gt;()</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 记录窗口已出现的字符的次数，可以只记录t中存在的字符，t中不存在的字符记录也没啥意义</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">val</span> wMap = mutableMapOf&lt;<span class="built_in">Char</span>, <span class="built_in">Int</span>&gt;()</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 记录匹配的字符数量</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">var</span> matchedCharCount = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 窗口左指针</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">var</span> left = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 窗口右指针</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">var</span> right = -<span class="number">1</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">init</span> &#123;</span><br><span class="line">            t.forEach &#123; c -&gt;</span><br><span class="line">                tMap[c] = <span class="number">1</span> + tMap.getOrDefault(c, <span class="number">0</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 扩大窗口</span></span><br><span class="line"><span class="comment">         *</span></span><br><span class="line"><span class="comment">         * 如果还能继续扩大返回true，不能再扩大了返回false</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">extend</span><span class="params">()</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">            <span class="comment">// 窗口已经滑动到字符串最右侧了</span></span><br><span class="line">            <span class="keyword">if</span> (right == s.length - <span class="number">1</span>) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 扩大窗口</span></span><br><span class="line">            right++</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 窗口又增加一个字符</span></span><br><span class="line">            <span class="keyword">val</span> c = s[right]</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (tMap.containsKey(c)) &#123;</span><br><span class="line">                <span class="comment">// 窗口只记录t中存在的字符，记录t中不存在的字符也没啥意义</span></span><br><span class="line">                wMap[c] = <span class="number">1</span> + wMap.getOrDefault(c, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 如果窗口内当前字符c的个数已经达到t中c字符的数量，记录匹配的字符数量</span></span><br><span class="line">                <span class="comment">// 字符数量过多不管它，在缩小窗口时一起考虑这个问题</span></span><br><span class="line">                <span class="keyword">if</span> (tMap.containsKey(c) &amp;&amp; tMap[c] == wMap[c]) &#123;</span><br><span class="line">                    matchedCharCount++</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 窗口中有字符串t中所有的字符</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">match</span><span class="params">()</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> matchedCharCount == tMap.size</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 减少左边界缩短窗口</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">shorten</span><span class="params">()</span></span> &#123;</span><br><span class="line">            <span class="keyword">val</span> c = s[left]</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (tMap.containsKey(c)) &#123;</span><br><span class="line">                wMap[c] = wMap.getOrDefault(c, <span class="number">0</span>) - <span class="number">1</span></span><br><span class="line">                <span class="comment">// 窗口里c字符数量小于t中c的字符数量，匹配字符数量减1</span></span><br><span class="line">                <span class="comment">// 这里感觉有多减的风险，但是其实不会发生，因为一旦不匹配了，就不会再继续缩小窗口了，而是会扩大窗口，所以不用考虑</span></span><br><span class="line">                <span class="keyword">if</span> (wMap[c]!! &lt; tMap[c]!!) &#123;</span><br><span class="line">                    matchedCharCount--</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            left++</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 窗口字符串长度</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">windowSize</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> right - left + <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 窗口字符串</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">windowString</span><span class="params">()</span></span>: String &#123;</span><br><span class="line">            <span class="keyword">return</span> s.substring(left, right + <span class="number">1</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>滑动窗口</tag>
       </tags>
@@ -3636,233 +3861,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.188.买卖股票的最佳时机 IV（困难）</title>
-    <url>/algorithm/LeetCode.188.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%20IV%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv/">LeetCode.188.买卖股票的最佳时机 IV（困难）</a></p>
-<p>给定一个整数数组 prices ，它的第 i 个元素 prices[i] 是一支给定的股票在第 i 天的价格。</p>
-<p>设计一个算法来计算你所能获取的最大利润。你最多可以完成 k 笔交易。</p>
-<p>注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>最优化问题考虑用动态规划。</p>
-<p>看最终结果受哪些因素影响，穷举不同因素的所有状态值，就可以推导出最终结果。</p>
-<h3 id="最终收益受哪些维度的状态变化影响？"><a href="#最终收益受哪些维度的状态变化影响？" class="headerlink" title="最终收益受哪些维度的状态变化影响？"></a>最终收益受哪些维度的状态变化影响？</h3><ul>
-<li>在第几天买入或卖出肯定是会影响最终收益，可能某一天突然暴涨。</li>
-<li>交易次数越多，可能赚取的收益越大。</li>
-<li>在第<code>i</code>天可以选择的操作有三种：买入、卖出、什么也不做。<br>什么也不做包含了两种状态：买入过后什么也不做、卖出过后什么也不做。归纳合并一下，这些操作会产生的结果状态是：第<code>i</code>天持有或不持有股票。股票持有状态也会影响最终收益。</li>
-</ul>
-<p>所以从结果上看，一共有三种纬度的状态变化：</p>
-<ul>
-<li>第几天做出选择</li>
-<li>已经交易了多少次</li>
-<li>当前是否持有股票</li>
-</ul>
-<h3 id="买入的时候算一次交易，还是卖出的时候算一次交易？"><a href="#买入的时候算一次交易，还是卖出的时候算一次交易？" class="headerlink" title="买入的时候算一次交易，还是卖出的时候算一次交易？"></a>买入的时候算一次交易，还是卖出的时候算一次交易？</h3><p>其实都可以，不影响最终结果，只是状态转移过程会有所变化。<br>这里定义买入的时候算一次交易。</p>
-<h3 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h3><p><code>dp[i][j][k]</code>表示，前<code>i</code>天，交易了<code>j</code>次，在第<code>i</code>天持有或不持有股票，所获得最大的收益。其中<code>k == 0</code>表示不持有，<code>k == 1</code>表示持有。</p>
-<ul>
-<li><code>dp[i][j][0]</code>怎么得来？<ul>
-<li>第<code>i - 1</code>天没有持有股票，第<code>i</code>天什么也不操作。<ul>
-<li><code>dp[i][j][0] = dp[i - 1][j][0]</code></li>
-</ul>
-</li>
-<li>第<code>i - 1</code>天持有股票，第<code>i</code>天卖出。<ul>
-<li><code>dp[i][j][0] = dp[i - 1][j][1] + prices[i]</code></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><code>dp[i][j][1]</code>怎么得来？<ul>
-<li>第<code>i - 1</code>天持有股票，第<code>i</code>天什么也不操作。<ul>
-<li><code>dp[i][j][1] = dp[i - 1][j][1]</code></li>
-</ul>
-</li>
-<li>第<code>i - 1</code>天没有持有股票，第<code>i</code>天买入。<ul>
-<li><code>dp[i][j][1] = dp[i - 1][j - 1][0] - prices[i]</code></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h3 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h3><ul>
-<li>第0天<ul>
-<li>持有股票的话，不论多少次交易，只能直接买入一次。</li>
-<li>不持有股票的话，收益就是0。</li>
-</ul>
-</li>
-<li>第<code>i</code>天之前都没有交易（即<code>j == 0</code>），第<code>i</code>天要交易操作就是买入。</li>
-</ul>
-<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p>如果给定的最多交易次数<code>k</code>非常大，状态数组开辟空间也会非常大，考虑是否有优化的可能。</p>
-<p><strong>交易次数上限是多少？</strong></p>
-<p>一次交易要买入和卖出，总共n天，交易次数不应该超过n / 2。</p>
-<p><strong>交易次数超过n / 2要怎么办？</strong></p>
-<p>这就等于不限交易次数，与<a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/">LeetCode.122.买卖股票的最佳时机 II（简单）</a>解法相同，可以复用这种情况下最优化空间的解答。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxProfit</span><span class="params">(k: <span class="type">Int</span>, prices: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (prices.isEmpty() || k == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="keyword">if</span> (k &gt;= n / <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> maxProfitNonLimitCount(prices)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 三种状态：第几天买入或卖出、已经交易了多少次、当前是否持有股票</span></span><br><span class="line">        <span class="comment">// dp[i][j][0或1]表示，前i天，交易了j次，在第i天持有或不持有股票，所获得最大的收益</span></span><br><span class="line">        <span class="comment">// 这里定义买入的时候算一次交易</span></span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; Array(k) &#123; IntArray(<span class="number">2</span>) &#123; <span class="number">0</span> &#125; &#125; &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until k) &#123;</span><br><span class="line">                <span class="keyword">if</span> (i == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="comment">// 第0天持有股票的话，最多k次交易，只能直接买入</span></span><br><span class="line">                    dp[i][j][<span class="number">1</span>] = -prices[i]</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// 第i天，交易了j次，持有股票</span></span><br><span class="line">                    <span class="comment">// 可能是前i-1天就交易了j次并持有股票，也可能前i-1天交易了j-1次在今天买入了</span></span><br><span class="line">                    <span class="comment">// 如果之前没有交易，今天就直接买入就好了</span></span><br><span class="line">                    <span class="keyword">if</span> (j == <span class="number">0</span>) &#123;</span><br><span class="line">                        dp[i][j][<span class="number">1</span>] = maxOf(dp[i - <span class="number">1</span>][j][<span class="number">1</span>], -prices[i])</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        dp[i][j][<span class="number">1</span>] = maxOf(dp[i - <span class="number">1</span>][j][<span class="number">1</span>], dp[i - <span class="number">1</span>][j - <span class="number">1</span>][<span class="number">0</span>] - prices[i])</span><br><span class="line">                    &#125;</span><br><span class="line">                    dp[i][j][<span class="number">0</span>] = maxOf(dp[i - <span class="number">1</span>][j][<span class="number">0</span>], dp[i - <span class="number">1</span>][j][<span class="number">1</span>] + prices[i])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n - <span class="number">1</span>][k - <span class="number">1</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">maxProfitNonLimitCount</span><span class="params">(prices: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> holdProfit = -prices[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">var</span> noholdProfit = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">val</span> newHoldProfit = maxOf(holdProfit, noholdProfit - prices[i])</span><br><span class="line">            <span class="keyword">val</span> newNoholdProfit = maxOf(noholdProfit, holdProfit + prices[i])</span><br><span class="line">            holdProfit = newHoldProfit</span><br><span class="line">            noholdProfit = newNoholdProfit</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> noholdProfit</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><ul>
-<li>时间复杂度<code>O(n * k)</code>。</li>
-<li><code>k &gt;= n / 2</code>时，空间复杂度<code>O(1)</code>；<code>k &lt; n / 2</code>时，空间复杂度<code>O(n * k)</code>。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>动态规划</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.212.单词搜索 II（困难）</title>
-    <url>/algorithm/LeetCode.212.%E5%8D%95%E8%AF%8D%E6%90%9C%E7%B4%A2%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/word-search-ii/">LeetCode.212.单词搜索 II（困难）</a></p>
-<p>给定一个 m x n 二维字符网格 board 和一个单词（字符串）列表 words，找出所有同时在二维网格和字典中出现的单词。</p>
-<p>单词必须按照字母顺序，通过 相邻的单元格 内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母在一个单词中不允许被重复使用。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：回溯"><a href="#解法1：回溯" class="headerlink" title="解法1：回溯"></a>解法1：回溯</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><ul>
-<li>网格中找字典单词，而且还是往相邻单元格找，用深度优先搜索。</li>
-<li>单词必须按照字母顺序，所以必须尝试从每个单元格开始搜索。</li>
-<li>只要在网格中找到了一个单词，接下来就不用再找这个单词了。</li>
-</ul>
-<h3 id="算法步骤"><a href="#算法步骤" class="headerlink" title="算法步骤"></a>算法步骤</h3><ul>
-<li>遍历所有单词。</li>
-<li>遍历网格所有的单元格，在每个单元格用回溯找指定单词，找到一个就停止。</li>
-</ul>
-<h3 id="回溯怎么写？"><a href="#回溯怎么写？" class="headerlink" title="回溯怎么写？"></a>回溯怎么写？</h3><p>标准的回溯模板写法。</p>
-<ul>
-<li>用一个访问数组记录已访问过的元素，避免循环搜索。</li>
-<li>用方向数组简化代码，做好边界检查。</li>
-<li>回溯结束条件就是单词所有字符遍历完了。</li>
-</ul>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 各索引从小到大依次代表 上、右、下、左</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> deltaRow = intArrayOf(-<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> deltaColumn = intArrayOf(<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findWords</span><span class="params">(board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;, words: <span class="type">Array</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;String&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> result = mutableListOf&lt;String&gt;()</span><br><span class="line">        <span class="keyword">for</span> (word <span class="keyword">in</span> words) &#123;</span><br><span class="line">            <span class="keyword">if</span> (findWord(board, word)) &#123;</span><br><span class="line">                result.add(word)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">findWord</span><span class="params">(board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;, word: <span class="type">String</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> rows = board.size</span><br><span class="line">        <span class="keyword">val</span> columns = board[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> visited = Array(rows) &#123; BooleanArray(columns) &#123; <span class="literal">false</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">for</span> (row <span class="keyword">in</span> <span class="number">0</span> until rows) &#123;</span><br><span class="line">            <span class="keyword">for</span> (column <span class="keyword">in</span> <span class="number">0</span> until columns) &#123;</span><br><span class="line">                <span class="keyword">val</span> found = backtrack(board, row, column, visited, word, <span class="number">0</span>)</span><br><span class="line">                <span class="keyword">if</span> (found) <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">backtrack</span><span class="params">(board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;, row: <span class="type">Int</span>, column: <span class="type">Int</span>, visited: <span class="type">Array</span>&lt;<span class="type">BooleanArray</span>&gt;, word: <span class="type">String</span>, wordIndex: <span class="type">Int</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (board[row][column] == word[wordIndex]) &#123;</span><br><span class="line">            <span class="comment">// 期待的正确情况的边界条件</span></span><br><span class="line">            <span class="keyword">if</span> (wordIndex == word.length - <span class="number">1</span>) <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">            <span class="comment">// 单词还没搜完，就继续尝试下一个位置</span></span><br><span class="line">            visited[row][column] = <span class="literal">true</span></span><br><span class="line">            <span class="keyword">for</span> (direction <span class="keyword">in</span> <span class="number">0.</span><span class="number">.3</span>) &#123;</span><br><span class="line">                <span class="keyword">val</span> newRow = row + deltaRow[direction]</span><br><span class="line">                <span class="keyword">val</span> newColumn = column + deltaColumn[direction]</span><br><span class="line">                <span class="keyword">val</span> rows = board.size</span><br><span class="line">                <span class="keyword">val</span> columns = board[<span class="number">0</span>].size</span><br><span class="line">                <span class="keyword">val</span> isInBound = newRow <span class="keyword">in</span> <span class="number">0</span> until rows &amp;&amp; newColumn <span class="keyword">in</span> <span class="number">0</span> until columns</span><br><span class="line">                <span class="keyword">if</span> (isInBound &amp;&amp; !visited[newRow][newColumn]) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (backtrack(board, newRow, newColumn, visited, word, wordIndex + <span class="number">1</span>)) &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            visited[row][column] = <span class="literal">false</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="解法2：字典树-回溯"><a href="#解法2：字典树-回溯" class="headerlink" title="解法2：字典树 + 回溯"></a>解法2：字典树 + 回溯</h2><p>解法1 的步骤是</p>
-<ul>
-<li>遍历单词列表选一个单词。</li>
-<li>从网格中的每个位置开始回溯，看能否找到这个单词。</li>
-</ul>
-<p>如果能在网格中的每个位置开始回溯时：</p>
-<ul>
-<li>发现找到了单词，就能直接记录下来。</li>
-<li>所走的字符不能构成单词就不要继续做没有意义的搜索了。</li>
-</ul>
-<p>这样就是最省时间的。</p>
-<p>符合这个访问特点的就是字典树，所以得吧words所有单词先构建出一个字典树。</p>
-<p>在网格中的每个位置开始回溯时，用字典树匹配回溯发现的字符，如果能组成单词，就记录下来。</p>
-<p><strong>字典树匹配的问题</strong></p>
-<p>如果在每个递归层都从字典数的根节点开始匹配，那么会有很多重复判断，可以在回溯递归时，传递字典树的节点给每个递归层，就不会重复判断了。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span></span>(</span><br><span class="line">        <span class="keyword">var</span> isEnd: <span class="built_in">Boolean</span> = <span class="literal">false</span>,</span><br><span class="line">        <span class="keyword">val</span> next: Array&lt;Node?&gt; = Array(<span class="number">26</span>) &#123; <span class="literal">null</span> &#125;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Trie</span> </span>&#123;</span><br><span class="line">    <span class="keyword">val</span> root = Node()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">insert</span><span class="params">(word: <span class="type">String</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">var</span> p = root</span><br><span class="line">        <span class="keyword">for</span> (c <span class="keyword">in</span> word) &#123;</span><br><span class="line">            <span class="keyword">val</span> i = c - <span class="string">&#x27;a&#x27;</span></span><br><span class="line">            <span class="keyword">if</span> (p.next[i] == <span class="literal">null</span>) &#123;</span><br><span class="line">                p.next[i] = Node()</span><br><span class="line">            &#125;</span><br><span class="line">            p = p.next[i]!!</span><br><span class="line">        &#125;</span><br><span class="line">        p.isEnd = <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 各索引从小到大依次代表 上、右、下、左</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> deltaRow = intArrayOf(-<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> deltaColumn = intArrayOf(<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findWords</span><span class="params">(board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;, words: <span class="type">Array</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;String&gt; &#123;</span><br><span class="line">        <span class="comment">// 所有单词构建字典树</span></span><br><span class="line">        <span class="keyword">val</span> trie = Trie()</span><br><span class="line">        <span class="keyword">for</span> (word <span class="keyword">in</span> words) &#123;</span><br><span class="line">            trie.insert(word)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 回溯</span></span><br><span class="line">        <span class="keyword">val</span> result = HashSet&lt;String&gt;()</span><br><span class="line">        <span class="keyword">val</span> rows = board.size</span><br><span class="line">        <span class="keyword">val</span> columns = board[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> visited = Array(rows) &#123; BooleanArray(columns) &#123; <span class="literal">false</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">val</span> path = Stack&lt;<span class="built_in">Char</span>&gt;()</span><br><span class="line">        <span class="keyword">for</span> (row <span class="keyword">in</span> <span class="number">0</span> until rows) &#123;</span><br><span class="line">            <span class="keyword">for</span> (column <span class="keyword">in</span> <span class="number">0</span> until columns) &#123;</span><br><span class="line">                backtrack(board, row, column, visited, trie.root, path, result)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result.toList()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">backtrack</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">            board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;,</span></span></span><br><span class="line"><span class="params"><span class="function">            row: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">            column: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">            visited: <span class="type">Array</span>&lt;<span class="type">BooleanArray</span>&gt;,</span></span></span><br><span class="line"><span class="params"><span class="function">            node: <span class="type">Node</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">            path: <span class="type">Stack</span>&lt;<span class="type">Char</span>&gt;,</span></span></span><br><span class="line"><span class="params"><span class="function">            result: <span class="type">HashSet</span>&lt;<span class="type">String</span>&gt;</span></span></span><br><span class="line"><span class="params"><span class="function">    )</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> c = board[row][column]</span><br><span class="line">        <span class="keyword">val</span> currentNode = node.next[c - <span class="string">&#x27;a&#x27;</span>]</span><br><span class="line">        <span class="keyword">if</span> (currentNode != <span class="literal">null</span>) &#123;</span><br><span class="line">            path.push(c)</span><br><span class="line">            visited[row][column] = <span class="literal">true</span></span><br><span class="line">            <span class="comment">// 找到一个单词</span></span><br><span class="line">            <span class="keyword">if</span> (currentNode.isEnd) &#123;</span><br><span class="line">                <span class="comment">// 添加结果</span></span><br><span class="line">                <span class="keyword">val</span> sb = StringBuilder()</span><br><span class="line">                <span class="keyword">for</span> (i <span class="keyword">in</span> path.indices) &#123;</span><br><span class="line">                    sb.append(path[i])</span><br><span class="line">                &#125;</span><br><span class="line">                result.add(sb.toString())</span><br><span class="line">                <span class="comment">// 不能中断搜索，因为字典树当前结点可能还有子树，所以这里找到了一个单词不做return</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 单词还没搜完，就继续尝试下一个位置</span></span><br><span class="line">            <span class="keyword">for</span> (direction <span class="keyword">in</span> <span class="number">0.</span><span class="number">.3</span>) &#123;</span><br><span class="line">                <span class="keyword">val</span> newRow = row + deltaRow[direction]</span><br><span class="line">                <span class="keyword">val</span> newColumn = column + deltaColumn[direction]</span><br><span class="line">                <span class="keyword">val</span> rows = board.size</span><br><span class="line">                <span class="keyword">val</span> columns = board[<span class="number">0</span>].size</span><br><span class="line">                <span class="keyword">val</span> isInBound = newRow <span class="keyword">in</span> <span class="number">0</span> until rows &amp;&amp; newColumn <span class="keyword">in</span> <span class="number">0</span> until columns</span><br><span class="line">                <span class="keyword">if</span> (isInBound &amp;&amp; !visited[newRow][newColumn]) &#123;</span><br><span class="line">                    backtrack(board, newRow, newColumn, visited, currentNode, path, result)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            path.pop()</span><br><span class="line">            visited[row][column] = <span class="literal">false</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>深度优先搜索</tag>
-        <tag>回溯</tag>
-        <tag>字典树</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.214.最短回文串（困难）</title>
-    <url>/algorithm/LeetCode.214.%E6%9C%80%E7%9F%AD%E5%9B%9E%E6%96%87%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/shortest-palindrome/">LeetCode.214.最短回文串（困难）</a></p>
-<p>给定一个字符串  _<strong>s</strong>_，你可以通过在字符串前面添加字符将其转换为回文串。找到并返回可以用这种方式转换的最短回文串。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>回文串的特点是左右两端字符相同，要在<code>s</code>前面添加字符串使得新字符串是回文串，那就把<code>s</code>的倒置字符串放在前面就可以形成回文了。</p>
-<h3 id="s的倒置字符串添加在s前面会有什么问题？"><a href="#s的倒置字符串添加在s前面会有什么问题？" class="headerlink" title="s的倒置字符串添加在s前面会有什么问题？"></a>s的倒置字符串添加在s前面会有什么问题？</h3><p>这样添加还不是最短的回文。</p>
-<p>比如s是abbacd，添加dcabba到开头，形成dcabbaabbacd，可以发现abba是多余的，不用添加，dcabbacd是更短的回文串，只要添加dc就行了。</p>
-<h3 id="应该添加什么样的字符串才能获得最短回文？"><a href="#应该添加什么样的字符串才能获得最短回文？" class="headerlink" title="应该添加什么样的字符串才能获得最短回文？"></a>应该添加什么样的字符串才能获得最短回文？</h3><p>得找到abbacd的前缀和dcabba的后缀最长的重合的部分的长度，然后找到不重复的部分，添加到字符串前面。</p>
-<p>标准化描述：</p>
-<ul>
-<li>设<code>s&#39;</code>是<code>s</code>的倒置字符串。</li>
-<li>求<code>s</code>的前缀和<code>s&#39;</code>的后缀中相同部分最长的长度<code>x</code>。</li>
-<li>取<code>s</code>的子串<code>s[x, n - 1]</code>，倒置后添加到<code>s</code>前面，形成最短回文。</li>
-</ul>
-<h3 id="怎么寻找s和s的倒置字符串最长前后缀？"><a href="#怎么寻找s和s的倒置字符串最长前后缀？" class="headerlink" title="怎么寻找s和s的倒置字符串最长前后缀？"></a>怎么寻找s和s的倒置字符串最长前后缀？</h3><p>联想到kmp做字符串匹配时，要先求一个前缀函数，前缀函数<code>prefix[i]</code>表示<code>s[0, i]</code>中最长的公共前后缀的长度，只要求出前缀函数就可以求解题目。</p>
-<h3 id="前缀函数怎么求？"><a href="#前缀函数怎么求？" class="headerlink" title="前缀函数怎么求？"></a>前缀函数怎么求？</h3><p>一句话：让<code>s[0, n - 1]</code>匹配<code>s[1, n - 1]</code>。</p>
-<p>算法步骤：</p>
-<ul>
-<li>双指针<code>i</code>和<code>j</code>遍历<code>s</code>。</li>
-<li><code>i</code>从1开始，<code>j</code>从0开始。</li>
-<li>s匹配自己，字符能匹配上，双指针都前进。</li>
-<li>当前<code>s[i]</code>和<code>s[j]</code>不匹配，要把<code>j</code>往回退。<ul>
-<li><code>j</code>退到前一个位置（<code>j - 1</code>）的最长公共前后缀的前缀的下一个字符的位置。继续拿<code>s[j]</code>跟<code>s[i]</code>尝试匹配，如果能匹配的上，<code>prefix[i]</code>就求出来了。</li>
-<li>如果<code>j</code>一直回退，最坏也就是回退到0，因为<code>prefix[0] = 0</code>（一个字符不存在前后缀），没的退了，只能比较<code>s[i]</code>和<code>s[0]</code>，没匹配的话公共前后缀长度就是0。</li>
-</ul>
-</li>
-</ul>
-<h3 id="前缀函数应该针对哪个字符串求？"><a href="#前缀函数应该针对哪个字符串求？" class="headerlink" title="前缀函数应该针对哪个字符串求？"></a>前缀函数应该针对哪个字符串求？</h3><p>我们要求<code>s</code>的前缀和<code>s</code>的倒置字符串的后缀最长的公共部分。<br>所以弄一个新字符串 <code>s&#39; + s</code>。</p>
-<p><strong>这样存在一个问题</strong>，如果所有字符都相同，此时最长公共前后缀就是整个字符串<code>s&#39; + s</code>本身，这不是期望的结果，所以连接<code>s&#39;</code>和<code>s</code>时，中间隔一个用不到的字符，比如<code>#</code>。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">shortestPalindrome</span><span class="params">(s: <span class="type">String</span>)</span></span>: String &#123;</span><br><span class="line">        <span class="keyword">if</span> (s.isEmpty()) <span class="keyword">return</span> <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="comment">// 加#是为了防止出现全部重复的字符，这样最长公共前后缀的长度就不是期望的了</span></span><br><span class="line">        <span class="keyword">val</span> maxLength = (s + <span class="string">&quot;#&quot;</span> + s.reversed()).prefixArray().last()</span><br><span class="line">        <span class="keyword">return</span> s.substring(maxLength).reversed() + s</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> String.<span class="title">prefixArray</span><span class="params">()</span></span>: IntArray &#123;</span><br><span class="line">        <span class="keyword">val</span> s = <span class="keyword">this</span></span><br><span class="line">        <span class="keyword">val</span> n = length</span><br><span class="line">        <span class="keyword">val</span> prefix = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">var</span> j = prefix[i - <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; s[i] != s[j]) j = prefix[j - <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">if</span> (s[i] == s[j]) j++</span><br><span class="line">            prefix[i] = j</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> prefix</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><p>设字符串<code>s</code>长度为n。</p>
-<ul>
-<li>时间复杂度O(n)：求前缀函数最坏情况需要O(n + n) = O(n)时间；还要遍历整个<code>s&#39; + s</code>，有2n的长度，需要O(n)时间。</li>
-<li>空间复杂度O(n)：前缀函数占用O(n)空间。</li>
-</ul>
-<p>kmp时间复杂度推导可参考：</p>
-<ul>
-<li><a href="https://blog.csdn.net/niukai1768/article/details/79579709">KMP时间复杂度分析</a></li>
-<li><a href="https://segmentfault.com/q/1010000014560162">KMP算法的时间复杂度是如何计算的？</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>KMP</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-synchronized、锁升级、wait和notify</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/</url>
-    <content><![CDATA[<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><p>让一段代码在多线程之间互斥访问，保证原子性、有序性、可见性，并且是可重入的。</p>
-<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><ul>
-<li>synchronized修饰代码块时需要传入一个对象作为锁，这个对象可以是任意的，进入同步代码块前要获取这个锁，没有获得锁的线程就要阻塞等待，同步代码块执行完释放锁。</li>
-<li>修饰成员方法时，锁是对象实例。</li>
-<li>修饰静态方法时，锁是类的class实例。</li>
-</ul>
-<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>每个Java对象都关联一个监视器锁对象，同步代码块在字节码层面是通过在代码块的指令前后加上monitorenter和monitorexit指令来标识的。</p>
-<p>当线程执行到monitorenter指令时，当前线程试图获取监视器对象所有权，如果未加锁或者已被当前线程持有，就把锁计数加1；执行到monitorexit指令的时候，锁计数减1。锁计数为0时，锁就被释放了。</p>
-<p>如果当前线程获取监视器对象失败，线程会阻塞等待，线程会作为一个结点存入监视器对象的锁池队列中，等待唤醒。</p>
-<p>监视器对象还有一个等待池队列，在同步代码块中调用锁对象的wait方法的时候，线程会阻塞，并被封装为一个结点，进入监视器对象的等待池队列，调用锁对象的notify和notifyAll的时候，会把等待池队列中的线程放入锁池队列中，只有锁池中的线程才能参与竞争锁。</p>
-<p>wait和notify用来线程之间同步过程的，比如实现生产者消费者模型。</p>
-<p>监视器锁底层是通过操作系统的互斥锁实现的，操作系统做线程切换需要从用户态转换到内核态，所以比较消耗性能。这种依赖于操作系统互斥锁而实现的锁叫做重量级锁。</p>
-<p>如果线程竞争并不激烈，切换线程的开销是不划算的，特别是多个线程在不同的时段获取同一把锁，可以用自旋锁，就是CAS+循环，CAS由硬件之间实现，开销比切换线程开销要小，这就是轻量级锁，在JDK6引入。</p>
-<p>锁信息具体存储在对象头的MarkWord里，一个对象在虚拟机的内存布局分为三部分，对象头、实例数据、对齐填充，其中对象头又分为MarkWord、类型指针、数组长度，MarkWord存储了锁相关的信息、hashCode、垃圾回收的分代年龄等。</p>
-<p>轻量级锁的CAS操作具体修改的是锁对象头的mark word，修改为指向当前线程栈帧中的锁记录的指针。虚拟机会为每个线程在当前线程栈帧中创建一块锁记录空间，存储锁对象的对象头中的mark word的拷贝。</p>
-<p>如果CAS修改成功，当前线程就获得了轻量级锁。</p>
-<p>如果更新失败，说明有线程竞争，开始自旋，自旋超过一定次数，升级为重量级锁。避免竞争激烈的情况下自旋空耗CPU。</p>
-<p>如果压根都没有线程竞争，只有单线程访问同步代码块，其实每次进行CAS操作获取轻量级锁也是没有必要的开销，所以JDK6又引入了偏向锁，只在第一次申请锁的时候，对Java对象头的MARK WORD做CAS操作，记录下当前申请锁的线程ID，退出同步代码块后，也不释放锁，锁对象的对象头中记录的还是当前的线程ID，同一个线程再次进入这个锁的同步代码块的时候，检查锁的对象头中记录的线程ID是否还是自己，是的话就直接进入，不用再CAS了。当有多个线程要申请锁的时候，就会升级到轻量级锁。</p>
-<p>轻量级锁是为了在线程交替执行同步块时提高性能，而偏向锁则是在只有一个线程执行同步块时进一步提高性能。</p>
-<h1 id="与ReentrantLock区别？该用哪个？"><a href="#与ReentrantLock区别？该用哪个？" class="headerlink" title="与ReentrantLock区别？该用哪个？"></a>与ReentrantLock区别？该用哪个？</h1><p>synchronized一般情况下是够用的，而且写起来比较简单，不会忘记释放锁，如果需要更灵活的功能，可以用ReentrantLock，ReentrantLock也是可重入的锁。</p>
-<ol>
-<li> 实现也是基于CAS+自旋去竞争一个int类型的state变量，性能比较好</li>
-<li> 支持公平锁和非公平锁</li>
-<li> 获取锁的时候可以设置超时时间避免发生死锁</li>
-<li> 获取锁的方法还可以响应线程中断</li>
-<li> 还可以尝试获取锁，获取不不到就不阻塞</li>
-<li> 加锁和解锁完全自己控制，可以跨方法执行解锁</li>
-<li> 可以关联多个条件队列</li>
-</ol>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>synchronized</tag>
-        <tag>偏向锁</tag>
-        <tag>轻量级锁</tag>
-        <tag>重量级锁</tag>
-        <tag>wait</tag>
-        <tag>notify</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>B树、B+树</title>
     <url>/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/</url>
     <content><![CDATA[<h1 id="B和B-里的B是什么意思"><a href="#B和B-里的B是什么意思" class="headerlink" title="B和B+里的B是什么意思?"></a>B和B+里的B是什么意思?</h1><p>B是Balanced的缩写，平衡的意思。</p>
@@ -4021,8 +4019,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>字典树</tag>
+        <tag>算法</tag>
         <tag>数据结构</tag>
       </tags>
   </entry>
