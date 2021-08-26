@@ -1416,11 +1416,10 @@
 <figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"><span class="keyword">import</span> kotlin.Comparator</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span></span>(<span class="keyword">val</span> x: <span class="built_in">Int</span>, <span class="keyword">val</span> y: <span class="built_in">Int</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">getSkyline</span><span class="params">(buildings: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: List&lt;List&lt;<span class="built_in">Int</span>&gt;&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> answer = mutableListOf&lt;List&lt;<span class="built_in">Int</span>&gt;&gt;()</span><br><span class="line">        <span class="comment">// 建筑物的左上角、右上角顶点坐标提取出来并按横坐标从小到大的排序</span></span><br><span class="line">        <span class="keyword">val</span> points = buildings.toSortedPoints()</span><br><span class="line">        <span class="comment">// 创建大顶堆，用以保存从左向右扫描的高度</span></span><br><span class="line">        <span class="keyword">val</span> queue = PriorityQueue&lt;<span class="built_in">Int</span>&gt;(compareByDescending &#123; it &#125;)</span><br><span class="line">        <span class="comment">// 初始插入0</span></span><br><span class="line">        queue.offer(<span class="number">0</span>)</span><br><span class="line">        <span class="comment">// 记录先前的天际线高度，如果高度发生变化了说明天际线发生了转折，需要记录</span></span><br><span class="line">        <span class="comment">// 因为有可能有几个高度一样的建筑物重叠在一起</span></span><br><span class="line">        <span class="keyword">var</span> preMax = <span class="number">0</span></span><br><span class="line">        points.forEach &#123; p -&gt;</span><br><span class="line">            <span class="comment">// 遇到左上角顶点，就将该顶点的高度插入最大堆，插入只需要对数时间</span></span><br><span class="line">            <span class="keyword">if</span> (p.y &lt; <span class="number">0</span>) queue.offer(-p.y)</span><br><span class="line">            <span class="comment">// 遇到右上角顶点，就将该顶点高度从最大堆种删除，因为这个建筑不再影响天际线</span></span><br><span class="line">            <span class="comment">// 设堆中有n个元素，从堆中移除，首先需要找到这个元素，最坏需要耗费O(n)时间，与最后一个元素替换当作删除后再调整堆最坏需要耗费O(logn)时间</span></span><br><span class="line">            <span class="keyword">else</span> queue.remove(p.y)</span><br><span class="line">            <span class="comment">// 当前堆顶最大的高度，也就是天际线经过的高度</span></span><br><span class="line">            <span class="keyword">val</span> max = queue.peek()</span><br><span class="line">            <span class="comment">// 天际线高度发生了转折变化</span></span><br><span class="line">            <span class="keyword">if</span> (preMax != max) &#123;</span><br><span class="line">                <span class="comment">// 添加天际线转折点坐标</span></span><br><span class="line">                answer.add(listOf(p.x, max))</span><br><span class="line">                <span class="comment">// 记录这次的最大高度</span></span><br><span class="line">                preMax = max</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> answer</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    求出每个建筑左上角和右上角坐标（横坐标,高度）, 并按横坐标从小到大的顺序排序</span></span><br><span class="line"><span class="comment">    当横坐标x相等时，该怎么排序，分以下三种情况:</span></span><br><span class="line"><span class="comment">    1. 两个坐标都是左上角的坐标，需要把较高的排在前面</span></span><br><span class="line"><span class="comment">    2. 两个坐标都是右上角的坐标，需要把较低的排在前面</span></span><br><span class="line"><span class="comment">    3. 一个坐标是左上角，另一个坐标是右上角，左上角需要排在前面</span></span><br><span class="line"><span class="comment">    上述判断起来比较麻烦，如果把左上角的高度存储为负数，上述三种情况只需要简单的按高度升序排序就可以达成效果</span></span><br><span class="line"><span class="comment">    同时也可以通过高度的正负来判定哪个是左上角的坐标哪个是右上角的</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> Array<span class="type">&lt;IntArray&gt;</span>.<span class="title">toSortedPoints</span><span class="params">()</span></span>: List&lt;Point&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> flatMap &#123; building -&gt;</span><br><span class="line">            <span class="keyword">val</span> leftX = building[<span class="number">0</span>]</span><br><span class="line">            <span class="keyword">val</span> rightX = building[<span class="number">1</span>]</span><br><span class="line">            <span class="keyword">val</span> height = building[<span class="number">2</span>]</span><br><span class="line">            listOf(</span><br><span class="line">                    Point(leftX, -height),</span><br><span class="line">                    Point(rightX, height)</span><br><span class="line">            )</span><br><span class="line">        &#125;.sortedWith(Comparator &#123; a, b -&gt; <span class="keyword">if</span> (a.x != b.x) a.x - b.x <span class="keyword">else</span> a.y - b.y &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
         <tag>LeetCode困难</tag>
-        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -3877,8 +3876,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>数据结构</tag>
+        <tag>算法</tag>
         <tag>B树</tag>
         <tag>B+树</tag>
       </tags>
@@ -3998,8 +3997,8 @@
       </categories>
       <tags>
         <tag>字典树</tag>
-        <tag>算法</tag>
         <tag>数据结构</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -4178,8 +4177,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>数据结构</tag>
+        <tag>算法</tag>
         <tag>红黑树</tag>
         <tag>AVL树</tag>
       </tags>
@@ -5934,8 +5933,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>排序</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -6398,8 +6397,8 @@
       </categories>
       <tags>
         <tag>图</tag>
-        <tag>算法</tag>
         <tag>数据结构</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
