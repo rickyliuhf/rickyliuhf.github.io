@@ -27,8 +27,8 @@
 <meta property="og:site_name" content="Ricky.L的随笔">
 <meta property="og:description" content="题目LeetCode.300.最长递增子序列（中等） 给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。 子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子序列。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-08-15T07:07:12.000Z">
-<meta property="article:modified_time" content="2021-08-26T10:26:31.774Z">
+<meta property="article:published_time" content="2020-02-22T10:40:00.000Z">
+<meta property="article:modified_time" content="2021-08-26T10:27:25.917Z">
 <meta property="article:author" content="Ricky.L">
 <meta property="article:tag" content="动态规划">
 <meta property="article:tag" content="LeetCode中等">
@@ -213,14 +213,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-08-15 15:07:12" itemprop="dateCreated datePublished" datetime="2021-08-15T15:07:12+08:00">2021-08-15</time>
+              <time title="创建时间：2020-02-22 18:40:00" itemprop="dateCreated datePublished" datetime="2020-02-22T18:40:00+08:00">2020-02-22</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 18:26:31" itemprop="dateModified" datetime="2021-08-26T18:26:31+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 18:27:25" itemprop="dateModified" datetime="2021-08-26T18:27:25+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -257,12 +257,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/longest-increasing-subsequence/">LeetCode.300.最长递增子序列（中等）</a></p>
+        <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/longest-increasing-subsequence/">LeetCode.300.最长递增子序列（中等）</a></p>
 <p>给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。</p>
 <p>子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子序列。</p>
 <span id="more"></span>
 
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>最值问题考虑动态规划，看能不能把大问题先拆分为子问题+有限步骤。</p>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>最值问题考虑动态规划，看能不能把大问题先拆分为子问题+有限步骤。</p>
 <p><strong>如果已知最长严格递增子序列，它是怎么得来的呢？上一步的最小操作是什么？</strong></p>
 <ul>
 <li>如果前面没有递增子序列，当前字符作为新的递增子序列起点。</li>
@@ -304,6 +304,8 @@
 <p>可以发现，如果相同长度的子序列只保留最小的末尾数字，那么长度大的子序列的末尾元素一定比长度小的子序列的末尾元素大。<br>因为只有新的数字比原来短的递增子序列的末尾元素大，才能形成长度更长的递增子序列；如果新的数字比原来短的递增子序列的末尾元素小，是无法形成长度更长的递增子序列的；如果新数字比某长度的递增子序列的最小的末尾数字都要小，那肯定是无法接在它后面形成长度更长的递增子子序列了。</p>
 <p>所以二分查找是可行的，可以保存每个长度的递增子序列的最小末尾数字形成数组，递增子序列长度作为数组索引，数组元素默认就是严格递增。<br>遇到新的数字用二分查找，就可以知道应该更新哪个长度的子序列的末尾元素。</p>
 <figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">lengthOfLIS</span><span class="params">(nums: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (nums.isEmpty()) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (nums.size == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">val</span> n = nums.size</span><br><span class="line">        <span class="comment">// dp[i]表示以长度为i + 1的所有上升子序列中结尾最小的数，0 &lt;= i &lt;= n - 1，n为数组长度</span></span><br><span class="line">        <span class="comment">// 由于上升子序列的长度可能是小于n的，所以这里创建动态列表来作为状态存储</span></span><br><span class="line">        <span class="keyword">val</span> dp = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        dp.add(nums[<span class="number">0</span>])</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="comment">// 可以形成更长的子序列</span></span><br><span class="line">            <span class="keyword">if</span> (nums[i] &gt; dp.last()) &#123;</span><br><span class="line">                dp.add(nums[i])</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// 不能形成更长的子序列，但是要更新之前子序列末尾的元素为更小的，方便后续快速比较</span></span><br><span class="line">                <span class="keyword">var</span> left = <span class="number">0</span></span><br><span class="line">                <span class="keyword">var</span> right = dp.size - <span class="number">1</span></span><br><span class="line">                <span class="keyword">while</span> (left &lt;= right) &#123;</span><br><span class="line">                    <span class="keyword">val</span> mid = left + (right - left) / <span class="number">2</span></span><br><span class="line">                    <span class="keyword">when</span> &#123;</span><br><span class="line">                        <span class="comment">// 要找比子序列末尾元素大的位置，所以不会是mid本身，要mid + 1</span></span><br><span class="line">                        dp[mid] &lt; nums[i] -&gt; left = mid + <span class="number">1</span></span><br><span class="line">                        <span class="comment">// dp[mid] &gt; nums[i]，dp严格递增，不存在dp[mid] == nums[i]</span></span><br><span class="line">                        <span class="keyword">else</span> -&gt; right = mid - <span class="number">1</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 熟悉二分法可知，循环结束后，一定会有 nums[left - 1] &lt; nums[i] &lt; nums[left]</span></span><br><span class="line">                <span class="comment">// 更新子序列末尾元素为更小的</span></span><br><span class="line">                dp[left] = nums[i]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp.size</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
     </div>
 
     
@@ -339,8 +341,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/LeetCode/LeetCode.516.%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="prev" title="LeetCode.516.最长回文子序列（中等）">
-      <i class="fa fa-chevron-left"></i> LeetCode.516.最长回文子序列（中等）
+    <a href="/LeetCode/LeetCode.124.%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E7%9A%84%E6%9C%80%E5%A4%A7%E8%B7%AF%E5%BE%84%E5%92%8C%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="prev" title="LeetCode.124.二叉树中的最大路径和（困难）">
+      <i class="fa fa-chevron-left"></i> LeetCode.124.二叉树中的最大路径和（困难）
     </a></div>
       <div class="post-nav-item">
     <a href="/LeetCode/LeetCode.376.%E6%91%86%E5%8A%A8%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="next" title="LeetCode.376.摆动序列（中等）">
@@ -411,7 +413,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">题解</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">题解</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -440,7 +442,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">108</span>
+        <span class="site-state-item-count">107</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
