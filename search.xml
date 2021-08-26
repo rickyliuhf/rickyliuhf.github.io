@@ -874,12 +874,15 @@
 <li>前面的子串是否可以被wordDict拆分，需要提前计算好，这里就借用 <a href="https://leetcode-cn.com/problems/word-break/">LeetCode.139.单词拆分（中等）</a>中的状态表，即<code>dp[i]</code>：<code>s</code>的前<code>i</code>个字符组成的子串能否拆分成<code>wordDict</code>中的若干个单词。</li>
 </ul>
 <p>用深度优先搜索递归试一遍就行，直到把<code>s</code>拆分完，结束搜索。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">wordBreak</span><span class="params">(s: <span class="type">String</span>, wordDict: <span class="type">List</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;String&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> <span class="keyword">set</span> = wordDict.toHashSet()</span><br><span class="line">        <span class="keyword">val</span> dp = getDpState(s, <span class="keyword">set</span>)</span><br><span class="line">        <span class="keyword">val</span> result = mutableListOf&lt;String&gt;()</span><br><span class="line">        dfs(s, <span class="keyword">set</span>, s.length, result, dp, Stack())</span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取一个一维数组，第i位表示，[s]的前i个字符组成的子串拆分成[wordDict]中的若干个单词</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getDpState</span><span class="params">(s: <span class="type">String</span>, wordDict: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;)</span></span>: Array&lt;<span class="built_in">Boolean</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">val</span> state = Array(n + <span class="number">1</span>) &#123; <span class="literal">false</span> &#125;</span><br><span class="line">        state[<span class="number">0</span>] = <span class="literal">true</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.n) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until i) &#123;</span><br><span class="line">                <span class="keyword">val</span> s2 = s.substring(j, i)</span><br><span class="line">                <span class="keyword">if</span> (state[j] &amp;&amp; wordDict.contains(s2)) &#123;</span><br><span class="line">                    state[i] = <span class="literal">true</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> state</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">dfs</span><span class="params">(s: <span class="type">String</span>, wordDict: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;, end: <span class="type">Int</span>, result: <span class="type">MutableList</span>&lt;<span class="type">String</span>&gt;, dp: <span class="type">Array</span>&lt;<span class="type">Boolean</span>&gt;, path: <span class="type">Stack</span>&lt;<span class="type">String</span>&gt;)</span></span> &#123;</span><br><span class="line">        <span class="comment">// s[0:end-1]是否是单词，是的话，应当添加到路径中，同时是也是路径的终点，即递归树的叶子节点</span></span><br><span class="line">        <span class="keyword">val</span> prefix = s.substring(<span class="number">0</span>, end)</span><br><span class="line">        <span class="keyword">if</span> (wordDict.contains(prefix)) &#123;</span><br><span class="line">            path.push(prefix)</span><br><span class="line">            result.add(path.reversed().joinToString(<span class="string">&quot; &quot;</span>))</span><br><span class="line">            path.pop()</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 检索所有子串的拆分的可能组合</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.end) &#123;</span><br><span class="line">            <span class="comment">// 前i个字符组成的左子串是可以被拆分为若干个单词的</span></span><br><span class="line">            <span class="keyword">if</span> (dp[i]) &#123;</span><br><span class="line">                <span class="comment">// 就看右子串是否是单词</span></span><br><span class="line">                <span class="keyword">val</span> substring = s.substring(i, end)</span><br><span class="line">                <span class="keyword">if</span> (wordDict.contains(substring)) &#123;</span><br><span class="line">                    <span class="comment">// 右子串是一个单词，应当添加到路径中</span></span><br><span class="line">                    path.push(substring)</span><br><span class="line">                    <span class="comment">// 继续探寻左子串s[0:i-1]</span></span><br><span class="line">                    dfs(s, wordDict, i, result, dp, path)</span><br><span class="line">                    <span class="comment">// 左子串探寻完了，从路径中移除当前单词，以不影响寻找下一个组合的单词路径</span></span><br><span class="line">                    path.pop()</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">wordBreak</span><span class="params">(s: <span class="type">String</span>, wordDict: <span class="type">List</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;String&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> <span class="keyword">set</span> = wordDict.toHashSet()</span><br><span class="line">        <span class="keyword">val</span> dp = getDpState(s, <span class="keyword">set</span>)</span><br><span class="line">        <span class="keyword">val</span> result = mutableListOf&lt;String&gt;()</span><br><span class="line">        dfs(s, <span class="keyword">set</span>, s.length, result, dp, Stack())</span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取一个一维数组，第i位表示，[s]的前i个字符组成的子串拆分成[wordDict]中的若干个单词</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getDpState</span><span class="params">(s: <span class="type">String</span>, wordDict: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;)</span></span>: Array&lt;<span class="built_in">Boolean</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">val</span> state = Array(n + <span class="number">1</span>) &#123; <span class="literal">false</span> &#125;</span><br><span class="line">        state[<span class="number">0</span>] = <span class="literal">true</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.n) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until i) &#123;</span><br><span class="line">                <span class="keyword">val</span> s2 = s.substring(j, i)</span><br><span class="line">                <span class="keyword">if</span> (state[j] &amp;&amp; wordDict.contains(s2)) &#123;</span><br><span class="line">                    state[i] = <span class="literal">true</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> state</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">dfs</span><span class="params">(s: <span class="type">String</span>, wordDict: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;, end: <span class="type">Int</span>, result: <span class="type">MutableList</span>&lt;<span class="type">String</span>&gt;, dp: <span class="type">Array</span>&lt;<span class="type">Boolean</span>&gt;, path: <span class="type">Stack</span>&lt;<span class="type">String</span>&gt;)</span></span> &#123;</span><br><span class="line">        <span class="comment">// s[0:end-1]是否是单词，是的话，应当添加到路径中，同时是也是路径的终点，即递归树的叶子节点</span></span><br><span class="line">        <span class="keyword">val</span> prefix = s.substring(<span class="number">0</span>, end)</span><br><span class="line">        <span class="keyword">if</span> (wordDict.contains(prefix)) &#123;</span><br><span class="line">            path.push(prefix)</span><br><span class="line">            result.add(path.reversed().joinToString(<span class="string">&quot; &quot;</span>))</span><br><span class="line">            path.pop()</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 检索所有子串的拆分的可能组合</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.end) &#123;</span><br><span class="line">            <span class="comment">// 前i个字符组成的左子串是可以被拆分为若干个单词的</span></span><br><span class="line">            <span class="keyword">if</span> (dp[i]) &#123;</span><br><span class="line">                <span class="comment">// 就看右子串是否是单词</span></span><br><span class="line">                <span class="keyword">val</span> substring = s.substring(i, end)</span><br><span class="line">                <span class="keyword">if</span> (wordDict.contains(substring)) &#123;</span><br><span class="line">                    <span class="comment">// 右子串是一个单词，应当添加到路径中</span></span><br><span class="line">                    path.push(substring)</span><br><span class="line">                    <span class="comment">// 继续探寻左子串s[0:i-1]</span></span><br><span class="line">                    dfs(s, wordDict, i, result, dp, path)</span><br><span class="line">                    <span class="comment">// 左子串探寻完了，从路径中移除当前单词，以不影响寻找下一个组合的单词路径</span></span><br><span class="line">                    path.pop()</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
       <categories>
-        <category>LeetCode</category>
+        <category>算法</category>
       </categories>
       <tags>
         <tag>LeetCode困难</tag>
+        <tag>深度优先搜索</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -911,10 +914,11 @@
 </ul>
 ]]></content>
       <categories>
-        <category>LeetCode</category>
+        <category>算法</category>
       </categories>
       <tags>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -2068,6 +2072,32 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.377.组合总和 Ⅳ（中等）</title>
+    <url>/LeetCode/LeetCode.377.%E7%BB%84%E5%90%88%E6%80%BB%E5%92%8C%20%E2%85%A3%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/combination-sum-iv/">LeetCode.377.组合总和 Ⅳ（中等）</a></p>
+<p>给你一个由 不同 整数组成的数组 nums ，和一个目标整数 target 。请你从 nums 中找出并返回总和为 target 的元素组合的个数。</p>
+<span id="more"></span>
+
+<p>示例 1：</p>
+<blockquote>
+<p>输入：nums = [1,2,3], target = 4<br>输出：7<br>解释：<br>所有可能的组合为：<br>(1, 1, 1, 1)<br>(1, 1, 2)<br>(1, 2, 1)<br>(1, 3)<br>(2, 1, 1)<br>(2, 2)<br>(3, 1)<br>请注意，顺序不同的序列被视作不同的组合。</p>
+</blockquote>
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>只要看到目标值、数组、选择，这三要素，就直接可以反应想到是背包问题。</p>
+<p>这里数组中的元素是可以重复选取的，所以是完全背包问题。</p>
+<p>大的target可以拆解为小target加一系列选择求解，所以要遍历所有的target取值可能，还要遍历所有数字取值可能，有两层循环。</p>
+<p>这里要注意顺序不同的序列被视作不同的组合，这涉及到双层循环的哪一个循环应该放在外层。<br>由于不锁定数字选择顺序，<code>nums</code>数组遍历应该放在内层，这样target才可以由不同顺序的选择得到。<br>如果<code>nums</code>数组遍历放在外层，会锁定<code>nums</code>数组的选取顺序，一个target只会有一种顺序的选择得到。<br>这与<a href="https://leetcode-cn.com/problems/coin-change-2/">LeetCode.518.零钱兑换 II（中等）</a>情况正好相反。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">combinationSum4</span><span class="params">(nums: <span class="type">IntArray</span>, target: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = nums.size</span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(target + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        dp[<span class="number">0</span>] = <span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> (t <span class="keyword">in</span> <span class="number">0.</span>.target) &#123;</span><br><span class="line">            <span class="keyword">for</span> (num <span class="keyword">in</span> nums) &#123;</span><br><span class="line">                <span class="keyword">if</span> (t &gt;= num) &#123;</span><br><span class="line">                    dp[t] += dp[t - num]</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[target]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode中等</tag>
+        <tag>背包问题</tag>
+        <tag>完全背包</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.392.判断子序列（简单）</title>
     <url>/LeetCode/LeetCode.392.%E5%88%A4%E6%96%AD%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/is-subsequence">LeetCode.392.判断子序列（简单）</a></p>
@@ -2634,32 +2664,6 @@
       <tags>
         <tag>动态规划</tag>
         <tag>LeetCode简单</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.377.组合总和 Ⅳ（中等）</title>
-    <url>/LeetCode/LeetCode.377.%E7%BB%84%E5%90%88%E6%80%BB%E5%92%8C%20%E2%85%A3%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/combination-sum-iv/">LeetCode.377.组合总和 Ⅳ（中等）</a></p>
-<p>给你一个由 不同 整数组成的数组 nums ，和一个目标整数 target 。请你从 nums 中找出并返回总和为 target 的元素组合的个数。</p>
-<span id="more"></span>
-
-<p>示例 1：</p>
-<blockquote>
-<p>输入：nums = [1,2,3], target = 4<br>输出：7<br>解释：<br>所有可能的组合为：<br>(1, 1, 1, 1)<br>(1, 1, 2)<br>(1, 2, 1)<br>(1, 3)<br>(2, 1, 1)<br>(2, 2)<br>(3, 1)<br>请注意，顺序不同的序列被视作不同的组合。</p>
-</blockquote>
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>只要看到目标值、数组、选择，这三要素，就直接可以反应想到是背包问题。</p>
-<p>这里数组中的元素是可以重复选取的，所以是完全背包问题。</p>
-<p>大的target可以拆解为小target加一系列选择求解，所以要遍历所有的target取值可能，还要遍历所有数字取值可能，有两层循环。</p>
-<p>这里要注意顺序不同的序列被视作不同的组合，这涉及到双层循环的哪一个循环应该放在外层。<br>由于不锁定数字选择顺序，<code>nums</code>数组遍历应该放在内层，这样target才可以由不同顺序的选择得到。<br>如果<code>nums</code>数组遍历放在外层，会锁定<code>nums</code>数组的选取顺序，一个target只会有一种顺序的选择得到。<br>这与<a href="https://leetcode-cn.com/problems/coin-change-2/">LeetCode.518.零钱兑换 II（中等）</a>情况正好相反。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">combinationSum4</span><span class="params">(nums: <span class="type">IntArray</span>, target: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = nums.size</span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(target + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        dp[<span class="number">0</span>] = <span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> (t <span class="keyword">in</span> <span class="number">0.</span>.target) &#123;</span><br><span class="line">            <span class="keyword">for</span> (num <span class="keyword">in</span> nums) &#123;</span><br><span class="line">                <span class="keyword">if</span> (t &gt;= num) &#123;</span><br><span class="line">                    dp[t] += dp[t - num]</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[target]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
-        <tag>背包问题</tag>
-        <tag>完全背包</tag>
       </tags>
   </entry>
   <entry>
