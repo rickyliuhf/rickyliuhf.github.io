@@ -273,10 +273,9 @@
 </blockquote>
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
       </tags>
@@ -1437,8 +1436,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -1505,10 +1504,9 @@
 <figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">mergeKLists</span><span class="params">(lists: <span class="type">Array</span>&lt;<span class="type">ListNode</span>?&gt;)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">if</span> (lists.isEmpty()) <span class="keyword">return</span> <span class="literal">null</span></span><br><span class="line">        <span class="keyword">return</span> merge(lists, <span class="number">0</span>, lists.size - <span class="number">1</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">merge</span><span class="params">(lists: <span class="type">Array</span>&lt;<span class="type">ListNode</span>?&gt;, low: <span class="type">Int</span>, high: <span class="type">Int</span>)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">if</span> (low == high) <span class="keyword">return</span> lists[low]</span><br><span class="line">        <span class="keyword">val</span> mid = low + (high - low) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">val</span> l1 = merge(lists, low, mid);</span><br><span class="line">        <span class="keyword">val</span> l2 = merge(lists, mid + <span class="number">1</span>, high);</span><br><span class="line">        <span class="keyword">return</span> mergeTwoList(l1, l2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">mergeTwoList</span><span class="params">(l1: <span class="type">ListNode</span>?, l2: <span class="type">ListNode</span>?)</span></span>: ListNode? &#123;</span><br><span class="line">        <span class="keyword">val</span> dummy = ListNode(<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">var</span> tail: ListNode? = dummy</span><br><span class="line">        <span class="keyword">var</span> p1 = l1</span><br><span class="line">        <span class="keyword">var</span> p2 = l2</span><br><span class="line">        <span class="keyword">while</span> (p1 != <span class="literal">null</span> &amp;&amp; p2 != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (p1.`<span class="keyword">val</span>` &lt; p2.`<span class="keyword">val</span>`) &#123;</span><br><span class="line">                tail?.next = p1</span><br><span class="line">                p1 = p1?.next</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                tail?.next = p2</span><br><span class="line">                p2 = p2?.next</span><br><span class="line">            &#125;</span><br><span class="line">            tail = tail?.next</span><br><span class="line">        &#125;</span><br><span class="line">        tail?.next = <span class="keyword">if</span> (p1 != <span class="literal">null</span>) p1 <span class="keyword">else</span> p2</span><br><span class="line">        <span class="keyword">val</span> newHead = dummy.next</span><br><span class="line">        dummy.next = <span class="literal">null</span></span><br><span class="line">        <span class="keyword">return</span> newHead</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>优先队列</tag>
         <tag>分治</tag>
@@ -2204,8 +2202,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -4011,8 +4009,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>字典树</tag>
+        <tag>算法</tag>
         <tag>数据结构</tag>
       </tags>
   </entry>
@@ -6411,8 +6409,8 @@
         <category>算法</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>图</tag>
+        <tag>算法</tag>
         <tag>数据结构</tag>
       </tags>
   </entry>
