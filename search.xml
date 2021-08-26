@@ -1640,10 +1640,11 @@
 </blockquote>
 ]]></content>
       <categories>
-        <category>LeetCode</category>
+        <category>算法</category>
       </categories>
       <tags>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
         <tag>滑动窗口</tag>
         <tag>哈希表</tag>
         <tag>字符串</tag>
