@@ -1545,10 +1545,11 @@
 </blockquote>
 ]]></content>
       <categories>
-        <category>LeetCode</category>
+        <category>算法</category>
       </categories>
       <tags>
         <tag>LeetCode困难</tag>
+        <tag>算法</tag>
         <tag>递归</tag>
         <tag>链表</tag>
       </tags>
