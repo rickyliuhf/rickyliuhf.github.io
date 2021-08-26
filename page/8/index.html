@@ -186,124 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/" class="post-title-link" itemprop="url">B树、B+树</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-07-05 20:00:00" itemprop="dateCreated datePublished" datetime="2020-07-05T20:00:00+08:00">2020-07-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/B树、B+树/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="B和B-里的B是什么意思"><a href="#B和B-里的B是什么意思" class="headerlink" title="B和B+里的B是什么意思?"></a>B和B+里的B是什么意思?</h1><p>B是Balanced的缩写，平衡的意思。</p>
-<p>全称可以叫多路（多叉）平衡查找（搜索）树。</p>
-<h2 id="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"><a href="#多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？" class="headerlink" title="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"></a>多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？</h2><p>由于平衡二叉查找树只有两个分叉，查询叶子结点需要访问$log_2{n}$次节点，即树的高度。</p>
-<p>如果要减少查找次数，就要让树变矮一点。</p>
-<p>那么一个节点有多个分叉，同时让一个节点存储多个值，就可以降低树的高度，进而减少节点平均的访问次数。</p>
-<h2 id="减少节点的访问次数有什么好处？"><a href="#减少节点的访问次数有什么好处？" class="headerlink" title="减少节点的访问次数有什么好处？"></a>减少节点的访问次数有什么好处？</h2><p>访问节点的成本可能非常大，减少访问节点的次数，就可以降低总的访问成本。</p>
-<p>例如访问IO比访问内存要慢的多，文件系统中普遍采用多路平衡查找树作为存储数据的结构。</p>
-<h2 id="B树与B-的区别？"><a href="#B树与B-的区别？" class="headerlink" title="B树与B+的区别？"></a>B树与B+的区别？</h2><p>B树与B+共同点：</p>
-<ol>
-<li> 都是一个节点按顺序存储多个值</li>
-<li> 每个节点可以有多个分叉</li>
-</ol>
-<p>B树独有：</p>
-<ol>
-<li> 非叶子节点存储了数据，非叶子节点占用空间更大</li>
-</ol>
-<p>B+树独有：</p>
-<ol>
-<li> 非叶子节点不存数据只存索引信息，数据全部在叶子节点，非叶子节点占用空间更小</li>
-<li> 叶子结点用双向链表相连，便于顺序查找</li>
-</ol>
-<h2 id="B-树作为数据库索引有什么优势？"><a href="#B-树作为数据库索引有什么优势？" class="headerlink" title="B+树作为数据库索引有什么优势？"></a>B+树作为数据库索引有什么优势？</h2><p>非叶子结点的大小可以设置为一页，内存从外存读取数据是按页读取的，这样就减少了IO访问次数。</p>
-<p>结点内部是有序的，可以再用二分查找去查找元素。</p>
-<p>B+树的非叶子结点不存储数据，只存键，这样同样空间大小可以存的键就更多，非叶子结点的数量就会减少，IO访问次数也就变少了。</p>
-<p>B+树的叶子结点用双链表链接，这样对区间查询友好，只需要通过非叶结点查找到区间范围，然后顺序遍历即可，可以减少对非叶结点的访问，进而减少IO访问次数。因为由于虚拟内存机制，非叶结点加载到内存后，可能也会被置换到外存，减少对非叶结点的访问次数，也就降低了置换次数，置换是需要IO访问的。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://draveness.me/whys-the-design-mysql-b-plus-tree/">为什么 MySQL 使用 B+ 树</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/v_july_v/article/details/6530142">从B树、B+树、B*树谈到R 树</a></li>
-<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/svL_yNmNJ-wj9aGjtO_Yww">拜托，别再问我什么是B+树 了</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_21993785/java/article/details/80580679">B+Tree在数据库索引上拥有独特优势的原因（为什么比红黑树更合适）</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E9%BB%91%E6%A0%91%E3%80%81AVL%E6%A0%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -335,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -590,7 +472,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -705,7 +587,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -820,7 +702,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1000,7 +882,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1096,7 +978,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1200,7 +1082,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1266,6 +1148,103 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.52.N%E7%9A%87%E5%90%8E%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/LeetCode/LeetCode.52.N%E7%9A%87%E5%90%8E%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" class="post-title-link" itemprop="url">LeetCode.52.N皇后 II（困难）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-23 20:33:00" itemprop="dateCreated datePublished" datetime="2020-05-23T20:33:00+08:00">2020-05-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode.52.N%E7%9A%87%E5%90%8E%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode.52.N皇后 II（困难）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/n-queens-ii/">LeetCode.52.N皇后 II（困难）</a></p>
+<p>n 皇后问题 研究的是如何将 n 个皇后放置在 n×n 的棋盘上，并且使皇后彼此之间不能相互攻击。</p>
+<p>给你一个整数 n ，返回 n 皇后问题 不同的解决方案的数量。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/LeetCode/LeetCode.52.N%E7%9A%87%E5%90%8E%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.65.%E6%9C%89%E6%95%88%E6%95%B0%E5%AD%97%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1297,7 +1276,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1392,7 +1371,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:17:52" itemprop="dateModified" datetime="2021-08-26T16:17:52+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:18:18" itemprop="dateModified" datetime="2021-08-26T16:18:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
