@@ -316,27 +316,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.118.杨辉三角（简单）</title>
-    <url>/LeetCode/LeetCode.118.%E6%9D%A8%E8%BE%89%E4%B8%89%E8%A7%92%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/pascals-triangle/">LeetCode.118.杨辉三角（简单）</a></p>
-<p>给定一个非负整数 _<code>numRows</code>，_生成「杨辉三角」的前 <em><code>numRows</code></em> 行。<br>在「杨辉三角」中，每个数是它左上方和右上方的数的和。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>递推公式题目已经给出，讨论一下边界情况，把问题具体定义就好了。</p>
-<h3 id="问题公式化"><a href="#问题公式化" class="headerlink" title="问题公式化"></a>问题公式化</h3><p>三角形每行用List存储，所有行也用List存储。<br>设<code>dp[r][c]</code>是杨辉三角第r行第c列的数。<br>把三角形左侧对齐可以观察到：<br>左上方的数就是<code>dp[r - 1][c - 1]</code>；<br>右上方的数就是<code>dp[r - 1][c]</code>；</p>
-<h2 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h2><p><code>dp[r][c] = dp[r - 1][c - 1] + dp[r - 1][c]</code></p>
-<h2 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h2><p>r = 0时，没有上方，但其实知道第一行是1，只有1个元素，直接添加到结果集就行了。<br>r &gt; 0后：<br>c = 0 处于第一列时，没有左上方，左上方当作0，只累加右上方，<code>dp[r][0] = dp[r - 1][c]</code>。<br>c = r 处于最后一列时，没有右上方，右上方当作0，只累加左上方，<code>dp[r][r] = dp[r - 1][r - 1]</code>。</p>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">generate</span><span class="params">(numRows: <span class="type">Int</span>)</span></span>: List&lt;List&lt;<span class="built_in">Int</span>&gt;&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> triangle = mutableListOf&lt;List&lt;<span class="built_in">Int</span>&gt;&gt;()</span><br><span class="line">        triangle.add(listOf(<span class="number">1</span>))</span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">1</span> until numRows) &#123;</span><br><span class="line">            <span class="keyword">val</span> rows = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> <span class="number">0.</span>.r) &#123;</span><br><span class="line">                <span class="keyword">when</span> &#123;</span><br><span class="line">                    <span class="comment">// 第一列，只能加右上方</span></span><br><span class="line">                    c == <span class="number">0</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][<span class="number">0</span>])</span><br><span class="line">                    <span class="comment">// 最后一列，只能加左上方</span></span><br><span class="line">                    c == r -&gt; rows.add(triangle[r - <span class="number">1</span>][r - <span class="number">1</span>])</span><br><span class="line">                    <span class="comment">// 中间列，左上方+右上方</span></span><br><span class="line">                    <span class="keyword">else</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][c - <span class="number">1</span>] + triangle[r - <span class="number">1</span>][c])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            triangle.add(rows)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> triangle</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode简单</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.1143.最长公共子序列（中等）</title>
     <url>/LeetCode/LeetCode.1143.%E6%9C%80%E9%95%BF%E5%85%AC%E5%85%B1%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/longest-common-subsequence/">LeetCode.1143.最长公共子序列（中等）</a></p>
@@ -384,6 +363,27 @@
       <tags>
         <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.118.杨辉三角（简单）</title>
+    <url>/LeetCode/LeetCode.118.%E6%9D%A8%E8%BE%89%E4%B8%89%E8%A7%92%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/pascals-triangle/">LeetCode.118.杨辉三角（简单）</a></p>
+<p>给定一个非负整数 _<code>numRows</code>，_生成「杨辉三角」的前 <em><code>numRows</code></em> 行。<br>在「杨辉三角」中，每个数是它左上方和右上方的数的和。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>递推公式题目已经给出，讨论一下边界情况，把问题具体定义就好了。</p>
+<h3 id="问题公式化"><a href="#问题公式化" class="headerlink" title="问题公式化"></a>问题公式化</h3><p>三角形每行用List存储，所有行也用List存储。<br>设<code>dp[r][c]</code>是杨辉三角第r行第c列的数。<br>把三角形左侧对齐可以观察到：<br>左上方的数就是<code>dp[r - 1][c - 1]</code>；<br>右上方的数就是<code>dp[r - 1][c]</code>；</p>
+<h2 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h2><p><code>dp[r][c] = dp[r - 1][c - 1] + dp[r - 1][c]</code></p>
+<h2 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h2><p>r = 0时，没有上方，但其实知道第一行是1，只有1个元素，直接添加到结果集就行了。<br>r &gt; 0后：<br>c = 0 处于第一列时，没有左上方，左上方当作0，只累加右上方，<code>dp[r][0] = dp[r - 1][c]</code>。<br>c = r 处于最后一列时，没有右上方，右上方当作0，只累加左上方，<code>dp[r][r] = dp[r - 1][r - 1]</code>。</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">generate</span><span class="params">(numRows: <span class="type">Int</span>)</span></span>: List&lt;List&lt;<span class="built_in">Int</span>&gt;&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> triangle = mutableListOf&lt;List&lt;<span class="built_in">Int</span>&gt;&gt;()</span><br><span class="line">        triangle.add(listOf(<span class="number">1</span>))</span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">1</span> until numRows) &#123;</span><br><span class="line">            <span class="keyword">val</span> rows = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> <span class="number">0.</span>.r) &#123;</span><br><span class="line">                <span class="keyword">when</span> &#123;</span><br><span class="line">                    <span class="comment">// 第一列，只能加右上方</span></span><br><span class="line">                    c == <span class="number">0</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][<span class="number">0</span>])</span><br><span class="line">                    <span class="comment">// 最后一列，只能加左上方</span></span><br><span class="line">                    c == r -&gt; rows.add(triangle[r - <span class="number">1</span>][r - <span class="number">1</span>])</span><br><span class="line">                    <span class="comment">// 中间列，左上方+右上方</span></span><br><span class="line">                    <span class="keyword">else</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][c - <span class="number">1</span>] + triangle[r - <span class="number">1</span>][c])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            triangle.add(rows)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> triangle</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode简单</tag>
       </tags>
   </entry>
   <entry>
@@ -4169,6 +4169,117 @@
         <tag>偏向锁</tag>
         <tag>轻量级锁</tag>
         <tag>重量级锁</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-volatile</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-volatile/</url>
+    <content><![CDATA[<h1 id="volatile综述"><a href="#volatile综述" class="headerlink" title="volatile综述"></a>volatile综述</h1><p>volatile主要保证两点</p>
+<ol>
+<li> 变量的值在多线程之间是可见的</li>
+<li> 阻止指令重排序，间接的保证变量值的可见性</li>
+</ol>
+<p>但不保证原子性，所以开销比synchronized加锁要小</p>
+<p>可见性的解释涉及到java内存模型，每个线程都有自己的私有内存，对应堆中的虚拟机栈中，当多个线程访问主存上同一个变量时，会拷贝变量到各自私有线程中，线程对变量做出修改都是在私有内存中的修改，线程并不知道各自的修改值，也就是所谓的不可见。</p>
+<p>用volatile修饰变量后，对变量的修改会立刻刷新到主存，读volatile变量也会从主存去读取，保证可见性，但这让缓存失效，牺牲了一定的访问速度。</p>
+<p>指令重排序有好几个层面的，有CPU层面和编译器层面的。</p>
+<p>为什么要进行指令重排序呢？是为了提高CPU利用率。</p>
+<p>CPU层面的指令重排序是因为防止CPU指令流水线的停顿，指令流水线是做什么的呢？一条指令可以分为多个执行步骤，每个执行步骤可以由多个功能单元的硬件来执行，这样就不用串行的执行指令了，可以让多个功能单元并行的执行指令的不同的步骤，多个指令的执行速度一下提升好几倍。但是如果指令之间存在数据依赖，流水线就只能停顿等待，但是如果把没有依赖的指令重排序一下，就不用停顿等待了，这样CPU利用率就提高了。</p>
+<p>编译器的重排序要达到的目的也是提高CPU利用率。</p>
+<p>检查编译器有没有做重排序，可以开两个线程做验证，给两个变量a1、a2赋初始值0，线程1执行两条语句，先给a1赋值1，然后打印a2，线程2也执行两条语句，先给a2赋值1，然后打印a1，正常执行结果是打印1和1，执行很多次过后会发现有一次打印出来的两个结果是10、01甚至00，打印语句被重排序到前面去先执行了。</p>
+<p>既然指令重排序这么好，为什么还要阻止呢？</p>
+<p>因为指令重排序虽然不会影响单线程的代码语义，但是在多线程下会影响程序运行的正确性，有时候需要手动阻止。这个可以写代码验证的。</p>
+<p>volatile阻止指令重排序具体是通过内存屏障来实现的。</p>
+<p>内存屏障分为读屏障和写屏障，读屏障将内存数据拷贝到缓存，写屏障将缓存数据刷新到内存。</p>
+<p>volatile写操作之前插入StoreStore屏障，之后插入StoreLoad屏障</p>
+<p>volatile写操作volatile读操作之后插入LoadLoad屏障和LoadStore屏障</p>
+<p>内存屏障有两个作用：</p>
+<ol>
+<li> 阻止内存屏障两侧的指令重排序</li>
+<li> 强制把缓存数据回写到主内存，对所有线程可见</li>
+</ol>
+<p>但也不能总是用volatile来保证有序性，那样太麻烦了。所有Java内存模型规定了一个happens-before原则，保证前一个操作的结果对后续操作是可见的，来帮助开发者辅助判断代码是否有线程安全的问题。</p>
+<p>比如</p>
+<ol>
+<li> 一个线程内必须保持语义的串行，按照代码顺序执行</li>
+<li> 解锁操作要发生在对这个锁的加锁操作之前</li>
+<li> 线程start()方法先于线程的每个动作</li>
+</ol>
+<p>在多线程中需要修改和读取的变量，不需要保证原子性的，但要保证可见性的，就要用volatile修饰</p>
+<p>一个典型的使用场景是双重检查锁定的单例模式，对单例对象加volatile修饰，以防止new对象的时候发生指令重排序，进而导致得到了一个对象的引用但是对象还没有初始化。</p>
+<h1 id="volatile解决了什么问题？"><a href="#volatile解决了什么问题？" class="headerlink" title="volatile解决了什么问题？"></a>volatile解决了什么问题？</h1><ol>
+<li> 保证变量的可见性，多线程可读取到变量最新修改值</li>
+<li> 保证变量的有序性，阻止指令重排序</li>
+</ol>
+<h1 id="可见性是什么意思？"><a href="#可见性是什么意思？" class="headerlink" title="可见性是什么意思？"></a>可见性是什么意思？</h1><p>首先要介绍Java内存模型，Java的数据都存储在主存中，每个线程读写主存的数据时，都会把数据拷贝到线程自己的工作内存中再进行读写，工作内存可以理解为线程自己的缓存，多个线程对同一个数据修改时，修改的都是线程自己工作内存的数据拷贝，多个线程的工作内存之间是非共享的，对数据做出修改后互相不可见。</p>
+<h1 id="volatile是如何保证可见性的？"><a href="#volatile是如何保证可见性的？" class="headerlink" title="volatile是如何保证可见性的？"></a>volatile是如何保证可见性的？</h1><p>多线程读写主存中存储的某个volatile变量时，会把这个变量所在的内存块都复制到线程的工作内存，当某个线程修改了工作内存中的volatile变量，会立即将新数据写入共享内存，其他线程的工作内存中这一缓存块会被标记失效，被要求重新从共享内存读取数据，保证读取到的是最新的值。</p>
+<p>可以参考缓存一致性协议来理解。</p>
+<h1 id="为什么要有指令重排序，指令重排序有什么好处？"><a href="#为什么要有指令重排序，指令重排序有什么好处？" class="headerlink" title="为什么要有指令重排序，指令重排序有什么好处？"></a>为什么要有指令重排序，指令重排序有什么好处？</h1><p>减少CPU空等，提高CPU整体的吞吐量。</p>
+<p>编译器层面有编译器对指令顺序的优化。</p>
+<p>CPU层面有指令流水线对指令执行的优化。</p>
+<h1 id="虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？"><a href="#虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？" class="headerlink" title="虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？"></a>虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？</h1><p>通过内存屏障来实现。</p>
+<p>内存屏障之前所有的写操作都要回写到主存，内存屏障之后的所有读操作都能获取内存屏障之前的所有写操作的最新结果，这样就保证了可见性。</p>
+<p>因此也就禁止把内存屏障之后的指令重排序到内存屏障之前。</p>
+<p>先简单了解两个指令：</p>
+<ul>
+<li>Store：将处理器缓存的数据刷新到内存中。</li>
+<li>Load：将内存存储的数据拷贝到处理器的缓存中。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><strong>屏障类型</strong></th>
+<th><strong>指令示例</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LoadLoad  Barriers</td>
+<td>Load1;LoadLoad;Load2</td>
+<td>该屏障确保Load1数据的装载先于Load2及其后所有装载指令的的操作</td>
+</tr>
+<tr>
+<td>StoreStore  Barriers</td>
+<td>Store1;StoreStore;Store2</td>
+<td>该屏障确保Store1立刻刷新数据到内存(使其对其他处理器可见)的操作先于Store2及其后所有存储指令的操作</td>
+</tr>
+<tr>
+<td>LoadStore  Barriers</td>
+<td>Load1;LoadStore;Store2</td>
+<td>确保Load1的数据装载先于Store2及其后所有的存储指令刷新数据到内存的操作</td>
+</tr>
+<tr>
+<td>StoreLoad  Barriers</td>
+<td>Store1;StoreLoad;Load2</td>
+<td>该屏障确保Store1立刻刷新数据到内存的操作先于Load2及其后所有装载装载指令的操作。它会使该屏障之前的所有内存访问指令(存储指令和访问指令)完成之后,才执行该屏障之后的内存访问指令</td>
+</tr>
+</tbody></table>
+<h1 id="volatile为什么不能保证原子性？"><a href="#volatile为什么不能保证原子性？" class="headerlink" title="volatile为什么不能保证原子性？"></a>volatile为什么不能保证原子性？</h1><p>因为一个volatile变量的操作，比如i++，本身多个字节码指令，并且每条指令也不一定是原子化的，所以volatile变量的操作也不可能是原子化的。</p>
+<p>这个可以用程序验证，volatile变量初始值为0，两个线程分别对其自增一万次，最后变量的值是小于两万的。</p>
+<p>可以从字节码指令看出来</p>
+<p>如下的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileDemo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> value = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">increament</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        value++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后value++的字节码指令如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GETFIELD VolatileDemo.value : I</span><br><span class="line">ICONST_1</span><br><span class="line">IADD</span><br><span class="line">PUTFIELD VolatileDemo.value : I</span><br></pre></td></tr></table></figure>
+<p>GETFIELD指令是获取对象的字段值，将值压入栈顶<br>ICONST_1指令是int型常量1入栈，因为要加1，所以就入栈1<br>IADD指令是弹出栈顶的两个数字进行相加，相加的和再压入栈<br>PUTFIELD指令是给对象的变量赋值栈顶的值</p>
+<p>volatile可以保证GETFIELD时可以读取到value的最新值，但是iconst_1和add时，其他线程可能已经把value值也改变了，最后PUTFIELD是过期的值，所以多线程调用increament时，最终的值会变小。</p>
+<p>一个volatile变量自增操作有4个指令，一条字节码指令也不一定是原子的，可能还会转换为若干条本地机器码指令，所以volatile不能保证原子性。</p>
+<p>需要通过synchronized或java.util.concurrent包下的锁或原子类来保证原子性。</p>
+<h1 id="volatile使用案例"><a href="#volatile使用案例" class="headerlink" title="volatile使用案例"></a>volatile使用案例</h1><ol>
+<li>volatile可以使得long和double的赋值是原子的</li>
+<li>多线程需要实时读取的值，例如：<br> a. AtomicInteger里的value都是volatile的<br> b. AQS里的state变量也是volatile</li>
+<li>CopyOnWriteArrayList里的数组也是volatile的，保证数组拷贝过后，对其他读线程立即可见</li>
+<li>阻止if或while中条件变量的重排序，防止出现不符合预期的结果。if或while语句内部的变量，跟条件变量的赋值，如果在同一个方法中执行，因为没有依赖关系，可能会发生重排序。比如方法a里会读取先通过if判断flag变量是否为true，为true就打印变量c的值，然后在方法b中，先对c赋值，再对flag赋值true，b方法中两个语句可能会重排序的，在多线程执行的时候，就会导致flag先为true，但是c还没赋值，另外一个线程已经执行方法a了，</li>
+<li>双重检查锁定的单例</li>
+</ol>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>volatile</tag>
       </tags>
   </entry>
   <entry>

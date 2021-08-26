@@ -186,6 +186,121 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/" class="post-title-link" itemprop="url">Java并发-条件变量、wait()与notify()、await()与signal()</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-16 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-16T20:00:00+08:00">2017-10-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 21:55:29" itemprop="dateModified" datetime="2021-08-26T21:55:29+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-wait()、notify()、notifyAll()/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Object-wait-为什么要配合while使用？"><a href="#Object-wait-为什么要配合while使用？" class="headerlink" title="Object.wait()为什么要配合while使用？"></a>Object.wait()为什么要配合while使用？</h1><p>wait之前一般都是要判断某个条件成立才会wait，这个判断条件需要写成while：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">while (check pass) &#123;</span><br><span class="line">	wait();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果写成if，wait过后当前线程交出锁，等当前线程重新被唤起后，条件是否满足是不知道的，其他线程可能修改了条件的状态，要重新判断一下，否则可能条件未满足就继续执行了。</p>
+<p>以生产者消费者模型为例。</p>
+<ul>
+<li>有1个生产者往缓冲区加数据，有2个消费者从缓冲区取数据。</li>
+<li>消费者取数据前会检查缓冲区是否为空，不为空才能取数据，为空的话要等待。</li>
+<li>假设两个消费者线程都等待了。</li>
+<li>然后生产者往缓冲区添加数据后做notifyAll唤醒所有消费者，会唤醒两个等待的消费者线程，让消费者线程从监视器的等待队列移动到锁竞争队列，两者竞争锁。</li>
+<li>其中一个线程竞争到锁后，消费了缓冲区数据，缓冲区没有数据了，释放锁后另外一个消费者获得到了锁，开始取从缓冲区取数据，而没有再做条件检查了。</li>
+</ul>
+<p>这种现象叫做虚假唤醒。</p>
+<h1 id="Object的notify-和notifyAll-有什么区别？"><a href="#Object的notify-和notifyAll-有什么区别？" class="headerlink" title="Object的notify()和notifyAll()有什么区别？"></a>Object的notify()和notifyAll()有什么区别？</h1><p>每一个对象都有一个内部锁，即监视器（Monitor），虚拟机会给每个对象维护两个线程集合（可能是队列），一个叫Entry Set（入口集），另外一个叫Wait Set（等待集），对于任意对象object，object的Entry Set用于存储等待获取object内部锁的所有线程，object的Wait Set存储执行了object.wait()和object.wait(long timeout)的线程。</p>
+<ul>
+<li>notify()会唤醒Wait Set里的一个线程。</li>
+<li>notifyAll()会唤醒Wait Set里的所有线程，线程被唤醒后去竞争获取锁，没有获取锁的线程进入Entry Set。</li>
+</ul>
+<h1 id="什么时候用notify-？什么时候用notifyAll"><a href="#什么时候用notify-？什么时候用notifyAll" class="headerlink" title="什么时候用notify()？什么时候用notifyAll()?"></a>什么时候用notify()？什么时候用notifyAll()?</h1><p>如果所有线程都在等待相同的条件，并且一次只有一个线程可以从条件变为true，则可以使用notify。</p>
+<p>在这种情况下，notify是优于notifyAll 因为唤醒所有这些因为我们知道只有一个线程会受益而所有其他线程将再次等待，所以调用notifyAll方法只是浪费CPU。</p>
+<p>虽然这看起来很合理，但仍有一个警告，即无意中的接收者吞下了关键通知。通过使用notifyAll，我们确保所有收件人都会收到通知。</p>
+<h1 id="Object的wait-notifyAll-和Condition的await-signalAll-的区别？"><a href="#Object的wait-notifyAll-和Condition的await-signalAll-的区别？" class="headerlink" title="Object的wait()/notifyAll()和Condition的await()/signalAll()的区别？"></a>Object的wait()/notifyAll()和Condition的await()/signalAll()的区别？</h1><p>以生产者消费者模型为例。</p>
+<ul>
+<li>使用wait()、notify()/notifyAll()的缺点在于在生产者唤醒消费者、或者消费者唤醒生产者时，由于生产者和消费者使用同一个锁，所以生产者也会将生产者唤醒，消费者也会将消费者唤醒。</li>
+<li>如果能让消费者只唤醒生产者，或者生产者只唤醒消费者，就没有性能浪费了。</li>
+<li>所以一个ReentrantLock支持创建多个Condition，以应对这种场景。</li>
+<li>synchronized的锁对象没有提供多条件唤醒。</li>
+</ul>
+<p>ArrayBlockingQueue是典型的生产者消费者的例子，源码是很好的参考。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +332,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:55:29" itemprop="dateModified" datetime="2021-08-26T21:55:29+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -388,7 +503,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:55:29" itemprop="dateModified" datetime="2021-08-26T21:55:29+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -494,7 +609,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:55:29" itemprop="dateModified" datetime="2021-08-26T21:55:29+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -593,7 +708,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:55:29" itemprop="dateModified" datetime="2021-08-26T21:55:29+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -729,7 +844,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-count">125</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -742,7 +857,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">125</span>
+        <span class="site-state-item-count">126</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
