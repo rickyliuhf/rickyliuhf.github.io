@@ -411,16 +411,18 @@
   <entry>
     <title>LeetCode.120.三角形最小路径和（中等）</title>
     <url>/LeetCode/LeetCode.120.%E4%B8%89%E8%A7%92%E5%BD%A2%E6%9C%80%E5%B0%8F%E8%B7%AF%E5%BE%84%E5%92%8C%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/triangle/">LeetCode.120.三角形最小路径和（中等）</a></p>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/triangle/">LeetCode.120.三角形最小路径和（中等）</a></p>
 <p>给定一个三角形 triangle ，找出自顶向下的最小路径和。</p>
 <p>每一步只能移动到下一行中相邻的结点上。相邻的结点 在这里指的是 下标 与 上一层结点下标 相同或者等于 上一层结点下标 + 1 的两个结点。也就是说，如果正位于当前行的下标 i ，那么下一步可以移动到下一行的下标 i 或 i + 1 。</p>
 <span id="more"></span>
 
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>题目已经给出了递推公式，是从上往下取值的，所以要从最后一行往上递推，最后得到结果。<br>如果用递归写，这个顺序就会比较明白，递归划分为子问题后，实际是自底向上传递计算结果的。</p>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>题目已经给出了递推公式，是从上往下取值的，所以要从最后一行往上递推，最后得到结果。<br>如果用递归写，这个顺序就会比较明白，递归划分为子问题后，实际是自底向上传递计算结果的。</p>
 <p>设<code>dp[i][j]</code>为第i行第j列向下的最小路径和。<br>总共<code>n</code>行。</p>
 <p>最后一行没有下一行了，所以<br><code>dp[n - 1][j] = triangle[n - 1][j]</code></p>
 <p>上面的行，状态转移方程为：<br><code>dp[i][j] = triangle[i][j] + minOf(dp[i + 1][j], dp[i + 1][j + 1]</code></p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minimumTotal</span><span class="params">(triangle: <span class="type">List</span>&lt;<span class="type">List</span>&lt;<span class="type">Int</span>&gt;&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = triangle.size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            dp[n - <span class="number">1</span>][j] = triangle[n - <span class="number">1</span>][j]</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0.</span>.i) &#123;</span><br><span class="line">                dp[i][j] = triangle[i][j] + minOf(dp[i + <span class="number">1</span>][j], dp[i + <span class="number">1</span>][j + <span class="number">1</span>])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minimumTotal</span><span class="params">(triangle: <span class="type">List</span>&lt;<span class="type">List</span>&lt;<span class="type">Int</span>&gt;&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = triangle.size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            dp[n - <span class="number">1</span>][j] = triangle[n - <span class="number">1</span>][j]</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0.</span>.i) &#123;</span><br><span class="line">                dp[i][j] = triangle[i][j] + minOf(dp[i + <span class="number">1</span>][j], dp[i + <span class="number">1</span>][j + <span class="number">1</span>])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
       <categories>
         <category>LeetCode</category>
       </categories>
@@ -430,13 +432,13 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.121.买卖股票的最佳时机（简单）</title>
+    <title>LeetCode.120.三角形最小路径和（中等）</title>
     <url>/LeetCode/LeetCode.121.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
-    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/">LeetCode.121.买卖股票的最佳时机（简单）</a></p>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/">LeetCode.121.买卖股票的最佳时机（简单）</a></p>
 <p>给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。<br>你只能选择 某一天 买入这只股票，并选择在 未来的某一个不同的日子 卖出该股票。设计一个算法来计算你所能获取的最大利润。<br>返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。</p>
 <span id="more"></span>
 
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><h3 id="解法1"><a href="#解法1" class="headerlink" title="解法1"></a>解法1</h3><p>设dp[i]为第0天到第i天获取最大利润。</p>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1"><a href="#解法1" class="headerlink" title="解法1"></a>解法1</h2><p>设dp[i]为第0天到第i天获取最大利润。</p>
 <p>在第i天，可以选择不卖股票或卖出股票。</p>
 <ol>
 <li>不卖股票，dp[i] = dp[i - 1]</li>
@@ -445,48 +447,14 @@
 <p>dp[i]只与上一个状态有关，所以可以用变量存储状态，不需要数组记录。</p>
 <figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxProfit</span><span class="params">(prices: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> maxProfit = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> minPrice = prices[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            maxProfit = maxOf(maxProfit, prices[i] - minPrice)</span><br><span class="line">            minPrice = minOf(minPrice, prices[i])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> maxProfit</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h3 id="解法2"><a href="#解法2" class="headerlink" title="解法2"></a>解法2</h3><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxProfit</span><span class="params">(prices: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (prices.isEmpty()) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="comment">// dp[i][k]表示前i天持有和未持有第i天的股票的最大收益</span></span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; IntArray(<span class="number">2</span>) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">0</span></span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">1</span>] = -prices[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="comment">// 第i天未持有，可能是前i-1天就未持有然后今天不操作，或者以前持有了今天卖出了</span></span><br><span class="line">            dp[i][<span class="number">0</span>] = maxOf(dp[i - <span class="number">1</span>][<span class="number">0</span>], dp[i - <span class="number">1</span>][<span class="number">1</span>] + prices[i])</span><br><span class="line">            <span class="comment">// 第i天持有，可能是前i-1天就持有了然后今天不操作，或者以前就未持有今天买入了</span></span><br><span class="line">            dp[i][<span class="number">1</span>] = maxOf(dp[i - <span class="number">1</span>][<span class="number">1</span>], -prices[i])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n - <span class="number">1</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+<h2 id="解法2"><a href="#解法2" class="headerlink" title="解法2"></a>解法2</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxProfit</span><span class="params">(prices: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (prices.isEmpty()) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="comment">// dp[i][k]表示前i天持有和未持有第i天的股票的最大收益</span></span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; IntArray(<span class="number">2</span>) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">0</span></span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">1</span>] = -prices[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="comment">// 第i天未持有，可能是前i-1天就未持有然后今天不操作，或者以前持有了今天卖出了</span></span><br><span class="line">            dp[i][<span class="number">0</span>] = maxOf(dp[i - <span class="number">1</span>][<span class="number">0</span>], dp[i - <span class="number">1</span>][<span class="number">1</span>] + prices[i])</span><br><span class="line">            <span class="comment">// 第i天持有，可能是前i-1天就持有了然后今天不操作，或者以前就未持有今天买入了</span></span><br><span class="line">            dp[i][<span class="number">1</span>] = maxOf(dp[i - <span class="number">1</span>][<span class="number">1</span>], -prices[i])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n - <span class="number">1</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
       <categories>
         <category>LeetCode</category>
       </categories>
       <tags>
         <tag>动态规划</tag>
-        <tag>LeetCode简单</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.122.买卖股票的最佳时机 II（简单）</title>
-    <url>/LeetCode/LeetCode.122.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%20II%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
-    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/">LeetCode.122.买卖股票的最佳时机 II（简单）</a></p>
-<p>给定一个数组 prices ，其中 prices[i] 是一支给定股票第 i 天的价格。<br>设计一个算法来计算你所能获取的最大利润。你可以尽可能地完成更多的交易（多次买卖一支股票）。<br>注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。</p>
-<span id="more"></span>
-
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>最优化问题考虑用动态规划。</p>
-<h3 id="步骤拆分"><a href="#步骤拆分" class="headerlink" title="步骤拆分"></a>步骤拆分</h3><p>在第<code>i</code>天可以选择的操作有三种：买入、卖出、什么也不做。<br>什么也不做包含了两种状态：买入过后什么也不做、卖出过后什么也不做。<br>归纳合并一下，这些操作会产生的结果状态是：</p>
-<ol>
-<li>第<code>i</code>天持有股票</li>
-<li>第<code>i</code>天不持有股票</li>
-</ol>
-<h3 id="为什么要关注操作得到的结果状态？"><a href="#为什么要关注操作得到的结果状态？" class="headerlink" title="为什么要关注操作得到的结果状态？"></a>为什么要关注操作得到的结果状态？</h3><p>因为选择某个操作，就是上一个状态转变为下一个状态，所以需要知道操作前后的状态是什么。</p>
-<h3 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h3><p>第<code>i</code>天有两个股票持有状态，不同股票持有状态的收益是不一样的。<br>一个状态经过选择操作后可能会转化为另一个状态，所以要记录所有状态的信息。<br>也就是要把天数和股票持有状态组合的所有状态都要记录下来。</p>
-<p>设<code>dp[i][k]</code>为前<code>i</code>天最大利润，<code>k = 0</code>表示第<code>i</code>天不持有股票，<code>k = 1</code>表示第<code>i</code>天持有股票。</p>
-<p>根据第<code>i</code>天的选择操作来梳理状态转移方程：</p>
-<ol>
-<li>第<code>i</code>天买入，变成持有股票的状态，利润要减去<code>prices[i]</code>，题目要求买入前不能持有股票，所以<code>dp[i][1] = dp[i - 1][0] - prices[i]</code>。</li>
-<li>第<code>i</code>天卖出，变成不持有股票的状态，利润要加上<code>prices[i]</code>，卖出前肯定要持有股票才能卖，所以<code>dp[i][0] = dp[i - 1][1] + prices[i]</code>。</li>
-<li>第<code>i</code>天什么也不做，不管是持有还是不持有股票，前<code>i</code>天的利润跟前<code>i - 1</code>天的利润一样，所以<code>dp[i][0] = dp[i - 1][0]，dp[i][1] = dp[i - 1][1]</code>。</li>
-</ol>
-<p>综合一下：<br><code>dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] + prices[i])</code><br><code>dp[i][1] = max(dp[i - 1][1], dp[i - 1][0] - prices[i])</code></p>
-<h3 id="到了最后一天，应该取dp-n-1-0-还是dp-n-1-1-？"><a href="#到了最后一天，应该取dp-n-1-0-还是dp-n-1-1-？" class="headerlink" title="到了最后一天，应该取dp[n - 1][0]还是dp[n - 1][1]？**"></a>到了最后一天，应该取dp[n - 1][0]还是dp[n - 1][1]？**</h3><p>最后一天如果还持有股票，利润肯定要变小，肯定是不持有股票的时候收益最大，取<code>dp[n - 1][0]</code>。</p>
-<h3 id="边界情况"><a href="#边界情况" class="headerlink" title="边界情况"></a>边界情况</h3><p><code>dp[0][0] = 0</code>，第0天不持有股票利润就是0。<br><code>dp[0][1] = -prices[i]</code>，第0天持有股票只能买入，利润为负。</p>
-<h3 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h3><p><code>dp[i][k]</code>只跟上一个状态有关，用变量记录上一个状态，不需要用数组记录所有状态。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxProfit</span><span class="params">(prices: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> holdProfit = -prices[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">var</span> noholdProfit = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">val</span> newHoldProfit = maxOf(holdProfit, noholdProfit - prices[i])</span><br><span class="line">            <span class="keyword">val</span> newNoholdProfit = maxOf(noholdProfit, holdProfit + prices[i])</span><br><span class="line">            holdProfit = newHoldProfit</span><br><span class="line">            noholdProfit = newNoholdProfit</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> noholdProfit</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode简单</tag>
+        <tag>LeetCode中等</tag>
       </tags>
   </entry>
   <entry>
