@@ -186,218 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/" class="post-title-link" itemprop="url">Java集合类-ArrayDeque</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-05-14 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-14T20:00:00+08:00">2018-05-14</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-ArrayDeque/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="ArrayDeque特点"><a href="#ArrayDeque特点" class="headerlink" title="ArrayDeque特点"></a>ArrayDeque特点</h1><p>基于数组的双端队列。</p>
-<p>分别用两个索引指针指示头尾元素位置，循环访问数组元素，访问头尾元素时间复杂度为O(1)</p>
-<p>容量不够时扩容，容量增加一倍。</p>
-<p>也可以当栈使用。</p>
-<h1 id="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"><a href="#有了LinkedList实现双端队列，为什么还要用ArrayDeque？" class="headerlink" title="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"></a>有了LinkedList实现双端队列，为什么还要用ArrayDeque？</h1><p>数组在内存中是连续存储的，CPU访问内存数据具有空间局部性特点，数组对CPU缓存很友好，可以大大提升访问速度。</p>
-<p>链表每个节点存储位置是分散不连续的，CPU缓存命中率低，CPU访问主存次数增加，速度慢。</p>
-<p>所以需要栈和队列时，优先选择用ArrayDeque。</p>
-<h1 id="ArrayDeque缺点"><a href="#ArrayDeque缺点" class="headerlink" title="ArrayDeque缺点"></a>ArrayDeque缺点</h1><ol>
-<li> ArrayDeque较于链表的方式的缺点就是容量不够时需要扩容，耗费O(n)的时间</li>
-<li> 删除元素后不会缩容，所以不适合数据量变化大且长期处于少数据状态的情况，会浪费空间</li>
-</ol>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/6163166/why-is-arraydeque-better-than-linkedlist">Why is ArrayDeque better than LinkedList</a></li>
-<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/PG6NOMgXS6Slh0aXRv9W-g">死磕 java集合之ArrayDeque源码分析</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/" class="post-title-link" itemprop="url">Java集合类-CopyOnWriteArrayList</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-05-13 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-13T20:00:00+08:00">2018-05-13</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-CopyOnWriteArrayList/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="ArrayList存在什么问题？"><a href="#ArrayList存在什么问题？" class="headerlink" title="ArrayList存在什么问题？"></a>ArrayList存在什么问题？</h1><p>ArrayList是线程不安全的。</p>
-<p>可以用Collections.synchronizedList()加全局独占锁保证线程安全，但在读多写少的情况下，多线程读之间互斥降低了系统吞吐量。</p>
-<p>如果读与读之间不互斥，写与写、写与读才互斥，这样可以保证最大的吞吐量，这就是CopyOnWriteArrayList。</p>
-<h1 id="CopyOnWriteArrayList保证线程安全的原理？"><a href="#CopyOnWriteArrayList保证线程安全的原理？" class="headerlink" title="CopyOnWriteArrayList保证线程安全的原理？"></a>CopyOnWriteArrayList保证线程安全的原理？</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Appends the specified element to the end of this list.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> e element to be appended to this list</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; (as specified by &#123;<span class="doctag">@link</span> Collection#add&#125;)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Object[] elements = getArray();</span><br><span class="line">        <span class="keyword">int</span> len = elements.length;</span><br><span class="line">        Object[] newElements = Arrays.copyOf(elements, len + <span class="number">1</span>);</span><br><span class="line">        newElements[len] = e;</span><br><span class="line">        setArray(newElements);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">get</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> get(getArray(), index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果用读写锁保证并发，可以保证读读之间没有阻塞等待，但有线程写数据时，读线程必须阻塞等待，这保证了每次都都可以读到最新修改的值。</p>
-<p>CopyOnWriteArrayList牺牲了读的实时性，读操作不上锁，只在写数据时使用ReentrantLock上锁，写数据时会把原数组拷贝到新的数组中，写数据的同时再有线程读数据，读到的是之前数组的值，不保证数据实时性，只保证最终结果一致性，牺牲了数据实时性，换取了读操作没有阻塞等待。</p>
-<p>对数据实时性要求很高的需求，不要使用CopyOnWriteArrayList。</p>
-<p>线程1在add数据时，线程2随后get数据，不一定能获取到线程1刚add的的元素，因为线程1可能还没执行完。</p>
-<h1 id="CopyOnWriteArrayList存在什么问题？"><a href="#CopyOnWriteArrayList存在什么问题？" class="headerlink" title="CopyOnWriteArrayList存在什么问题？"></a>CopyOnWriteArrayList存在什么问题？</h1><ol>
-<li> 读数据不是实时的，读的时候可能正在写数据，读不到最新的值，也不会阻塞等待，适合读多写少的场景</li>
-<li> 每次写数据都要复制整个数组，如果写操作频繁，会频繁触发垃圾回收，垃圾回收又会导致线程停顿，造成APP卡顿变多</li>
-</ol>
-<h1 id="CopyOnWriteArrayList适用场景？"><a href="#CopyOnWriteArrayList适用场景？" class="headerlink" title="CopyOnWriteArrayList适用场景？"></a>CopyOnWriteArrayList适用场景？</h1><ol>
-<li> 高并发</li>
-<li> 读多写少</li>
-<li> 对读数据实时性要求不高</li>
-</ol>
-<h1 id="为什么没有扩容"><a href="#为什么没有扩容" class="headerlink" title="为什么没有扩容?"></a>为什么没有扩容?</h1><p>因为每次add元素都要拷贝数组，这个时间消耗是必须的，所以也没必要扩容了，拷贝数据到一个恰好比原数组多一个位置的新数组。</p>
-<h1 id="Vector有什么问题"><a href="#Vector有什么问题" class="headerlink" title="Vector有什么问题?"></a>Vector有什么问题?</h1><ol>
-<li> Vector是线程安全的列表，底层实现也是数组，但是几乎每一个方法都加上了synchonized，多线程读操作之间会互斥，读多写少的情况下，吞吐量不高</li>
-<li> Vector扩容，容量是翻倍，指数增长，ArrayList只增长为原来的1.5倍，更节约空间。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayList/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -429,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -549,7 +337,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -657,7 +445,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -863,7 +651,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1024,7 +812,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1147,7 +935,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1277,7 +1065,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1613,7 +1401,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1705,6 +1493,287 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/" class="post-title-link" itemprop="url">Java静态分派、动态分派</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-07 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-07T20:00:00+08:00">2018-03-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java静态分派、动态分派/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>静态类型：变量被声明时的类型；例如，Animal a = new Dog(), 静态类型为Animal, 实际类型为Dog</p>
+<p>实际类型：变量所引用的对象的真实类型</p>
+<p>重载方法是静态分派，即编译时多态</p>
+<p>重写方法是动态分派，即运行时多态</p>
+<h1 id="单分派和多分派"><a href="#单分派和多分派" class="headerlink" title="单分派和多分派"></a>单分派和多分派</h1><p>方法的接收者：一个方法所属的对象</p>
+<p>宗量：方法的接收者和方法的参数，只有这两种宗量</p>
+<p>单分派：根据一个宗量进行对方法的选择</p>
+<p>多分派：根据多于一个的宗量对方法进行选择</p>
+<p>单分派和多分派取决于宗量,  方法调用者和方法参数都是宗量.</p>
+<p>静态分派的方法调用：首先确定调用者的静态类型是什么,然后根据要调用的方法参数的静态类型(声明类型)确定所有重载方法中要调用哪一个, 需要根据这两个宗量来编译, 所以是静态多分派(多个宗量确定).</p>
+<p>动态分派的方法调用：在运行期间,虚拟机会根据调用者的实际类型调用对应的方法, 只需根据这一个宗量就可以确定要调用的方法,所以是动态单分派(一个宗量)</p>
+<p>到目前为止，Java 语言还是一门 “静态多分派、动态单分派” 的语言，也就是说在执行静态分派时是根据多个宗量判断调用哪个方法的，因为在静态分派时要根据不同的静态类型和不同的方法描述符选择目标方法，在动态分派的时候，是根据单宗量选择目标方法的，因为在运行期，方法的描述符已经确定好，invokevirtual 字节码指令根据变量的实际类型选择目标方法。</p>
+<p>方法的描述符：方法参数类型+返回值类型</p>
+<h1 id="静态分派"><a href="#静态分派" class="headerlink" title="静态分派"></a>静态分派</h1> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">classStaticDispatch &#123; </span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Man</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Woman</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Humanguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,guy&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Manguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,man&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Womanguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,woman&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[]args)</span> </span>&#123; </span><br><span class="line">        Humanman=newMan(); </span><br><span class="line">        Humanwoman=newWoman(); </span><br><span class="line">        StaticDispatchdispatch=newStaticDispatch(); </span><br><span class="line">        dispatch.sayHello(man); </span><br><span class="line">        dispatch.sayHello(woman); </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>静态类型：是指对象 man 的 Human 类型， 静态类型本身是不会发送变化的，只有在使用时才会发送变化，静态类型在编译期间就可以确定一个变量的静态类型 </p>
+<p>实际类型：是指对象 man 的 Man 类型，实际类型在编译期间是不可确定的，只有在运行期才可确定 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 实际类型变化 </span></span><br><span class="line">Human man = <span class="keyword">new</span> Man(); </span><br><span class="line">man = <span class="keyword">new</span> Woman(); </span><br><span class="line"> </span><br><span class="line"><span class="comment">// 静态类型变化 </span></span><br><span class="line">dispatch.sayHello((Man) man); </span><br><span class="line">dispatch.sayHello((Woman) man); </span><br></pre></td></tr></table></figure>
+
+<p>所以第一段代码中，方法接收者是 StaticDispatch 对象，虽然两个变量的实际类型不同，但是静态类型是相同的都是 Human，虚拟机（准确的说是编译器）在实现重载时是通过参数的静态类型而不是实际类型做出判定的，并且在编译阶段，变量的静态类型是可以确定的，所以编译器会根据变量的静态类型决定使用哪个重载方法。 </p>
+<p>所有依赖静态类型定位目标方法的分派动作称为静态分派，静态分派典型的应用就是方法的重载。静态分派发生在编译阶段，所以方法的静态分派动作是由编译器执行的。 </p>
+<h1 id="动态分派"><a href="#动态分派" class="headerlink" title="动态分派"></a>动态分派</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DynamicDispatch</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span></span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Man</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;hello, man&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Woman</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;hello, woman&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">		Human man = <span class="keyword">new</span> Man();</span><br><span class="line">		Human woman = <span class="keyword">new</span> Woman();</span><br><span class="line">		man.sayHello();</span><br><span class="line">		woman.sayHello();</span><br><span class="line">		man = <span class="keyword">new</span> Woman();</span><br><span class="line">		man.sayHello();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20200325235523.png"></p>
+<p>从上图中，我们可以看到 main() 方法的字节码指令执行过程：</p>
+<ul>
+<li>0 ~ 7 句是调用 Man 类的实例构造器创建一个 Man 类的对象，并将对象的引用压入到局部变量表的第 1 个 Slot 中</li>
+<li>8 ~ 15 句是调用 Woman 类的实例构造器创建一个 Woman 类的对象，并将对象的引用压入到局部变量表的第 2 个 Slot 中</li>
+<li>16 ~ 17 句是将第 1 个 Slot 中的变量（也就是 man）加载到局部变量表中，并调用 sayHello() 方法，关键的就是第 17 句指令 invokevirtual</li>
+</ul>
+<p>虽然第 17 句指令调用的常量池中的 Human.sayHello() 方法，但是最终执行的却是 Man.sayHello() 方法，这就要从 invokevirtual 指令的多态查找说起，invokevirtual 的查找过程如下所示：</p>
+<ul>
+<li>找到操作数栈顶的引用所指的对象的实际类型，记做 C</li>
+<li>在类型 C 中查找与常量中的描述符和简单名称相同的方法，如果找到则进行访问权限的判断，如果通过则返回这个方法的直接引用，查找结束；如果权限不通过，则返回 java.lang.IllegalAccessError 的异常</li>
+<li>如果在 C 中没有找到描述符和简单名称都符合的方法，则按照继承关系从下往上依次在 C 的父类中进行查找和验证过程</li>
+<li>如果最终还是没有找到该方法，则抛出 java.lang.AbstractMethodError 的异常</li>
+</ul>
+<p>在上述 invokespecial 查找方法的过程中，最重要的就是第一步，根据对象的引用确定对象的实际类型，这个方法重写的本质。如上所述，在运行期内，根据对象的实际类型确定方法执行版本的分派过程叫做动态分派。</p>
+<h1 id="如何理解Java是静态多分派、动态单分派？"><a href="#如何理解Java是静态多分派、动态单分派？" class="headerlink" title="如何理解Java是静态多分派、动态单分派？"></a>如何理解Java是静态多分派、动态单分派？</h1><p>编译时期确定方法有两点依据：</p>
+<ol>
+<li>调用方法的静态类型</li>
+<li>方法的参数</li>
+</ol>
+<p>所以说是静态多分派。</p>
+<p>运行时期再确定方法只有一点依据,就是调用方法的实际类型,所以说是动态单分派。</p>
+<p>所以最后实际的方法调用是编译和运行的结合,即调用方法的实际类型和参数(运行时期直接引用会根据调用方法的实际类型确定,编译时期调用方法的静态类型只不过是虚引用),按书上说法,在编译时期,方法名和参数就被确定了,运行时只需要确定调用者即可;所以方法选择上,编译时期缩小了范围,运行时期确定了具体的方法。</p>
+<p>对于静态分派（重载），肯定会依赖接收者的静态类型与参数的静态类型（参数肯定存在，同名无参的方法只会有一个，不存在分派）。</p>
+<p>对于动态分派（重写），虚拟机只会根据接收者的实际类型选择，而不会理睬参数的实际类型。</p>
+<h1 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h1><ul>
+<li>深入理解Java虚拟机（第2版）  第8章  虚拟机字节码执行引擎 8.3.2 分派</li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/58f876f2e8b8">虚拟机字节码执行引擎（读书笔记）</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/28462483/answer/398040520">如何理解java是一门静态多分派且动态单分派的语言？</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%EF%BC%88ClassLoader%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%EF%BC%88ClassLoader%EF%BC%89/" class="post-title-link" itemprop="url">Java类加载器（ClassLoader）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-06 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-06T20:00:00+08:00">2018-03-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%EF%BC%88ClassLoader%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java类加载器（ClassLoader）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="类加载器是干什么的"><a href="#类加载器是干什么的" class="headerlink" title="类加载器是干什么的?"></a>类加载器是干什么的?</h1><p>负责将class文件（Java编译后的字节码文件）读取到内存，并转换为java.lang.Class的一个实例。</p>
+<h1 id="常见类加载器有哪些？分别是什么作用？"><a href="#常见类加载器有哪些？分别是什么作用？" class="headerlink" title="常见类加载器有哪些？分别是什么作用？"></a>常见类加载器有哪些？分别是什么作用？</h1><p>从虚拟机角度，分为启动类加载器和非启动类加载器。</p>
+<ol>
+<li> 启动类加载器（BootstrapClassLoader）是由C++实现，是虚拟机的一部分</li>
+<li> 其他的类加载器，都是由Java实现，全部继承自ClassLoader。</li>
+</ol>
+<p>Java系统提供的类加载器主要有如下三种：</p>
+<ol>
+<li> BootstrapClassLoader（启动类加载器）：加载 ${JAVA_HOME}\lib 或 -Xbootclasspath指定的目录下的类。</li>
+<li> ExtClassLoader（扩展类加载器）：加载${JAVA_HOME}\lib\ext或环境变量java.ext.dir指定目录的类。</li>
+<li> AppClassLoader（应用程序类加载器）：加载用户项目指定的classpath里的类，可通过ClassLoader的getSystemClassLoader()方法获得，所以也会称为系统类加载器。</li>
+</ol>
+<h1 id="如何确定类的唯一性？"><a href="#如何确定类的唯一性？" class="headerlink" title="如何确定类的唯一性？"></a>如何确定类的唯一性？</h1><p>问题等同于：如何判断两个类是否是同一个类？</p>
+<p>对于任何一个类，由类加载器和类本身确立其在虚拟机中的唯一性。</p>
+<ul>
+<li>首先类本身信息要相同，如类的全限定名。</li>
+<li>其次必须是同一个类加载器加载的。</li>
+</ul>
+<p>相同的类，被不同的类加载器加载，会被视为不同的类。</p>
+<p>为什么要这样设计？</p>
+<p>涉及到安全性问题，要配合双亲委派模型的机制来解释。</p>
+<h1 id="双亲委派（Parents-Delegation）模型是什么"><a href="#双亲委派（Parents-Delegation）模型是什么" class="headerlink" title="双亲委派（Parents Delegation）模型是什么?"></a>双亲委派（Parents Delegation）模型是什么?</h1><p>直接看ClassLoader的loadClass()方法的源码就很直白。</p>
+<ul>
+<li>除了启动类加载器，其他每个类加载器都有一个父类加载器（在ClassLoader源码中体现为类型为ClassLoader的parent成员变量，是组合关系而非继承关系）。</li>
+<li>加载类时（ClassLoader的loadClass方法）会先通过父类加载器加载类，层层传递到顶层的启动类加载器（parent为null就通过native方法调用启动类加载器加载类）。</li>
+<li>只有当父类加载器无法加载类，才会用当前的类加载器尝试加载类。</li>
+</ul>
+<p>这个逻辑是Java设计者推荐的加载方式，并不是强制约束，开发者可以自定义类加载器复写loadClass()方法来改变这一流程。</p>
+<h1 id="双亲委派解决了什么问题？为何要这样设计？"><a href="#双亲委派解决了什么问题？为何要这样设计？" class="headerlink" title="双亲委派解决了什么问题？为何要这样设计？"></a>双亲委派解决了什么问题？为何要这样设计？</h1><p>是为了基础核心类加载的安全性考虑。</p>
+<p>像<code>java.lang.Object</code>这种系统是存放在rt.jar中的，无论哪个类加载器要加载这个类，都会委派启动类加载器加载Object，这样可以保证在各种环境下，加载出的Object都是<code>&lt;JAVA_HOME&gt;\lib\rt.jar</code>的。</p>
+<p>如果没有双亲委派机制，用户自己也定义了一个<code>java.lang.Object</code>，写了有问题的代码，放在用户项目的Classpath，那就会影响所有类的基础行为，因为Object是所有类的父类。所以也会要求不同的类加载器加载同一个类属于不同的类。</p>
+<p>双亲委派模型很好的解决了各个类加载器的基础类统一问题，越基础越公共的类越是由上层的类加载器加载。同时保证了基础类的不会被随意的篡改，保证安全感。</p>
+<h1 id="双亲委派会有哪些无法解决的问题？应该怎么解决？"><a href="#双亲委派会有哪些无法解决的问题？应该怎么解决？" class="headerlink" title="双亲委派会有哪些无法解决的问题？应该怎么解决？"></a>双亲委派会有哪些无法解决的问题？应该怎么解决？</h1><p>当基础类是接口，需要加载不同的接口实现类，实现类并不在当前类加载器管控的类的范围里，双亲委派的类加载顺序就要反过来，由父类加载器去请求子类加载器加载接口实现类。</p>
+<p>典型的场景是SPI(Service Provider Interface)依赖注入框架。</p>
+<p>SPI约定为：当服务的提供者提供了服务接口的一种实现之后，在jar包的META-INF/services/目录里同时创建一个以服务接口命名的文件。该文件里就是实现该服务接口的具体实现类。而当外部程序装配这个模块的时候，就能通过该jar包META-INF/services/里的配置文件找到具体的实现类名，并装载实例化，完成模块的注入。</p>
+<p>SPI的核心类ServiceLoader是jdk的类，位于rt.jar中，由BootstrapClassLoader加载，接口实现类肯定是不能由BootstrapClassLoader加载，BootstrapClassLoader只加载jdk核心类，只能由AppClassLoader或用户自定义的ClassLoader来加载，按照双亲委派机制的话，这样就无法完成了，只能逆向请求加载。</p>
+<p>解决之道就是使用<strong>线程上下文加载器（ContextClassLoader）</strong>，SPI在加载服务接口实现类时，调用Thread的getContextClassLoader()来加载实现类，可以通过Thread的setContextClassLoader(ClassLoader cl)方法来设置线程上下文类加载器，如果没有手动设置过，默认会继承父线程的上下文类加载器，如果父线程也没有设置过，则默认采用AppClassLoader</p>
+<p>ServiceLoader.load()方法中要去加载实现类，需要用一个ClassLoader来加载，但是ServiceLoader是系统类，获取到的ClassLoader是BootstrapClassLoader，所以需要从一个地方获取实现类所处位置的ClassLoader，通过Thread的contextClassLoader就可以实现这个效果。</p>
+<h1 id="一个类加载器明明只有一个parent，Parents-Delegation为什么被翻译为双亲委派？"><a href="#一个类加载器明明只有一个parent，Parents-Delegation为什么被翻译为双亲委派？" class="headerlink" title="一个类加载器明明只有一个parent，Parents Delegation为什么被翻译为双亲委派？"></a>一个类加载器明明只有一个parent，Parents Delegation为什么被翻译为双亲委派？</h1><p>翻译错误，以讹传讹。</p>
+<p>由于除了启动类加载器其他类加载器都有parent，也就是每个非启动类加载器都有多个祖先，所以应该翻译为祖先委派更妥当</p>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/288949359/answer/468524259">Java 中的双亲委派的“双”怎么理解 ？ - 大宽宽的回答 - 知乎 </a></li>
+</ul>
+<h1 id="Class-forName和ClassLoader的loadClass有什么区别？动态加载一个类时，应该选用哪一个方式？"><a href="#Class-forName和ClassLoader的loadClass有什么区别？动态加载一个类时，应该选用哪一个方式？" class="headerlink" title="Class.forName和ClassLoader的loadClass有什么区别？动态加载一个类时，应该选用哪一个方式？"></a>Class.forName和ClassLoader的loadClass有什么区别？动态加载一个类时，应该选用哪一个方式？</h1><p>ClassLoader在loadClass后仅将字节码加载到内存，不会对类进行初始化。</p>
+<p>Class.forName()在加载类到内存后后，会对类进行初始化，即执行类的static代码块和static变量的赋值，也可以传参控制不初始化。底层也是用ClassLoader来loadClass的。</p>
+<p>Class.forName()用的调用者类的类加载器加载类，也可以手动传递classLoader参数</p>
+<p>如果期望一个类加载后要执行static代码块做初始化操作，应该使用Class.forName()，如jdbc里的初始化。</p>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/8100376/class-forname-vs-classloader-loadclass-which-to-use-for-dynamic-loading">Class.forName() vs ClassLoader.loadClass() - which to use for dynamic loading? </a></li>
+</ul>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/javazejian/article/details/73413292">深入理解Java类加载器(ClassLoader)</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
@@ -1776,7 +1845,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">127</span>
+          <span class="site-state-item-count">125</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

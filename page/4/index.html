@@ -186,376 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E9%BB%91%E6%A0%91%E3%80%81AVL%E6%A0%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%AE%97%E6%B3%95/%E9%BB%91%E6%A0%91%E3%80%81AVL%E6%A0%91/" class="post-title-link" itemprop="url">红黑树、AVL树</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-07-04 20:00:00" itemprop="dateCreated datePublished" datetime="2020-07-04T20:00:00+08:00">2020-07-04</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%AE%97%E6%B3%95/%E9%BB%91%E6%A0%91%E3%80%81AVL%E6%A0%91/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/黑树、AVL树/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？"><a href="#普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？" class="headerlink" title="普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？"></a>普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？</h2><p>普通的二叉查找树最坏情况下会退化为一个链表，查找元素的时间复杂度由log_2{n}退化到n。</p>
-<p>解决时间复杂度退化，就是要让树的高度始终保持尽可能的小，平衡二叉查找树就是让任意节点的左右子树高度都平衡（差的不多）的二叉查找树，这样查找元素的平均时间复杂度可以保持在log_2{n}，</p>
-<h2 id="有哪些平衡二叉查找树？"><a href="#有哪些平衡二叉查找树？" class="headerlink" title="有哪些平衡二叉查找树？"></a>有哪些平衡二叉查找树？</h2><p>AVL树、2-3树、红黑树</p>
-<h2 id="为什么流行的主要是这几个树？"><a href="#为什么流行的主要是这几个树？" class="headerlink" title="为什么流行的主要是这几个树？"></a>为什么流行的主要是这几个树？</h2><p>因为逻辑比较简单，易于实现，效率也就高。</p>
-<h2 id="AVL树特点"><a href="#AVL树特点" class="headerlink" title="AVL树特点"></a>AVL树特点</h2><p>任意结点左右子树高度差小于或等于1。</p>
-<p>由Adelson-Velskii 以及 Landis发明，故而叫AVL。</p>
-<h2 id="2-3树"><a href="#2-3树" class="headerlink" title="2-3树"></a>2-3树</h2><p>定义：</p>
-<ul>
-<li>在满足二叉查找树的性质基础上，一个结点最多可以存储2个键，可以有3个孩子结点。</li>
-<li>2结点里存储1个键，可以有2个孩子结点</li>
-<li>3结点里存储2个键，可以有3个孩子结点</li>
-</ul>
-<p>特点</p>
-<ul>
-<li>2-3树是完美平衡的，任意结点的左右子树高度相等，这可以分析所有插入的情况来证明。</li>
-</ul>
-<p>自下而上生长：</p>
-<ul>
-<li>插入位置在2结点中，直接插入，变为3结点。</li>
-<li>插入位置在3结点中，先插入键变成4结点，再把中间的键提升到父结点中，当前结点就变成了两个2结点（不直接把键插入父结点是因为插入的键和提升到父结点的键不一定是同一个）。<ul>
-<li>如果父结点本来是2结点，现在就变成了3结点。</li>
-<li>如果父结点本来是3结点，现在就变成了4结点，继续提升的过程。</li>
-<li>如果没有父结点，当前即为根结点，那么就把临时的4结点分解为3个2结点，中间的键提升为2结点作为新的根结点。</li>
-</ul>
-</li>
-</ul>
-<p>在根结点为3结点时，插入新键变为4结点，再拆分为3个2结点后，树的高度才会加1。</p>
-<p>一颗含有n个节点的2-3树的高度在log_3{n}（全是3结点）到log_2{n}（全是2结点）之间。</p>
-<p>每次插入后调整结点都是局部的，最坏情况下，一条路径上都是3结点，从叶结点插入新键后，会从叶结点一直调整到根结点，调整次数不会超过对数级别。</p>
-<p>10亿个结点的2-3树高度仅在19到30之间，性能较高。</p>
-<p>各种操作实现较为复杂。</p>
-<h2 id="为什么2-3树可以保持完美平衡？"><a href="#为什么2-3树可以保持完美平衡？" class="headerlink" title="为什么2-3树可以保持完美平衡？"></a>为什么2-3树可以保持完美平衡？</h2><p>这可以分析所有插入的情况来证明。</p>
-<p>自下而上生长</p>
-<ol>
-<li><p> 插入位置在2结点中，直接插入，变为3结点</p>
-</li>
-<li><p> 插入位置在3结点中，先插入键变成4结点，再把中间的键提升到父结点中，当前结点就变成了两个2结点（不直接把键插入父结点是因为插入的键和提升到父结点的键不一定是同一个）</p>
-</li>
-<li><p> 如果父结点本来是2结点，现在就变成了3结点</p>
-</li>
-<li><p> 如果父结点本来是3结点，现在就变成了4结点，继续提升的过程</p>
-</li>
-<li><p> 如果没有父结点，当前即为根结点，那么就把临时的4结点分解为3个2结点，中间的键提升为2结点作为新的根结点</p>
-</li>
-</ol>
-<p>在根结点为3结点时，插入新键变为4结点，再拆分为3个2结点后，树的高度才会加1</p>
-<h2 id="红黑树"><a href="#红黑树" class="headerlink" title="红黑树"></a>红黑树</h2><p>实现较为简单，综合性能好。</p>
-<p>把2-3树的3结点表示为左斜的红色链接相连的两个2结点，其中一个结点是另一个结点的左子结点，其他链接为黑色链接。</p>
-<p>红黑树既是二叉查找树也是2-3树。</p>
-<p>等价定义（《算法》第4版 275页 3.3.2.1）：</p>
-<ol>
-<li> 红色链接均为左链接</li>
-<li> 没有任何一个结点同时和两条红链接相连</li>
-<li> 该树是完美黑色平衡的，即任意空链接到根结点的路径上的黑链接数量相同</li>
-</ol>
-<p>红黑树的几条定义都是为了让红黑树满足2-3树的结构。</p>
-<p>如果让2-3树中所有链接都为黑色，由于2-3树是完美平衡的，红黑树中红色链接代表3结点，所以红黑树中的黑色链接是完美平衡的。</p>
-<p>再把2-3树中的3结点都分解为两个用红色链接相连的2结点，那么不会存在一个结点同时与两条红色链接相连，这一点保证了红色链接是3结点。</p>
-<p>对红黑树插入、删除元素后，不满足红黑树的定义，都要通过旋转操作来修正。</p>
-<p>红黑树的旋转操作修正，都是符合2-3树的修正的规则的，理解记住了2-3树的各种调整规则，就知道了红黑树各种操作的意义。</p>
-<h2 id="红黑树是怎么发明出来的？"><a href="#红黑树是怎么发明出来的？" class="headerlink" title="红黑树是怎么发明出来的？"></a>红黑树是怎么发明出来的？</h2><p>它在1972年由<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%B2%81%E9%81%93%E5%A4%AB%C2%B7%E8%B4%9D%E5%B0%94">鲁道夫·贝尔</a>发明，被称为”对称二叉B树”，它现代的名字源于Leo J. Guibas和<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Robert_Sedgewick">Robert Sedgewick</a>于<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/1978%E5%B9%B4">1978年</a>写的一篇论文。</p>
-<p>红黑树等同于2-3-4树，是2-3-4树的二叉表现形式。</p>
-<p>2-3-4树是B树的一种情况。</p>
-<p>红黑树结点的颜色表明了当前结点是否属于2-3-4树中的3结点或4结点。</p>
-<p>2-3-4树的情况讨论比较复杂，  用2-3树讨论情况较少，可以方便理解。</p>
-<hr>
-<h2 id="红黑树定义"><a href="#红黑树定义" class="headerlink" title="红黑树定义"></a>红黑树定义</h2><p>《算法》第4版 275页 3.3.2.1 定义：</p>
-<ol>
-<li> 红色链接均为左链接</li>
-<li> 没有任何一个结点同时和两条红链接相连</li>
-<li> 该树是完美黑色平衡的，即任意空链接到根结点的路径上的黑链接数量相同</li>
-</ol>
-<p>《算法导论》273页  第13章  红黑树  定义：</p>
-<ol>
-<li> 节点是红色或黑色</li>
-<li> 根节点是黑色</li>
-<li> 叶节点是黑色</li>
-<li> 红节点的两个子节点都是黑色</li>
-<li> 任意节点到叶节点的所有路径上的黑色节点数相同</li>
-</ol>
-<h2 id="红黑树为什么要这样定义？"><a href="#红黑树为什么要这样定义？" class="headerlink" title="红黑树为什么要这样定义？"></a>红黑树为什么要这样定义？</h2><p>红黑树的几条定义都是为了让红黑树满足2-3树的结构，红黑树是2-3树的一种表示形式，而2-3树是完美平衡的，这样红黑树也是黑色平衡的，2-3树比较难以实现，红黑树比较方便实现。</p>
-<h2 id="为什么要用红黑树表示2-3树？"><a href="#为什么要用红黑树表示2-3树？" class="headerlink" title="为什么要用红黑树表示2-3树？"></a>为什么要用红黑树表示2-3树？</h2><ul>
-<li>因为2-3树是完美平衡的，任意结点的子树没有高度差。</li>
-<li>2-3树的实现较为复杂，红黑树的实现较为简单。</li>
-</ul>
-<h2 id="红黑树的数据结构如何定义？"><a href="#红黑树的数据结构如何定义？" class="headerlink" title="红黑树的数据结构如何定义？"></a>红黑树的数据结构如何定义？</h2><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 树的结点</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="type">Key : Comparable&lt;Key</span>&gt;, <span class="type">Value&gt;</span></span>(</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 父结点指向本结点的链接颜色，用以标明本结点对应2-3树中的2结点还是3结点</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> color: Color,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 关键字。用于比较来确定数据的顺序</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">val</span> key: Key,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 关联的数据</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> value: Value,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 左子结点</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> left: Node&lt;Key, Value&gt;? = <span class="literal">null</span>,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 右子结点</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> right: Node&lt;Key, Value&gt;? = <span class="literal">null</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 链接颜色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span> <span class="title">Color</span> </span>&#123;</span><br><span class="line">    BLACK, RED</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="红黑树插入新元素后调整结点的操作规则是怎样的？"><a href="#红黑树插入新元素后调整结点的操作规则是怎样的？" class="headerlink" title="红黑树插入新元素后调整结点的操作规则是怎样的？"></a>红黑树插入新元素后调整结点的操作规则是怎样的？</h2><p>原则：所有操作跟2-3树能逐一对应，保证树的有序性和完美平衡性。</p>
-<p>插入新结点先按普通的二叉查找树插入新结点那样进行插入。</p>
-<p>普通的二叉查找树插入新元素有三种情况：</p>
-<ol>
-<li> 树中没有结点，插入的新结点作为根结点</li>
-<li> 树中有结点，插入的新结点一定是某个结点h的左子结点</li>
-<li> 树中有结点，插入的新结点一定是某个结点h的右子结点</li>
-</ol>
-<p>在红黑树中，结点h又可以分为两种情况</p>
-<ol>
-<li> 结点h是2结点</li>
-<li>结点h位于3结点中<ol>
-<li> 结点h是红链接左下的结点</li>
-<li> 结点h是红链接右上的结点</li>
-</ol>
-</li>
-</ol>
-<p>插入新结点要默认新结点的颜色是红色，表示新结点到父节点的链接是红色，这样与2-3树的插入就可以对应上。</p>
-<p>在2-3树中如果插入在2结点中，2结点变为3结点，就不再调整；如果插入的在3结点中，3结点临时变为4结点，再把4结点的中间键放入父结点中，左右两边的键分解为两个2结点与父结点相连。</p>
-<p>处理这些情况的组合，就是所有的插入情况，针对不符合2-3树的结构的情况进行调整。</p>
-<ul>
-<li>结点h是2结点<ul>
-<li>新结点是h的左子结点，相当于新结点和结点h组成了2-3树中的3结点，符合2-3树的结构，无需调整</li>
-<li>新结点是h的右子结点，相当于新结点和结点h组成了2-3树中的3结点，但我们规定红链接要保持左斜，以减少考虑的情况数量，所以要进行左旋转</li>
-</ul>
-</li>
-<li>结点h位于3结点中，新结点的位置有三种情况：左、中、右<ul>
-<li>结点h是红链接左下的结点<ul>
-<li>新结点是h的左子结点，此时有了两条连续的红链接，连接的3个结点对应2-3树中临时的4结点，需要把中间的键放入父结点，再把两边的键拆为两个2结点分别与父结点相连，所以操作是先右旋，再变换颜色</li>
-<li>新结点是h的右子结点</li>
-</ul>
-</li>
-<li>结点h是红链接右上的结点<ul>
-<li>新结点是h的右子结点</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p>有三种标准操作：左旋、右旋、颜色转换</p>
-<h2 id="为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？"><a href="#为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？" class="headerlink" title="为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？"></a>为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？</h2><p>只允许红色的左链接可以减少讨论的情景数量，进而简化代码的实现。</p>
-<h2 id="红黑树最坏情况下高度是多少？"><a href="#红黑树最坏情况下高度是多少？" class="headerlink" title="红黑树最坏情况下高度是多少？"></a>红黑树最坏情况下高度是多少？</h2><p>有n个结点的红黑树高度最多为 $2 * log_2{n}$</p>
-<p>由于2-3树中的3结点是由左斜红链接连接的两个结点表示的，最坏情况下最左侧路径全部都是红链接，对应2-3树中最左侧都是3结点，其他结点都是2结点。</p>
-<p>参考《算法导论》中的证明：<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/lanchunhui/java/article/details/75905478">红黑树相关定理及其证明
-</a></p>
-<h2 id="红黑树的各种操作的时间复杂度是多少？"><a href="#红黑树的各种操作的时间复杂度是多少？" class="headerlink" title="红黑树的各种操作的时间复杂度是多少？"></a>红黑树的各种操作的时间复杂度是多少？</h2><p>设红黑树有n个结点，查找、插入、修改、删除操作的时间复杂度均为O(log n)</p>
-<p>查找：</p>
-<ul>
-<li>最长路径长度不会超过最短路径长度的2倍，查找仍然是对数级别</li>
-</ul>
-<p>插入：</p>
-<ul>
-<li>最坏情况下待插入的位置在叶结点，需要从根结点遍历到叶结点，同时最坏情况下遍历的路径都是红链接（路径上都是3结点），此时会从叶结点一直回溯调整结点到根结点，访问次数是2倍的树的高度，而树的高度为log_2{n}</li>
-</ul>
-<h2 id="红黑树较于AVL树有什么优点？"><a href="#红黑树较于AVL树有什么优点？" class="headerlink" title="红黑树较于AVL树有什么优点？"></a>红黑树较于AVL树有什么优点？</h2><p>单次操作：</p>
-<ul>
-<li>单次插入数据，红黑树和AVL树平均都只需要几次旋转即可完成。</li>
-<li>单次删除元素，红黑树大多数只需要几次旋转调整，AVL树需要调整查找路径上所有结点。</li>
-</ul>
-<p>大量的插入和删除操作：</p>
-<ul>
-<li>红黑树由于是基于2-3树，3结点的存在可以吸纳一部分不平衡性，不用做频繁的旋转调整。</li>
-<li>AVL树需要始终保持平衡，在大量插入或删除元素后，AVL树的调整的次数多于红黑树。</li>
-</ul>
-<p>在大量数据的统计意义上，红黑树的插入和删除次数相对于AVL树较少，适合插入和删除频繁的场景。</p>
-<p>AVL树由于是高度平衡的，红黑树不是高度平衡，AVL树的查找次数比红黑树更少，适合对查询效率非常敏感，插入和删除不频繁的场景。</p>
-<p>红黑树的查询跟AVL树仍然是同一个数量级，所以综合查询、插入、删除的性能，红黑树表现较好。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20545708/answer/58717264">为什么STL和linux都使用红黑树作为平衡树的实现？ - Acjx的回答 - 知乎 </a></li>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/19856999/answer/944180969">红黑树比 AVL 树具体更高效在哪里？ - 伍亦勤的回答 - 知乎 </a></li>
-</ul>
-<h2 id="什么时候用AVL树？"><a href="#什么时候用AVL树？" class="headerlink" title="什么时候用AVL树？"></a>什么时候用AVL树？</h2><p>AVL树平衡性非常好，左右子树高度差不超过1，所以查找次数少。</p>
-<p>对于查找非常频繁，插入、修改、删除不频繁的场景，可以使用AVL树。</p>
-<h2 id="并发下的问题"><a href="#并发下的问题" class="headerlink" title="并发下的问题"></a>并发下的问题</h2><p>并发情况下，由于平衡搜索树的调整可能要锁整个树。</p>
-<p>用跳表这种性能接近于平衡树的数据结构，操作更加局部性，不会锁住太多结点，有利于并发的性能。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wuchanming/p/4444961.html">面试题——轻松搞定面试中的红黑树问题</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/nullzx/p/6111175.html">从2-3-4树到红黑树（上）</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/30527705/answer/259948086">AVL树，红黑树，B树，B+树，Trie树都分别应用在哪些现实场景中？ - 韦易笑的回答 - 知乎 </a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/LZ77%E7%AE%97%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%AE%97%E6%B3%95/LZ77%E7%AE%97%E6%B3%95/" class="post-title-link" itemprop="url">LZ77算法</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-07-03 20:00:00" itemprop="dateCreated datePublished" datetime="2020-07-03T20:00:00+08:00">2020-07-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%AE%97%E6%B3%95/LZ77%E7%AE%97%E6%B3%95/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/LZ77算法/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="LZ77和哈夫曼编码区别？适用场景上有有什么不同？"><a href="#LZ77和哈夫曼编码区别？适用场景上有有什么不同？" class="headerlink" title="LZ77和哈夫曼编码区别？适用场景上有有什么不同？"></a>LZ77和哈夫曼编码区别？适用场景上有有什么不同？</h2><p>哈夫曼编码是基于统计的数据压缩编码，需要先获得信息源的字符出现频率，然后再进行压缩。</p>
-<p>但是，如果信息源是流式传输的，就没办法预先做统计，需要换一种思路。</p>
-<p>LZ77利用数据的重复结构信息来进行数据压缩，是基于字典的压缩算法，可以做流逝压缩。</p>
-<p>GZIP压缩的过程就是先用LZ77算法进行流式压缩，再对结果做哈夫曼编码压缩。</p>
-<h2 id="为什么叫LZ77"><a href="#为什么叫LZ77" class="headerlink" title="为什么叫LZ77?"></a>为什么叫LZ77?</h2><p>由以色列的两位大神Jacob Ziv与Abraham Lempel在1977年发表的论文《A Universal Algorithm for Sequential Data Compression》中提出。</p>
-<h2 id="LZ77算法思想概述"><a href="#LZ77算法思想概述" class="headerlink" title="LZ77算法思想概述"></a>LZ77算法思想概述</h2><p>核心思想：利用短语表示数据的重复结构信息来进行数据压缩。</p>
-<p>LZ77算法一般称为“滑动窗口压缩”，算法的核心是在前面的历史数据中寻找重复字符串。</p>
-<p>通过滑动窗口实现动态字典，用前面出现过的字符串作为字典通过映射（与前一个字符串的距离和字符串长度）替代后面重复出现的字符串。</p>
-<p>重复现象是具有局部性的，它的基本假设是，如果一个字符串要重复，那么也是在附近重复，远的地方就不用找了，因此设置了一个滑动窗口。</p>
-<p>其方式就是把数据中一些可以组织成短语(最长字符)的字符加入字典，然后再有相同字符出现采用标记来代替字典中的短语，如此通过标记代替多数重复出现的方式以进行压缩。</p>
-<p>滑动窗口越大，压缩的效果越好，因为编码的短语越多，但是压缩速度越慢，因为要计算的短语数量越多。</p>
-<h2 id="基于字典是什么意思？"><a href="#基于字典是什么意思？" class="headerlink" title="基于字典是什么意思？"></a>基于字典是什么意思？</h2><p>滑动窗口内的字符都是已经出现过的字符，已经出现过的字符会编码为字典短语，后面前向缓冲窗口中的字符如果和字典中的短语相同，就用距离和字符串长度来表示，以达到压缩的目的。</p>
-<h2 id="LZ77压缩效果"><a href="#LZ77压缩效果" class="headerlink" title="LZ77压缩效果"></a>LZ77压缩效果</h2><p>大多数情况下LZ77压缩算法的压缩比相当高。</p>
-<p>实际压缩率和选择的滑动窗口大小、前向缓冲区大小、数据熵有关系。</p>
-<h2 id="LZ77缺点"><a href="#LZ77缺点" class="headerlink" title="LZ77缺点"></a>LZ77缺点</h2><p>压缩过程是比较耗时，因为要花费很多时间寻找滑动窗口中的短语匹配。</p>
-<p>不过解压过程很快，因为每个标记都明确告知在哪个位置可以读取了。</p>
-<h2 id="什么特征的文本用LZ77压缩效果好？"><a href="#什么特征的文本用LZ77压缩效果好？" class="headerlink" title="什么特征的文本用LZ77压缩效果好？"></a>什么特征的文本用LZ77压缩效果好？</h2><p>压缩就是用更短的符号来表示重复出现的字符串。</p>
-<p>压缩就是寻找文本的内容分布概率，将出现频率高的部分代替成更短的形式。</p>
-<p>内容越是重复，就可以压缩的更小。</p>
-<p>内容如果毫无重复，就很难压缩。</p>
-<h2 id="LZ77详细原理"><a href="#LZ77详细原理" class="headerlink" title="LZ77详细原理"></a>LZ77详细原理</h2><p>参见： <a target="_blank" rel="noopener" href="https://www.codenong.com/cs106685915/">Linux(程序设计):28—数据流压缩原理（Deflate压缩算法、gzip、zlib）</a></p>
-<h2 id="为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？"><a href="#为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？" class="headerlink" title="为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？"></a>为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？</h2><p>LZ77编码后得到的是，距离（distance）和长度（length），还有未匹配到短语字典的原始字符（literal）。</p>
-<p>比较短的距离和长度可能是频繁出现的，就可以用变长编码来压缩，且文本已经确定下来不会变动，可以做词频统计，就可以用到哈夫曼编码了。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.codenong.com/cs106685915/">Linux(程序设计):28—数据流压缩原理（Deflate压缩算法、gzip、zlib）</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/en-heng/p/4992916.html">【数据压缩】LZ77算法原理及实现</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/en-heng/p/4992916.html">LZ77算法原理以及实现</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -587,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -702,7 +332,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -882,7 +512,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -980,7 +610,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1078,7 +708,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1176,7 +806,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1273,7 +903,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1369,7 +999,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1411,6 +1041,210 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/LeetCode/LeetCode.1014.%E6%9C%80%E4%BD%B3%E8%A7%82%E5%85%89%E7%BB%84%E5%90%88%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.126.%E5%8D%95%E8%AF%8D%E6%8E%A5%E9%BE%99%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/LeetCode/LeetCode.126.%E5%8D%95%E8%AF%8D%E6%8E%A5%E9%BE%99%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" class="post-title-link" itemprop="url">LeetCode.126.单词接龙 II（困难）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-07 22:41:00" itemprop="dateCreated datePublished" datetime="2020-06-07T22:41:00+08:00">2020-06-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode.126.%E5%8D%95%E8%AF%8D%E6%8E%A5%E9%BE%99%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode.126.单词接龙 II（困难）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/word-ladder-ii/">LeetCode.126.单词接龙 II（困难）</a></p>
+<p>按字典 wordList 完成从单词 beginWord 到单词 endWord 转化，一个表示此过程的 转换序列 是形式上像 beginWord -&gt; s1 -&gt; s2 -&gt; … -&gt; sk 这样的单词序列，并满足：</p>
+<ul>
+<li>每对相邻的单词之间仅有单个字母不同。</li>
+<li>转换过程中的每个单词 si（1 &lt;= i &lt;= k）必须是字典 wordList 中的单词。注意，beginWord 不必是字典 wordList 中的单词。</li>
+<li>sk == endWord</li>
+</ul>
+<p>给你两个单词 beginWord 和 endWord ，以及一个字典 wordList 。请你找出并返回所有从 beginWord 到 endWord 的 最短转换序列 ，如果不存在这样的转换序列，返回一个空列表。每个序列都应该以单词列表 [beginWord, s1, s2, …, sk] 的形式返回。</p>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><ul>
+<li>通过广度优先搜索建立图的邻接表。<ul>
+<li>在发现最短转换路径时停止构建图。</li>
+<li>有可能有多条最短路径，所以发现了一条最短路径时不要立刻终止，等这一层都遍历完。</li>
+</ul>
+</li>
+<li>通过深度优先搜索，求得最短路径。</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findLadders</span><span class="params">(beginWord: <span class="type">String</span>, endWord: <span class="type">String</span>, wordList: <span class="type">List</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;List&lt;String&gt;&gt; &#123;</span><br><span class="line">        <span class="comment">// 单词列表转为哈希集合，便于快速查找</span></span><br><span class="line">        <span class="keyword">val</span> wordSet = wordList.toSet()</span><br><span class="line">        <span class="comment">// 单词列表中没有endWord直接返回，不用搜索了</span></span><br><span class="line">        <span class="keyword">if</span> (!wordSet.contains(endWord)) <span class="keyword">return</span> emptyList()</span><br><span class="line"></span><br><span class="line">        <span class="comment">// bfs建立图的邻接表</span></span><br><span class="line">        <span class="keyword">val</span> graph = mutableMapOf&lt;String, MutableSet&lt;String&gt;&gt;()</span><br><span class="line">        <span class="keyword">val</span> found = bfs(beginWord, endWord, wordSet, graph)</span><br><span class="line">        <span class="keyword">if</span> (!found) <span class="keyword">return</span> emptyList()</span><br><span class="line"></span><br><span class="line">        <span class="comment">// dfs搜索</span></span><br><span class="line">        <span class="keyword">val</span> result = mutableListOf&lt;List&lt;String&gt;&gt;()</span><br><span class="line">        <span class="keyword">val</span> path = mutableListOf(beginWord)</span><br><span class="line">        dfs(beginWord, endWord, graph, path, result)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">bfs</span><span class="params">(beginWord: <span class="type">String</span>, endWord: <span class="type">String</span>, wordSet: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;, graph: <span class="type">MutableMap</span>&lt;<span class="type">String</span>, MutableSet&lt;String&gt;&gt;)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> queue = java.util.ArrayDeque&lt;String&gt;()</span><br><span class="line">        <span class="keyword">val</span> visited = mutableSetOf&lt;String&gt;()</span><br><span class="line"></span><br><span class="line">        queue.add(beginWord)</span><br><span class="line">        visited.add(beginWord)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> found = <span class="literal">false</span></span><br><span class="line">        <span class="keyword">val</span> levelVisited = mutableSetOf&lt;String&gt;()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (queue.isNotEmpty()) &#123;</span><br><span class="line">            <span class="keyword">val</span> levelCount = queue.size</span><br><span class="line">            repeat(levelCount) &#123;</span><br><span class="line">                <span class="keyword">val</span> currentWord = queue.poll()</span><br><span class="line">                <span class="keyword">val</span> nextNodes = getNextLevelNodes(currentWord, wordSet)</span><br><span class="line">                <span class="keyword">for</span> (nextWord <span class="keyword">in</span> nextNodes) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (visited.contains(nextWord)) <span class="keyword">continue</span></span><br><span class="line">                    <span class="keyword">if</span> (nextWord == endWord) &#123;</span><br><span class="line">                        found = <span class="literal">true</span></span><br><span class="line">                    &#125;</span><br><span class="line">                    queue.add(nextWord)</span><br><span class="line">                    levelVisited.add(nextWord)</span><br><span class="line"></span><br><span class="line">                    graph.getOrPut(currentWord, &#123; mutableSetOf() &#125;)</span><br><span class="line">                            .add(nextWord)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 在某一层发现了路径终点，就直接不继续了，这样保证路径是最短的</span></span><br><span class="line">            <span class="keyword">if</span> (found) <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">            visited.addAll(levelVisited)</span><br><span class="line">            levelVisited.clear()</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> found</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">dfs</span><span class="params">(beginWord: <span class="type">String</span>, endWord: <span class="type">String</span>, graph: <span class="type">Map</span>&lt;<span class="type">String</span>, Set&lt;String&gt;&gt;, path: <span class="type">MutableList</span>&lt;<span class="type">String</span>&gt;, result: <span class="type">MutableList</span>&lt;<span class="type">List</span>&lt;<span class="type">String</span>&gt;&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (beginWord == endWord) &#123;</span><br><span class="line">            result.add(path.toList())</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!graph.containsKey(beginWord)) <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">        graph[beginWord]?.forEach &#123; nextWord -&gt;</span><br><span class="line">            path.add(nextWord)</span><br><span class="line">            dfs(nextWord, endWord, graph, path, result)</span><br><span class="line">            path.removeAt(path.lastIndex)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 变化[word]每一个位置的字符，看是否存在于单词列表中，存在的话，记录为下一层的顶点</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getNextLevelNodes</span><span class="params">(word: <span class="type">String</span>, wordSet: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;)</span></span>: Set&lt;String&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> nodes = mutableSetOf&lt;String&gt;()</span><br><span class="line">        <span class="keyword">val</span> chars = word.toCharArray()</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> chars.indices) &#123;</span><br><span class="line">            <span class="keyword">val</span> oldChar = chars[i]</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until <span class="number">26</span>) &#123;</span><br><span class="line">                <span class="keyword">val</span> c = <span class="string">&#x27;a&#x27;</span> + j</span><br><span class="line">                <span class="keyword">if</span> (c == oldChar) <span class="keyword">continue</span></span><br><span class="line">                chars[i] = c</span><br><span class="line">                <span class="keyword">val</span> next = String(chars)</span><br><span class="line">                <span class="keyword">if</span> (wordSet.contains(next)) &#123;</span><br><span class="line">                    nodes.add(next)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            chars[i] = oldChar</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> nodes</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.44.%E9%80%9A%E9%85%8D%E7%AC%A6%E5%8C%B9%E9%85%8D%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/LeetCode/LeetCode.44.%E9%80%9A%E9%85%8D%E7%AC%A6%E5%8C%B9%E9%85%8D%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" class="post-title-link" itemprop="url">LeetCode.44.通配符匹配（困难）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-06 18:21:00" itemprop="dateCreated datePublished" datetime="2020-06-06T18:21:00+08:00">2020-06-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 22:15:18" itemprop="dateModified" datetime="2021-08-26T22:15:18+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode.44.%E9%80%9A%E9%85%8D%E7%AC%A6%E5%8C%B9%E9%85%8D%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode.44.通配符匹配（困难）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/wildcard-matching/">LeetCode.44.通配符匹配（困难）</a></p>
+<p>给定一个字符串 s 和一个字符模式 p，实现一个支持 ‘?’ 和 ‘*’ 的通配符匹配。</p>
+<blockquote>
+<p>‘?’ 可以匹配任何单个字符。<br>‘*’ 可以匹配任意字符串（包括空字符串）。</p>
+</blockquote>
+<p>两个字符串完全匹配才算匹配成功。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/LeetCode/LeetCode.44.%E9%80%9A%E9%85%8D%E7%AC%A6%E5%8C%B9%E9%85%8D%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1501,7 +1335,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">127</span>
+          <span class="site-state-item-count">125</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
