@@ -186,6 +186,157 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Gradle/Gradle%E4%B9%8BTransform/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Gradle/Gradle%E4%B9%8BTransform/" class="post-title-link" itemprop="url">Gradle之Transform</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-02 20:00:00" itemprop="dateCreated datePublished" datetime="2019-06-02T20:00:00+08:00">2019-06-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Gradle/" itemprop="url" rel="index"><span itemprop="name">Gradle</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Gradle/Gradle%E4%B9%8BTransform/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Gradle/Gradle之Transform/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="AOP两种方式实现"><a href="#AOP两种方式实现" class="headerlink" title="AOP两种方式实现"></a>AOP两种方式实现</h1><ol>
+<li> 通过gradle提供的transform api</li>
+<li> 通过Java Instrument机制hook dx.jar，拦截gradle编译把class转为dex的过程</li>
+</ol>
+<p>参考</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/c202853059b4">Android AOP之字节码插桩</a></li>
+</ul>
+<h1 id="Transform-API-有什么用？"><a href="#Transform-API-有什么用？" class="headerlink" title="Transform API 有什么用？"></a>Transform API 有什么用？</h1><p>transform拦截jar转为dex的过程。</p>
+<p>jar转为dex时先经过transform处理。</p>
+<p>jar -&gt; transform -&gt; dex</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825195255.png"></p>
+<h1 id="Transform-API如何使用？"><a href="#Transform-API如何使用？" class="headerlink" title="Transform API如何使用？"></a>Transform API如何使用？</h1><p>参考</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/6844903831646502920">Android Transform + ASM 初探</a></li>
+</ul>
+<p>不管你修不修改输入，都必须要把类复制到指定的transform输出位置。</p>
+<p>步骤：</p>
+<ul>
+<li>com.android.build.api.transform.Transform是android gradle plugin里的类，引用Transform需要先引入agp的依赖。<br>implementation(“com.android.tools.build:gradle:xxx”)</li>
+<li>实现一个自定义的类继承Transform，然后将其注册到agp中即可。</li>
+<li>注册到agp，先要获得android的扩展，通过project.extensions.findByType(BaseExtension::class.java)<br>来获取。</li>
+<li>再调用BaseExtension中的registerTransform()添加自定义的Transform。</li>
+</ul>
+<p>一个通过自定义插件添加自定义Transform的示例代码：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HelloPlugin</span> : <span class="type">Plugin</span>&lt;<span class="type">Project</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">apply</span><span class="params">(project: <span class="type">Project</span>)</span></span> &#123;</span><br><span class="line">        project.extensions.findByType(BaseExtension::<span class="keyword">class</span>.java)</span><br><span class="line">            ?.registerTransform(MyTransform())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyTransform</span> : <span class="type">Transform</span></span>() &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">getName</span><span class="params">()</span></span>: String &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;MyTransform&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">getInputTypes</span><span class="params">()</span></span>: MutableSet&lt;QualifiedContent.ContentType&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> TransformManager.CONTENT_CLASS</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">getScopes</span><span class="params">()</span></span>: MutableSet&lt;<span class="keyword">in</span> QualifiedContent.Scope&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> TransformManager.SCOPE_FULL_PROJECT</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">isIncremental</span><span class="params">()</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">transform</span><span class="params">(transformInvocation: <span class="type">TransformInvocation</span>?)</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.transform(transformInvocation)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Transform类中各方法的作用"><a href="#Transform类中各方法的作用" class="headerlink" title="Transform类中各方法的作用"></a>Transform类中各方法的作用</h1><h2 id="getName-String"><a href="#getName-String" class="headerlink" title="getName(): String"></a><code>getName(): String</code></h2><p>本Transform的名称</p>
+<h2 id="getInputTypes-Set-lt-ContentType-gt"><a href="#getInputTypes-Set-lt-ContentType-gt" class="headerlink" title="getInputTypes(): Set&lt;ContentType&gt;"></a><code>getInputTypes(): Set&lt;ContentType&gt;</code></h2><ul>
+<li>处理的输入类型</li>
+<li>分为class文件或者java资源</li>
+<li>class文件来自于jar或者文件夹</li>
+<li>资源就是标准的java资源，默认约定位于src/main/resources目录下</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">DefaultContentType</span> <span class="keyword">implements</span> <span class="title">ContentType</span> </span>&#123;</span><br><span class="line">      <span class="comment">/**</span></span><br><span class="line"><span class="comment">       * The content is compiled Java code. This can be in a Jar file or in a folder. If</span></span><br><span class="line"><span class="comment">       * in a folder, it is expected to in sub-folders matching package names.</span></span><br><span class="line"><span class="comment">       */</span></span><br><span class="line">      CLASSES(<span class="number">0x01</span>),</span><br><span class="line"></span><br><span class="line">      <span class="comment">/**</span></span><br><span class="line"><span class="comment">       * The content is standard Java resources.</span></span><br><span class="line"><span class="comment">       */</span></span><br><span class="line">      RESOURCES(<span class="number">0x02</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="getScopes-Set-lt-super-Scope-gt"><a href="#getScopes-Set-lt-super-Scope-gt" class="headerlink" title="getScopes(): Set&lt;? super Scope&gt;"></a><code>getScopes(): Set&lt;? super Scope&gt;</code></h2><p>输入文件所属的范围。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">Scope</span> <span class="keyword">implements</span> <span class="title">ScopeType</span> </span>&#123;</span><br><span class="line">    <span class="comment">/** Only the project content */</span></span><br><span class="line">    PROJECT(<span class="number">0x01</span>), <span class="comment">//只是当前工程的代码</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Only the project&#x27;s local dependencies (local jars) */</span></span><br><span class="line">    PROJECT_LOCAL_DEPS(<span class="number">0x02</span>), <span class="comment">// 工程的本地jar</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Only the sub-projects. */</span></span><br><span class="line">    SUB_PROJECTS(<span class="number">0x04</span>),  <span class="comment">// 只包含子工工程</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Only the sub-projects&#x27;s local dependencies (local jars). */</span></span><br><span class="line">    SUB_PROJECTS_LOCAL_DEPS(<span class="number">0x08</span>),</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Only the external libraries */</span></span><br><span class="line">    EXTERNAL_LIBRARIES(<span class="number">0x10</span>),</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Code that is being tested by the current variant, including dependencies */</span></span><br><span class="line">    TESTED_CODE(<span class="number">0x20</span>),</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Local or remote dependencies that are provided-only */</span></span><br><span class="line">    PROVIDED_ONLY(<span class="number">0x40</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>TransformManager预定了一些SCOPE。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Set&lt;ScopeType&gt; SCOPE_FULL_PROJECT =</span><br><span class="line">            ImmutableSet.of(Scope.PROJECT, Scope.SUB_PROJECTS, Scope.EXTERNAL_LIBRARIES);</span><br></pre></td></tr></table></figure>
+
+<h2 id="isIncremental-Boolean"><a href="#isIncremental-Boolean" class="headerlink" title="isIncremental(): Boolean"></a><code>isIncremental(): Boolean</code></h2><p>是否是增量编译。</p>
+<h2 id="transform-TransformInvocation"><a href="#transform-TransformInvocation" class="headerlink" title="transform(TransformInvocation)"></a>transform(TransformInvocation)</h2><p>input的内容将会打包成一个TransformInvocation对象，交给方法体处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TransformInvocation</span> </span>&#123;</span><br><span class="line">    <span class="function">Context <span class="title">getContext</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">Collection&lt;TransformInput&gt; <span class="title">getInputs</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">Collection&lt;TransformInput&gt; <span class="title">getReferencedInputs</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">Collection&lt;SecondaryInput&gt; <span class="title">getSecondaryInputs</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">TransformOutputProvider <span class="title">getOutputProvider</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isIncremental</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="transform方法中如何处理TransformInput的JarInput和DirectoryInput？"><a href="#transform方法中如何处理TransformInput的JarInput和DirectoryInput？" class="headerlink" title="transform方法中如何处理TransformInput的JarInput和DirectoryInput？"></a>transform方法中如何处理TransformInput的JarInput和DirectoryInput？</h2><p>DirectoryInput 进行ASM插桩（参考<a target="_blank" rel="noopener" href="https://github.com/lijiankun24/Koala/blob/master/buildSrc/src/main/groovy/com/lijiankun24/koala/plugin/PreClass.groovy">koala - PreClass.groovy</a>）：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">handleDirectoryInput</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    directoryInput: <span class="type">DirectoryInput</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">    outputProvider: <span class="type">TransformOutputProvider</span></span></span></span><br><span class="line"><span class="params"><span class="function">)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (directoryInput.file.isDirectory) &#123;</span><br><span class="line">        directoryInput.file.walkTopDown().forEach &#123; file -&gt;</span><br><span class="line">            <span class="keyword">val</span> name = file.name</span><br><span class="line">            <span class="keyword">if</span> (name.endsWith(<span class="string">&quot;.class&quot;</span>) &amp;&amp; name != <span class="string">&quot;R.class&quot;</span></span><br><span class="line">                &amp;&amp; !name.startsWith(<span class="string">&quot;R\$&quot;</span>) &amp;&amp; name != <span class="string">&quot;BuildConfig.class&quot;</span></span><br><span class="line">            ) &#123;</span><br><span class="line">                <span class="keyword">val</span> reader = ClassReader(file.readBytes())</span><br><span class="line">                <span class="keyword">val</span> writer = ClassWriter(reader, ClassWriter.COMPUTE_MAXS)</span><br><span class="line">                <span class="keyword">val</span> visitor = MyClassVisitor(writer)</span><br><span class="line">                reader.accept(visitor, ClassReader.EXPAND_FRAMES)</span><br><span class="line">                <span class="keyword">val</span> code = writer.toByteArray()</span><br><span class="line">                <span class="keyword">val</span> classPath = file.parentFile.absolutePath + File.separator + name</span><br><span class="line">                <span class="keyword">val</span> fos = FileOutputStream(classPath)</span><br><span class="line">                fos.write(code)</span><br><span class="line">                fos.close()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 处理完输入文件之后，要把输出给下一个任务</span></span><br><span class="line">    <span class="keyword">val</span> dest = outputProvider.getContentLocation(</span><br><span class="line">        directoryInput.name,</span><br><span class="line">        directoryInput.contentTypes, directoryInput.scopes,</span><br><span class="line">        Format.DIRECTORY</span><br><span class="line">    )</span><br><span class="line">    FileUtils.copyDirectory(directoryInput.file, dest)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>JarInput 不处理（参考<a target="_blank" rel="noopener" href="https://github.com/lijiankun24/Koala/blob/master/buildSrc/src/main/groovy/com/lijiankun24/koala/plugin/PreClass.groovy">koala - PreClass.groovy</a>）：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">input.jarInputs.each &#123; JarInput jarInput -&gt;</span><br><span class="line">    <span class="keyword">def</span> jarName = jarInput.name</span><br><span class="line">    <span class="keyword">def</span> md5Name = DigestUtils.md5Hex(jarInput.file.getAbsolutePath())</span><br><span class="line">    <span class="keyword">if</span> (jarName.endsWith(<span class="string">&quot;.jar&quot;</span>)) &#123;</span><br><span class="line">        jarName = jarName.substring(<span class="number">0</span>, jarName.length() - <span class="number">4</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> dest = transformInvocation.outputProvider.getContentLocation(jarName + md5Name,</span><br><span class="line">            jarInput.contentTypes, jarInput.scopes, Format.JAR)</span><br><span class="line"></span><br><span class="line">    FileUtils.copyFile(jarInput.file, dest)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<p>JarInput 处理ASM：<br>参考:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/chenenyu/Router/blob/master/gradle-plugin/src/main/groovy/com/chenenyu/router/RouterTransform.groovy">Router - RouterTransform.groovy</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/chenenyu/Router/blob/master/gradle-plugin/src/main/groovy/com/chenenyu/router/Scanner.groovy">Router - Scanner.groovy</a><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">handleJarInput</span><span class="params">(jarInput: <span class="type">JarInput</span>, outputProvider: <span class="type">TransformOutputProvider</span>)</span></span> &#123;</span><br><span class="line">    <span class="comment">//重名名输出文件,因为可能同名,会覆盖</span></span><br><span class="line">    <span class="keyword">var</span> jarName = jarInput.name</span><br><span class="line">    <span class="keyword">val</span> md5Name = DigestUtils.md5Hex(jarInput.file.absolutePath)</span><br><span class="line">    <span class="keyword">if</span> (jarName.endsWith(<span class="string">&quot;.jar&quot;</span>)) &#123;</span><br><span class="line">        jarName = jarName.substring(<span class="number">0</span>, jarName.length - <span class="number">4</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// &gt;&gt;&gt;&gt; 处理输入的jar文件中的class，输出到一个临时的jar文件</span></span><br><span class="line">    <span class="keyword">val</span> jarFile = JarFile(jarInput.file)</span><br><span class="line">    <span class="keyword">val</span> enumeration = jarFile.entries()</span><br><span class="line">    <span class="keyword">val</span> tmpFile = File(jarInput.file.parent + File.separator + <span class="string">&quot;classes_temp.jar&quot;</span>)</span><br><span class="line">    <span class="comment">// 避免上次的缓存被重复插入</span></span><br><span class="line">    <span class="keyword">if</span> (tmpFile.exists()) &#123;</span><br><span class="line">        tmpFile.delete()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">val</span> jarOutputStream = JarOutputStream(FileOutputStream(tmpFile))</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 用于保存</span></span><br><span class="line">    <span class="keyword">while</span> (enumeration.hasMoreElements()) &#123;</span><br><span class="line">        <span class="keyword">val</span> jarEntry = enumeration?.nextElement() ?: <span class="keyword">continue</span></span><br><span class="line">        <span class="keyword">val</span> entryName = jarEntry.name</span><br><span class="line">        <span class="keyword">val</span> zipEntry = ZipEntry(entryName)</span><br><span class="line">        <span class="keyword">val</span> inputStream = jarFile.getInputStream(jarEntry)</span><br><span class="line">        <span class="comment">// 插桩class</span></span><br><span class="line">        <span class="keyword">if</span> (entryName.endsWith(<span class="string">&quot;.class&quot;</span>) &amp;&amp; !entryName.startsWith(<span class="string">&quot;R\$&quot;</span>)</span><br><span class="line">            &amp;&amp; <span class="string">&quot;R.class&quot;</span> != entryName &amp;&amp; <span class="string">&quot;BuildConfig.class&quot;</span> != entryName</span><br><span class="line">        ) &#123;</span><br><span class="line">            <span class="comment">//class文件处理</span></span><br><span class="line">            println(<span class="string">&quot;----------- deal with jar class file &lt;&#x27; + <span class="variable">$entryName</span> + &#x27;&gt; -----------&quot;</span>)</span><br><span class="line">            jarOutputStream.putNextEntry(zipEntry)</span><br><span class="line">            <span class="keyword">val</span> classReader = ClassReader(inputStream)</span><br><span class="line">            <span class="keyword">val</span> classWriter = ClassWriter(classReader, ClassWriter.COMPUTE_MAXS)</span><br><span class="line">            <span class="keyword">val</span> cv = MyClassVisitor(classWriter)</span><br><span class="line">            classReader.accept(cv, ClassReader.EXPAND_FRAMES)</span><br><span class="line">            <span class="keyword">val</span> code = classWriter.toByteArray()</span><br><span class="line">            jarOutputStream.write(code)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            jarOutputStream.putNextEntry(zipEntry)</span><br><span class="line">            jarOutputStream.write(inputStream.readBytes())</span><br><span class="line">        &#125;</span><br><span class="line">        jarOutputStream.closeEntry()</span><br><span class="line">    &#125;</span><br><span class="line">    jarOutputStream.close()</span><br><span class="line">    jarFile.close()</span><br><span class="line">    <span class="comment">// &lt;&lt;&lt;&lt; 处理输入的jar文件中的class，输出到一个临时的jar文件</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// &gt;&gt;&gt;&gt; 处理过class的临时jar文件输出到目标位置</span></span><br><span class="line">    <span class="keyword">val</span> dest = outputProvider.getContentLocation(</span><br><span class="line">        jarName + md5Name,</span><br><span class="line">        jarInput.contentTypes, jarInput.scopes, Format.JAR</span><br><span class="line">    )</span><br><span class="line">    FileUtils.copyFile(tmpFile, dest)</span><br><span class="line">    tmpFile.delete()</span><br><span class="line">    <span class="comment">// &lt;&lt;&lt;&lt; 处理过class的临时jar文件输出到目标位置</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="Java-Agent和Instrument机制是什么？有什么用？大概如何使用？"><a href="#Java-Agent和Instrument机制是什么？有什么用？大概如何使用？" class="headerlink" title="Java Agent和Instrument机制是什么？有什么用？大概如何使用？"></a>Java Agent和Instrument机制是什么？有什么用？大概如何使用？</h1><p>JavaAgent使用指南</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/rickiyang/p/11368932.html">https://www.cnblogs.com/rickiyang/p/11368932.html</a></p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/6844903780916396039">【Android】函数插桩（Gradle + ASM）</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +368,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -319,7 +470,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -429,7 +580,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -549,7 +700,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -657,7 +808,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -863,7 +1014,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1024,7 +1175,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1147,7 +1298,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1277,7 +1428,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1578,133 +1729,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/" class="post-title-link" itemprop="url">句柄、直接指针</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-03-08 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-08T20:00:00+08:00">2018-03-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/句柄、直接指针/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="句柄是什么？"><a href="#句柄是什么？" class="headerlink" title="句柄是什么？"></a>句柄是什么？</h1><p>指针的指针。</p>
-<p>jvm中内存里的对象都有一个指针指向对象的开始地址，句柄就是指向对象的指针。</p>
-<h1 id="句柄解决了什么问题"><a href="#句柄解决了什么问题" class="headerlink" title="句柄解决了什么问题?"></a>句柄解决了什么问题?</h1><p>对实际的对象资源做了一层代理，屏蔽细节，避免了直接操控资源可能的危险。</p>
-<p>弄了句柄，对象实际位置在内存中可以随意变化，比如标记整理垃圾回收后对象被移动到其他地方。</p>
-<p>虚拟内存机制，可能会将已经载入内存的数据换到外存硬盘上，这样对象的地址就会变动，其他地方引用这块被换走的地址也要更新，如果使用这块数据的地方引用的是句柄，这样实际数据在内存的位置可以随意变化，使用数据的地方还是引用固定的地址，不用更新。</p>
-<p>Windows系统中有许多内核对象（这里的对象不完全等价于”面向对象程序设计”一词中的”对象”，虽然实质上还真差不多），比如打开的文件，创建的线程，程序的窗口，等等。这些重要的对象肯定不是4个字节或者8个字节足以完全描述的，他们拥有大量的属性。为了保存这样一个”对象”的状态，往往需要上百甚至上千字节的内存空间，那么怎么在程序间或程序内部的子过程（函数）之间传递这些数据呢？拖着这成百上千的字节拷贝来拷贝去吗？显然会浪费效率。那么怎么办？当然传递这些对象的首地址是一个办法，但这至少有两个缺点：</p>
-<ol>
-<li><p>暴露了内核对象本身，使得程序（而不是操作系统内核）也可以任意地修改对象地内部状态（首地址都知道了，还有什么不能改的？），这显然是操作系统内核所不允许的；</p>
-</li>
-<li><p>操作系统有定期整理内存的责任，如果一些内存整理过一次后，对象被搬走了怎么办？</p>
-</li>
-</ol>
-<p>所以，Windows操作系统就采用进一步的间接（可以理解为进一步的抽象的过程）：在进程的地址空间中设一张表，表里头专门保存一些编号和由这个编号对应一个地址，而由那个地址去引用实际的对象，这个编号跟那个地址在数值上没有任何规律性的联系，纯粹是个映射而已。</p>
-<p>在Windows系统中，这个编号就叫做”句柄”。</p>
-<p>参考：<br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/klb561/p/10555571.html">句柄的概念</a></p>
-<h1 id="为什么叫句柄这个名字？"><a href="#为什么叫句柄这个名字？" class="headerlink" title="为什么叫句柄这个名字？"></a>为什么叫句柄这个名字？</h1><p>从名字上说，handle是指中间媒介，例如门把手是door handle，刀柄是knife handle。</p>
-<p>所以文件句柄file handle以即其他资源句柄，也是这个中间媒介的意思，通过这个媒介操作资源。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/27656256/answer/943130123">句柄是什么？ - 黄兢成的回答 - 知乎 解释句柄这个词语的表面含义</a></li>
-</ul>
-<h1 id="JVM对象访问定位"><a href="#JVM对象访问定位" class="headerlink" title="JVM对象访问定位"></a>JVM对象访问定位</h1><p>JVM通过栈上的reference类型数据来操作堆上的具体对象。</p>
-<p>由于reference数据只是规定了一个指向对象的引用，没有定义如何去定位访问对象的具体位置。</p>
-<p>主流的实现方式有两种：</p>
-<ul>
-<li>句柄<br>  在堆中划分句柄池，reference存储对象的句柄地址，句柄包含对象实例数据和类型数据的各自具体地址信息。<ul>
-<li>好处：reference中的数据是稳定的句柄地址 对象被移动只会改变句柄中的信息 不会改变句柄的地址 reference不需要变化。</li>
-<li>坏处：增加了指针定位的开销。</li>
-</ul>
-</li>
-<li>直接指针<br>  栈上reference类型数据槽中直接存储堆对象的地址。<ul>
-<li>好处：直接访问对象 减少指针定位开销。</li>
-<li>坏处：当对象内存地址发生变化 reference中数据也需要调整。</li>
-</ul>
-</li>
-</ul>
-<p>参考：</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》 2.3.3 对象的访问定位 48页</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1776,7 +1800,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">116</span>
+          <span class="site-state-item-count">117</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

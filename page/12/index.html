@@ -186,6 +186,111 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/" class="post-title-link" itemprop="url">TLAB（线程本地分配缓存 ）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-12 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-12T20:00:00+08:00">2018-01-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/TLAB（线程本地分配缓存 ）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="TLAB全称"><a href="#TLAB全称" class="headerlink" title="TLAB全称"></a>TLAB全称</h1><p>Thread Local Allocation Buffer</p>
+<p>线程本地分配缓存</p>
+<h1 id="TLAB作用"><a href="#TLAB作用" class="headerlink" title="TLAB作用"></a>TLAB作用</h1><p>线程私有的内存分配区域，默认占Eden区1%，是为了避免多线程间在堆上分配内存时发生指针碰撞而降低性能。</p>
+<p>Java中很多对象都是小对象，并且即用即丢，小对象分配在TLAB上，没有锁的开销，效率比分配在堆上要高。</p>
+<h1 id="Java对象分配的过程"><a href="#Java对象分配的过程" class="headerlink" title="Java对象分配的过程"></a>Java对象分配的过程</h1><ol>
+<li>编译器通过逃逸分析，确定对象是在栈上分配还是在堆上分配。如果是在堆上分配，则进入选项2.</li>
+<li>如果tlab_top + size &lt;= tlab_end，则在在TLAB上直接分配对象并增加tlab_top 的值，如果现有的TLAB不足以存放当前对象则3.</li>
+<li>重新申请一个TLAB，并再次尝试存放当前对象。如果放不下，则4.</li>
+<li>在Eden区加锁（这个区是多线程共享的），如果eden_top + size &lt;= eden_end则将对象存放在Eden区，增加eden_top 的值，如果Eden区不足以存放，则5.</li>
+<li>执行一次Young GC（minor collection）。</li>
+<li>经过Young GC之后，如果Eden区任然不足以存放当前对象，则直接分配到老年代。</li>
+</ol>
+<p>对象不在堆上分配主要的原因还是堆是共享的，在堆上分配有锁的开销。无论是TLAB还是栈都是线程私有的，私有即避免了竞争（当然也可能产生额外的问题例如可见性问题），这是典型的用空间换效率的做法。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/yangzl2008/java/article/details/43202969">Java中的逃逸分析和TLAB以及Java对象分配</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8be816cbb5ed">浅析java中的TLAB
+</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +322,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -458,7 +563,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -668,7 +773,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -865,7 +970,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -981,7 +1086,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1080,7 +1185,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 15:57:49" itemprop="dateModified" datetime="2021-08-26T15:57:49+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:00:38" itemprop="dateModified" datetime="2021-08-26T16:00:38+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1216,7 +1321,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">116</span>
+          <span class="site-state-item-count">117</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
