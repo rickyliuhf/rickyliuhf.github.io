@@ -1097,6 +1097,61 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.174.地下城游戏（困难）</title>
+    <url>/LeetCode/LeetCode.174.%E5%9C%B0%E4%B8%8B%E5%9F%8E%E6%B8%B8%E6%88%8F%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/dungeon-game/">LeetCode.174.地下城游戏（困难）</a></p>
+<span id="more"></span>
+
+<p>一些恶魔抓住了公主（P）并将她关在了地下城的右下角。地下城是由 M x N 个房间组成的二维网格。我们英勇的骑士（K）最初被安置在左上角的房间里，他必须穿过地下城并通过对抗恶魔来拯救公主。</p>
+<p>骑士的初始健康点数为一个正整数。如果他的健康点数在某一时刻降至 0 或以下，他会立即死亡。</p>
+<p>有些房间由恶魔守卫，因此骑士在进入这些房间时会失去健康点数（若房间里的值为负整数，则表示骑士将损失健康点数）；其他房间要么是空的（房间里的值为 0），要么包含增加骑士健康点数的魔法球（若房间里的值为正整数，则表示骑士将增加健康点数）。</p>
+<p>为了尽快到达公主，骑士决定每次只向右或向下移动一步。</p>
+<p>编写一个函数来计算确保骑士能够拯救到公主所需的最低初始健康点数。</p>
+<p>例如，考虑到如下布局的地下城，如果骑士遵循最佳路径 右 -&gt; 右 -&gt; 下 -&gt; 下，则骑士的初始健康点数至少为 7。</p>
+<p><strong>说明:</strong></p>
+<ul>
+<li>  骑士的健康点数没有上限。</li>
+<li>  任何房间都可能对骑士的健康点数造成威胁，也可能增加骑士的健康点数，包括骑士进入的左上角房间以及公主被监禁的右下角房间。</li>
+</ul>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>设<code>dungeon[i][j]</code>为地牢的第<code>i</code>行第<code>j</code>列的点数，可正、可负、可零。</p>
+<p>这题跟最小路径和不一样的点在于：<code>在任意格子，都要求骑士的 生命值x &gt;= 1</code>。</p>
+<p>如果骑士位于某行某列，则要求<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= 1</code>，不等式两侧的项换个位置也就是：<code>x &gt;= 1 &amp;&amp; x &gt;= 1 - dungeon[i][j]</code>，我们要求最低的生命值，可得<code>x = maxOf(1, 1 - dungeon[i][j])</code>。</p>
+<p>但是骑士是要在走动的，光看当前位置的点数，是不知道当前生命值够不够用，需要知道后面的路径需要的最少生命值是多少，假设是<code>y</code>，那么当前位置就要满足<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= y</code>，我们要求最低的生命值，可得<code>x = maxOf(1, y - dungeon[i][j])</code>。</p>
+<p>状态转移的过程就出来了，是要从末尾往开头递推，才能得出结果。</p>
+<p>从左上到右下的路径，有两种选择，往右走、往下走。不知道往哪走所需的最低初始健康点数最少，就两个都试一遍，取最小的。</p>
+<p><strong>边界条件</strong></p>
+<ul>
+<li>在最后一行，只能向右走，无法向下走。</li>
+<li>在最后一列，只能向下走，无法向右走。</li>
+</ul>
+<p><strong>回溯递归解法</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) <span class="keyword">return</span> maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>递归存在重叠子问题，例如<code>findMinHp(r + 1, c)</code>会执行多次，需要记录中间状态。</p>
+<p><strong>记忆化递归</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> memo = Array(m) &#123; IntArray(n) &#123; -<span class="number">1</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (memo[r][c] != -<span class="number">1</span>) <span class="keyword">return</span> memo[r][c]</span><br><span class="line">            <span class="keyword">val</span> result =  <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">            memo[r][c] = result</span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>自底向上的动态规划</strong></p>
+<p>记忆化递归已经给出了状态转移方程，需要注意的是要从最右下角开始往左上角递推，才能得到结果。</p>
+<p>设<code>dp[i][j]</code>表示骑士位于第<code>i</code>行第<code>j</code>列格子时要达到公主处所需要的最小生命值。</p>
+<p><strong>状态转移方程</strong></p>
+<ul>
+<li>最右下角：<code>dp[i][j] = maxOf(1, 1 - dungeon[m - 1][n - 1])</code>。</li>
+<li>最后一列：<code>dp[i][j] = maxOf(1, dp[r + 1][c] - dungeon[r][c])</code>。</li>
+<li>最后一行：<code>dp[i][j] = maxOf(1, dp[r][c + 1] - dungeon[r][c])</code>。</li>
+<li>其他行和列：<code>dp[i][j] = maxOf(1, minOf(dp[r][c + 1], dp[r + 1][c]) - dungeon[r][c])</code>。</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        dp[m - <span class="number">1</span>][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[m - <span class="number">1</span>][n - <span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[i][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, dp[i + <span class="number">1</span>][n - <span class="number">1</span>] - dungeon[i][n - <span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[m - <span class="number">1</span>][i] = maxOf(<span class="number">1</span>, dp[m - <span class="number">1</span>][i + <span class="number">1</span>] - dungeon[m - <span class="number">1</span>][i])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">                dp[r][c] = maxOf(<span class="number">1</span>, minOf(dp[r][c + <span class="number">1</span>], dp[r + <span class="number">1</span>][c]) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>动态规划</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.188.买卖股票的最佳时机 IV（困难）</title>
     <url>/LeetCode/LeetCode.188.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%20IV%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv/">LeetCode.188.买卖股票的最佳时机 IV（困难）</a></p>
@@ -1163,61 +1218,6 @@
 <li>时间复杂度<code>O(n * k)</code>。</li>
 <li><code>k &gt;= n / 2</code>时，空间复杂度<code>O(1)</code>；<code>k &lt; n / 2</code>时，空间复杂度<code>O(n * k)</code>。</li>
 </ul>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>动态规划</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.174.地下城游戏（困难）</title>
-    <url>/LeetCode/LeetCode.174.%E5%9C%B0%E4%B8%8B%E5%9F%8E%E6%B8%B8%E6%88%8F%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/dungeon-game/">LeetCode.174.地下城游戏（困难）</a></p>
-<span id="more"></span>
-
-<p>一些恶魔抓住了公主（P）并将她关在了地下城的右下角。地下城是由 M x N 个房间组成的二维网格。我们英勇的骑士（K）最初被安置在左上角的房间里，他必须穿过地下城并通过对抗恶魔来拯救公主。</p>
-<p>骑士的初始健康点数为一个正整数。如果他的健康点数在某一时刻降至 0 或以下，他会立即死亡。</p>
-<p>有些房间由恶魔守卫，因此骑士在进入这些房间时会失去健康点数（若房间里的值为负整数，则表示骑士将损失健康点数）；其他房间要么是空的（房间里的值为 0），要么包含增加骑士健康点数的魔法球（若房间里的值为正整数，则表示骑士将增加健康点数）。</p>
-<p>为了尽快到达公主，骑士决定每次只向右或向下移动一步。</p>
-<p>编写一个函数来计算确保骑士能够拯救到公主所需的最低初始健康点数。</p>
-<p>例如，考虑到如下布局的地下城，如果骑士遵循最佳路径 右 -&gt; 右 -&gt; 下 -&gt; 下，则骑士的初始健康点数至少为 7。</p>
-<p><strong>说明:</strong></p>
-<ul>
-<li>  骑士的健康点数没有上限。</li>
-<li>  任何房间都可能对骑士的健康点数造成威胁，也可能增加骑士的健康点数，包括骑士进入的左上角房间以及公主被监禁的右下角房间。</li>
-</ul>
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>设<code>dungeon[i][j]</code>为地牢的第<code>i</code>行第<code>j</code>列的点数，可正、可负、可零。</p>
-<p>这题跟最小路径和不一样的点在于：<code>在任意格子，都要求骑士的 生命值x &gt;= 1</code>。</p>
-<p>如果骑士位于某行某列，则要求<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= 1</code>，不等式两侧的项换个位置也就是：<code>x &gt;= 1 &amp;&amp; x &gt;= 1 - dungeon[i][j]</code>，我们要求最低的生命值，可得<code>x = maxOf(1, 1 - dungeon[i][j])</code>。</p>
-<p>但是骑士是要在走动的，光看当前位置的点数，是不知道当前生命值够不够用，需要知道后面的路径需要的最少生命值是多少，假设是<code>y</code>，那么当前位置就要满足<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= y</code>，我们要求最低的生命值，可得<code>x = maxOf(1, y - dungeon[i][j])</code>。</p>
-<p>状态转移的过程就出来了，是要从末尾往开头递推，才能得出结果。</p>
-<p>从左上到右下的路径，有两种选择，往右走、往下走。不知道往哪走所需的最低初始健康点数最少，就两个都试一遍，取最小的。</p>
-<p><strong>边界条件</strong></p>
-<ul>
-<li>在最后一行，只能向右走，无法向下走。</li>
-<li>在最后一列，只能向下走，无法向右走。</li>
-</ul>
-<p><strong>回溯递归解法</strong></p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) <span class="keyword">return</span> maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>递归存在重叠子问题，例如<code>findMinHp(r + 1, c)</code>会执行多次，需要记录中间状态。</p>
-<p><strong>记忆化递归</strong></p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> memo = Array(m) &#123; IntArray(n) &#123; -<span class="number">1</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (memo[r][c] != -<span class="number">1</span>) <span class="keyword">return</span> memo[r][c]</span><br><span class="line">            <span class="keyword">val</span> result =  <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">            memo[r][c] = result</span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>自底向上的动态规划</strong></p>
-<p>记忆化递归已经给出了状态转移方程，需要注意的是要从最右下角开始往左上角递推，才能得到结果。</p>
-<p>设<code>dp[i][j]</code>表示骑士位于第<code>i</code>行第<code>j</code>列格子时要达到公主处所需要的最小生命值。</p>
-<p><strong>状态转移方程</strong></p>
-<ul>
-<li>最右下角：<code>dp[i][j] = maxOf(1, 1 - dungeon[m - 1][n - 1])</code>。</li>
-<li>最后一列：<code>dp[i][j] = maxOf(1, dp[r + 1][c] - dungeon[r][c])</code>。</li>
-<li>最后一行：<code>dp[i][j] = maxOf(1, dp[r][c + 1] - dungeon[r][c])</code>。</li>
-<li>其他行和列：<code>dp[i][j] = maxOf(1, minOf(dp[r][c + 1], dp[r + 1][c]) - dungeon[r][c])</code>。</li>
-</ul>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        dp[m - <span class="number">1</span>][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[m - <span class="number">1</span>][n - <span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[i][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, dp[i + <span class="number">1</span>][n - <span class="number">1</span>] - dungeon[i][n - <span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[m - <span class="number">1</span>][i] = maxOf(<span class="number">1</span>, dp[m - <span class="number">1</span>][i + <span class="number">1</span>] - dungeon[m - <span class="number">1</span>][i])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">                dp[r][c] = maxOf(<span class="number">1</span>, minOf(dp[r][c + <span class="number">1</span>], dp[r + <span class="number">1</span>][c]) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>LeetCode</category>
@@ -3813,59 +3813,6 @@
         <tag>深度优先搜索</tag>
         <tag>回溯</tag>
         <tag>字典树</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.214.最短回文串（困难）</title>
-    <url>/algorithm/LeetCode.214.%E6%9C%80%E7%9F%AD%E5%9B%9E%E6%96%87%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/shortest-palindrome/">LeetCode.214.最短回文串（困难）</a></p>
-<p>给定一个字符串  _<strong>s</strong>_，你可以通过在字符串前面添加字符将其转换为回文串。找到并返回可以用这种方式转换的最短回文串。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>回文串的特点是左右两端字符相同，要在<code>s</code>前面添加字符串使得新字符串是回文串，那就把<code>s</code>的倒置字符串放在前面就可以形成回文了。</p>
-<h3 id="s的倒置字符串添加在s前面会有什么问题？"><a href="#s的倒置字符串添加在s前面会有什么问题？" class="headerlink" title="s的倒置字符串添加在s前面会有什么问题？"></a>s的倒置字符串添加在s前面会有什么问题？</h3><p>这样添加还不是最短的回文。</p>
-<p>比如s是abbacd，添加dcabba到开头，形成dcabbaabbacd，可以发现abba是多余的，不用添加，dcabbacd是更短的回文串，只要添加dc就行了。</p>
-<h3 id="应该添加什么样的字符串才能获得最短回文？"><a href="#应该添加什么样的字符串才能获得最短回文？" class="headerlink" title="应该添加什么样的字符串才能获得最短回文？"></a>应该添加什么样的字符串才能获得最短回文？</h3><p>得找到abbacd的前缀和dcabba的后缀最长的重合的部分的长度，然后找到不重复的部分，添加到字符串前面。</p>
-<p>标准化描述：</p>
-<ul>
-<li>设<code>s&#39;</code>是<code>s</code>的倒置字符串。</li>
-<li>求<code>s</code>的前缀和<code>s&#39;</code>的后缀中相同部分最长的长度<code>x</code>。</li>
-<li>取<code>s</code>的子串<code>s[x, n - 1]</code>，倒置后添加到<code>s</code>前面，形成最短回文。</li>
-</ul>
-<h3 id="怎么寻找s和s的倒置字符串最长前后缀？"><a href="#怎么寻找s和s的倒置字符串最长前后缀？" class="headerlink" title="怎么寻找s和s的倒置字符串最长前后缀？"></a>怎么寻找s和s的倒置字符串最长前后缀？</h3><p>联想到kmp做字符串匹配时，要先求一个前缀函数，前缀函数<code>prefix[i]</code>表示<code>s[0, i]</code>中最长的公共前后缀的长度，只要求出前缀函数就可以求解题目。</p>
-<h3 id="前缀函数怎么求？"><a href="#前缀函数怎么求？" class="headerlink" title="前缀函数怎么求？"></a>前缀函数怎么求？</h3><p>一句话：让<code>s[0, n - 1]</code>匹配<code>s[1, n - 1]</code>。</p>
-<p>算法步骤：</p>
-<ul>
-<li>双指针<code>i</code>和<code>j</code>遍历<code>s</code>。</li>
-<li><code>i</code>从1开始，<code>j</code>从0开始。</li>
-<li>s匹配自己，字符能匹配上，双指针都前进。</li>
-<li>当前<code>s[i]</code>和<code>s[j]</code>不匹配，要把<code>j</code>往回退。<ul>
-<li><code>j</code>退到前一个位置（<code>j - 1</code>）的最长公共前后缀的前缀的下一个字符的位置。继续拿<code>s[j]</code>跟<code>s[i]</code>尝试匹配，如果能匹配的上，<code>prefix[i]</code>就求出来了。</li>
-<li>如果<code>j</code>一直回退，最坏也就是回退到0，因为<code>prefix[0] = 0</code>（一个字符不存在前后缀），没的退了，只能比较<code>s[i]</code>和<code>s[0]</code>，没匹配的话公共前后缀长度就是0。</li>
-</ul>
-</li>
-</ul>
-<h3 id="前缀函数应该针对哪个字符串求？"><a href="#前缀函数应该针对哪个字符串求？" class="headerlink" title="前缀函数应该针对哪个字符串求？"></a>前缀函数应该针对哪个字符串求？</h3><p>我们要求<code>s</code>的前缀和<code>s</code>的倒置字符串的后缀最长的公共部分。<br>所以弄一个新字符串 <code>s&#39; + s</code>。</p>
-<p><strong>这样存在一个问题</strong>，如果所有字符都相同，此时最长公共前后缀就是整个字符串<code>s&#39; + s</code>本身，这不是期望的结果，所以连接<code>s&#39;</code>和<code>s</code>时，中间隔一个用不到的字符，比如<code>#</code>。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">shortestPalindrome</span><span class="params">(s: <span class="type">String</span>)</span></span>: String &#123;</span><br><span class="line">        <span class="keyword">if</span> (s.isEmpty()) <span class="keyword">return</span> <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="comment">// 加#是为了防止出现全部重复的字符，这样最长公共前后缀的长度就不是期望的了</span></span><br><span class="line">        <span class="keyword">val</span> maxLength = (s + <span class="string">&quot;#&quot;</span> + s.reversed()).prefixArray().last()</span><br><span class="line">        <span class="keyword">return</span> s.substring(maxLength).reversed() + s</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> String.<span class="title">prefixArray</span><span class="params">()</span></span>: IntArray &#123;</span><br><span class="line">        <span class="keyword">val</span> s = <span class="keyword">this</span></span><br><span class="line">        <span class="keyword">val</span> n = length</span><br><span class="line">        <span class="keyword">val</span> prefix = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">var</span> j = prefix[i - <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; s[i] != s[j]) j = prefix[j - <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">if</span> (s[i] == s[j]) j++</span><br><span class="line">            prefix[i] = j</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> prefix</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><p>设字符串<code>s</code>长度为n。</p>
-<ul>
-<li>时间复杂度O(n)：求前缀函数最坏情况需要O(n + n) = O(n)时间；还要遍历整个<code>s&#39; + s</code>，有2n的长度，需要O(n)时间。</li>
-<li>空间复杂度O(n)：前缀函数占用O(n)空间。</li>
-</ul>
-<p>kmp时间复杂度推导可参考：</p>
-<ul>
-<li><a href="https://blog.csdn.net/niukai1768/article/details/79579709">KMP时间复杂度分析</a></li>
-<li><a href="https://segmentfault.com/q/1010000014560162">KMP算法的时间复杂度是如何计算的？</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>KMP</tag>
       </tags>
   </entry>
   <entry>

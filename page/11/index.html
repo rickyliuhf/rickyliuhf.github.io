@@ -186,133 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/" class="post-title-link" itemprop="url">句柄、直接指针</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-03-08 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-08T20:00:00+08:00">2018-03-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/句柄、直接指针/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="句柄是什么？"><a href="#句柄是什么？" class="headerlink" title="句柄是什么？"></a>句柄是什么？</h1><p>指针的指针。</p>
-<p>jvm中内存里的对象都有一个指针指向对象的开始地址，句柄就是指向对象的指针。</p>
-<h1 id="句柄解决了什么问题"><a href="#句柄解决了什么问题" class="headerlink" title="句柄解决了什么问题?"></a>句柄解决了什么问题?</h1><p>对实际的对象资源做了一层代理，屏蔽细节，避免了直接操控资源可能的危险。</p>
-<p>弄了句柄，对象实际位置在内存中可以随意变化，比如标记整理垃圾回收后对象被移动到其他地方。</p>
-<p>虚拟内存机制，可能会将已经载入内存的数据换到外存硬盘上，这样对象的地址就会变动，其他地方引用这块被换走的地址也要更新，如果使用这块数据的地方引用的是句柄，这样实际数据在内存的位置可以随意变化，使用数据的地方还是引用固定的地址，不用更新。</p>
-<p>Windows系统中有许多内核对象（这里的对象不完全等价于”面向对象程序设计”一词中的”对象”，虽然实质上还真差不多），比如打开的文件，创建的线程，程序的窗口，等等。这些重要的对象肯定不是4个字节或者8个字节足以完全描述的，他们拥有大量的属性。为了保存这样一个”对象”的状态，往往需要上百甚至上千字节的内存空间，那么怎么在程序间或程序内部的子过程（函数）之间传递这些数据呢？拖着这成百上千的字节拷贝来拷贝去吗？显然会浪费效率。那么怎么办？当然传递这些对象的首地址是一个办法，但这至少有两个缺点：</p>
-<ol>
-<li><p>暴露了内核对象本身，使得程序（而不是操作系统内核）也可以任意地修改对象地内部状态（首地址都知道了，还有什么不能改的？），这显然是操作系统内核所不允许的；</p>
-</li>
-<li><p>操作系统有定期整理内存的责任，如果一些内存整理过一次后，对象被搬走了怎么办？</p>
-</li>
-</ol>
-<p>所以，Windows操作系统就采用进一步的间接（可以理解为进一步的抽象的过程）：在进程的地址空间中设一张表，表里头专门保存一些编号和由这个编号对应一个地址，而由那个地址去引用实际的对象，这个编号跟那个地址在数值上没有任何规律性的联系，纯粹是个映射而已。</p>
-<p>在Windows系统中，这个编号就叫做”句柄”。</p>
-<p>参考：<br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/klb561/p/10555571.html">句柄的概念</a></p>
-<h1 id="为什么叫句柄这个名字？"><a href="#为什么叫句柄这个名字？" class="headerlink" title="为什么叫句柄这个名字？"></a>为什么叫句柄这个名字？</h1><p>从名字上说，handle是指中间媒介，例如门把手是door handle，刀柄是knife handle。</p>
-<p>所以文件句柄file handle以即其他资源句柄，也是这个中间媒介的意思，通过这个媒介操作资源。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/27656256/answer/943130123">句柄是什么？ - 黄兢成的回答 - 知乎 解释句柄这个词语的表面含义</a></li>
-</ul>
-<h1 id="JVM对象访问定位"><a href="#JVM对象访问定位" class="headerlink" title="JVM对象访问定位"></a>JVM对象访问定位</h1><p>JVM通过栈上的reference类型数据来操作堆上的具体对象。</p>
-<p>由于reference数据只是规定了一个指向对象的引用，没有定义如何去定位访问对象的具体位置。</p>
-<p>主流的实现方式有两种：</p>
-<ul>
-<li>句柄<br>  在堆中划分句柄池，reference存储对象的句柄地址，句柄包含对象实例数据和类型数据的各自具体地址信息。<ul>
-<li>好处：reference中的数据是稳定的句柄地址 对象被移动只会改变句柄中的信息 不会改变句柄的地址 reference不需要变化。</li>
-<li>坏处：增加了指针定位的开销。</li>
-</ul>
-</li>
-<li>直接指针<br>  栈上reference类型数据槽中直接存储堆对象的地址。<ul>
-<li>好处：直接访问对象 减少指针定位开销。</li>
-<li>坏处：当对象内存地址发生变化 reference中数据也需要调整。</li>
-</ul>
-</li>
-</ul>
-<p>参考：</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》 2.3.3 对象的访问定位 48页</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -344,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -483,7 +356,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -625,7 +498,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -840,7 +713,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1050,7 +923,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1178,7 +1051,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1281,7 +1154,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1384,7 +1257,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1531,7 +1404,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 22:13:02" itemprop="dateModified" datetime="2021-08-26T22:13:02+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1590,6 +1463,111 @@
 <p>参考：</p>
 <ul>
 <li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a9ff882337d4">Java内存分配与回收机制</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/" class="post-title-link" itemprop="url">TLAB（线程本地分配缓存 ）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-12 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-12T20:00:00+08:00">2018-01-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 22:14:17" itemprop="dateModified" datetime="2021-08-26T22:14:17+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/TLAB（线程本地分配缓存 ）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="TLAB全称"><a href="#TLAB全称" class="headerlink" title="TLAB全称"></a>TLAB全称</h1><p>Thread Local Allocation Buffer</p>
+<p>线程本地分配缓存</p>
+<h1 id="TLAB作用"><a href="#TLAB作用" class="headerlink" title="TLAB作用"></a>TLAB作用</h1><p>线程私有的内存分配区域，默认占Eden区1%，是为了避免多线程间在堆上分配内存时发生指针碰撞而降低性能。</p>
+<p>Java中很多对象都是小对象，并且即用即丢，小对象分配在TLAB上，没有锁的开销，效率比分配在堆上要高。</p>
+<h1 id="Java对象分配的过程"><a href="#Java对象分配的过程" class="headerlink" title="Java对象分配的过程"></a>Java对象分配的过程</h1><ol>
+<li>编译器通过逃逸分析，确定对象是在栈上分配还是在堆上分配。如果是在堆上分配，则进入选项2.</li>
+<li>如果tlab_top + size &lt;= tlab_end，则在在TLAB上直接分配对象并增加tlab_top 的值，如果现有的TLAB不足以存放当前对象则3.</li>
+<li>重新申请一个TLAB，并再次尝试存放当前对象。如果放不下，则4.</li>
+<li>在Eden区加锁（这个区是多线程共享的），如果eden_top + size &lt;= eden_end则将对象存放在Eden区，增加eden_top 的值，如果Eden区不足以存放，则5.</li>
+<li>执行一次Young GC（minor collection）。</li>
+<li>经过Young GC之后，如果Eden区任然不足以存放当前对象，则直接分配到老年代。</li>
+</ol>
+<p>对象不在堆上分配主要的原因还是堆是共享的，在堆上分配有锁的开销。无论是TLAB还是栈都是线程私有的，私有即避免了竞争（当然也可能产生额外的问题例如可见性问题），这是典型的用空间换效率的做法。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/yangzl2008/java/article/details/43202969">Java中的逃逸分析和TLAB以及Java对象分配</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8be816cbb5ed">浅析java中的TLAB
+</a></li>
 </ul>
 
       
@@ -1677,7 +1655,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">128</span>
+          <span class="site-state-item-count">127</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
