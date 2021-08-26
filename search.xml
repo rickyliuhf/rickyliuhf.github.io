@@ -3963,7 +3963,7 @@
       </tags>
   </entry>
   <entry>
-    <title>Java并发-wait()、notify()、notifyAll()</title>
+    <title>Java并发-条件变量、wait()与notify()、await()与signal()</title>
     <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/</url>
     <content><![CDATA[<h1 id="Object-wait-为什么要配合while使用？"><a href="#Object-wait-为什么要配合while使用？" class="headerlink" title="Object.wait()为什么要配合while使用？"></a>Object.wait()为什么要配合while使用？</h1><p>wait之前一般都是要判断某个条件成立才会wait，这个判断条件需要写成while：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">while (check pass) &#123;</span><br><span class="line">	wait();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -4003,6 +4003,9 @@
         <tag>Object.wait()</tag>
         <tag>Object.notify()</tag>
         <tag>Object.notifyAll()</tag>
+        <tag>Condition.await()</tag>
+        <tag>Condition.signal()</tag>
+        <tag>虚假唤醒</tag>
       </tags>
   </entry>
   <entry>
