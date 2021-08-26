@@ -924,10 +924,9 @@
 </ul>
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
       </tags>
   </entry>
@@ -1026,10 +1025,9 @@
 </blockquote>
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>二分查找</tag>
       </tags>
@@ -1150,10 +1148,9 @@
 <figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        dp[m - <span class="number">1</span>][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[m - <span class="number">1</span>][n - <span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[i][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, dp[i + <span class="number">1</span>][n - <span class="number">1</span>] - dungeon[i][n - <span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[m - <span class="number">1</span>][i] = maxOf(<span class="number">1</span>, dp[m - <span class="number">1</span>][i + <span class="number">1</span>] - dungeon[m - <span class="number">1</span>][i])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">                dp[r][c] = maxOf(<span class="number">1</span>, minOf(dp[r][c + <span class="number">1</span>], dp[r + <span class="number">1</span>][c]) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
       </tags>
@@ -3713,10 +3710,9 @@
 </ul>
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>算法</tag>
         <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
       </tags>
