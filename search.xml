@@ -4417,6 +4417,86 @@
       </tags>
   </entry>
   <entry>
+    <title>Java并发-线程池</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/</url>
+    <content><![CDATA[<h1 id="为什么要使用线程池？"><a href="#为什么要使用线程池？" class="headerlink" title="为什么要使用线程池？"></a>为什么要使用线程池？</h1><ol>
+<li> 线程的创建和销毁是消耗性能的，如果频繁的开线程执行任务，可以考虑复用已启动的线程，避免无谓的性能开销，提高系统整体吞吐量</li>
+<li> 对任务异步调度进行了抽象，方便统一控制和测试</li>
+</ol>
+<h1 id="线程池的几个参数的作用分别是什么？"><a href="#线程池的几个参数的作用分别是什么？" class="headerlink" title="线程池的几个参数的作用分别是什么？"></a>线程池的几个参数的作用分别是什么？</h1><p>线程池是ThreadPoolExecutor类，构造函数的参数如下：</p>
+<ol>
+<li> int corePoolSize：核心线程数量，除非手动shutdown否则核心线程一直运行</li>
+<li> int maximumPoolSize：最大线程数量，最大线程数减去核心线程数的线程为非核心线程</li>
+<li> long keepAliveTime：非核心线程空闲时的存活时间</li>
+<li> TimeUnit unit：非核心线程空闲时的存活时间单位</li>
+<li> BlockingQueue<Runnable> workQueue：存放任务的工作队列，核心线程全都在执行任务时，没法执行新的任务了，新任务就存放在这里</li>
+<li> ThreadFactory threadFactory：线程创建的工厂，可以给线程设置名字，方便排查问题</li>
+<li> RejectedExecutionHandler handler：存放任务的阻塞队列存不下新的任务时的拒绝策略，做限流保护</li>
+</ol>
+<h1 id="任务拒绝策略有哪些？"><a href="#任务拒绝策略有哪些？" class="headerlink" title="任务拒绝策略有哪些？"></a>任务拒绝策略有哪些？</h1><p>AbortPolicy：抛出一个异常，默认的</p>
+<p>DiscardPolicy：直接丢弃任务</p>
+<p>DiscardOldestPolicy：丢弃队列里最老的任务，将当前这个任务继续提交给线程池）</p>
+<p>CallerRunsPolicy：交给线程池调用所在的线程进行处理</p>
+<h1 id="线程池有哪些工作队列，分别什么场景使用？"><a href="#线程池有哪些工作队列，分别什么场景使用？" class="headerlink" title="线程池有哪些工作队列，分别什么场景使用？"></a>线程池有哪些工作队列，分别什么场景使用？</h1><p>主要三种：无界队列、有界队列、同步移交队列</p>
+<h2 id="无界队列"><a href="#无界队列" class="headerlink" title="无界队列"></a>无界队列</h2><p>LinkedBlockingQueue，队列大小无限。</p>
+<p>Executors.newFixedThreadPool 采用就是 LinkedBlockingQueue。</p>
+<p>当某些任务耗时较长时，可能会导致队列中堆积存储大量任务，进而导致内存溢出。</p>
+<h2 id="有界队列"><a href="#有界队列" class="headerlink" title="有界队列"></a>有界队列</h2><ul>
+<li>ArrayBlockingQueue</li>
+<li>有界的LinkedBlockingQueue</li>
+<li>支持设置优先级的PriorityBlockingQueue</li>
+</ul>
+<p>有界队列的大小要和线程池大小配合，线程池比有界队列大时可以减少内存消耗、降低CPU使用率和上下文切换，但会限制吞吐量。</p>
+<h2 id="同步移交队"><a href="#同步移交队" class="headerlink" title="同步移交队"></a>同步移交队</h2><p>SynchronousQueue</p>
+<p>其并不真正存储任务，当一个放入任务到队列中必须同时有一个线程正在等待取任务，无限数量的线程池可以使用队列，这样每次提交任务都会立刻执行。</p>
+<h2 id="LinkedTransferQueue"><a href="#LinkedTransferQueue" class="headerlink" title="LinkedTransferQueue"></a>LinkedTransferQueue</h2><p>LinkedTransferQueue 是 SynchronousQueue 和 LinkedBlockingQueue 的合体，性能比 LinkedBlockingQueue 更高（没有锁操作），比 SynchronousQueue能存储更多的元素。</p>
+<p>当 put 时，如果有等待的线程，就直接将元素 “交给” 等待者， 否则直接进入队列。</p>
+<p>put 和 transfer 方法的区别是 put 是立即返回的， transfer 是阻塞等待消费者拿到数据才返回。transfer方法和 SynchronousQueue的 put 方法类似。</p>
+<h1 id="往线程池里提交一个任务会发生什么？"><a href="#往线程池里提交一个任务会发生什么？" class="headerlink" title="往线程池里提交一个任务会发生什么？"></a>往线程池里提交一个任务会发生什么？</h1><p>线程池的核心接口是Executor，里面只有一个execute(Runnable)方法，ExecutorService接口继承了Executor，提供了submit、shutdown、invokeAll、invokeyAny等方法。</p>
+<p>提交任务有execute和submit两种方式，execute只能提交无返回值的Runnable，submit可以提交有返回值的Callable和无返回值的Runnable，submit方法会新建一个FutureTask封装传入的Callback和Runnable，Runnable会被适配为Callback对象，FutureTask是集成Runnable的，最终还是执行execute(Runnable)，FutureTask内部只处理Callable</p>
+<p>execute(Runnable)里的逻辑：</p>
+<p>如果运行的线程数少于corePoolSize，则创建新线程执行任务。</p>
+<p>如果运行的线程数大于corePoolSize，则将新任务加入工作队列，而不添加新的线程，核心线程执行完一个任务就从工作队列中取任务继续执行。</p>
+<p>如果队列已满无法再加入，则创建新的线程执行，一直到线程总数超过maximumPoolSize时，对新任务执行拒绝策略。</p>
+<p>execute里addWorker(null, false);，传递空任务，代表新建线程，不为空表示新建线程并添加第一个任务</p>
+<p>submit任务后，任务内抛出的异常会拦截，通过Future获取异常对象，通过execute执行的任务，抛出的异常原封不动的向上抛。</p>
+<h1 id="线程池的大小应该设置多大？"><a href="#线程池的大小应该设置多大？" class="headerlink" title="线程池的大小应该设置多大？"></a>线程池的大小应该设置多大？</h1><p>任务分三类：</p>
+<ol>
+<li> CPU计算密集型</li>
+<li> IO密集型</li>
+<li> 计算和IO混合型</li>
+</ol>
+<p>CPU计算密集型任务大部分时间用来做计算逻辑，消耗CPU资源，这种任务同时执行的数量应该跟CPU数量相等。因为任务同时执行的数量少于CPU数量的话，明明有CPU空闲，任务却得不到执行，就浪费资源了，系统整体吞吐量低；任务同时执行的数量多于CPU数量的话，由于所有的CPU都满载了，要让CPU分时间片给各个任务才能保证多出的人得到执行，而切换任务是有成本的，要保存恢复任务（线程）的上下文环境。</p>
+<p>CPU密集型任务的线程池大小可以设置为CPU数量 + 1，额外多分配一个线程是因为其他线程偶尔会因为故障或其他原因暂停运行了，额外的一个线程可以确保CPU有任务执行不会被浪费。</p>
+<p>IO密集型任务，多数线程处于阻塞状态等待IO完成，让出CPU，不消耗CPU资源，故而应该让线程池多处理一些任务。线程池大小一般设置为 2 * CPU数量 + 1。</p>
+<p>假设有一个任务，计算需要C毫秒，IO操作需要等待W毫秒，整个任务的耗时就是C+W，一个CPU执行这个任务，CPU利用率U=C/(C+W)，很明显0 &lt;= U &lt;=1，也就是说一个CPU一个线程的情况下该线程的CPU利用为U，如果想要使得CPU利用率为1，那就多开几个线程，让几个线程的CPU利用率加起来等于1就完事了，那么总共就需要 1/U=(C+W)/C=1+W/C 个线程，1个CPU利用率100%需要1+W/C个线程，那么N个CPU利用率要100%就再乘以N就好了，所以总线程数就是N*(1+W/C)</p>
+<p>CPU计算密集型，可以认为没有IO操作，W=0，那么公式计算就会得到N</p>
+<p>IO密集型，C应该比较小，W比较大，那么W/C就会大于1，代入公式得到总线程数至少是2N，但是线程数也不能很大，每创建一个线程都会占用内存空间，线程数量过大会内存溢出，还要考虑硬盘和网络带宽等IO资源的限制，线程搞多了IO处理不了也没有意义，只会浪费内存。IO密集型线程池大小一般就设为2N+1，加1也是为了防止有线程因为某种原因故障或暂停了，额外的这个线程确保CPU不会浪费。</p>
+<p>线程等待的时间越长，需要越多的线程数；线程计算的时间越长，需要的线程数越少。</p>
+<p>任务的等待时间和计算时间可以通过基准测试工具测试出来，求一个近似值，再代入公式，即可估算出线程池大小。如果实际不同种类的任务等待时间和计算时间差异较大，只能用一个线程池的情况下，那就取平均值。</p>
+<p>也不是线程越多、CPU越多就可以无限提高运算速度，这是有上限的，可以用Amdahl（阿姆达尔）定律来衡量处理器并行运算之后效率的提升能力和上限，加速比 = 并行前系统耗时 / 并行后的系统耗时，加速比可以看作并行后提升了多少倍的执行速度。</p>
+<p>并行前系统耗时可以分为两个部分，一个是只能串行执行的部分，一个是可以并行执行的部分，设p为可以并行执行的部分的比例，必须串行执行的部分的比例就是1-p，设cpu数量（或线程数）为n，可并行部分执行的时间就是p/n，并行后的执行时间就是 1-p+p/n，并行前执行时间就是1了，加速比即1/(1-p+p/n)</p>
+<p>也可以设f为必须串行执行的部分的比例，可以并行执行的部分的比例就是1-f，设cpu数量（或线程数）为n，可并行部分执行的时间就是(1-f)/n，并行后的执行时间就是 f+(1-f)/n，加速比为1/(f+(1-f)/n)</p>
+<p>必须串行执行的部分越大，加速比就越小，这就是多核（多线程）加速的上限值。</p>
+<h1 id="线程池的非核心线程什么时候会被释放？"><a href="#线程池的非核心线程什么时候会被释放？" class="headerlink" title="线程池的非核心线程什么时候会被释放？"></a>线程池的非核心线程什么时候会被释放？</h1><p>非核心线程的保活借由BlockingQueue的带超时参数的poll()方法实现了，在keepAliveTime时间内没有从队列取到任务，就一直阻塞当前线程。</p>
+<h1 id="核心线程为什么一直可以运行，如何保证不销毁的？"><a href="#核心线程为什么一直可以运行，如何保证不销毁的？" class="headerlink" title="核心线程为什么一直可以运行，如何保证不销毁的？"></a>核心线程为什么一直可以运行，如何保证不销毁的？</h1><p>线程的运行没有停止就不会消耗。</p>
+<p>提交任务的执行路径：execute() -&gt; addWorker() -&gt; Worker.run() -&gt; runWorker() -&gt; getTask()</p>
+<p>核心线程会在getTask()中阻塞的从工作队列中获取任务，即如果工作队列中没有任务，就一直阻塞当前线程，非核心线程从队列取不到任务就立刻返回不阻塞线程，线程逻辑就会走完。</p>
+<p>通过判断当前线程池线程总数是否大于核心线程数来判断当前线程是否应该当做核心线程。</p>
+<h1 id="线程池有哪些坑？"><a href="#线程池有哪些坑？" class="headerlink" title="线程池有哪些坑？"></a>线程池有哪些坑？</h1><p>要注意ThreadLocal的value内存泄漏问题，要及时remove。</p>
+<h1 id="自定义线程池的场景"><a href="#自定义线程池的场景" class="headerlink" title="自定义线程池的场景"></a>自定义线程池的场景</h1><p>追溯调用线程池之前的堆栈，防止线程里报错不知道外面哪里调用的。</p>
+<h1 id="ForkJoinPool解决了什么问题？"><a href="#ForkJoinPool解决了什么问题？" class="headerlink" title="ForkJoinPool解决了什么问题？"></a>ForkJoinPool解决了什么问题？</h1><p>任务窃取机制，避免了取任务的时候多线程竞争一个队列，减少线程间竞争的等待开销，所以更快。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>线程池</tag>
+        <tag>ForkJoinPool</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Java并发-指令重排序、指令流水线</title>
     <url>/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/</url>
     <content><![CDATA[<h1 id="如何验证指令发生了重排序？"><a href="#如何验证指令发生了重排序？" class="headerlink" title="如何验证指令发生了重排序？"></a>如何验证指令发生了重排序？</h1><p>定义两个变量设置初始值，在两个线程中分别赋新的值，然后打印在赋值语句后面打印另外一个线程修改的变量。</p>
