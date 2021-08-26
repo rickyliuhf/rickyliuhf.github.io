@@ -27,8 +27,8 @@
 <meta property="og:site_name" content="Ricky.L的随笔">
 <meta property="og:description" content="题目LeetCode.509. 斐波那契数（简单） 斐波那契数，通常用 F(n) 表示，形成的序列称为 斐波那契数列 。该数列由 0 和 1 开始，后面的每一项数字都是前面两项数字的和。也就是：  F(0) &#x3D; 0，F(1) &#x3D; 1F(n) &#x3D; F(n - 1) + F(n - 2)，其中 n &gt; 1  给你 n ，请计算 F(n) 。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-08-10T13:42:15.000Z">
-<meta property="article:modified_time" content="2021-08-26T09:48:47.996Z">
+<meta property="article:published_time" content="2019-11-19T15:01:00.000Z">
+<meta property="article:modified_time" content="2021-08-26T09:49:43.961Z">
 <meta property="article:author" content="Ricky.L">
 <meta property="article:tag" content="动态规划">
 <meta property="article:tag" content="LeetCode简单">
@@ -213,14 +213,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-08-10 21:42:15" itemprop="dateCreated datePublished" datetime="2021-08-10T21:42:15+08:00">2021-08-10</time>
+              <time title="创建时间：2019-11-19 23:01:00" itemprop="dateCreated datePublished" datetime="2019-11-19T23:01:00+08:00">2019-11-19</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 17:48:47" itemprop="dateModified" datetime="2021-08-26T17:48:47+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 17:49:43" itemprop="dateModified" datetime="2021-08-26T17:49:43+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -257,7 +257,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/fibonacci-number">LeetCode.509. 斐波那契数（简单）</a></p>
+        <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/fibonacci-number">LeetCode.509. 斐波那契数（简单）</a></p>
 <p>斐波那契数，通常用 F(n) 表示，形成的序列称为 斐波那契数列 。该数列由 0 和 1 开始，后面的每一项数字都是前面两项数字的和。也就是：</p>
 <blockquote>
 <p>F(0) = 0，F(1) = 1<br>F(n) = F(n - 1) + F(n - 2)，其中 n &gt; 1</p>
@@ -265,13 +265,14 @@
 <p>给你 n ，请计算 F(n) 。</p>
 <span id="more"></span>
 
-<h3 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h3><h4 id="解法1：记忆化递归"><a href="#解法1：记忆化递归" class="headerlink" title="解法1：记忆化递归"></a>解法1：记忆化递归</h4><p>根据定义，可以直接写出递归式，最简单。<br>但是递归会有很多重叠子问题，重复计算很耗时。</p>
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><h3 id="解法1：记忆化递归"><a href="#解法1：记忆化递归" class="headerlink" title="解法1：记忆化递归"></a>解法1：记忆化递归</h3><p>根据定义，可以直接写出递归式，最简单。<br>但是递归会有很多重叠子问题，重复计算很耗时。</p>
 <p>可以想象出函数调用的递归树，F(n)总共调用次数就是树的节点数。<br>从F(n)到F(n - 1)一直分解到F(1)，这样逐一递减，一共n层递归树。<br>第i层(从上到下数)节点数为2的i次方，递归树总节点数为 2的0次方 + 2的1次方 + 2的2次方 + …… + 2的n - 1次方，等比数列求和为2的n次方。递归求解的时间复杂度为O(2^n)。</p>
 <p>把会重复使用到的计算结果记下来，每一项只计算一次，时间复杂度降低为线性。<br>自上而下做动态规划。</p>
 <figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">fib</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> memo = IntArray(n + <span class="number">1</span>) &#123; -<span class="number">1</span> &#125;</span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">f</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">            <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">            <span class="keyword">if</span> (memo[n] != -<span class="number">1</span>) <span class="keyword">return</span> memo[n]</span><br><span class="line">            memo[n] = f(n - <span class="number">1</span>) + f(n - <span class="number">2</span>)</span><br><span class="line">            <span class="keyword">return</span> memo[n]</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> f(n)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h4 id="解法2：自下而上的动态规划"><a href="#解法2：自下而上的动态规划" class="headerlink" title="解法2：自下而上的动态规划"></a>解法2：自下而上的动态规划</h4><p>直接根据公式递推</p>
+<h3 id="解法2：自下而上的动态规划"><a href="#解法2：自下而上的动态规划" class="headerlink" title="解法2：自下而上的动态规划"></a>解法2：自下而上的动态规划</h3><p>直接根据公式递推</p>
 <figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">fib</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">var</span> prepre = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> pre = <span class="number">1</span></span><br><span class="line">        <span class="keyword">var</span> cur = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">2.</span>.n) &#123;</span><br><span class="line">            cur = prepre + pre</span><br><span class="line">            prepre = pre</span><br><span class="line">            pre = cur</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cur</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
     </div>
 
     
@@ -307,12 +308,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/LeetCode/LeetCode.87.%E6%89%B0%E4%B9%B1%E5%AD%97%E7%AC%A6%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="prev" title="LeetCode.87.扰乱字符串（困难）">
-      <i class="fa fa-chevron-left"></i> LeetCode.87.扰乱字符串（困难）
+    <a href="/LeetCode/LeetCode.119.%E6%9D%A8%E8%BE%89%E4%B8%89%E8%A7%92%20II%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/" rel="prev" title="LeetCode.119.杨辉三角II（简单）">
+      <i class="fa fa-chevron-left"></i> LeetCode.119.杨辉三角II（简单）
     </a></div>
       <div class="post-nav-item">
-    <a href="/LeetCode/LeetCode.746.%E4%BD%BF%E7%94%A8%E6%9C%80%E5%B0%8F%E8%8A%B1%E8%B4%B9%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/" rel="next" title="LeetCode.746.使用最小花费爬楼梯（简单）">
-      LeetCode.746.使用最小花费爬楼梯（简单） <i class="fa fa-chevron-right"></i>
+    <a href="/LeetCode/LeetCode.154.%E5%AF%BB%E6%89%BE%E6%97%8B%E8%BD%AC%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E6%9C%80%E5%B0%8F%E5%80%BC%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="next" title="LeetCode.154.寻找旋转排序数组中的最小值 II（困难）">
+      LeetCode.154.寻找旋转排序数组中的最小值 II（困难） <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -379,7 +380,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">1.1.</span> <span class="nav-text">题解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E6%B3%951%EF%BC%9A%E8%AE%B0%E5%BF%86%E5%8C%96%E9%80%92%E5%BD%92"><span class="nav-number">1.1.1.</span> <span class="nav-text">解法1：记忆化递归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E6%B3%952%EF%BC%9A%E8%87%AA%E4%B8%8B%E8%80%8C%E4%B8%8A%E7%9A%84%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92"><span class="nav-number">1.1.2.</span> <span class="nav-text">解法2：自下而上的动态规划</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3"><span class="nav-number">1.1.</span> <span class="nav-text">题解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%B3%951%EF%BC%9A%E8%AE%B0%E5%BF%86%E5%8C%96%E9%80%92%E5%BD%92"><span class="nav-number">1.1.1.</span> <span class="nav-text">解法1：记忆化递归</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%B3%952%EF%BC%9A%E8%87%AA%E4%B8%8B%E8%80%8C%E4%B8%8A%E7%9A%84%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92"><span class="nav-number">1.1.2.</span> <span class="nav-text">解法2：自下而上的动态规划</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
