@@ -316,6 +316,27 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.118.杨辉三角（简单）</title>
+    <url>/LeetCode/LeetCode.118.%E6%9D%A8%E8%BE%89%E4%B8%89%E8%A7%92%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/pascals-triangle/">LeetCode.118.杨辉三角（简单）</a></p>
+<p>给定一个非负整数 _<code>numRows</code>，_生成「杨辉三角」的前 <em><code>numRows</code></em> 行。<br>在「杨辉三角」中，每个数是它左上方和右上方的数的和。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>递推公式题目已经给出，讨论一下边界情况，把问题具体定义就好了。</p>
+<h3 id="问题公式化"><a href="#问题公式化" class="headerlink" title="问题公式化"></a>问题公式化</h3><p>三角形每行用List存储，所有行也用List存储。<br>设<code>dp[r][c]</code>是杨辉三角第r行第c列的数。<br>把三角形左侧对齐可以观察到：<br>左上方的数就是<code>dp[r - 1][c - 1]</code>；<br>右上方的数就是<code>dp[r - 1][c]</code>；</p>
+<h2 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h2><p><code>dp[r][c] = dp[r - 1][c - 1] + dp[r - 1][c]</code></p>
+<h2 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h2><p>r = 0时，没有上方，但其实知道第一行是1，只有1个元素，直接添加到结果集就行了。<br>r &gt; 0后：<br>c = 0 处于第一列时，没有左上方，左上方当作0，只累加右上方，<code>dp[r][0] = dp[r - 1][c]</code>。<br>c = r 处于最后一列时，没有右上方，右上方当作0，只累加左上方，<code>dp[r][r] = dp[r - 1][r - 1]</code>。</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">generate</span><span class="params">(numRows: <span class="type">Int</span>)</span></span>: List&lt;List&lt;<span class="built_in">Int</span>&gt;&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> triangle = mutableListOf&lt;List&lt;<span class="built_in">Int</span>&gt;&gt;()</span><br><span class="line">        triangle.add(listOf(<span class="number">1</span>))</span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">1</span> until numRows) &#123;</span><br><span class="line">            <span class="keyword">val</span> rows = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> <span class="number">0.</span>.r) &#123;</span><br><span class="line">                <span class="keyword">when</span> &#123;</span><br><span class="line">                    <span class="comment">// 第一列，只能加右上方</span></span><br><span class="line">                    c == <span class="number">0</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][<span class="number">0</span>])</span><br><span class="line">                    <span class="comment">// 最后一列，只能加左上方</span></span><br><span class="line">                    c == r -&gt; rows.add(triangle[r - <span class="number">1</span>][r - <span class="number">1</span>])</span><br><span class="line">                    <span class="comment">// 中间列，左上方+右上方</span></span><br><span class="line">                    <span class="keyword">else</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][c - <span class="number">1</span>] + triangle[r - <span class="number">1</span>][c])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            triangle.add(rows)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> triangle</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode简单</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.1143.最长公共子序列（中等）</title>
     <url>/LeetCode/LeetCode.1143.%E6%9C%80%E9%95%BF%E5%85%AC%E5%85%B1%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/longest-common-subsequence/">LeetCode.1143.最长公共子序列（中等）</a></p>
@@ -363,27 +384,6 @@
       <tags>
         <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.118.杨辉三角（简单）</title>
-    <url>/LeetCode/LeetCode.118.%E6%9D%A8%E8%BE%89%E4%B8%89%E8%A7%92%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/pascals-triangle/">LeetCode.118.杨辉三角（简单）</a></p>
-<p>给定一个非负整数 _<code>numRows</code>，_生成「杨辉三角」的前 <em><code>numRows</code></em> 行。<br>在「杨辉三角」中，每个数是它左上方和右上方的数的和。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>递推公式题目已经给出，讨论一下边界情况，把问题具体定义就好了。</p>
-<h3 id="问题公式化"><a href="#问题公式化" class="headerlink" title="问题公式化"></a>问题公式化</h3><p>三角形每行用List存储，所有行也用List存储。<br>设<code>dp[r][c]</code>是杨辉三角第r行第c列的数。<br>把三角形左侧对齐可以观察到：<br>左上方的数就是<code>dp[r - 1][c - 1]</code>；<br>右上方的数就是<code>dp[r - 1][c]</code>；</p>
-<h2 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h2><p><code>dp[r][c] = dp[r - 1][c - 1] + dp[r - 1][c]</code></p>
-<h2 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h2><p>r = 0时，没有上方，但其实知道第一行是1，只有1个元素，直接添加到结果集就行了。<br>r &gt; 0后：<br>c = 0 处于第一列时，没有左上方，左上方当作0，只累加右上方，<code>dp[r][0] = dp[r - 1][c]</code>。<br>c = r 处于最后一列时，没有右上方，右上方当作0，只累加左上方，<code>dp[r][r] = dp[r - 1][r - 1]</code>。</p>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">generate</span><span class="params">(numRows: <span class="type">Int</span>)</span></span>: List&lt;List&lt;<span class="built_in">Int</span>&gt;&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> triangle = mutableListOf&lt;List&lt;<span class="built_in">Int</span>&gt;&gt;()</span><br><span class="line">        triangle.add(listOf(<span class="number">1</span>))</span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">1</span> until numRows) &#123;</span><br><span class="line">            <span class="keyword">val</span> rows = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> <span class="number">0.</span>.r) &#123;</span><br><span class="line">                <span class="keyword">when</span> &#123;</span><br><span class="line">                    <span class="comment">// 第一列，只能加右上方</span></span><br><span class="line">                    c == <span class="number">0</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][<span class="number">0</span>])</span><br><span class="line">                    <span class="comment">// 最后一列，只能加左上方</span></span><br><span class="line">                    c == r -&gt; rows.add(triangle[r - <span class="number">1</span>][r - <span class="number">1</span>])</span><br><span class="line">                    <span class="comment">// 中间列，左上方+右上方</span></span><br><span class="line">                    <span class="keyword">else</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][c - <span class="number">1</span>] + triangle[r - <span class="number">1</span>][c])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            triangle.add(rows)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> triangle</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode简单</tag>
       </tags>
   </entry>
   <entry>
@@ -3996,6 +3996,78 @@
         <tag>并发</tag>
         <tag>AQS</tag>
         <tag>Semaphore</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-ThreadLocal原理</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[<h1 id="ThreadLocal作用"><a href="#ThreadLocal作用" class="headerlink" title="ThreadLocal作用"></a>ThreadLocal作用</h1><p>让不同的线程持有相同数据类型的不同的数据副本。</p>
+<h1 id="ThreadLocal使用场景"><a href="#ThreadLocal使用场景" class="headerlink" title="ThreadLocal使用场景"></a>ThreadLocal使用场景</h1><p>如果一个对象在多线程之间通过加锁竞争的共享，会引起较大的性能损失，且对象占用内存不是很大的情况下，就应该考虑用ThreadLocal为每个线程分配单独的对象。比如多线程下产生随机数，可以写代码打印耗时，验证这一点。</p>
+<h1 id="ThreadLocal实现原理简述"><a href="#ThreadLocal实现原理简述" class="headerlink" title="ThreadLocal实现原理简述"></a>ThreadLocal实现原理简述</h1><p>set(value)</p>
+<p>每个线程都有一个ThreadLocalMap，set时会先取当前线程的ThreadLocalMap，以当前的ThreadLocal对象为key，存储value。</p>
+<p>get()</p>
+<p>从当前的线程的TheadLocalMap中取数据，key为ThreadLocal对象。</p>
+<p>ThreadLocalMap是自定义的哈希表，用一个table数组来存储key value，key value被封装在一个Entry对象中，Entry对象是继承WeakReference，WeakReference引用了ThreadLocal对象，ThreadLocal对象没有别的地方引用的时候，在垃圾回收触发时就可以回收了，value是被Entry类强引用的，而Entry类是被ThreadLocalMap中的table数组强引用的，所以value有内存泄露的风险，特别是线程池的核心线程是会一直运行的，线程对象一直存在，ThreadLocalMap也就一直存在，Entry对象中value也就一直不会释放，所以ThreadLocal如果用完了，最好及时remove()掉。</p>
+<p>如果没有手动remove清理，ThreadLocalMap也会在get()和set()的时候去清理掉过期的Entry对象，但如果你不调用set和get就不会回收了。特别的，在set()方法做清理的时候做了一个优化，会以对数级别的时间复杂度跳跃式的扫描整个数组，来去寻找过期的Entry对象，这样避免全表扫描，又保证垃圾不会堆积过多。</p>
+<p>ThreadLocalMap也有扩容机制，当存储元素个数超过数组长度的2/3后，会把数组扩容为原来的2倍。</p>
+<p>table数组的大小始终是2的次方，保持2的次方的大小，是为了计算索引时能够散列的比较均匀。</p>
+<p>key value应该存储在数组的哪个索引位置是怎么计算的呢？</p>
+<p>首先获取Key对象的hashCode，然后与数组容量-1这个数做与操作得到索引，数组容量是2的次方，减1后的数字的二进制低位全部都是1，跟key的hashCode做与操作，相当于截取了hashCode的低位，散列会比较均匀，如果数组容量不是2的次方，容量-1的这个数的二进制数在低位中就会有0，再与key的hashCode做与操作会导致元素堆积也就是是散列冲突。</p>
+<p>在ThreadLocalMap中，key对象hashCode获取并不是调用ThreadLocal对象的hashCode方法，而是使用ThreadLocal中定义的一个静态变量的值，每当创建一个ThreadLocal对象时，这个静态变量就增加固定的值，这个固定的值很特殊，它是一个黄金分割数，带来的效果就是让散列比较均匀。</p>
+<p>如果发生了哈希冲突，采用的是线性探测来解决，就是一个个往数组后面去寻找有没有没有被填充的空位来存储。这里有个特别的地方，就是清理过期的Entry的时候，会重新哈希过期的Entry对象后面的Entry对象，因为后面的这些Entry对象可能是有哈希冲突经过线性探测放在了后面，放在后面后查找次数也就多了，重新rehash计算索引，把Entry对象往前方，也就是尽可能减少线性探测的查找次数，提高访问速度。</p>
+<p>为什么不用拉链法解决散列冲突呢？因为拉链法链表结点中的指针占用额外空间，如果把这些空间用来增大表容量，可以使得装载因子变小，从而减少开放寻址冲突，提高平均查找效率，效果也是类似的。同时ThreadLocal数据量也不会特别大，所以不需要红黑树来处理极端情况。</p>
+<hr>
+<h1 id="ThreadLocalMap是做什么的？"><a href="#ThreadLocalMap是做什么的？" class="headerlink" title="ThreadLocalMap是做什么的？"></a>ThreadLocalMap是做什么的？</h1><p>自定义的简单的哈希表的实现，散列方式是开放定址法之线性探测。</p>
+<h1 id="ThreadLocalMap数据结构"><a href="#ThreadLocalMap数据结构" class="headerlink" title="ThreadLocalMap数据结构"></a>ThreadLocalMap数据结构</h1><p>Entry数组存储数据</p>
+<ol>
+<li> Entry类是一个WeakReference</li>
+<li> Entry类存储了ThreadLocal这个key和对应的value</li>
+<li> 对ThreadLocal持有弱引用，对value持有强引用</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&lt;?&gt;&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">    Object value;</span><br><span class="line"></span><br><span class="line">    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">        <span class="keyword">super</span>(k);</span><br><span class="line">        value = v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="TheadLocal如何保证唯一性？"><a href="#TheadLocal如何保证唯一性？" class="headerlink" title="TheadLocal如何保证唯一性？"></a>TheadLocal如何保证唯一性？</h1><p>ThreadLocal作为映射表的Key，需要具备唯一的标识，每创建一个新的ThreadLocal，这个标识就变的跟之前不一样了。 如何保证每一个ThreadLocal的唯一性呢？</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadLocal</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> HASH_INCREMENT = <span class="number">0x61c88647</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 每一个ThreadLocal对象的HashCode都不一样</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> threadLocalHashCode = nextHashCode();</span><br><span class="line">	</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">nextHashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// 下一个HashCode，是在已有基础上增加0x61c88647</span></span><br><span class="line">        <span class="keyword">return</span> nextHashCode.getAndAdd(HASH_INCREMENT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ThreadLocal内部有一个名为threadLocalHashCode的变量，每创建一个新的ThreadLocal对象，这个变量的值就会增加0x61c88647。 正是因为有这么一个神奇的数字，它能够保证生成的Hash值可以均匀的分布在0~(2^N-1)之间，N是数组长度。 更多关于数字0x61c88647，可以参考<a href="https://www.javaspecialists.eu/archive/Issue164.html">Why 0x61c88647?</a></p>
+<h1 id="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"><a href="#ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？" class="headerlink" title="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"></a>ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？</h1><p>Map的key是ThreadLocal</p>
+<p>用ThreadLocal的属性threadLocalHashCode跟table数组长度做与运算得到索引位置</p>
+<p>参考ThreadLocalMap的set()方法</p>
+<h1 id="ThreadLocalMap如何解决哈希冲突"><a href="#ThreadLocalMap如何解决哈希冲突" class="headerlink" title="ThreadLocalMap如何解决哈希冲突"></a>ThreadLocalMap如何解决哈希冲突</h1><p>开放定址法之线性探测法</p>
+<p>求得索引后，table数组中当前索引有Entry，并且Entry的key不为null，则继续看数组的下一个位置是不是空的</p>
+<p>参考ThreadLocalMap的set()方法</p>
+<h1 id="ThreadLocalMap的table数组空间不够放了怎么办？"><a href="#ThreadLocalMap的table数组空间不够放了怎么办？" class="headerlink" title="ThreadLocalMap的table数组空间不够放了怎么办？"></a>ThreadLocalMap的table数组空间不够放了怎么办？</h1><p>一句话：</p>
+<p>添加元素时如果已存储的元素个数超过装载因子就扩容为原容量的两倍</p>
+<p>set()方法里会检查当前的存储的对象个数是否已经超出了阈值（threshold的值）大小，如果超出了，需要重新对table数组扩容为原来的2倍长度，并将所有的对象重新计算位置（rehash函数来实现），顺便清理掉Entry.get()为null的Entry，threshold为table数组长度的2/3，threshold相当于是map的装载因子。</p>
+<h1 id="ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？"></a>ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？</h1><p>table数组中staleSlot位置的Entry的get()为null了，value不为null，在expungeStaleEntry()中把它的value置为null，size–</p>
+<p>然后从staleSlot位置的下一个位置线性检查Entry，一直到Entry为null结束，如果</p>
+<ol>
+<li> Entry.get()为null，则把Entry的value置空，防止内存泄露</li>
+<li> Entry.get()不为null，重新计算当前Entry的索引，也就是rehash，放入rehash过后的索引位置，如果有冲突（已经存放了Entry）就线性向后查找空位进行存放。这样做是为了减少哈希冲突时线性查找次数。</li>
+</ol>
+<hr>
+<h1 id="ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？"></a>ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？</h1><p>在新元素添加进来，或清理另一个过期的Entry时调用</p>
+<p>对数级别时间复杂度清理对象，避免添加元素时线性扫描整个table数组，也防止垃圾堆积过多</p>
+<h1 id="TheadLocal存在有什么问题？为什么？如何解决？"><a href="#TheadLocal存在有什么问题？为什么？如何解决？" class="headerlink" title="TheadLocal存在有什么问题？为什么？如何解决？"></a>TheadLocal存在有什么问题？为什么？如何解决？</h1><p>问题：可能会内存泄露</p>
+<p>为什么：因为ThreadLocal存储在ThreadLocalMap是弱引用，ThreadLocal被回收后，Entry还是被ThreadLocalMap的table数组引用，Entry的value是强引用，value可能会内存泄漏</p>
+<p>解决：使用完ThreadLocal手动调用一下remove()</p>
+<h1 id="TheadLocal有哪些典型使用到的地方？"><a href="#TheadLocal有哪些典型使用到的地方？" class="headerlink" title="TheadLocal有哪些典型使用到的地方？"></a>TheadLocal有哪些典型使用到的地方？</h1><ol>
+<li> 每个线程都有一个自己的Looper对象</li>
+<li> Android SQLiteDatabase中数据库连接每个线程都持有一个</li>
+<li> 用户session对话</li>
+</ol>
+<p>ThreadLocal 适用于如下两种场景</p>
+<ol>
+<li> 每个线程需要有自己单独的实例</li>
+<li> 实例需要在多个方法中共享，但不希望被多线程共享</li>
+</ol>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>ThreadLocal</tag>
       </tags>
   </entry>
   <entry>

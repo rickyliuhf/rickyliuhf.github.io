@@ -217,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -322,7 +322,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -563,7 +563,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -773,7 +773,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -939,6 +939,153 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Java并发-ThreadLocal原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-21 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-21T20:00:00+08:00">2017-10-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-ThreadLocal原理/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ThreadLocal作用"><a href="#ThreadLocal作用" class="headerlink" title="ThreadLocal作用"></a>ThreadLocal作用</h1><p>让不同的线程持有相同数据类型的不同的数据副本。</p>
+<h1 id="ThreadLocal使用场景"><a href="#ThreadLocal使用场景" class="headerlink" title="ThreadLocal使用场景"></a>ThreadLocal使用场景</h1><p>如果一个对象在多线程之间通过加锁竞争的共享，会引起较大的性能损失，且对象占用内存不是很大的情况下，就应该考虑用ThreadLocal为每个线程分配单独的对象。比如多线程下产生随机数，可以写代码打印耗时，验证这一点。</p>
+<h1 id="ThreadLocal实现原理简述"><a href="#ThreadLocal实现原理简述" class="headerlink" title="ThreadLocal实现原理简述"></a>ThreadLocal实现原理简述</h1><p>set(value)</p>
+<p>每个线程都有一个ThreadLocalMap，set时会先取当前线程的ThreadLocalMap，以当前的ThreadLocal对象为key，存储value。</p>
+<p>get()</p>
+<p>从当前的线程的TheadLocalMap中取数据，key为ThreadLocal对象。</p>
+<p>ThreadLocalMap是自定义的哈希表，用一个table数组来存储key value，key value被封装在一个Entry对象中，Entry对象是继承WeakReference，WeakReference引用了ThreadLocal对象，ThreadLocal对象没有别的地方引用的时候，在垃圾回收触发时就可以回收了，value是被Entry类强引用的，而Entry类是被ThreadLocalMap中的table数组强引用的，所以value有内存泄露的风险，特别是线程池的核心线程是会一直运行的，线程对象一直存在，ThreadLocalMap也就一直存在，Entry对象中value也就一直不会释放，所以ThreadLocal如果用完了，最好及时remove()掉。</p>
+<p>如果没有手动remove清理，ThreadLocalMap也会在get()和set()的时候去清理掉过期的Entry对象，但如果你不调用set和get就不会回收了。特别的，在set()方法做清理的时候做了一个优化，会以对数级别的时间复杂度跳跃式的扫描整个数组，来去寻找过期的Entry对象，这样避免全表扫描，又保证垃圾不会堆积过多。</p>
+<p>ThreadLocalMap也有扩容机制，当存储元素个数超过数组长度的2/3后，会把数组扩容为原来的2倍。</p>
+<p>table数组的大小始终是2的次方，保持2的次方的大小，是为了计算索引时能够散列的比较均匀。</p>
+<p>key value应该存储在数组的哪个索引位置是怎么计算的呢？</p>
+<p>首先获取Key对象的hashCode，然后与数组容量-1这个数做与操作得到索引，数组容量是2的次方，减1后的数字的二进制低位全部都是1，跟key的hashCode做与操作，相当于截取了hashCode的低位，散列会比较均匀，如果数组容量不是2的次方，容量-1的这个数的二进制数在低位中就会有0，再与key的hashCode做与操作会导致元素堆积也就是是散列冲突。</p>
+<p>在ThreadLocalMap中，key对象hashCode获取并不是调用ThreadLocal对象的hashCode方法，而是使用ThreadLocal中定义的一个静态变量的值，每当创建一个ThreadLocal对象时，这个静态变量就增加固定的值，这个固定的值很特殊，它是一个黄金分割数，带来的效果就是让散列比较均匀。</p>
+<p>如果发生了哈希冲突，采用的是线性探测来解决，就是一个个往数组后面去寻找有没有没有被填充的空位来存储。这里有个特别的地方，就是清理过期的Entry的时候，会重新哈希过期的Entry对象后面的Entry对象，因为后面的这些Entry对象可能是有哈希冲突经过线性探测放在了后面，放在后面后查找次数也就多了，重新rehash计算索引，把Entry对象往前方，也就是尽可能减少线性探测的查找次数，提高访问速度。</p>
+<p>为什么不用拉链法解决散列冲突呢？因为拉链法链表结点中的指针占用额外空间，如果把这些空间用来增大表容量，可以使得装载因子变小，从而减少开放寻址冲突，提高平均查找效率，效果也是类似的。同时ThreadLocal数据量也不会特别大，所以不需要红黑树来处理极端情况。</p>
+<hr>
+<h1 id="ThreadLocalMap是做什么的？"><a href="#ThreadLocalMap是做什么的？" class="headerlink" title="ThreadLocalMap是做什么的？"></a>ThreadLocalMap是做什么的？</h1><p>自定义的简单的哈希表的实现，散列方式是开放定址法之线性探测。</p>
+<h1 id="ThreadLocalMap数据结构"><a href="#ThreadLocalMap数据结构" class="headerlink" title="ThreadLocalMap数据结构"></a>ThreadLocalMap数据结构</h1><p>Entry数组存储数据</p>
+<ol>
+<li> Entry类是一个WeakReference</li>
+<li> Entry类存储了ThreadLocal这个key和对应的value</li>
+<li> 对ThreadLocal持有弱引用，对value持有强引用</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&lt;?&gt;&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">    Object value;</span><br><span class="line"></span><br><span class="line">    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">        <span class="keyword">super</span>(k);</span><br><span class="line">        value = v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="TheadLocal如何保证唯一性？"><a href="#TheadLocal如何保证唯一性？" class="headerlink" title="TheadLocal如何保证唯一性？"></a>TheadLocal如何保证唯一性？</h1><p>ThreadLocal作为映射表的Key，需要具备唯一的标识，每创建一个新的ThreadLocal，这个标识就变的跟之前不一样了。 如何保证每一个ThreadLocal的唯一性呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadLocal</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> HASH_INCREMENT = <span class="number">0x61c88647</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 每一个ThreadLocal对象的HashCode都不一样</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> threadLocalHashCode = nextHashCode();</span><br><span class="line">	</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">nextHashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// 下一个HashCode，是在已有基础上增加0x61c88647</span></span><br><span class="line">        <span class="keyword">return</span> nextHashCode.getAndAdd(HASH_INCREMENT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ThreadLocal内部有一个名为threadLocalHashCode的变量，每创建一个新的ThreadLocal对象，这个变量的值就会增加0x61c88647。 正是因为有这么一个神奇的数字，它能够保证生成的Hash值可以均匀的分布在0~(2^N-1)之间，N是数组长度。 更多关于数字0x61c88647，可以参考<a target="_blank" rel="noopener" href="https://www.javaspecialists.eu/archive/Issue164.html">Why 0x61c88647?</a></p>
+<h1 id="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"><a href="#ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？" class="headerlink" title="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"></a>ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？</h1><p>Map的key是ThreadLocal</p>
+<p>用ThreadLocal的属性threadLocalHashCode跟table数组长度做与运算得到索引位置</p>
+<p>参考ThreadLocalMap的set()方法</p>
+<h1 id="ThreadLocalMap如何解决哈希冲突"><a href="#ThreadLocalMap如何解决哈希冲突" class="headerlink" title="ThreadLocalMap如何解决哈希冲突"></a>ThreadLocalMap如何解决哈希冲突</h1><p>开放定址法之线性探测法</p>
+<p>求得索引后，table数组中当前索引有Entry，并且Entry的key不为null，则继续看数组的下一个位置是不是空的</p>
+<p>参考ThreadLocalMap的set()方法</p>
+<h1 id="ThreadLocalMap的table数组空间不够放了怎么办？"><a href="#ThreadLocalMap的table数组空间不够放了怎么办？" class="headerlink" title="ThreadLocalMap的table数组空间不够放了怎么办？"></a>ThreadLocalMap的table数组空间不够放了怎么办？</h1><p>一句话：</p>
+<p>添加元素时如果已存储的元素个数超过装载因子就扩容为原容量的两倍</p>
+<p>set()方法里会检查当前的存储的对象个数是否已经超出了阈值（threshold的值）大小，如果超出了，需要重新对table数组扩容为原来的2倍长度，并将所有的对象重新计算位置（rehash函数来实现），顺便清理掉Entry.get()为null的Entry，threshold为table数组长度的2/3，threshold相当于是map的装载因子。</p>
+<h1 id="ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？"></a>ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？</h1><p>table数组中staleSlot位置的Entry的get()为null了，value不为null，在expungeStaleEntry()中把它的value置为null，size–</p>
+<p>然后从staleSlot位置的下一个位置线性检查Entry，一直到Entry为null结束，如果</p>
+<ol>
+<li> Entry.get()为null，则把Entry的value置空，防止内存泄露</li>
+<li> Entry.get()不为null，重新计算当前Entry的索引，也就是rehash，放入rehash过后的索引位置，如果有冲突（已经存放了Entry）就线性向后查找空位进行存放。这样做是为了减少哈希冲突时线性查找次数。</li>
+</ol>
+<hr>
+<h1 id="ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？"></a>ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？</h1><p>在新元素添加进来，或清理另一个过期的Entry时调用</p>
+<p>对数级别时间复杂度清理对象，避免添加元素时线性扫描整个table数组，也防止垃圾堆积过多</p>
+<h1 id="TheadLocal存在有什么问题？为什么？如何解决？"><a href="#TheadLocal存在有什么问题？为什么？如何解决？" class="headerlink" title="TheadLocal存在有什么问题？为什么？如何解决？"></a>TheadLocal存在有什么问题？为什么？如何解决？</h1><p>问题：可能会内存泄露</p>
+<p>为什么：因为ThreadLocal存储在ThreadLocalMap是弱引用，ThreadLocal被回收后，Entry还是被ThreadLocalMap的table数组引用，Entry的value是强引用，value可能会内存泄漏</p>
+<p>解决：使用完ThreadLocal手动调用一下remove()</p>
+<h1 id="TheadLocal有哪些典型使用到的地方？"><a href="#TheadLocal有哪些典型使用到的地方？" class="headerlink" title="TheadLocal有哪些典型使用到的地方？"></a>TheadLocal有哪些典型使用到的地方？</h1><ol>
+<li> 每个线程都有一个自己的Looper对象</li>
+<li> Android SQLiteDatabase中数据库连接每个线程都持有一个</li>
+<li> 用户session对话</li>
+</ol>
+<p>ThreadLocal 适用于如下两种场景</p>
+<ol>
+<li> 每个线程需要有自己单独的实例</li>
+<li> 实例需要在多个方法中共享，但不希望被多线程共享</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E4%BC%AA%E5%85%B1%E4%BA%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -970,7 +1117,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1097,7 +1244,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1193,7 +1340,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1301,7 +1448,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1417,7 +1564,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 21:50:11" itemprop="dateModified" datetime="2021-08-26T21:50:11+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1482,177 +1629,6 @@
 <li>synchronized的锁对象没有提供多条件唤醒。</li>
 </ul>
 <p>ArrayBlockingQueue是典型的生产者消费者的例子，源码是很好的参考。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/" class="post-title-link" itemprop="url">Java并发-synchronized、ReentrantLock</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-10-15 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-15T20:00:00+08:00">2017-10-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 21:39:42" itemprop="dateModified" datetime="2021-08-26T21:39:42+08:00">2021-08-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-synchronized、锁升级、wait和notify/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="synchronized作用"><a href="#synchronized作用" class="headerlink" title="synchronized作用"></a>synchronized作用</h1><p>让一段代码在多线程之间互斥访问，保证原子性、有序性、可见性，并且是可重入的。</p>
-<h1 id="synchronized使用方式"><a href="#synchronized使用方式" class="headerlink" title="synchronized使用方式"></a>synchronized使用方式</h1><ul>
-<li>synchronized修饰代码块时需要传入一个对象作为锁，这个对象可以是任意的，进入同步代码块前要获取这个锁，没有获得锁的线程就要阻塞等待，同步代码块执行完释放锁。</li>
-<li>修饰成员方法时，锁是对象实例。</li>
-<li>修饰静态方法时，锁是类的class实例。</li>
-</ul>
-<h1 id="synchronized原理综述"><a href="#synchronized原理综述" class="headerlink" title="synchronized原理综述"></a>synchronized原理综述</h1><p>每个Java对象都关联一个监视器锁对象，同步代码块在字节码层面是通过在代码块的指令前后加上monitorenter和monitorexit指令来标识的。</p>
-<p>当线程执行到monitorenter指令时，当前线程试图获取监视器对象所有权，如果未加锁或者已被当前线程持有，就把锁计数加1；执行到monitorexit指令的时候，锁计数减1。锁计数为0时，锁就被释放了。</p>
-<p>如果当前线程获取监视器对象失败，线程会阻塞等待，线程会作为一个结点存入监视器对象的锁池队列中，等待唤醒。</p>
-<p>监视器对象还有一个等待池队列，在同步代码块中调用锁对象的wait方法的时候，线程会阻塞，并被封装为一个结点，进入监视器对象的等待池队列，调用锁对象的notify和notifyAll的时候，会把等待池队列中的线程放入锁池队列中，只有锁池中的线程才能参与竞争锁。</p>
-<p>wait和notify用来线程之间同步过程的，比如实现生产者消费者模型。</p>
-<p>监视器锁底层是通过操作系统的互斥锁实现的，操作系统做线程切换需要从用户态转换到内核态，所以比较消耗性能。这种依赖于操作系统互斥锁而实现的锁叫做重量级锁。</p>
-<p>如果线程竞争并不激烈，切换线程的开销是不划算的，特别是多个线程在不同的时段获取同一把锁，可以用自旋锁，就是CAS+循环，CAS由硬件之间实现，开销比切换线程开销要小，这就是轻量级锁，在JDK6引入。</p>
-<p>锁信息具体存储在对象头的MarkWord里，一个对象在虚拟机的内存布局分为三部分，对象头、实例数据、对齐填充，其中对象头又分为MarkWord、类型指针、数组长度，MarkWord存储了锁相关的信息、hashCode、垃圾回收的分代年龄等。</p>
-<p>轻量级锁的CAS操作具体修改的是锁对象头的mark word，修改为指向当前线程栈帧中的锁记录的指针。虚拟机会为每个线程在当前线程栈帧中创建一块锁记录空间，存储锁对象的对象头中的mark word的拷贝。</p>
-<p>如果CAS修改成功，当前线程就获得了轻量级锁。</p>
-<p>如果更新失败，说明有线程竞争，开始自旋，自旋超过一定次数，升级为重量级锁。避免竞争激烈的情况下自旋空耗CPU。</p>
-<p>如果压根都没有线程竞争，只有单线程访问同步代码块，其实每次进行CAS操作获取轻量级锁也是没有必要的开销，所以JDK6又引入了偏向锁，只在第一次申请锁的时候，对Java对象头的MARK WORD做CAS操作，记录下当前申请锁的线程ID，退出同步代码块后，也不释放锁，锁对象的对象头中记录的还是当前的线程ID，同一个线程再次进入这个锁的同步代码块的时候，检查锁的对象头中记录的线程ID是否还是自己，是的话就直接进入，不用再CAS了。当有多个线程要申请锁的时候，就会升级到轻量级锁。</p>
-<p>轻量级锁是为了在线程交替执行同步块时提高性能，而偏向锁则是在只有一个线程执行同步块时进一步提高性能。</p>
-<h1 id="ReentrantLock与synchronized的区别？"><a href="#ReentrantLock与synchronized的区别？" class="headerlink" title="ReentrantLock与synchronized的区别？"></a>ReentrantLock与synchronized的区别？</h1><p>ReentrantLock与synchronized有相同的功能和语义，添加了更多灵活的功能。<br>synchronized能干的ReentrantLock都能干，ReentrantLock能干synchronized不一定能干。</p>
-<p>最主要区别有三点：支持等待可中断、可实现公平锁、锁可以绑定多个条件。</p>
-<p>详细区别：<br>|   |ReentrantLock|synchronized<br>|—|—|—|<br>|底层实现|继承AQS|监视器模式<br>|灵活性|支持响应中断、超时、尝试获取锁|不灵活<br>|释放锁形式|必须显式调用unlock()释放锁，可跨方法调用|自动释放监视器，不可跨方法释放<br>|锁类型|公平锁和非公平锁|非公平锁<br>|条件队列|可关联多个条件队列|只有一个条件队列<br>|错误排查|没有释放锁，很追溯发生错误的位置，因为没有记录应该释放锁的时间和位置难度|synchronized加锁解锁过程有完整的日志</p>
-<h1 id="该用ReentrantLock还是synchronized？"><a href="#该用ReentrantLock还是synchronized？" class="headerlink" title="该用ReentrantLock还是synchronized？"></a>该用ReentrantLock还是synchronized？</h1><p>除非需要ReentrantLock的特定的功能，否则还是应该优先使用synchronized，因为简单易用，不会忘记释放锁。</p>
-<h1 id="ReentrantLock实现原理"><a href="#ReentrantLock实现原理" class="headerlink" title="ReentrantLock实现原理"></a>ReentrantLock实现原理</h1><p>底层通过继承AbstractQueuedSynchronizer实现。</p>
-<p>大致过程：</p>
-<ul>
-<li>先通过cas修改int类型的state变量，修改成功则获取互斥锁成功。</li>
-<li>cas修改失败则把当前线程生成一个节点，放入一个等待队列中，线程被挂起。<ul>
-<li>等待队列操作也都是通过cas加自旋的方式来完成，避免同步开销。</li>
-</ul>
-</li>
-<li>释放锁后，会唤醒队列去自旋CAS去修改state来获取互斥锁。</li>
-</ul>
-<p>state变量记录锁的重入次数。</p>
-<h1 id="synchronized锁升级"><a href="#synchronized锁升级" class="headerlink" title="synchronized锁升级"></a>synchronized锁升级</h1><ul>
-<li>jdk1.6之前synchronized直接就上重量级锁。</li>
-<li>jdk1.6开始synchronized会先由无锁转为偏向锁，再转为轻量级锁，再转为重量级锁，锁只能升级不能降级。</li>
-</ul>
-<p>偏向锁、轻量级锁是针对synchronized优化。</p>
-<h1 id="对象头"><a href="#对象头" class="headerlink" title="对象头"></a>对象头</h1><p>JVM中，对象在内存中除了存储对象本身的数据，还会额外存储关于对象的一些附加信息。</p>
-<ul>
-<li>普通对象的对象头中存储mark word和类型指针（指向对象所属类的指针）。</li>
-<li>数组对象还会存储数组长度。</li>
-</ul>
-<p>mark word存储对象的hashcode、GC分代年龄、锁状态等信息。</p>
-<p>mark word长度在32位系统上为32位，64位系统上长度为64位。</p>
-<p>为了在有限的空间存储较多的信息，其数据格式不固定，数据位共享复用。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826195541.png"></p>
-<p>当对象状态为偏向锁（biasable）时，mark word存储的是偏向的线程ID；</p>
-<p>当状态为轻量级锁（lightweight locked）时，mark word存储的是指向线程栈中Lock Record的指针；</p>
-<p>当状态为重量级锁（inflated）时，为指向堆中的monitor对象的指针。</p>
-<h1 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h1><p>研究发现，大多数情况下不仅不存在锁竞争，而且总是由同一个线程多次重入，为了让同一个线程多次重入获取锁的代价更低，就引入了偏向锁的概念。</p>
-<p>偏向锁获取过程：</p>
-<ol>
-<li> 当前线程访问Mark Word中偏向锁的标识是否设置成1，锁标志位是否为01，确认是否为可偏向状态。</li>
-<li> 如果为可偏向状态，则测试线程ID是否指向当前线程，如果是，进入步骤5，否则进入步骤3。</li>
-<li> 如果线程ID并未指向当前线程，则通过CAS操作竞争锁。如果竞争成功，则将Mark Word中线程ID设置为当前线程ID，然后执行5；如果竞争失败，执行4。</li>
-<li> 如果CAS获取偏向锁失败，则表示有竞争。当到达全局安全点（safepoint）时获得偏向锁的线程被挂起，偏向锁升级为轻量级锁，然后被阻塞在安全点的线程继续往下执行同步代码。（撤销偏向锁的时候会导致当前获得偏向锁的线程被暂停）</li>
-<li> 执行同步代码。</li>
-</ol>
-<p>偏向锁的释放：</p>
-<p>偏向锁只有当遇到其他线程也尝试获取偏向锁时，持有偏向锁的线程才会释放锁，线程不会主动去释放偏向锁。（也就是对于获取偏向锁的线程 只有lock的动作，没有unlock的动作，这是因偏向的需要，即使可能这个线程已经死亡。）偏向锁的撤销步骤如下：</p>
-<ol>
-<li> 等到全局安全点（在这个时间点上没有正在执行的字节码）。</li>
-<li> 暂停持有偏向锁的线程，然后检查持有偏向锁的线程是否还活着，如果线程不处于活动状态，则将对象头设置为无锁状态。争抢锁的线程会再走生成偏向锁的过程，然后成为偏向锁的拥有者。</li>
-<li> 如果持有偏向锁的线程还处于活动状态，则将锁升级为轻量级锁。</li>
-</ol>
-<h1 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h1><p>轻量级锁实现是自旋锁，没有抢到锁的线程将自旋，即不停的循环判断是否能获取到锁，不会让线程阻塞。获取锁的操作就是通过CAS修改对象头的锁标记位。</p>
-<p>长时间的循环是很占用CPU的，一个线程持有锁，其他线程只能原地空耗CPU，不执行任何有效的任务，这种现象称为busy-waiting。</p>
-<p>利用短时间的busy-waiting换取线程的阻塞和唤醒在用户态和内核态切换的开销。</p>
-<p>busy-waiting是有限度的（JVM可以设置参数调节循环次数上限），如果锁竞争激烈，自旋超过一定次数，就升级为重量级锁。</p>
-<p>具体的CAS过程：</p>
-<ul>
-<li>  当线程请求锁时，若该锁对象的Mark Word中标志位为01（未锁定状态），则在该线程的栈帧中创建一块名为『锁记录』的空间，然后将锁对象的Mark Word拷贝至该空间；最后通过CAS操作将锁对象的Mark Word指向该锁记录；</li>
-<li>  若CAS操作成功，则轻量级锁的上锁过程成功；</li>
-<li>  若CAS操作失败，再判断当前线程是否已经持有了该轻量级锁；若已经持有，则直接进入同步块；若尚未持有，则表示该锁已经被其他线程占用，此时轻量级锁就要膨胀成重量级锁。</li>
-</ul>
-<p>轻量级锁比重量级锁性能更高的前提是：</p>
-<ul>
-<li>在轻量级锁被占用的整个同步周期内，不存在其他线程的竞争。若在该过程中一旦有其他线程竞争，那么就会膨胀成重量级锁，从而除了使用互斥量以外，还额外发生了CAS操作，因此更慢！</li>
-</ul>
-<p>轻量级锁是为了在线程交替执行同步块时提高性能。</p>
-<h1 id="重量级锁"><a href="#重量级锁" class="headerlink" title="重量级锁"></a>重量级锁</h1><p>阻塞所有竞争锁但未获得锁的线程。</p>
-<p>实现依赖于操作系统的同步函数，在linux上使用mutex互斥锁，涉及到用户态和内核态的切换、进程线程上下文的切换，成本较高。</p>
 
       
     </div>
@@ -1739,7 +1715,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">123</span>
+          <span class="site-state-item-count">124</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1752,7 +1728,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">124</span>
+        <span class="site-state-item-count">125</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
