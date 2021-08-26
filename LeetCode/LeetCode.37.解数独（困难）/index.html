@@ -27,10 +27,11 @@
 <meta property="og:site_name" content="Ricky.L的随笔">
 <meta property="og:description" content="题目LeetCode.37.解数独（困难） 编写一个程序，通过填充空格来解决数独问题。 数独的解法需 遵循如下规则：  数字 1-9 在每一行只能出现一次。 数字 1-9 在每一列只能出现一次。 数字 1-9 在每一个以粗实线分隔的 3x3 宫内只能出现一次。  数独部分空格内已填入了数字，空白格用 ‘.’ 表示。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-08-18T12:03:00.000Z">
-<meta property="article:modified_time" content="2021-08-26T08:20:22.153Z">
+<meta property="article:published_time" content="2020-05-04T01:56:00.000Z">
+<meta property="article:modified_time" content="2021-08-26T08:21:02.011Z">
 <meta property="article:author" content="Ricky.L">
 <meta property="article:tag" content="LeetCode困难">
+<meta property="article:tag" content="算法">
 <meta property="article:tag" content="回溯">
 <meta name="twitter:card" content="summary">
 
@@ -213,14 +214,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-08-18 20:03:00" itemprop="dateCreated datePublished" datetime="2021-08-18T20:03:00+08:00">2021-08-18</time>
+              <time title="创建时间：2020-05-04 09:56:00" itemprop="dateCreated datePublished" datetime="2020-05-04T09:56:00+08:00">2020-05-04</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-26 16:20:22" itemprop="dateModified" datetime="2021-08-26T16:20:22+08:00">2021-08-26</time>
+                <time title="修改时间：2021-08-26 16:21:02" itemprop="dateModified" datetime="2021-08-26T16:21:02+08:00">2021-08-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -228,7 +229,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
                 </span>
             </span>
 
@@ -273,6 +274,7 @@
 <p>填数字时要有三个限制条件，都是保证数字不重复，那么就要存储已访问过的数字，按行、按列、按3x3宫格分开记录和判断，这样最方便快速。</p>
 <p>如果能按照限制条件填满一种可能性，就不用再尝试其他可能性了，直接结束程序。</p>
 <figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">solveSudoku</span><span class="params">(board: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (board.isEmpty()) <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">val</span> n = board.size</span><br><span class="line">        <span class="keyword">val</span> rowUsed = Array(n) &#123; BooleanArray(n + <span class="number">1</span>) &#123; <span class="literal">false</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">val</span> columnUsed = Array(n) &#123; BooleanArray(n + <span class="number">1</span>) &#123; <span class="literal">false</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">val</span> boxUsed = Array(<span class="number">3</span>) &#123; Array(<span class="number">3</span>) &#123; BooleanArray(n + <span class="number">1</span>) &#123; <span class="literal">false</span> &#125; &#125; &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="keyword">if</span> (board[i][j] <span class="keyword">in</span> <span class="string">&#x27;1&#x27;</span>..<span class="string">&#x27;9&#x27;</span>) &#123;</span><br><span class="line">                    <span class="keyword">val</span> num = board[i][j] - <span class="string">&#x27;0&#x27;</span></span><br><span class="line">                    rowUsed[i][num] = <span class="literal">true</span></span><br><span class="line">                    columnUsed[j][num] = <span class="literal">true</span></span><br><span class="line">                    boxUsed[i / <span class="number">3</span>][j / <span class="number">3</span>][num] = <span class="literal">true</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">dfs</span><span class="params">(row: <span class="type">Int</span>, column: <span class="type">Int</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">            <span class="keyword">var</span> r = row</span><br><span class="line">            <span class="keyword">var</span> c = column</span><br><span class="line">            <span class="keyword">if</span> (c == n) &#123;</span><br><span class="line">                c = <span class="number">0</span></span><br><span class="line">                r++</span><br><span class="line">                <span class="keyword">if</span> (r == n) <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (board[r][c] == <span class="string">&#x27;.&#x27;</span>) &#123;</span><br><span class="line">                <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span><span class="number">.9</span>) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (rowUsed[r][i] || columnUsed[c][i] || boxUsed[r / <span class="number">3</span>][c / <span class="number">3</span>][i]) <span class="keyword">continue</span></span><br><span class="line">                    board[r][c] = i.toString()[<span class="number">0</span>]</span><br><span class="line">                    rowUsed[r][i] = <span class="literal">true</span></span><br><span class="line">                    columnUsed[c][i] = <span class="literal">true</span></span><br><span class="line">                    boxUsed[r / <span class="number">3</span>][c / <span class="number">3</span>][i] = <span class="literal">true</span></span><br><span class="line">                    <span class="keyword">if</span> (dfs(r, c + <span class="number">1</span>)) &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">                    &#125;</span><br><span class="line">                    board[r][c] = <span class="string">&#x27;.&#x27;</span></span><br><span class="line">                    rowUsed[r][i] = <span class="literal">false</span></span><br><span class="line">                    columnUsed[c][i] = <span class="literal">false</span></span><br><span class="line">                    boxUsed[r / <span class="number">3</span>][c / <span class="number">3</span>][i] = <span class="literal">false</span></span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> dfs(r, c + <span class="number">1</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        dfs(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
     </div>
 
     
@@ -299,6 +301,7 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/LeetCode%E5%9B%B0%E9%9A%BE/" rel="tag"># LeetCode困难</a>
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
               <a href="/tags/%E5%9B%9E%E6%BA%AF/" rel="tag"># 回溯</a>
           </div>
 
@@ -308,12 +311,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/LeetCode/LeetCode.32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="prev" title="LeetCode.32.最长有效括号（困难）">
-      <i class="fa fa-chevron-left"></i> LeetCode.32.最长有效括号（困难）
+    <a href="/LeetCode/LeetCode.135.%E5%88%86%E5%8F%91%E7%B3%96%E6%9E%9C%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="prev" title="LeetCode.135.分发糖果（困难）">
+      <i class="fa fa-chevron-left"></i> LeetCode.135.分发糖果（困难）
     </a></div>
       <div class="post-nav-item">
-    <a href="/LeetCode/LeetCode.188.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%20IV%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="next" title="LeetCode.188.买卖股票的最佳时机 IV（困难）">
-      LeetCode.188.买卖股票的最佳时机 IV（困难） <i class="fa fa-chevron-right"></i>
+    <a href="/LeetCode/LeetCode.65.%E6%9C%89%E6%95%88%E6%95%B0%E5%AD%97%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/" rel="next" title="LeetCode.65.有效数字（困难）">
+      LeetCode.65.有效数字（困难） <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
