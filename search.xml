@@ -315,23 +315,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.1137.第N个泰波那契数（简单）</title>
-    <url>/LeetCode/LeetCode.1137.%E7%AC%ACN%E4%B8%AA%E6%B3%B0%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
-    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/n-th-tribonacci-number/">LeetCode.1137.第 N 个泰波那契数（简单）</a></p>
-<p>泰波那契序列 Tn 定义如下：<br>T0 = 0, T1 = 1, T2 = 1, 且在 n &gt;= 0 的条件下 Tn+3 = Tn + Tn+1 + Tn+2<br>给你整数 n，请返回第 n 个泰波那契数 Tn 的值。</p>
-<span id="more"></span>
-
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>根据公式直接递推，比斐波那契数列多一项。<br>记忆化递归就不写了。</p>
-<h3 id="代码（kotlin）"><a href="#代码（kotlin）" class="headerlink" title="代码（kotlin）"></a>代码（kotlin）</h3><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">tribonacci</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span> </span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">2</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">var</span> cur = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> pre1 = <span class="number">1</span></span><br><span class="line">        <span class="keyword">var</span> pre2 = <span class="number">1</span></span><br><span class="line">        <span class="keyword">var</span> pre3 = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">3.</span>.n) &#123;</span><br><span class="line">            cur = pre1 + pre2 + pre3</span><br><span class="line">            pre3 = pre2</span><br><span class="line">            pre2 = pre1</span><br><span class="line">            pre1 = cur</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cur</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode简单</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.1143.最长公共子序列（中等）</title>
     <url>/LeetCode/LeetCode.1143.%E6%9C%80%E9%95%BF%E5%85%AC%E5%85%B1%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/longest-common-subsequence/">LeetCode.1143.最长公共子序列（中等）</a></p>
