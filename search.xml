@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Android Task 相关</title>
-    <url>/2015-07-20-android-task-about/</url>
+    <title>Android Task</title>
+    <url>/Android/Android%20Task/</url>
     <content><![CDATA[<p>在日常开发过程中，只要涉及到activity，那么对task相关的东西总会或多或少的接触到，不过对task相关的一些配置的作用理解的还不是很透彻，官方文档在细节上说的也不够清楚，要透彻理解还是得自己写demo实践检验，所以便有了这篇总结。</p>
 <span id="more"></span>
 
@@ -138,11 +138,10 @@
 ]]></content>
       <categories>
         <category>Android</category>
-        <category>Task</category>
       </categories>
       <tags>
         <tag>Android</tag>
-        <tag>Task</tag>
+        <tag>Android Task</tag>
         <tag>launchMode</tag>
       </tags>
   </entry>
