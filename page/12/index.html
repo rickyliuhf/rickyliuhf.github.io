@@ -186,6 +186,111 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/TCP%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E7%BD%91%E7%BB%9C/TCP%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6/" class="post-title-link" itemprop="url">TCP流量控制</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-12 19:31:00" itemprop="dateCreated datePublished" datetime="2018-03-12T19:31:00+08:00">2018-03-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/TCP%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/TCP流量控制/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="为什么要有流量控制？"><a href="#为什么要有流量控制？" class="headerlink" title="为什么要有流量控制？"></a>为什么要有流量控制？</h1><p>双端通信的时候，发送方发送数据速度和接收方处理数据速度不一定相等；</p>
+<p>如果发送过快，接收方处理不过来，接收方只能把数据存在缓冲区，缓冲区满了后再收到数据就只能丢弃；</p>
+<p>所以需要控制发送方发送数据的速率，让接收方与发送方处于一种动态的平衡中才好。</p>
+<p>对于发送方发送速率的控制，称为流量控制。</p>
+<h1 id="滑动窗口大小是如何确定的？"><a href="#滑动窗口大小是如何确定的？" class="headerlink" title="滑动窗口大小是如何确定的？"></a>滑动窗口大小是如何确定的？</h1><p>发送数据的一方收到对方发送的ACK报文，其报文头中的窗口大小表示对方的缓冲区大小还能存放多少字节的数据，发送方拿这个窗口大小与本身的拥塞窗口大小在一起取最小值，作为自己滑动窗口的大小。</p>
+<p>达到：</p>
+<ol>
+<li>避免对方缓冲区存不下发送过多的数据而丢弃，进而浪费网络带宽和流量</li>
+<li>避免产生网络拥塞</li>
+</ol>
+<h1 id="滑动窗口中的内容"><a href="#滑动窗口中的内容" class="headerlink" title="滑动窗口中的内容"></a>滑动窗口中的内容</h1><p>滑动窗口内包含两类报文</p>
+<ol>
+<li>已发送但未收到确认</li>
+<li> 允许发送但尚未发送</li>
+</ol>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20180835235523.jpeg"></p>
+<h1 id="滑动窗口什么时候开始滑动？"><a href="#滑动窗口什么时候开始滑动？" class="headerlink" title="滑动窗口什么时候开始滑动？"></a>滑动窗口什么时候开始滑动？</h1><p>窗口左侧的报文收到了ACK报文确认，窗口就往右滑动</p>
+<h1 id="如果发送端滑动窗口大小为0，不发送数据了会怎样？"><a href="#如果发送端滑动窗口大小为0，不发送数据了会怎样？" class="headerlink" title="如果发送端滑动窗口大小为0，不发送数据了会怎样？"></a>如果发送端滑动窗口大小为0，不发送数据了会怎样？</h1><p>实际上，为了避免此问题的产生，发送端主机会时不时的发送一个叫做窗口探测的数据段，此数据段仅包含一个字节来获取最新的窗口大小信息。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/TCP%E8%B6%85%E6%97%B6%E9%87%8D%E4%BC%A0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +322,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -317,7 +422,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -427,7 +532,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -525,7 +630,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -652,7 +757,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -779,7 +884,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -918,7 +1023,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1055,7 +1160,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1197,7 +1302,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 22:01:40" itemprop="dateModified" datetime="2021-08-27T22:01:40+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1281,221 +1386,6 @@
 <p>每个路由器都会将自己与邻居节点之间的链路状态广播出去，发送到整个网络，这样每个路由器都会有网络中所有路由器的状态，形成全网的拓扑视图，然后可以用迪杰斯特拉最短路径算法求出最短路径，就知道路由转发的时候要发给哪个路由器了。当某台路由器链路状态发生变化，采用洪泛法向所有路由器发送状态信息，使其他路由器重新计算最佳路径重新生成路由表。</p>
 <p>路由器之间的通信，也是要走局域网通信的那一套流程，即获得下一跳路由器的MAC地址，然后通过以太网传输数据帧。</p>
 <p>服务端收到消息后也是同样的反向操作流程。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Java类加载流程</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-03-05 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-05T20:00:00+08:00">2018-03-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:00:54" itemprop="dateModified" datetime="2021-08-27T22:00:54+08:00">2021-08-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java类加载机制/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="类加载流程"><a href="#类加载流程" class="headerlink" title="类加载流程"></a>类加载流程</h1><p>类从被加载到虚拟机内存，到卸载出内存为止，常规的生命周期如下：</p>
-<ol>
-<li> 加载（Loading）</li>
-<li> 链接（Linking）</li>
-<li> 初始化（Initialization）</li>
-<li> 使用（Using）</li>
-<li> 卸载（Unloading）</li>
-</ol>
-<p>其中链接（Linking）又可以分为：</p>
-<ol>
-<li> 验证（Verification）</li>
-<li> 准备（Preparation）</li>
-<li> 解析（Resolution）</li>
-</ol>
-<p>加载、验证、准备、初始化，这几个顺序是确定的，解析某些情况下发生在初始化之后，这是为了支持Java语言的运行时绑定（动态绑定）。</p>
-<p>参考</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》7.3节  类加载的过程</li>
-</ul>
-<h1 id="加载（Loading）"><a href="#加载（Loading）" class="headerlink" title="加载（Loading）"></a>加载（Loading）</h1><p>加载:</p>
-<ol>
-<li> 通过类的全限定名来获取类的二进制字节流。</li>
-<li> 将字节流代表的静态存储结构转换为方法区的运行时数据结构。</li>
-<li> 在内存中生成一个代表这个类的java.lang.Class对象，作为方法区这个类的各种数据的访问入口。</li>
-</ol>
-<p>第1条，通过类的全限定名来获取类的二进制字节流，jvm没有限制具体的实现，历史上的典型实现有：</p>
-<ol>
-<li> 从zip包中读取，如jar。</li>
-<li> 从网络中获取。</li>
-<li> 运行时动态生成，如动态代理，在java.lang.reflect.Proxy中用了ProxyGenerator.generateProxyClass为特定接口生成形式。为“*$Proxy”的代理类二进制字节流。</li>
-<li> 从其他文件生成，如由文件生成class。</li>
-<li> 通过数据库读取。</li>
-</ol>
-<p>非数组类加载类中获取类的二进制字节流的动作自定义性最强，既可以用系统提供的引导类加载器完成，也可以用用户自定义类加载器完成，开发者可以自定义一个ClassLoader并重写findClass方法来控制字节流的获取。</p>
-<p>数组类的加载由虚拟机直接创建。<br>数组元素类是基本类型，虚拟机会把数组类标记为与BootstrapClassLoader关联。</p>
-<h1 id="验证（Verification）"><a href="#验证（Verification）" class="headerlink" title="验证（Verification）"></a>验证（Verification）</h1><h2 id="类加载后为什么需要验证？"><a href="#类加载后为什么需要验证？" class="headerlink" title="类加载后为什么需要验证？"></a>类加载后为什么需要验证？</h2><p>由于类加载过程不要求class一定从Java源代码编译而来，可以通过任何途径产生，在字节码可以做到Java语法层面做不到的事情，也有可能不符合正常的Java语法规范，所以如果不对class字节流进行验证，可能会使系统遭受攻击。</p>
-<h2 id="类的验证过程是怎样的？"><a href="#类的验证过程是怎样的？" class="headerlink" title="类的验证过程是怎样的？"></a>类的验证过程是怎样的？</h2><p>大致会完成以下验证动作：</p>
-<ol>
-<li> 文件格式验证</li>
-<li> 元数据验证</li>
-<li> 字节码验证</li>
-<li> 符号引用验证</li>
-</ol>
-<h3 id="文件格式验证"><a href="#文件格式验证" class="headerlink" title="文件格式验证"></a>文件格式验证</h3><p>例如：</p>
-<ol>
-<li> 是否以magic number 0xCAFEBABE开头</li>
-<li> 主次版本号是否在当前虚拟机处理范围</li>
-<li> 常量池中的常量是否有不被支持的的常量类型</li>
-</ol>
-<h3 id="元数据验证"><a href="#元数据验证" class="headerlink" title="元数据验证"></a>元数据验证</h3><p>是对字节码描述的元数据信息进行语义分析，保证元数据信息符合Java语言规范，如：</p>
-<ol>
-<li> 这个类是否有父类。</li>
-<li> 这个类是否继承了不允许被继承的类（被final关键字修饰的类）。</li>
-<li> 如果这个类不是抽象类，是否实现了父类或接口之中的要求实现的方法。</li>
-</ol>
-<h4 id="类的元数据指什么？"><a href="#类的元数据指什么？" class="headerlink" title="类的元数据指什么？"></a>类的元数据指什么？</h4><p>一个class文件中的信息分为代码和元数据两部分，其中代码是指方法体里的java代码，在class文件中表现为Code属性，其他所有数据项都用于描述元数据，包括类、字段、方法定义等。</p>
-<p>参考《深入理解Java虚拟机（第2版）》183页 6.3.7 属性表集合</p>
-<h3 id="字节码验证"><a href="#字节码验证" class="headerlink" title="字节码验证"></a>字节码验证</h3><p>对方法体做校验分析，通过数据流和控制流分析，确定程序语义是否是合法的、符合逻辑的，如：</p>
-<ol>
-<li> 保证跳转指令不会跳转到方法体以外的字节码指令上。</li>
-<li> 保证方法体内类型转换是有效的。</li>
-</ol>
-<p>通过了字节码验证，也无法保证程序就是没有错误的，无法通过程序准确的检查出代码是否在有限的时间内结束运行，即离散数学中的Halting Problem。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20081359/answer/162329455">如何通俗地解释停机问题（Halting Problem）？ - 张皓的回答 - 知乎</a></li>
-</ul>
-<h3 id="符号引用验证"><a href="#符号引用验证" class="headerlink" title="符号引用验证"></a>符号引用验证</h3><p>发生在虚拟机将符号转为直接引用的时候，这个动作将在连接的第三个阶段——解析阶段中发生。</p>
-<p>符号引用验证可以看作是对类自身以外（常量池中的各种符号引用）的信息进行匹配性校验，内容如根据名能否找到类、方法字段等。</p>
-<p>这阶段目的是确保解析动作的正常执行，如果无法通过符号验证，将会抛出一个java.lang.IncompatibleClassChangeError异常的子类，如java.lang.IllegalAccessError、java.lang.NoSuchFieldError、java.lang.NoSuchMethdError等。</p>
-<h1 id="准备（Preparation）"><a href="#准备（Preparation）" class="headerlink" title="准备（Preparation）"></a>准备（Preparation）</h1><p>类的准备阶段会完成：</p>
-<ol>
-<li> 为类的静态变量分配内存</li>
-<li> 设置变量初始值</li>
-</ol>
-<p>如果是常量，则编译时存放进引用其的class的常量池中，加载时存入方法区的运行时常量池。</p>
-<p>类变量是指static修饰过的变量。</p>
-<p>在类变量未被final修饰时，变量的初始值是数据类型的零值。</p>
-<p>例如 public static int value = 123; 语句，在准备阶段赋值是0（int类型的零值）而不是123。</p>
-<h1 id="解析（Resolution）"><a href="#解析（Resolution）" class="headerlink" title="解析（Resolution）"></a>解析（Resolution）</h1><p>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。</p>
-<ul>
-<li>符号引用（Symbolic References）<br>以一组符号来描述所引用的目标，符号可以是任何形式的字面量，只要使用时能无歧义地定位到目标即可。符号引用与虚拟机实现的内存布局无关，引用的目标并不一定已经加载到内存中。</li>
-<li>直接引用（Direct References）<br>直接引用可以是直接指向目标的指针、相对偏移量或是一个能间接定位到目标的句柄。直接引用是与虚拟机实现的内存布局相关的，同一个符号引用在不同虚拟机实例上翻译出来的直接引用一般不会相同。如果有了直接引用，那引用的目标必定已经存在内存地址中。</li>
-</ul>
-<p>所有方法调用中的目标方法在Class文件里面都是一个常量池中的符号引用，在类加载的解析阶段，会将其中的一部分符号引用转化为直接引用，这种解析能成立的前提是：方法在程序真正运行之前就有一个可确定的调用版本，并且这个方法的调用版本在运行期是不可改变的。换句话说，调用目标在程序代码写好、编译器进行编译时就必须确定下来。这类方法的调用称为解析（Resolution）。  </p>
-<p>在Java语言中符合“编译器可知，运行期不可变”这个要求的方法，主要包括静态方法和私有方法两大类，前者与类型直接关联，后者在外部不可被访问，这两种方法各自的特点决定了他们都不可能通过继承而别的方式重写其他版本，因此他们都适合在类加载阶段进行解析。<br>与之相对应的是，在Java虚拟机里面提供了5条方法调用字节码指令，分别如下。</p>
-<ul>
-<li>  invokestatic：调用静态方法。</li>
-<li>  invokespecial：调用实例构造器<init>方法、私有方法和父类方法。</li>
-<li>  invokevirtual：调用所有的虚方法。</li>
-<li>  invokeinterface：调用接口方法，会在运行时再确定一个实现此接口的对象。</li>
-<li>  invokedynamic：先在运行时动态解析出调用点限定符所引用的方法，然后再执行该方法，在此之前的4条调用指令，分派逻辑是固化在Java虚拟机内部的，而invokedynamic指令的分派逻辑是由用户所设定的引导方法决定的。</li>
-</ul>
-<p>只要能被invokestatic和invokespecial指令调用的方法，都可以在解析阶段中确定唯一的调用版本，符合这个条件的有静态方法、私有方法、实例构造器、父类方法4类，他们在类加载的时候就会把符号引用解析为该方法的直接引用。这些方法可以称为非虚方法，与之相反，其他方法称为虚方法。</p>
-<p>方法调用并不等于方法执行，方法调用阶段的唯一任务就是确定被调用方法的版本(即调用哪一方法)，暂时还不涉及方法内部的具体运行过程。在程序运行时，进行方法调用是最普遍、最频繁的操作。Class文件的编译过程不包含编译中的连接步骤，一切方法调用在Class文件里面存储的都只是符号引用，而不是方法在实际运行时内存布局中的入口地址(相当于之前说的直接引用)。这个特性给Java带来了强大的动态扩展能力，但也使得Java方法调用过程变得相对复杂起来，需要在类加载期间，甚至到运行期间才能确定目标方法的直接引用。</p>
-<h1 id="初始化（Initialization）"><a href="#初始化（Initialization）" class="headerlink" title="初始化（Initialization）"></a>初始化（Initialization）</h1><p>类初始化阶段是类加载过程的最后一步，前面的类加载过程中，除了在加载阶段用户可以通过自定义类加载器参与之外，其余动作完全由虚拟机主导和控制。到了初始化阶段，才真正开始执行类中定义的 Java 代码。</p>
-<p>在准备阶段，变量已经赋值过一次系统要求的初始值，而在初始化阶段，则根据程序员自己设置的变量赋值。初始化阶段是执行类构造器<code>&lt;clinit&gt;()</code> 方法的过程。</p>
-<h2 id="lt-clinit-gt-方法生成的细节"><a href="#lt-clinit-gt-方法生成的细节" class="headerlink" title="&lt;clinit&gt;() 方法生成的细节"></a><code>&lt;clinit&gt;()</code> 方法生成的细节</h2><ul>
-<li><code>&lt;clinit&gt;()</code>  方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块中的语句合并产生的，编译器收集的顺序是由语句在源文件中出现的前后顺序决定的，静态语句块中只能访问定义在它之前的变量，定义在它后面的变量，可以赋值，但是不能访问。</li>
-<li><code>&lt;clinit&gt;()</code> 方法与类的构造函数 <code>&lt;init&gt;()</code>方法不同，它不需要显示地调用父类构造器，虚拟机会保证在子类<code>&lt;clinit&gt;()</code>方法执行之前，父类的<code>&lt;clinit&gt;()</code> 方法已经执行完毕。因此在虚拟机中第一个被执行的<code>&lt;clinit&gt;()</code> 方法肯定是 Object 的。</li>
-<li><code>&lt;clinit&gt;()</code>方法对类或接口来说不是必需的，如果一个类中没有静态语句块也没有对变量赋值的操作，那么编译器不为这个类生成<code>&lt;clinit&gt;()</code> 方法。</li>
-<li>接口中不能使用静态语句块，但仍然有变量初始化的操作，因此接口与类一样都会生成 <code>&lt;clinit&gt;()</code> 方法。但接口与类不同的是，接口不需要首先执行父类的<code>&lt;clinit&gt;()</code> 方法。只有当用到父类中的变量时，父接口才会初始化。另外，接口的实现类在初始化时也一样不会执行接口的<code>&lt;clinit&gt;()</code> 方法。</li>
-<li>虚拟机会保证一个类的<code>&lt;clinit&gt;()</code> 方法在多线程中被正确的加锁，同步，如果多个线程同时去初始化一个类，那么只会有一个线程去执行这个类的<code>&lt;clinit&gt;()</code> 方法，其它线程被阻塞。</li>
-</ul>
-<p>另外就是在同一个类加载器下，<code>&lt;clinit&gt;()</code> 方法只会被执行一次，也就是说一个类型只会被初始化一次。</p>
-<h2 id="类什么情况下会触发初始化"><a href="#类什么情况下会触发初始化" class="headerlink" title="类什么情况下会触发初始化?"></a>类什么情况下会触发初始化?</h2><p>以下五种情况必须对类进行初始化（加载、验证、准备自然必须在初始化之前完成）：</p>
-<ol>
-<li> 遇到new、putstatic、getstatic、invokestatic这几条字节指令；生成这 4 条指令最常见的 Java 代码场景是：使用 new 关键字实例化对象、读取或设置一个类的静态字段（被 final 修饰、已在编译期把结果放入到常量池的静态字段除外）以及调用一个类的静态方法的时候。</li>
-<li> 被final修饰的静态字段在编译期已经被把结果存入从常量池了，会触发static的指令吗，需要调研试验一下。</li>
-<li> 通过Class.forName反射调用一个类，参数中初始化选项默认为true。</li>
-<li> 初始化一个类，要先触发父类的初始化；初始化一个接口时只有在真正使用到父接口的时候（如引用接口中定义的常量）才初始化。</li>
-<li> 虚拟机启动时，会先初始化主类，即含有main方法的类。</li>
-<li>使用jdk7的动态语言机制时，一个MethodHandle实例最后解析结果是REF_getStatic、REF_putStatic、REF_invokeStatic的方法句柄，需要初始化这些方法句柄对应的类。</li>
-</ol>
-<h2 id="不会触发类初始化的典型场景"><a href="#不会触发类初始化的典型场景" class="headerlink" title="不会触发类初始化的典型场景"></a>不会触发类初始化的典型场景</h2><ol>
-<li> 调用父类的静态成员变量，只会执行父类的static代码块，不会执行子类的static代码块，即子类没有初始化。</li>
-<li> 创建一个类的数组，不会触发数组元素类初始化（元素类的static代码块不会执行）。</li>
-<li> A类只引用了B类中定义的常量（static final定义的基本类型字面量或字符串字面量的属性），不会触发该B类的初始化，因为在编译阶段通过常量池传播优化，已经将B类的常量值存储到了A类常量池中，以后A类对B类中常量的引用都转换为对A类自身常量池中的引用。</li>
-</ol>
-<h1 id="卸载（Unloading）"><a href="#卸载（Unloading）" class="headerlink" title="卸载（Unloading）"></a>卸载（Unloading）</h1><h2 id="类卸载时机"><a href="#类卸载时机" class="headerlink" title="类卸载时机"></a>类卸载时机</h2><p>类的卸载就从虚拟机中移除类，这个由虚拟机的垃圾回收机制决定，一般要满足下面的条件：</p>
-<ol>
-<li> 该类所有的实例对象都已被回收。</li>
-<li> 该类的类加载器对象已被回收。</li>
-<li> 该类的Class对象没有在任何地方被引用，无法在任何地方通过反射访问该类。</li>
-</ol>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li>《深入理解Java虚拟机（第2版）》第7章  虚拟机类加载机制</li>
-</ul>
 
       
     </div>
