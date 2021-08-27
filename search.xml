@@ -5391,6 +5391,59 @@
       </tags>
   </entry>
   <entry>
+    <title>最大报文长度（MSS）与最大传输单元（MTU）</title>
+    <url>/%E7%BD%91%E7%BB%9C/%E6%9C%80%E5%A4%A7%E6%8A%A5%E6%96%87%E9%95%BF%E5%BA%A6%EF%BC%88MSS%EF%BC%89%E4%B8%8E%E6%9C%80%E5%A4%A7%E4%BC%A0%E8%BE%93%E5%8D%95%E5%85%83%EF%BC%88MTU%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="最大报文长度（Maximum-Segment-Size）是什么？"><a href="#最大报文长度（Maximum-Segment-Size）是什么？" class="headerlink" title="最大报文长度（Maximum Segment Size）是什么？"></a>最大报文长度（Maximum Segment Size）是什么？</h1><p>TCP报文数据部分的最大长度，不包含TCP头。</p>
+<p>这个MSS指的是TCP报文段中数据部分的最大长度，并不是整个TCP报文段长度。整个TCP报文段长度 = TCP首部长度 + TCP数据部分长度。</p>
+<p>如果上层交付下来的数据太大，就对其进行数据分块。这个分块过程是在传输层完成的，在接收端的传输层对分块的TCP报文段的数据部分进行重组。</p>
+<h1 id="最大报文长度（Maximum-Segment-Size）存储在什么地方？"><a href="#最大报文长度（Maximum-Segment-Size）存储在什么地方？" class="headerlink" title="最大报文长度（Maximum Segment Size）存储在什么地方？"></a>最大报文长度（Maximum Segment Size）存储在什么地方？</h1><p>TCP首部中的Options字段</p>
+<h1 id="为什么要搞一个最大报文长度（Maximum-Segment-Size）来限制TCP报文数据长度？"><a href="#为什么要搞一个最大报文长度（Maximum-Segment-Size）来限制TCP报文数据长度？" class="headerlink" title="为什么要搞一个最大报文长度（Maximum Segment Size）来限制TCP报文数据长度？"></a>为什么要搞一个最大报文长度（Maximum Segment Size）来限制TCP报文数据长度？</h1><p>当TCP数据长度超过MSS的时候，TCP会做分段。</p>
+<p>这样是为了防止IP层对TCP报文分片。</p>
+<h1 id="IP层对TCP报文进行分片会产生什么问题？"><a href="#IP层对TCP报文进行分片会产生什么问题？" class="headerlink" title="IP层对TCP报文进行分片会产生什么问题？"></a>IP层对TCP报文进行分片会产生什么问题？</h1><p>IP分片后，接收端需要等到所有IP包到达后，才能确定整个TCP报文收到了，然后发送ACK报文，这样比较低效，也增加了控制的复杂性。</p>
+<p>IP分片后，如果有几个分片丢失了，只能重传所有分片，这样是很浪费流量的。</p>
+<p>首先因为IP层没有超时重传机制，IP层是面向无连接的，所以IP层没有办法只重传丢失的分片。</p>
+<p>其次IP分片后，只有第一片有TCP的报文头，后面的IP分片没有TCP报文头，所以TCP也没办法识别到底是哪一段丢失了，也就没办法做超时重传，也没办法确定顺序，如果TCP对报文分段，每段都有TCP报文头，报文丢失就知道丢失的是哪一个。</p>
+<h1 id="为什么IP数据长度过长要分片？"><a href="#为什么IP数据长度过长要分片？" class="headerlink" title="为什么IP数据长度过长要分片？"></a>为什么IP数据长度过长要分片？</h1><p>IP分组达到数据链路层，整个IP分组被作为数据链路层以太网帧的数据部分。</p>
+<p>以太网帧对数据部分有最大长度的限制，所以IP数据数据过长要分片。</p>
+<p>数据链路层的以太网帧的数据部分的最大长度（最大IP包长）称为最大传输单元（Maximum Transmit Unit）</p>
+<p>以太网对数据帧的限制一般都是 1500 字节，在一般情况下，IP 主机的路径 MTU 都是 1500，去掉 IP 首部的 20 字节，如果待传输的数据大于 1480 节，那么该 IP 协议就会将数据包分片传输。</p>
+<h1 id="TCP拆分数据的意义？"><a href="#TCP拆分数据的意义？" class="headerlink" title="TCP拆分数据的意义？"></a>TCP拆分数据的意义？</h1><p>TCP 协议拆分数据是为了保证传输的可靠性和顺序，作为可靠的传输协议，为了保证数据的传输顺序，它需要为每一个数据段增加包含序列号的 TCP 协议头，如果数据段大小超过了 IP 协议的 MTU 限制， 就会带来更多额外的重传和重组开销，影响性能。</p>
+<h1 id="最大传输单元（Maximum-Transmit-Unit）是什么？"><a href="#最大传输单元（Maximum-Transmit-Unit）是什么？" class="headerlink" title="最大传输单元（Maximum Transmit Unit）是什么？"></a>最大传输单元（Maximum Transmit Unit）是什么？</h1><p>数据链路层的以太网帧的数据部分的最大长度（IP包长）</p>
+<h1 id="为什么以太网MTU默认值被设定为1500？"><a href="#为什么以太网MTU默认值被设定为1500？" class="headerlink" title="为什么以太网MTU默认值被设定为1500？"></a>为什么以太网MTU默认值被设定为1500？</h1><p>MTU为什么不能太大呢？</p>
+<p>以太网早期的拓扑结构是总线型结构，总线型传输有个特点就是，同一时刻只能有一个主机占用总线传输，如果一个以太网帧过长，这个主机就会一直占用总线，其他主机只能干等着，对于其他主机来说数据延迟就变大了。</p>
+<p>而且传输的数据包越大，数据位出错的可能性越大，出错了就要重传，重传又要占用很长时间的带宽，降低了整体吞吐量。</p>
+<p>所以MTU不能太大。</p>
+<p>如果MTU太小，各种协议头也要占用数据包大小的，这样每个报文的实际有效传输效率也会很低。</p>
+<p>所以MTU要搞一个适中值。</p>
+<p>1518这个值是考虑到传输效率以及传输时间而折中选择的一个值，并且由于目前网络链路中的节点太多，其中某个节点的MTU值如果和别的节点不一样，就很容易带来拆包重组的问题，甚至会导致丢包无法发送。</p>
+<h1 id="为什么MTU最小为64字节？"><a href="#为什么MTU最小为64字节？" class="headerlink" title="为什么MTU最小为64字节？"></a>为什么MTU最小为64字节？</h1><p>以CSMA/CD作为MAC<a href="http://lib.csdn.net/base/datastructure">算法</a>的一类LAN称为以太网。CSMA/CD冲突避免的方法：先听后发、边听边发、随机延迟后重发。一旦发生冲突，必须让每台主机都能检测到。关于最小发送间隙和最小帧长的规定也是为了避免冲突。</p>
+<p>考虑如下的情况，主机发送的帧很小，而两台冲突主机相距很远。在主机A发送的帧传输到B的前一刻，B开始发送帧。这样，当A的帧到达B时，B检测到冲突，于是发送冲突信号。假如在B的冲突信号传输到A之前，A的帧已经发送完毕，那么A将检测不到冲突而误认为已发送成功。由于信号传播是有时延的，因此检测冲突也需要一定的时间。这也是为什么必须有个最小帧长的限制。</p>
+<p>按照标准，10Mbps以太网采用中继器时，连接的最大长度是2500米，最多经过4个中继器，因此规定对10Mbps以太网一帧的最小发送时间为51.2微秒。这段时间所能传输的数据为512位，因此也称该时间为512位时。这个时间定义为以太网时隙，或冲突时槽。512位＝64字节，这就是以太网帧最小64字节的原因。</p>
+<p>512位时是主机捕获信道的时间。如果某主机发送一个帧的64字节仍无冲突，以后也就不会再发生冲突了，称此主机捕获了信道。</p>
+<p>由于信道是所有主机共享的，如果数据帧太长就会出现有的主机长时间不能发送数据，而且有的发送数据可能超出接收端的缓冲区大小，造成缓冲溢出。为避免单一主机占用信道时间过长，规定了以太网帧的最大帧长为1500。</p>
+<p>100Mbps以太网的时隙仍为512位时，以太网规定一帧的最小发送时间必须为5.12μs。</p>
+<p>1000Mbps以太网的时隙增至512字节，即4096位时，4.096μs。</p>
+<p>以太网数据帧（802.3）最大与最小长度。</p>
+<h1 id="最大报文长度（Maximum-Segment-Size）是怎么确定的？"><a href="#最大报文长度（Maximum-Segment-Size）是怎么确定的？" class="headerlink" title="最大报文长度（Maximum Segment Size）是怎么确定的？"></a>最大报文长度（Maximum Segment Size）是怎么确定的？</h1><p>MSS由设备的MTU确定，不能超过MTU，否则TCP报文会被IP层分片  </p>
+<h1 id="TCP报文的长度在TCP三次握手中那一次确定的？"><a href="#TCP报文的长度在TCP三次握手中那一次确定的？" class="headerlink" title="TCP报文的长度在TCP三次握手中那一次确定的？"></a>TCP报文的长度在TCP三次握手中那一次确定的？</h1><p>MSS值只会出现在SYN报文中（不要问我为什么，我也不知道为什么只出现SYN报文中），即SYN=1时，才会有MSS字段值。</p>
+<p>当客户端想要以TCP方式从服务器端下载数据时，</p>
+<p>（1）首先客户端会发送一个SYN请求报文，这个SYN报文的“选项”字段中会有MSS值（MSS = MTU - IP首部长度 - TCP首部长度）。该MSS值是为了告知对方最大的发送数据大小。</p>
+<p>（2）当服务器端收到SYN报文后，会向请求端返回SYN+ACK（同步确认报文）报文，其中的“选项”字段也会有MSS值。</p>
+<p>（3）通信双方选择SYN和SYN+ACK报文中最小的MSS最为此次TCP连接的MSS，从而达到通信双发协商MSS的效果。</p>
+<p>在第二次握手后就可以确定TCP中最大传输报文（MSS）大小。</p>
+<h1 id="MTU是怎么确定的？"><a href="#MTU是怎么确定的？" class="headerlink" title="MTU是怎么确定的？"></a>MTU是怎么确定的？</h1><p>每一个物理设备都有自己的 MTU，最终的MTU由整个链路上 MTU 最小的物理设备决定。</p>
+<p>路径MTU发现（PMTUD： Path MTU Discovery ）。</p>
+]]></content>
+      <categories>
+        <category>网络</category>
+      </categories>
+      <tags>
+        <tag>网络</tag>
+        <tag>MSS</tag>
+        <tag>MTU</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>浏览器请求url完整解析的过程</title>
     <url>/%E7%BD%91%E7%BB%9C/%E6%B5%8F%E8%A7%88%E5%99%A8%E8%AF%B7%E6%B1%82%E7%BD%91%E5%9D%80%E5%AE%8C%E6%95%B4%E8%A7%A3%E6%9E%90%E7%9A%84%E8%BF%87%E7%A8%8B/</url>
     <content><![CDATA[<h1 id="基本过程"><a href="#基本过程" class="headerlink" title="基本过程"></a>基本过程</h1><ol>
