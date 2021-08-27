@@ -186,6 +186,121 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/" class="post-title-link" itemprop="url">哈夫曼编码</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-02 20:00:00" itemprop="dateCreated datePublished" datetime="2019-07-02T20:00:00+08:00">2019-07-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/哈夫曼编码/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="什么是哈夫曼编码"><a href="#什么是哈夫曼编码" class="headerlink" title="什么是哈夫曼编码"></a>什么是哈夫曼编码</h2><p>出现频次越高的字符，编码长度越小。</p>
+<h2 id="哈夫曼编码的价值"><a href="#哈夫曼编码的价值" class="headerlink" title="哈夫曼编码的价值"></a>哈夫曼编码的价值</h2><p>变长编码，使得编码的平均长度最短，实现压缩率大的无损压缩。</p>
+<p>因为哈夫曼树是最优的，每次的选择都是贪心选择，这个局部最优也是全局最优。</p>
+<h2 id="哈夫曼编码过程"><a href="#哈夫曼编码过程" class="headerlink" title="哈夫曼编码过程"></a>哈夫曼编码过程</h2><ul>
+<li>把文本中字符按出现的频次排序。</li>
+<li>每个字符作为一个结点放入一个集合。</li>
+<li>取集合最小的两个频次的结点，为左右子结点，生成一个父结点，父结点的频次是两个子结点频次之和，把父结点再加入到集合中。</li>
+<li>重复这个构造过程，生成一个最优二叉树。</li>
+<li>给二叉树所有左边设置0，所有右边设置1。</li>
+<li>字符都在叶子结点。</li>
+<li>根结点到叶子结点路径上的0和1组成的码字就是该字符的编码。</li>
+</ul>
+<p>因为所有字符都出现在叶子结点，保证了哈夫曼编码当中的任何一个字符的编码都不能是另一个字符编码的前缀。也就是说哈夫曼编码是一种前缀编码。</p>
+<hr>
+<h2 id="如何证明哈夫曼编码是最优的？"><a href="#如何证明哈夫曼编码是最优的？" class="headerlink" title="如何证明哈夫曼编码是最优的？"></a>如何证明哈夫曼编码是最优的？</h2><p>哈夫曼编码过程每次的选择都是贪心选择，这个局部最优也是全局最优。</p>
+<p>其正确性证明依赖于贪心选择性质和最优子结构。</p>
+<hr>
+<h2 id="哈夫曼编码的特点"><a href="#哈夫曼编码的特点" class="headerlink" title="哈夫曼编码的特点"></a>哈夫曼编码的特点</h2><ol>
+<li> 编码非等长</li>
+<li> 编码前缀不重复</li>
+</ol>
+<h2 id="哈夫曼编码的压缩效果？"><a href="#哈夫曼编码的压缩效果？" class="headerlink" title="哈夫曼编码的压缩效果？"></a>哈夫曼编码的压缩效果？</h2><p>哈夫曼编码可以很有效的压缩数据，具体压缩率依赖于数据本身的特性。</p>
+<p>齐夫定律：</p>
+<p>发现某一单词出现的频率与其在频率表里名次的常数次幂成反比，也就是说极少数的单词会被经常使用，而绝大多数单词很少被提及，这种20/80法则在很多领域都被逐步发现，这种幂律分布被称为“齐夫定律”（Zipf’s law）</p>
+<p>一般信息的分配都是幂率分布。</p>
+<p>所以用哈夫曼编码压缩的比例一般都挺高的，70%以上。</p>
+<h2 id="信息压缩的极限在哪？"><a href="#信息压缩的极限在哪？" class="headerlink" title="信息压缩的极限在哪？"></a>信息压缩的极限在哪？</h2><p>香农第一定理给出了无损的情况下数据压缩的临界值。</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2019/08/information-theory.html">信息论入门教程</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +332,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -397,7 +512,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -548,7 +663,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -666,7 +781,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -768,7 +883,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -878,7 +993,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -998,7 +1113,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1106,7 +1221,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1312,7 +1427,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1438,133 +1553,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/" class="post-title-link" itemprop="url">Java集合类-TreeMap、ConcurrentSkipListMap</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-05-08 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-08T20:00:00+08:00">2018-05-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:19:38" itemprop="dateModified" datetime="2021-08-27T13:19:38+08:00">2021-08-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-TreeMap、ConcurrentSkipListMap/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="TreeMap作用"><a href="#TreeMap作用" class="headerlink" title="TreeMap作用"></a>TreeMap作用</h1><ul>
-<li> 元素可以按key保持顺序。</li>
-<li> 因为有序，提供了很多范围查询的方法，非常方便。</li>
-</ul>
-<h1 id="TreeMap的实现"><a href="#TreeMap的实现" class="headerlink" title="TreeMap的实现"></a>TreeMap的实现</h1><p>TreeMap实现了NavigableMap接口，该接口又继承SortedMap接口，两个提供了很多范围查询的方法，非常方便。</p>
-<p>用红黑树实现，插入、删除、查询的平均时间复杂度都是log(n)。</p>
-<h1 id="TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap"><a href="#TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap" class="headerlink" title="TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap?"></a>TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap?</h1><ol>
-<li> 因为红黑树的结构调整可能涉及整个树的结点，这样并发下就要锁住很多结点，使用跳表会更局部一点，只锁住局部的几个结点，并发性能更高。</li>
-<li> 红黑树加锁实现起来比较复杂，跳表是链表加锁比较容易实现</li>
-</ol>
-<p>可以用过Collections.synchronizedSortedMap()保证线程安全，也可以改用ConcurrentSkipListMap并发性能更好。</p>
-<h1 id="TreeMap为什么用红黑树不用AVL树？"><a href="#TreeMap为什么用红黑树不用AVL树？" class="headerlink" title="TreeMap为什么用红黑树不用AVL树？"></a>TreeMap为什么用红黑树不用AVL树？</h1><p>跟HashMap中的问题一样。</p>
-<p>红黑树的3结点可以吸收变化，在多次使用中可以减少调整数据结构的次数，从而提升性能。</p>
-<h1 id="ConcurrentSkipListMap是什么？"><a href="#ConcurrentSkipListMap是什么？" class="headerlink" title="ConcurrentSkipListMap是什么？"></a>ConcurrentSkipListMap是什么？</h1><p>跳表：链表+多级索引（多层链表）。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825212310.png"></p>
-<ul>
-<li>给有序链表再增加若干层额外的指针索引，用空间换时间。</li>
-<li>每一层都是一个有序链表。</li>
-<li>实际效果类似于平衡二叉搜索树。</li>
-<li>插入、删除、查询的平均时间复杂度都是log(n)。</li>
-<li>支持按key排序所有元素，也支持快速查找。</li>
-</ul>
-<h1 id="跳表的数据结构存在什么问题？"><a href="#跳表的数据结构存在什么问题？" class="headerlink" title="跳表的数据结构存在什么问题？"></a>跳表的数据结构存在什么问题？</h1><p>按照理想的生成链表的方式，上面每一层链表的节点个数，是下面一层的节点个数的一半，这样查找过程就非常类似于一个二分查找，使得查找的时间复杂度可以降低到O(log n)。</p>
-<p>但是，这种方法在插入数据的时候有很大的问题。新插入一个节点之后，就会打乱上下相邻两层链表上节点个数严格的2:1的对应关系。如果要维持这种对应关系，就必须把新插入的节点后面的所有节点（也包括新插入的节点）重新进行调整，这会让时间复杂度重新蜕化成O(n)。删除数据也有同样的问题。</p>
-<p>skiplist为了避免这一问题，它不要求上下相邻两层链表之间的节点个数有严格的对应关系，而是为每个节点随机出一个层数(level)。比如，一个节点随机出的层数是3，那么就把它链入到第1层到第3层这三层链表中。</p>
-<h1 id="跳表与红黑树区别？"><a href="#跳表与红黑树区别？" class="headerlink" title="跳表与红黑树区别？"></a>跳表与红黑树区别？</h1><ol>
-<li> 红黑树为了保持平衡有可能会调整很多结点甚至整个树，而跳表只要修改相邻结点更加的局部，跳表调整次数少性能也就高，同时并发加锁时，锁住的结点更少，可以减少竞争</li>
-<li> 跳表的区间查询更高效，因为找到链表头结点顺序遍历就行了，红黑树需要中序遍历相对比较复杂</li>
-<li> 跳表占用空间更少，平衡树每个节点包含2个指针（分别指向左右子树），而skiplist每个节点包含的指针数目平均为1/(1-p)，具体取决于参数p的大小。如果像Redis里的实现一样，取p=1/4，那么平均每个节点包含1.33个指针，比平衡树更有优势。</li>
-</ol>
-<h1 id="ConcurrentSkipListMap存在什么问题？"><a href="#ConcurrentSkipListMap存在什么问题？" class="headerlink" title="ConcurrentSkipListMap存在什么问题？"></a>ConcurrentSkipListMap存在什么问题？</h1><p>size方法求得链表长度要遍历整个链表，并且没有加锁，多线程高并发下这个方法返回值并不准确，高并发下使用size的意义不大。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/yd2sOhmVtZeEkJ06cTE7qA"> 死磕 java集合之ConcurrentSkipListMap源码分析——发现个bug</a></li>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/1811782/when-should-i-use-concurrentskiplistmap">When should I use ConcurrentSkipListMap?</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20202931/answer/16086538">为啥 redis 使用跳表(skiplist)而不是使用 red-black？ - 于康的回答 - 知乎</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/9/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/11/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/9/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/11/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1632,7 +1624,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">130</span>
+          <span class="site-state-item-count">131</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
