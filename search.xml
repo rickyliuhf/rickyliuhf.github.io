@@ -1619,7 +1619,8 @@
   <entry>
     <title>LeetCode.295.数据流的中位数（困难）</title>
     <url>/LeetCode/LeetCode.295.%E6%95%B0%E6%8D%AE%E6%B5%81%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>中位数是有序列表中间的数。如果列表长度是偶数，中位数则是中间两个数的平均值。</p>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/find-median-from-data-stream/">LeetCode.295.数据流的中位数（困难）</a></p>
+<p>中位数是有序列表中间的数。如果列表长度是偶数，中位数则是中间两个数的平均值。</p>
 <p>例如，</p>
 <p>[2,3,4] 的中位数是 3</p>
 <p>[2,3] 的中位数是 (2 + 3) / 2 = 2.5</p>
