@@ -8006,9 +8006,9 @@
 <p>至此整个事件传递流程和<code>ViewDragHelper</code>的重要方法基本都解析完了，<code>shouldInterceptTouchEvent()</code>和<code>processTouchEvent()</code>的<code>ACTION_POINTER_DOWN</code>、<code>ACTION_POINTER_UP</code>部分就留给读者自己解析了。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对于整个触摸事件传递过程，我画了简要的流程图，方便日后快速回顾。</p>
 <ul>
-<li><p><a href="http://www.processon.com/view/link/5550a7bae4b09739f465ec64">单点触摸，没有考虑边缘滑动检测的最简流程图</a><br><img src="viewdraghelper-toucheventflow-basic.png"></p>
+<li><p><a href="http://www.processon.com/view/link/5550a7bae4b09739f465ec64">单点触摸，没有考虑边缘滑动检测的最简流程图</a><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827220255.png"></p>
 </li>
-<li><p><a href="http://www.processon.com/view/link/5550d3dce4b09739f46789bd">单点触摸，考虑了边缘滑动检测的流程图</a><br><img src="viewdraghelper-toucheventflow-withedgetouch.png"></p>
+<li><p><a href="http://www.processon.com/view/link/5550d3dce4b09739f46789bd">单点触摸，考虑了边缘滑动检测的流程图</a><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827220313.png"></p>
 </li>
 </ul>
 <p>多点触摸情况我就没研究了，在这里忽略~</p>
@@ -8096,11 +8096,11 @@
 ]]></content>
       <categories>
         <category>Android</category>
-        <category>ViewDragHelper</category>
       </categories>
       <tags>
         <tag>Android</tag>
         <tag>ViewDragHelper</tag>
+        <tag>源码解析</tag>
       </tags>
   </entry>
 </search>
