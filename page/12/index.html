@@ -186,6 +186,109 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/" class="post-title-link" itemprop="url">Object.finalize()</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-17 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-17T20:00:00+08:00">2018-01-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Object.finalize()/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Object的finalize-方法什么时候被执行？"><a href="#Object的finalize-方法什么时候被执行？" class="headerlink" title="Object的finalize()方法什么时候被执行？"></a>Object的finalize()方法什么时候被执行？</h1><p>当垃圾回收器要宣告一个对象死亡时，至少要经过两次标记过程：</p>
+<p>如果对象在进行可达性分析后发现没有和GC Roots相连接的引用链，就会被第一次标记。</p>
+<p>GC会再判断该对象是否覆盖了finalize方法，若未覆盖，则直接将其回收。</p>
+<p>如果对象覆盖finalize()方法且未被虚拟机调用过，那么这个对象会被放置在F-Queue队列中，并在稍后由一个虚拟机自动建立的低优先级的Finalizer线程区执行触发finalize()方法，但不承诺等待其运行结束。</p>
+<p>执行finalize方法完毕后，GC会再次判断该对象是否可达，若不可达，则进行回收，否则，对象“复活”。</p>
+<h1 id="Object-finalize-设计目的？"><a href="#Object-finalize-设计目的？" class="headerlink" title="Object.finalize()设计目的？"></a>Object.finalize()设计目的？</h1><p>f对象逃脱死亡的最后一次机会。（只要重新与引用链上的任何一个对象建立关联即可。）但是不建议使用，运行代价高昂，不确定性大，且无法保证各个对象的调用顺序。可用try-finally或其他替代。</p>
+<h1 id="Object-finalize-使用场景"><a href="#Object-finalize-使用场景" class="headerlink" title="Object.finalize()使用场景"></a>Object.finalize()使用场景</h1><p>由于发生垃圾回收就会调用finalize()，所以它可以作为垃圾回收的监听回调。</p>
+<p>在Android framework源码中BinderInternal实现了gc监听的功能，ActivityThread在gc发生时，如果当前内存不足时，则清理一些不必要的activity以释放内存。</p>
+<p>再比如你调用了一些native的方法，可以要在finalize()里去调用C的释放函数。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数
+</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1082673">是时候忘掉finalize方法了</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/questionTerminal/d8eab06913084e42b515633604eef7cd">finalize()方法什么时候被调用？析构函数(finalization)的目的是什么？</a></li>
+<li>《深入理解Java虚拟机》</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%BC%BA%E5%BC%95%E7%94%A8%E3%80%81%E8%BD%AF%E5%BC%95%E7%94%A8%E3%80%81%E5%BC%B1%E5%BC%95%E7%94%A8%E3%80%81%E8%99%9A%E5%BC%95%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +320,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -320,7 +423,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -467,7 +570,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -577,7 +680,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -682,7 +785,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -923,7 +1026,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1133,7 +1236,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1330,7 +1433,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1484,7 +1587,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:18:01" itemprop="dateModified" datetime="2021-08-27T17:18:01+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1540,121 +1643,6 @@
 <li> 线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结束、Thread.isAlive()的返回值手段检测到线程已经终止执行；</li>
 <li> 对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始；</li>
 </ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/" class="post-title-link" itemprop="url">Java并发-指令重排序、指令流水线</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-10-23 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-23T20:00:00+08:00">2017-10-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 13:55:22" itemprop="dateModified" datetime="2021-08-27T13:55:22+08:00">2021-08-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/指令重排序/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="如何验证指令发生了重排序？"><a href="#如何验证指令发生了重排序？" class="headerlink" title="如何验证指令发生了重排序？"></a>如何验证指令发生了重排序？</h1><p>定义两个变量设置初始值，在两个线程中分别赋新的值，然后打印在赋值语句后面打印另外一个线程修改的变量。</p>
-<p>执行很多次，如果发生了打印的都是变量的初始值，就是发生重排序了，违反直觉，但是编译器觉得两条语句没有依赖关系，允许指令重排序</p>
-<h1 id="CPU的指令流水线是什么？解决了什么问题？"><a href="#CPU的指令流水线是什么？解决了什么问题？" class="headerlink" title="CPU的指令流水线是什么？解决了什么问题？"></a>CPU的指令流水线是什么？解决了什么问题？</h1><p>一条指令可以分为多个步骤完成，每个步骤可以由不同的硬件功能单元来执行，这样就可以让多个功能单元并行执行指令的不同步骤，不需要等待一个指令执行完再执行执行下一个指令，流水线可以让指令的一个步骤完成了就可以执行下一个指令的同一个步骤</p>
-<h1 id="CPU指令流水线存在什么问题？"><a href="#CPU指令流水线存在什么问题？" class="headerlink" title="CPU指令流水线存在什么问题？"></a>CPU指令流水线存在什么问题？</h1><p>如果指令之间存在数据相关性，导致前一条指令执行完后才能执行后一条指令，指令重叠就会发生冲突，无法并行执行，后面的指令只能等待，这个时候就可以把数据无关的指令重排序，以防止流水线停顿。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215853.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215901.png"></p>
-<h1 id="CPU指令流水线什么情况下会需要指令重排序"><a href="#CPU指令流水线什么情况下会需要指令重排序" class="headerlink" title="CPU指令流水线什么情况下会需要指令重排序?"></a>CPU指令流水线什么情况下会需要指令重排序?</h1><p>一条指令可以分为多个步骤完成，如下:</p>
-<ol>
-<li> 取指 IF</li>
-<li> 译码和取寄存器操作数 ID</li>
-<li> 执行或者有效地址计算 EX</li>
-<li> 存储器访问 MEM</li>
-<li> 写回 WB</li>
-</ol>
-<p>CPU在工作时，需要将上述指令分为多个步骤依次执行</p>
-<p>为了提高硬件利用率，CPU指令是按流水线技术来执行的，如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215936.png"></p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215945.png"></p>
-<ol>
-<li> LW指令 表示 load，其中LW R1,b表示把b的值加载到寄存器R1中</li>
-<li> LW R2,c 表示把c的值加载到寄存器R2中</li>
-<li> ADD 指令表示加法，把R1 、R2的值相加，并存入R3寄存器中。</li>
-<li> SW 表示 store 即将 R3寄存器的值保持到变量a中</li>
-<li> LW R4,e 表示把e的值加载到寄存器R4中</li>
-<li> LW R5,f 表示把f的值加载到寄存器R5中</li>
-<li> SUB 指令表示减法，把R4 、R5的值相减，并存入R6寄存器中。</li>
-<li> SW d,R6 表示将R6寄存器的值保持到变量d中</li>
-</ol>
-<p>上述便是汇编指令的执行过程，在某些指令上存在X的标志，X代表中断的含义，也就是只要有X的地方就会导致指令流水线技术停顿，同时也会影响后续指令的执行，可能需要经过1个或几个指令周期才可能恢复正常，那为什么停顿呢？这是因为部分数据还没准备好，如执行ADD指令时，需要使用到前面指令的数据R1，R2，而此时R2的MEM操作没有完成，即未拷贝到存储器中，这样加法计算就无法进行，必须等到MEM操作完成后才能执行，也就因此而停顿了，其他指令也是类似的情况。前面阐述过，停顿会造成CPU性能下降，因此我们应该想办法消除这些停顿，这时就需要使用到指令重排了，如下图，既然ADD指令需要等待，那我们就利用等待的时间做些别的事情，如把LW R4,e 和 LW R5,f 移动到前面执行，毕竟LW R4,e 和 LW R5,f执行并没有数据依赖关系，对他们有数据依赖关系的SUB R6,R5,R4指令在R4,R5加载完成后才执行的，没有影响</p>
-<p>正如上图所示，所有的停顿都完美消除了，指令流水线也无需中断了，这样CPU的性能也能带来很好的提升，这就是处理器指令重排的作用。</p>
 
       
     </div>
@@ -1741,7 +1729,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">131</span>
+          <span class="site-state-item-count">132</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1754,7 +1742,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">132</span>
+        <span class="site-state-item-count">133</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
