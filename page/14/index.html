@@ -186,6 +186,153 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Java并发-ThreadLocal原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-21 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-21T20:00:00+08:00">2017-10-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-ThreadLocal原理/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ThreadLocal作用"><a href="#ThreadLocal作用" class="headerlink" title="ThreadLocal作用"></a>ThreadLocal作用</h1><p>让不同的线程持有相同数据类型的不同的数据副本。</p>
+<h1 id="ThreadLocal使用场景"><a href="#ThreadLocal使用场景" class="headerlink" title="ThreadLocal使用场景"></a>ThreadLocal使用场景</h1><p>如果一个对象在多线程之间通过加锁竞争的共享，会引起较大的性能损失，且对象占用内存不是很大的情况下，就应该考虑用ThreadLocal为每个线程分配单独的对象。比如多线程下产生随机数，可以写代码打印耗时，验证这一点。</p>
+<h1 id="ThreadLocal实现原理简述"><a href="#ThreadLocal实现原理简述" class="headerlink" title="ThreadLocal实现原理简述"></a>ThreadLocal实现原理简述</h1><p>set(value)</p>
+<p>每个线程都有一个ThreadLocalMap，set时会先取当前线程的ThreadLocalMap，以当前的ThreadLocal对象为key，存储value。</p>
+<p>get()</p>
+<p>从当前的线程的TheadLocalMap中取数据，key为ThreadLocal对象。</p>
+<p>ThreadLocalMap是自定义的哈希表，用一个table数组来存储key value，key value被封装在一个Entry对象中，Entry对象是继承WeakReference，WeakReference引用了ThreadLocal对象，ThreadLocal对象没有别的地方引用的时候，在垃圾回收触发时就可以回收了，value是被Entry类强引用的，而Entry类是被ThreadLocalMap中的table数组强引用的，所以value有内存泄露的风险，特别是线程池的核心线程是会一直运行的，线程对象一直存在，ThreadLocalMap也就一直存在，Entry对象中value也就一直不会释放，所以ThreadLocal如果用完了，最好及时remove()掉。</p>
+<p>如果没有手动remove清理，ThreadLocalMap也会在get()和set()的时候去清理掉过期的Entry对象，但如果你不调用set和get就不会回收了。特别的，在set()方法做清理的时候做了一个优化，会以对数级别的时间复杂度跳跃式的扫描整个数组，来去寻找过期的Entry对象，这样避免全表扫描，又保证垃圾不会堆积过多。</p>
+<p>ThreadLocalMap也有扩容机制，当存储元素个数超过数组长度的2/3后，会把数组扩容为原来的2倍。</p>
+<p>table数组的大小始终是2的次方，保持2的次方的大小，是为了计算索引时能够散列的比较均匀。</p>
+<p>key value应该存储在数组的哪个索引位置是怎么计算的呢？</p>
+<p>首先获取Key对象的hashCode，然后与数组容量-1这个数做与操作得到索引，数组容量是2的次方，减1后的数字的二进制低位全部都是1，跟key的hashCode做与操作，相当于截取了hashCode的低位，散列会比较均匀，如果数组容量不是2的次方，容量-1的这个数的二进制数在低位中就会有0，再与key的hashCode做与操作会导致元素堆积也就是是散列冲突。</p>
+<p>在ThreadLocalMap中，key对象hashCode获取并不是调用ThreadLocal对象的hashCode方法，而是使用ThreadLocal中定义的一个静态变量的值，每当创建一个ThreadLocal对象时，这个静态变量就增加固定的值，这个固定的值很特殊，它是一个黄金分割数，带来的效果就是让散列比较均匀。</p>
+<p>如果发生了哈希冲突，采用的是线性探测来解决，就是一个个往数组后面去寻找有没有没有被填充的空位来存储。这里有个特别的地方，就是清理过期的Entry的时候，会重新哈希过期的Entry对象后面的Entry对象，因为后面的这些Entry对象可能是有哈希冲突经过线性探测放在了后面，放在后面后查找次数也就多了，重新rehash计算索引，把Entry对象往前方，也就是尽可能减少线性探测的查找次数，提高访问速度。</p>
+<p>为什么不用拉链法解决散列冲突呢？因为拉链法链表结点中的指针占用额外空间，如果把这些空间用来增大表容量，可以使得装载因子变小，从而减少开放寻址冲突，提高平均查找效率，效果也是类似的。同时ThreadLocal数据量也不会特别大，所以不需要红黑树来处理极端情况。</p>
+<hr>
+<h1 id="ThreadLocalMap是做什么的？"><a href="#ThreadLocalMap是做什么的？" class="headerlink" title="ThreadLocalMap是做什么的？"></a>ThreadLocalMap是做什么的？</h1><p>自定义的简单的哈希表的实现，散列方式是开放定址法之线性探测。</p>
+<h1 id="ThreadLocalMap数据结构"><a href="#ThreadLocalMap数据结构" class="headerlink" title="ThreadLocalMap数据结构"></a>ThreadLocalMap数据结构</h1><p>Entry数组存储数据</p>
+<ol>
+<li> Entry类是一个WeakReference</li>
+<li> Entry类存储了ThreadLocal这个key和对应的value</li>
+<li> 对ThreadLocal持有弱引用，对value持有强引用</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&lt;?&gt;&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">    Object value;</span><br><span class="line"></span><br><span class="line">    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">        <span class="keyword">super</span>(k);</span><br><span class="line">        value = v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="TheadLocal如何保证唯一性？"><a href="#TheadLocal如何保证唯一性？" class="headerlink" title="TheadLocal如何保证唯一性？"></a>TheadLocal如何保证唯一性？</h1><p>ThreadLocal作为映射表的Key，需要具备唯一的标识，每创建一个新的ThreadLocal，这个标识就变的跟之前不一样了。 如何保证每一个ThreadLocal的唯一性呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadLocal</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> HASH_INCREMENT = <span class="number">0x61c88647</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 每一个ThreadLocal对象的HashCode都不一样</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> threadLocalHashCode = nextHashCode();</span><br><span class="line">	</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">nextHashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// 下一个HashCode，是在已有基础上增加0x61c88647</span></span><br><span class="line">        <span class="keyword">return</span> nextHashCode.getAndAdd(HASH_INCREMENT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ThreadLocal内部有一个名为threadLocalHashCode的变量，每创建一个新的ThreadLocal对象，这个变量的值就会增加0x61c88647。 正是因为有这么一个神奇的数字，它能够保证生成的Hash值可以均匀的分布在0~(2^N-1)之间，N是数组长度。 更多关于数字0x61c88647，可以参考<a target="_blank" rel="noopener" href="https://www.javaspecialists.eu/archive/Issue164.html">Why 0x61c88647?</a></p>
+<h1 id="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"><a href="#ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？" class="headerlink" title="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"></a>ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？</h1><p>Map的key是ThreadLocal</p>
+<p>用ThreadLocal的属性threadLocalHashCode跟table数组长度做与运算得到索引位置</p>
+<p>参考ThreadLocalMap的set()方法</p>
+<h1 id="ThreadLocalMap如何解决哈希冲突"><a href="#ThreadLocalMap如何解决哈希冲突" class="headerlink" title="ThreadLocalMap如何解决哈希冲突"></a>ThreadLocalMap如何解决哈希冲突</h1><p>开放定址法之线性探测法</p>
+<p>求得索引后，table数组中当前索引有Entry，并且Entry的key不为null，则继续看数组的下一个位置是不是空的</p>
+<p>参考ThreadLocalMap的set()方法</p>
+<h1 id="ThreadLocalMap的table数组空间不够放了怎么办？"><a href="#ThreadLocalMap的table数组空间不够放了怎么办？" class="headerlink" title="ThreadLocalMap的table数组空间不够放了怎么办？"></a>ThreadLocalMap的table数组空间不够放了怎么办？</h1><p>一句话：</p>
+<p>添加元素时如果已存储的元素个数超过装载因子就扩容为原容量的两倍</p>
+<p>set()方法里会检查当前的存储的对象个数是否已经超出了阈值（threshold的值）大小，如果超出了，需要重新对table数组扩容为原来的2倍长度，并将所有的对象重新计算位置（rehash函数来实现），顺便清理掉Entry.get()为null的Entry，threshold为table数组长度的2/3，threshold相当于是map的装载因子。</p>
+<h1 id="ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？"></a>ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？</h1><p>table数组中staleSlot位置的Entry的get()为null了，value不为null，在expungeStaleEntry()中把它的value置为null，size–</p>
+<p>然后从staleSlot位置的下一个位置线性检查Entry，一直到Entry为null结束，如果</p>
+<ol>
+<li> Entry.get()为null，则把Entry的value置空，防止内存泄露</li>
+<li> Entry.get()不为null，重新计算当前Entry的索引，也就是rehash，放入rehash过后的索引位置，如果有冲突（已经存放了Entry）就线性向后查找空位进行存放。这样做是为了减少哈希冲突时线性查找次数。</li>
+</ol>
+<hr>
+<h1 id="ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？"></a>ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？</h1><p>在新元素添加进来，或清理另一个过期的Entry时调用</p>
+<p>对数级别时间复杂度清理对象，避免添加元素时线性扫描整个table数组，也防止垃圾堆积过多</p>
+<h1 id="TheadLocal存在有什么问题？为什么？如何解决？"><a href="#TheadLocal存在有什么问题？为什么？如何解决？" class="headerlink" title="TheadLocal存在有什么问题？为什么？如何解决？"></a>TheadLocal存在有什么问题？为什么？如何解决？</h1><p>问题：可能会内存泄露</p>
+<p>为什么：因为ThreadLocal存储在ThreadLocalMap是弱引用，ThreadLocal被回收后，Entry还是被ThreadLocalMap的table数组引用，Entry的value是强引用，value可能会内存泄漏</p>
+<p>解决：使用完ThreadLocal手动调用一下remove()</p>
+<h1 id="TheadLocal有哪些典型使用到的地方？"><a href="#TheadLocal有哪些典型使用到的地方？" class="headerlink" title="TheadLocal有哪些典型使用到的地方？"></a>TheadLocal有哪些典型使用到的地方？</h1><ol>
+<li> 每个线程都有一个自己的Looper对象</li>
+<li> Android SQLiteDatabase中数据库连接每个线程都持有一个</li>
+<li> 用户session对话</li>
+</ol>
+<p>ThreadLocal 适用于如下两种场景</p>
+<ol>
+<li> 每个线程需要有自己单独的实例</li>
+<li> 实例需要在多个方法中共享，但不希望被多线程共享</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E4%BC%AA%E5%85%B1%E4%BA%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +364,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:58:17" itemprop="dateModified" datetime="2021-08-27T17:58:17+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -344,7 +491,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:58:17" itemprop="dateModified" datetime="2021-08-27T17:58:17+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -440,7 +587,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:58:17" itemprop="dateModified" datetime="2021-08-27T17:58:17+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -548,7 +695,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:58:17" itemprop="dateModified" datetime="2021-08-27T17:58:17+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -664,7 +811,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:58:17" itemprop="dateModified" datetime="2021-08-27T17:58:17+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -779,7 +926,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:58:17" itemprop="dateModified" datetime="2021-08-27T17:58:17+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -950,7 +1097,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:58:17" itemprop="dateModified" datetime="2021-08-27T17:58:17+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1056,7 +1203,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:58:16" itemprop="dateModified" datetime="2021-08-27T17:58:16+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1155,7 +1302,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:58:16" itemprop="dateModified" datetime="2021-08-27T17:58:16+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 18:02:21" itemprop="dateModified" datetime="2021-08-27T18:02:21+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1291,7 +1438,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">139</span>
+          <span class="site-state-item-count">140</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1304,7 +1451,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">141</span>
+        <span class="site-state-item-count">142</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
