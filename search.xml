@@ -366,27 +366,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.118.杨辉三角（简单）</title>
-    <url>/LeetCode/LeetCode.118.%E6%9D%A8%E8%BE%89%E4%B8%89%E8%A7%92%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/pascals-triangle/">LeetCode.118.杨辉三角（简单）</a></p>
-<p>给定一个非负整数 _<code>numRows</code>，_生成「杨辉三角」的前 <em><code>numRows</code></em> 行。<br>在「杨辉三角」中，每个数是它左上方和右上方的数的和。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>递推公式题目已经给出，讨论一下边界情况，把问题具体定义就好了。</p>
-<h3 id="问题公式化"><a href="#问题公式化" class="headerlink" title="问题公式化"></a>问题公式化</h3><p>三角形每行用List存储，所有行也用List存储。<br>设<code>dp[r][c]</code>是杨辉三角第r行第c列的数。<br>把三角形左侧对齐可以观察到：<br>左上方的数就是<code>dp[r - 1][c - 1]</code>；<br>右上方的数就是<code>dp[r - 1][c]</code>；</p>
-<h2 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h2><p><code>dp[r][c] = dp[r - 1][c - 1] + dp[r - 1][c]</code></p>
-<h2 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h2><p>r = 0时，没有上方，但其实知道第一行是1，只有1个元素，直接添加到结果集就行了。<br>r &gt; 0后：<br>c = 0 处于第一列时，没有左上方，左上方当作0，只累加右上方，<code>dp[r][0] = dp[r - 1][c]</code>。<br>c = r 处于最后一列时，没有右上方，右上方当作0，只累加左上方，<code>dp[r][r] = dp[r - 1][r - 1]</code>。</p>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">generate</span><span class="params">(numRows: <span class="type">Int</span>)</span></span>: List&lt;List&lt;<span class="built_in">Int</span>&gt;&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> triangle = mutableListOf&lt;List&lt;<span class="built_in">Int</span>&gt;&gt;()</span><br><span class="line">        triangle.add(listOf(<span class="number">1</span>))</span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">1</span> until numRows) &#123;</span><br><span class="line">            <span class="keyword">val</span> rows = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> <span class="number">0.</span>.r) &#123;</span><br><span class="line">                <span class="keyword">when</span> &#123;</span><br><span class="line">                    <span class="comment">// 第一列，只能加右上方</span></span><br><span class="line">                    c == <span class="number">0</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][<span class="number">0</span>])</span><br><span class="line">                    <span class="comment">// 最后一列，只能加左上方</span></span><br><span class="line">                    c == r -&gt; rows.add(triangle[r - <span class="number">1</span>][r - <span class="number">1</span>])</span><br><span class="line">                    <span class="comment">// 中间列，左上方+右上方</span></span><br><span class="line">                    <span class="keyword">else</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][c - <span class="number">1</span>] + triangle[r - <span class="number">1</span>][c])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            triangle.add(rows)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> triangle</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode简单</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.119.杨辉三角II（简单）</title>
     <url>/LeetCode/LeetCode.119.%E6%9D%A8%E8%BE%89%E4%B8%89%E8%A7%92%20II%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
     <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/pascals-triangle-ii/">LeetCode.119.杨辉三角II（简单）</a></p>
@@ -402,6 +381,27 @@
 <li>从右向左遍历数组。</li>
 </ol>
 <h3 id="代码（kotlin）"><a href="#代码（kotlin）" class="headerlink" title="代码（kotlin）"></a>代码（kotlin）</h3><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">getRow</span><span class="params">(rowIndex: <span class="type">Int</span>)</span></span>: List&lt;<span class="built_in">Int</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> rows = IntArray(rowIndex + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        rows[<span class="number">0</span>] = <span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">1.</span>.rowIndex) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> r - <span class="number">1</span> downTo <span class="number">1</span>) &#123;</span><br><span class="line">                rows[c] = rows[c - <span class="number">1</span>] + rows[c]</span><br><span class="line">            &#125;</span><br><span class="line">            rows[r] = <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> rows.toList()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode简单</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.118.杨辉三角（简单）</title>
+    <url>/LeetCode/LeetCode.118.%E6%9D%A8%E8%BE%89%E4%B8%89%E8%A7%92%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/pascals-triangle/">LeetCode.118.杨辉三角（简单）</a></p>
+<p>给定一个非负整数 _<code>numRows</code>，_生成「杨辉三角」的前 <em><code>numRows</code></em> 行。<br>在「杨辉三角」中，每个数是它左上方和右上方的数的和。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>递推公式题目已经给出，讨论一下边界情况，把问题具体定义就好了。</p>
+<h3 id="问题公式化"><a href="#问题公式化" class="headerlink" title="问题公式化"></a>问题公式化</h3><p>三角形每行用List存储，所有行也用List存储。<br>设<code>dp[r][c]</code>是杨辉三角第r行第c列的数。<br>把三角形左侧对齐可以观察到：<br>左上方的数就是<code>dp[r - 1][c - 1]</code>；<br>右上方的数就是<code>dp[r - 1][c]</code>；</p>
+<h2 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h2><p><code>dp[r][c] = dp[r - 1][c - 1] + dp[r - 1][c]</code></p>
+<h2 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h2><p>r = 0时，没有上方，但其实知道第一行是1，只有1个元素，直接添加到结果集就行了。<br>r &gt; 0后：<br>c = 0 处于第一列时，没有左上方，左上方当作0，只累加右上方，<code>dp[r][0] = dp[r - 1][c]</code>。<br>c = r 处于最后一列时，没有右上方，右上方当作0，只累加左上方，<code>dp[r][r] = dp[r - 1][r - 1]</code>。</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">generate</span><span class="params">(numRows: <span class="type">Int</span>)</span></span>: List&lt;List&lt;<span class="built_in">Int</span>&gt;&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> triangle = mutableListOf&lt;List&lt;<span class="built_in">Int</span>&gt;&gt;()</span><br><span class="line">        triangle.add(listOf(<span class="number">1</span>))</span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">1</span> until numRows) &#123;</span><br><span class="line">            <span class="keyword">val</span> rows = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> <span class="number">0.</span>.r) &#123;</span><br><span class="line">                <span class="keyword">when</span> &#123;</span><br><span class="line">                    <span class="comment">// 第一列，只能加右上方</span></span><br><span class="line">                    c == <span class="number">0</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][<span class="number">0</span>])</span><br><span class="line">                    <span class="comment">// 最后一列，只能加左上方</span></span><br><span class="line">                    c == r -&gt; rows.add(triangle[r - <span class="number">1</span>][r - <span class="number">1</span>])</span><br><span class="line">                    <span class="comment">// 中间列，左上方+右上方</span></span><br><span class="line">                    <span class="keyword">else</span> -&gt; rows.add(triangle[r - <span class="number">1</span>][c - <span class="number">1</span>] + triangle[r - <span class="number">1</span>][c])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            triangle.add(rows)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> triangle</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>LeetCode</category>
@@ -693,61 +693,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.132.分割回文串 II（困难）</title>
-    <url>/LeetCode/LeetCode.132.%E5%88%86%E5%89%B2%E5%9B%9E%E6%96%87%E4%B8%B2%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/palindrome-partitioning-ii/">LeetCode.132.分割回文串 II（困难）</a></p>
-<p>给你一个字符串  <code>s</code>，请你将  <code>s</code>  分割成一些子串，使每个子串都是回文。</p>
-<p>返回符合要求的  <strong>最少分割次数</strong>  。</p>
-<span id="more"></span>
-
-<p><strong>提示：</strong></p>
-<ul>
-<li>  <code>1 &lt;= s.length &lt;= 2000</code></li>
-<li>  <code>s</code>  仅由小写英文字母组成</li>
-</ul>
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="拆解问题"><a href="#拆解问题" class="headerlink" title="拆解问题"></a>拆解问题</h3><p>如果已经求得一个子串的最少分割次数，是可以推导出整个串的最少分割次数。</p>
-<ul>
-<li>要保证分割次数最少，先检查整个串s是不是回文。<ul>
-<li>如果是，就不用分割了，分割次数是0。</li>
-<li>如果s不是回文，需要在0到<code>n - 1</code>（n为s长度）中找一个分割位置<code>i</code>。<ul>
-<li>如果<code>s[0: i]</code>的最少分割次数已经知道<code>（0 &lt;= i &lt; n）</code>，同时<code>s[i + 1:]</code>是回文，说明在<code>s[0: i]</code>的最少分割次数基础上还要再多分割一次才能完成整个串的分割，那么整个字符串s的最少分割次数就是<code>s[0: i]</code>的最少分割次数 + 1。</li>
-<li>而<code>s[0: i]</code>的最少分割次数其实是需要把<code>i</code>从0到<code>n - 2</code>全部遍历一遍才知道哪一种分割的次数是最小的，那么<code>s[0: i]</code>的最少分割次数的求法，跟上述过程一样，可以递推。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>注：s[0: i]是python中截取子串的表示方法，表示截取第0位到第i位的字符)</p>
-</blockquote>
-<h3 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h3><p>令<code>dp[i]</code>表示<code>s[0: i]</code>的最少分割次数。</p>
-<p>如果<code>s[0: i]</code>就是回文，那么<code>dp[i]</code>就是0。<br>如果<code>s[0: i]</code>不是回文，但是它的一个子串<code>s[0: j]</code>的最少分割次数已知(<code>0 &lt;= j &lt; i</code>)，并且<code>s[j + 1: i]</code>是回文，则 <code>dp[i] = dp[j] + 1</code> </p>
-<p>最终结果就是求<code>dp[n - 1]</code>，从0开始递推就好了。</p>
-<p>递推方程： <code>dp[i] = min(dp[j]) + 1</code>，其中<code>0 &lt;= j &lt; i</code>。</p>
-<h3 id="初始状态"><a href="#初始状态" class="headerlink" title="初始状态"></a>初始状态</h3><ul>
-<li>初始状态<code>dp[0]</code>就是<code>s[0: 0]</code>的最少分割次数，<code>s[0: 0]</code>就是首字符，单个字符是回文串，所以不用分割，<code>dp[0] = 0</code>。</li>
-<li>最坏的情况就是每个字符都分割，因为每个单字符都是回文，最大的分割次数就是<code>n - 1</code>，可以给<code>dp</code>数组初始化。</li>
-</ul>
-<h3 id="怎么快速判断s-i-j-是回文？"><a href="#怎么快速判断s-i-j-是回文？" class="headerlink" title="怎么快速判断s[i, j]是回文？"></a>怎么快速判断s[i, j]是回文？</h3><p>最好预处理整个s，把s的所有子串都判断一下是不是回文串，这样就可以做到O(1)的查表操作来快速判断了。</p>
-<p>这里跟 <a href="https://leetcode-cn.com/problems/palindrome-partitioning/">131. 分割回文串</a> 处理方式一样。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minCut</span><span class="params">(s: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n)</span><br><span class="line">        <span class="comment">// s[0: i]的子串最大分割次数，就是每个字符都分割一下，分割i次（1 &lt;= i &lt; n）</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            dp[i] = i</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="comment">// 判断s[0:i]是不是回文</span></span><br><span class="line">            <span class="keyword">if</span> (isPalindrome(s, <span class="number">0</span>, i)) &#123;</span><br><span class="line">                <span class="comment">// s[0:i]是回文，不用分割，最少分割次数是0</span></span><br><span class="line">                dp[i] = <span class="number">0</span></span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// s[0:i]不是回文，需要在[0,i)之间找到一个分割位置j，使得s[j+1:i]是回文，同时dp[j]最小</span></span><br><span class="line">            <span class="comment">// 需要从0开始遍历到i-1去寻找出最小的分割位置j</span></span><br><span class="line">            <span class="comment">// 这样也才能利用递推，利用之前存储过的状态，因为是从索引0开始递推的</span></span><br><span class="line">            <span class="keyword">var</span> minCut = <span class="built_in">Int</span>.MAX_VALUE</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until i) &#123;</span><br><span class="line">                <span class="keyword">if</span> (isPalindrome(s, j + <span class="number">1</span>, i)) &#123;</span><br><span class="line">                    <span class="comment">// s[j+1:i]是回文，dp[j]+1是dp[i]可能的一个取值，需要找一个最小的</span></span><br><span class="line">                    minCut = minOf(minCut, dp[j] + <span class="number">1</span>)</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// s[j+1:i]不是回文，当前的分割是无效的，就看下一个分割了，忽略当前的分割</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// s[0:i]最大的分割次数，就是i次了，在前面已经初始化过了</span></span><br><span class="line">            <span class="comment">// 如果s[0:i]存在更少的分割，更新dp[i]的值</span></span><br><span class="line">            <span class="keyword">if</span> (minCut != <span class="built_in">Int</span>.MAX_VALUE) &#123;</span><br><span class="line">                dp[i] = minCut</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n - <span class="number">1</span>]</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> dpStates: Array&lt;Array&lt;<span class="built_in">Boolean</span>&gt;&gt;? = <span class="literal">null</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 判断字符串[s]索引从[start]到[end]的子串是否是回文</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">isPalindrome</span><span class="params">(s: <span class="type">String</span>, start: <span class="type">Int</span>, end: <span class="type">Int</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> states = dpStates ?: getPalindromeStates(s)</span><br><span class="line">        dpStates = states</span><br><span class="line">        <span class="keyword">return</span> states[start][end]</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getPalindromeStates</span><span class="params">(s: <span class="type">String</span>)</span></span>: Array&lt;Array&lt;<span class="built_in">Boolean</span>&gt;&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; Array(n) &#123; <span class="literal">false</span> &#125; &#125;</span><br><span class="line">        <span class="comment">// 遍历所有长度的子串，length代表子串的长度，可以从1一直取值到n</span></span><br><span class="line">        <span class="keyword">for</span> (length <span class="keyword">in</span> <span class="number">1.</span>.n) &#123;</span><br><span class="line">            <span class="comment">// 把所有是长度为length的子串都检查一遍，看是不是回文，start就要从0开始取值，一直取到n-length</span></span><br><span class="line">            <span class="comment">// start 是应该小于 n-length 还是小于等于?</span></span><br><span class="line">            <span class="comment">// 可以举例n为5，length为2，直观上看最后一个length为2的子串应该是s[3:4]，start为3，是n-length的结果</span></span><br><span class="line">            <span class="keyword">for</span> (start <span class="keyword">in</span> <span class="number">0.</span>.(n - length)) &#123;</span><br><span class="line">                <span class="comment">// end和start之间保持相距length</span></span><br><span class="line">                <span class="keyword">val</span> end = start + length - <span class="number">1</span></span><br><span class="line">                <span class="keyword">if</span> (start + <span class="number">1</span> &lt;= end - <span class="number">1</span>) &#123;</span><br><span class="line">                    dp[start][end] = dp[start + <span class="number">1</span>][end - <span class="number">1</span>] &amp;&amp; s[start] == s[end]</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    dp[start][end] = s[start] == s[end]</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>时间复杂度：O(n^2)</p>
-<p>n 是字符串 s 的长度。<br>预处理计算s所有子串是否是回文和动态规划计算s最小分割次数的时间复杂度均为 O(n^2)。</p>
-<p>空间复杂度：O(n^2)</p>
-<p>预处理计算s所有子串是否是回文需要O(n^2)的空间占用。<br>动态规划计算s最小分割次数需要O(n)的空间占用。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>回文</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.135.分发糖果（困难）</title>
     <url>/LeetCode/LeetCode.135.%E5%88%86%E5%8F%91%E7%B3%96%E6%9E%9C%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/candy/">LeetCode.135.分发糖果（困难）</a></p>
@@ -812,6 +757,61 @@
       </categories>
       <tags>
         <tag>LeetCode困难</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.132.分割回文串 II（困难）</title>
+    <url>/LeetCode/LeetCode.132.%E5%88%86%E5%89%B2%E5%9B%9E%E6%96%87%E4%B8%B2%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/palindrome-partitioning-ii/">LeetCode.132.分割回文串 II（困难）</a></p>
+<p>给你一个字符串  <code>s</code>，请你将  <code>s</code>  分割成一些子串，使每个子串都是回文。</p>
+<p>返回符合要求的  <strong>最少分割次数</strong>  。</p>
+<span id="more"></span>
+
+<p><strong>提示：</strong></p>
+<ul>
+<li>  <code>1 &lt;= s.length &lt;= 2000</code></li>
+<li>  <code>s</code>  仅由小写英文字母组成</li>
+</ul>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="拆解问题"><a href="#拆解问题" class="headerlink" title="拆解问题"></a>拆解问题</h3><p>如果已经求得一个子串的最少分割次数，是可以推导出整个串的最少分割次数。</p>
+<ul>
+<li>要保证分割次数最少，先检查整个串s是不是回文。<ul>
+<li>如果是，就不用分割了，分割次数是0。</li>
+<li>如果s不是回文，需要在0到<code>n - 1</code>（n为s长度）中找一个分割位置<code>i</code>。<ul>
+<li>如果<code>s[0: i]</code>的最少分割次数已经知道<code>（0 &lt;= i &lt; n）</code>，同时<code>s[i + 1:]</code>是回文，说明在<code>s[0: i]</code>的最少分割次数基础上还要再多分割一次才能完成整个串的分割，那么整个字符串s的最少分割次数就是<code>s[0: i]</code>的最少分割次数 + 1。</li>
+<li>而<code>s[0: i]</code>的最少分割次数其实是需要把<code>i</code>从0到<code>n - 2</code>全部遍历一遍才知道哪一种分割的次数是最小的，那么<code>s[0: i]</code>的最少分割次数的求法，跟上述过程一样，可以递推。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>注：s[0: i]是python中截取子串的表示方法，表示截取第0位到第i位的字符)</p>
+</blockquote>
+<h3 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h3><p>令<code>dp[i]</code>表示<code>s[0: i]</code>的最少分割次数。</p>
+<p>如果<code>s[0: i]</code>就是回文，那么<code>dp[i]</code>就是0。<br>如果<code>s[0: i]</code>不是回文，但是它的一个子串<code>s[0: j]</code>的最少分割次数已知(<code>0 &lt;= j &lt; i</code>)，并且<code>s[j + 1: i]</code>是回文，则 <code>dp[i] = dp[j] + 1</code> </p>
+<p>最终结果就是求<code>dp[n - 1]</code>，从0开始递推就好了。</p>
+<p>递推方程： <code>dp[i] = min(dp[j]) + 1</code>，其中<code>0 &lt;= j &lt; i</code>。</p>
+<h3 id="初始状态"><a href="#初始状态" class="headerlink" title="初始状态"></a>初始状态</h3><ul>
+<li>初始状态<code>dp[0]</code>就是<code>s[0: 0]</code>的最少分割次数，<code>s[0: 0]</code>就是首字符，单个字符是回文串，所以不用分割，<code>dp[0] = 0</code>。</li>
+<li>最坏的情况就是每个字符都分割，因为每个单字符都是回文，最大的分割次数就是<code>n - 1</code>，可以给<code>dp</code>数组初始化。</li>
+</ul>
+<h3 id="怎么快速判断s-i-j-是回文？"><a href="#怎么快速判断s-i-j-是回文？" class="headerlink" title="怎么快速判断s[i, j]是回文？"></a>怎么快速判断s[i, j]是回文？</h3><p>最好预处理整个s，把s的所有子串都判断一下是不是回文串，这样就可以做到O(1)的查表操作来快速判断了。</p>
+<p>这里跟 <a href="https://leetcode-cn.com/problems/palindrome-partitioning/">131. 分割回文串</a> 处理方式一样。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minCut</span><span class="params">(s: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n)</span><br><span class="line">        <span class="comment">// s[0: i]的子串最大分割次数，就是每个字符都分割一下，分割i次（1 &lt;= i &lt; n）</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            dp[i] = i</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="comment">// 判断s[0:i]是不是回文</span></span><br><span class="line">            <span class="keyword">if</span> (isPalindrome(s, <span class="number">0</span>, i)) &#123;</span><br><span class="line">                <span class="comment">// s[0:i]是回文，不用分割，最少分割次数是0</span></span><br><span class="line">                dp[i] = <span class="number">0</span></span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// s[0:i]不是回文，需要在[0,i)之间找到一个分割位置j，使得s[j+1:i]是回文，同时dp[j]最小</span></span><br><span class="line">            <span class="comment">// 需要从0开始遍历到i-1去寻找出最小的分割位置j</span></span><br><span class="line">            <span class="comment">// 这样也才能利用递推，利用之前存储过的状态，因为是从索引0开始递推的</span></span><br><span class="line">            <span class="keyword">var</span> minCut = <span class="built_in">Int</span>.MAX_VALUE</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until i) &#123;</span><br><span class="line">                <span class="keyword">if</span> (isPalindrome(s, j + <span class="number">1</span>, i)) &#123;</span><br><span class="line">                    <span class="comment">// s[j+1:i]是回文，dp[j]+1是dp[i]可能的一个取值，需要找一个最小的</span></span><br><span class="line">                    minCut = minOf(minCut, dp[j] + <span class="number">1</span>)</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// s[j+1:i]不是回文，当前的分割是无效的，就看下一个分割了，忽略当前的分割</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// s[0:i]最大的分割次数，就是i次了，在前面已经初始化过了</span></span><br><span class="line">            <span class="comment">// 如果s[0:i]存在更少的分割，更新dp[i]的值</span></span><br><span class="line">            <span class="keyword">if</span> (minCut != <span class="built_in">Int</span>.MAX_VALUE) &#123;</span><br><span class="line">                dp[i] = minCut</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n - <span class="number">1</span>]</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> dpStates: Array&lt;Array&lt;<span class="built_in">Boolean</span>&gt;&gt;? = <span class="literal">null</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 判断字符串[s]索引从[start]到[end]的子串是否是回文</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">isPalindrome</span><span class="params">(s: <span class="type">String</span>, start: <span class="type">Int</span>, end: <span class="type">Int</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> states = dpStates ?: getPalindromeStates(s)</span><br><span class="line">        dpStates = states</span><br><span class="line">        <span class="keyword">return</span> states[start][end]</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getPalindromeStates</span><span class="params">(s: <span class="type">String</span>)</span></span>: Array&lt;Array&lt;<span class="built_in">Boolean</span>&gt;&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> n = s.length</span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; Array(n) &#123; <span class="literal">false</span> &#125; &#125;</span><br><span class="line">        <span class="comment">// 遍历所有长度的子串，length代表子串的长度，可以从1一直取值到n</span></span><br><span class="line">        <span class="keyword">for</span> (length <span class="keyword">in</span> <span class="number">1.</span>.n) &#123;</span><br><span class="line">            <span class="comment">// 把所有是长度为length的子串都检查一遍，看是不是回文，start就要从0开始取值，一直取到n-length</span></span><br><span class="line">            <span class="comment">// start 是应该小于 n-length 还是小于等于?</span></span><br><span class="line">            <span class="comment">// 可以举例n为5，length为2，直观上看最后一个length为2的子串应该是s[3:4]，start为3，是n-length的结果</span></span><br><span class="line">            <span class="keyword">for</span> (start <span class="keyword">in</span> <span class="number">0.</span>.(n - length)) &#123;</span><br><span class="line">                <span class="comment">// end和start之间保持相距length</span></span><br><span class="line">                <span class="keyword">val</span> end = start + length - <span class="number">1</span></span><br><span class="line">                <span class="keyword">if</span> (start + <span class="number">1</span> &lt;= end - <span class="number">1</span>) &#123;</span><br><span class="line">                    dp[start][end] = dp[start + <span class="number">1</span>][end - <span class="number">1</span>] &amp;&amp; s[start] == s[end]</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    dp[start][end] = s[start] == s[end]</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>时间复杂度：O(n^2)</p>
+<p>n 是字符串 s 的长度。<br>预处理计算s所有子串是否是回文和动态规划计算s最小分割次数的时间复杂度均为 O(n^2)。</p>
+<p>空间复杂度：O(n^2)</p>
+<p>预处理计算s所有子串是否是回文需要O(n^2)的空间占用。<br>动态规划计算s最小分割次数需要O(n)的空间占用。</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>回文</tag>
       </tags>
   </entry>
   <entry>
@@ -1064,6 +1064,61 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.174.地下城游戏（困难）</title>
+    <url>/LeetCode/LeetCode.174.%E5%9C%B0%E4%B8%8B%E5%9F%8E%E6%B8%B8%E6%88%8F%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/dungeon-game/">LeetCode.174.地下城游戏（困难）</a></p>
+<span id="more"></span>
+
+<p>一些恶魔抓住了公主（P）并将她关在了地下城的右下角。地下城是由 M x N 个房间组成的二维网格。我们英勇的骑士（K）最初被安置在左上角的房间里，他必须穿过地下城并通过对抗恶魔来拯救公主。</p>
+<p>骑士的初始健康点数为一个正整数。如果他的健康点数在某一时刻降至 0 或以下，他会立即死亡。</p>
+<p>有些房间由恶魔守卫，因此骑士在进入这些房间时会失去健康点数（若房间里的值为负整数，则表示骑士将损失健康点数）；其他房间要么是空的（房间里的值为 0），要么包含增加骑士健康点数的魔法球（若房间里的值为正整数，则表示骑士将增加健康点数）。</p>
+<p>为了尽快到达公主，骑士决定每次只向右或向下移动一步。</p>
+<p>编写一个函数来计算确保骑士能够拯救到公主所需的最低初始健康点数。</p>
+<p>例如，考虑到如下布局的地下城，如果骑士遵循最佳路径 右 -&gt; 右 -&gt; 下 -&gt; 下，则骑士的初始健康点数至少为 7。</p>
+<p><strong>说明:</strong></p>
+<ul>
+<li>  骑士的健康点数没有上限。</li>
+<li>  任何房间都可能对骑士的健康点数造成威胁，也可能增加骑士的健康点数，包括骑士进入的左上角房间以及公主被监禁的右下角房间。</li>
+</ul>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>设<code>dungeon[i][j]</code>为地牢的第<code>i</code>行第<code>j</code>列的点数，可正、可负、可零。</p>
+<p>这题跟最小路径和不一样的点在于：<code>在任意格子，都要求骑士的 生命值x &gt;= 1</code>。</p>
+<p>如果骑士位于某行某列，则要求<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= 1</code>，不等式两侧的项换个位置也就是：<code>x &gt;= 1 &amp;&amp; x &gt;= 1 - dungeon[i][j]</code>，我们要求最低的生命值，可得<code>x = maxOf(1, 1 - dungeon[i][j])</code>。</p>
+<p>但是骑士是要在走动的，光看当前位置的点数，是不知道当前生命值够不够用，需要知道后面的路径需要的最少生命值是多少，假设是<code>y</code>，那么当前位置就要满足<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= y</code>，我们要求最低的生命值，可得<code>x = maxOf(1, y - dungeon[i][j])</code>。</p>
+<p>状态转移的过程就出来了，是要从末尾往开头递推，才能得出结果。</p>
+<p>从左上到右下的路径，有两种选择，往右走、往下走。不知道往哪走所需的最低初始健康点数最少，就两个都试一遍，取最小的。</p>
+<p><strong>边界条件</strong></p>
+<ul>
+<li>在最后一行，只能向右走，无法向下走。</li>
+<li>在最后一列，只能向下走，无法向右走。</li>
+</ul>
+<p><strong>回溯递归解法</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) <span class="keyword">return</span> maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>递归存在重叠子问题，例如<code>findMinHp(r + 1, c)</code>会执行多次，需要记录中间状态。</p>
+<p><strong>记忆化递归</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> memo = Array(m) &#123; IntArray(n) &#123; -<span class="number">1</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (memo[r][c] != -<span class="number">1</span>) <span class="keyword">return</span> memo[r][c]</span><br><span class="line">            <span class="keyword">val</span> result =  <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">            memo[r][c] = result</span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>自底向上的动态规划</strong></p>
+<p>记忆化递归已经给出了状态转移方程，需要注意的是要从最右下角开始往左上角递推，才能得到结果。</p>
+<p>设<code>dp[i][j]</code>表示骑士位于第<code>i</code>行第<code>j</code>列格子时要达到公主处所需要的最小生命值。</p>
+<p><strong>状态转移方程</strong></p>
+<ul>
+<li>最右下角：<code>dp[i][j] = maxOf(1, 1 - dungeon[m - 1][n - 1])</code>。</li>
+<li>最后一列：<code>dp[i][j] = maxOf(1, dp[r + 1][c] - dungeon[r][c])</code>。</li>
+<li>最后一行：<code>dp[i][j] = maxOf(1, dp[r][c + 1] - dungeon[r][c])</code>。</li>
+<li>其他行和列：<code>dp[i][j] = maxOf(1, minOf(dp[r][c + 1], dp[r + 1][c]) - dungeon[r][c])</code>。</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        dp[m - <span class="number">1</span>][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[m - <span class="number">1</span>][n - <span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[i][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, dp[i + <span class="number">1</span>][n - <span class="number">1</span>] - dungeon[i][n - <span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[m - <span class="number">1</span>][i] = maxOf(<span class="number">1</span>, dp[m - <span class="number">1</span>][i + <span class="number">1</span>] - dungeon[m - <span class="number">1</span>][i])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">                dp[r][c] = maxOf(<span class="number">1</span>, minOf(dp[r][c + <span class="number">1</span>], dp[r + <span class="number">1</span>][c]) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>动态规划</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.1567.乘积为正数的最长子数组长度（中等）</title>
     <url>/LeetCode/LeetCode.1567.%E4%B9%98%E7%A7%AF%E4%B8%BA%E6%AD%A3%E6%95%B0%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E6%95%B0%E7%BB%84%E9%95%BF%E5%BA%A6%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/maximum-length-of-subarray-with-positive-product/">LeetCode.1567.乘积为正数的最长子数组长度（中等）</a></p>
@@ -1130,61 +1185,6 @@
       <tags>
         <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.174.地下城游戏（困难）</title>
-    <url>/LeetCode/LeetCode.174.%E5%9C%B0%E4%B8%8B%E5%9F%8E%E6%B8%B8%E6%88%8F%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/dungeon-game/">LeetCode.174.地下城游戏（困难）</a></p>
-<span id="more"></span>
-
-<p>一些恶魔抓住了公主（P）并将她关在了地下城的右下角。地下城是由 M x N 个房间组成的二维网格。我们英勇的骑士（K）最初被安置在左上角的房间里，他必须穿过地下城并通过对抗恶魔来拯救公主。</p>
-<p>骑士的初始健康点数为一个正整数。如果他的健康点数在某一时刻降至 0 或以下，他会立即死亡。</p>
-<p>有些房间由恶魔守卫，因此骑士在进入这些房间时会失去健康点数（若房间里的值为负整数，则表示骑士将损失健康点数）；其他房间要么是空的（房间里的值为 0），要么包含增加骑士健康点数的魔法球（若房间里的值为正整数，则表示骑士将增加健康点数）。</p>
-<p>为了尽快到达公主，骑士决定每次只向右或向下移动一步。</p>
-<p>编写一个函数来计算确保骑士能够拯救到公主所需的最低初始健康点数。</p>
-<p>例如，考虑到如下布局的地下城，如果骑士遵循最佳路径 右 -&gt; 右 -&gt; 下 -&gt; 下，则骑士的初始健康点数至少为 7。</p>
-<p><strong>说明:</strong></p>
-<ul>
-<li>  骑士的健康点数没有上限。</li>
-<li>  任何房间都可能对骑士的健康点数造成威胁，也可能增加骑士的健康点数，包括骑士进入的左上角房间以及公主被监禁的右下角房间。</li>
-</ul>
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>设<code>dungeon[i][j]</code>为地牢的第<code>i</code>行第<code>j</code>列的点数，可正、可负、可零。</p>
-<p>这题跟最小路径和不一样的点在于：<code>在任意格子，都要求骑士的 生命值x &gt;= 1</code>。</p>
-<p>如果骑士位于某行某列，则要求<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= 1</code>，不等式两侧的项换个位置也就是：<code>x &gt;= 1 &amp;&amp; x &gt;= 1 - dungeon[i][j]</code>，我们要求最低的生命值，可得<code>x = maxOf(1, 1 - dungeon[i][j])</code>。</p>
-<p>但是骑士是要在走动的，光看当前位置的点数，是不知道当前生命值够不够用，需要知道后面的路径需要的最少生命值是多少，假设是<code>y</code>，那么当前位置就要满足<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= y</code>，我们要求最低的生命值，可得<code>x = maxOf(1, y - dungeon[i][j])</code>。</p>
-<p>状态转移的过程就出来了，是要从末尾往开头递推，才能得出结果。</p>
-<p>从左上到右下的路径，有两种选择，往右走、往下走。不知道往哪走所需的最低初始健康点数最少，就两个都试一遍，取最小的。</p>
-<p><strong>边界条件</strong></p>
-<ul>
-<li>在最后一行，只能向右走，无法向下走。</li>
-<li>在最后一列，只能向下走，无法向右走。</li>
-</ul>
-<p><strong>回溯递归解法</strong></p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) <span class="keyword">return</span> maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>递归存在重叠子问题，例如<code>findMinHp(r + 1, c)</code>会执行多次，需要记录中间状态。</p>
-<p><strong>记忆化递归</strong></p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> memo = Array(m) &#123; IntArray(n) &#123; -<span class="number">1</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (memo[r][c] != -<span class="number">1</span>) <span class="keyword">return</span> memo[r][c]</span><br><span class="line">            <span class="keyword">val</span> result =  <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">            memo[r][c] = result</span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>自底向上的动态规划</strong></p>
-<p>记忆化递归已经给出了状态转移方程，需要注意的是要从最右下角开始往左上角递推，才能得到结果。</p>
-<p>设<code>dp[i][j]</code>表示骑士位于第<code>i</code>行第<code>j</code>列格子时要达到公主处所需要的最小生命值。</p>
-<p><strong>状态转移方程</strong></p>
-<ul>
-<li>最右下角：<code>dp[i][j] = maxOf(1, 1 - dungeon[m - 1][n - 1])</code>。</li>
-<li>最后一列：<code>dp[i][j] = maxOf(1, dp[r + 1][c] - dungeon[r][c])</code>。</li>
-<li>最后一行：<code>dp[i][j] = maxOf(1, dp[r][c + 1] - dungeon[r][c])</code>。</li>
-<li>其他行和列：<code>dp[i][j] = maxOf(1, minOf(dp[r][c + 1], dp[r + 1][c]) - dungeon[r][c])</code>。</li>
-</ul>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        dp[m - <span class="number">1</span>][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[m - <span class="number">1</span>][n - <span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[i][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, dp[i + <span class="number">1</span>][n - <span class="number">1</span>] - dungeon[i][n - <span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[m - <span class="number">1</span>][i] = maxOf(<span class="number">1</span>, dp[m - <span class="number">1</span>][i + <span class="number">1</span>] - dungeon[m - <span class="number">1</span>][i])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">                dp[r][c] = maxOf(<span class="number">1</span>, minOf(dp[r][c + <span class="number">1</span>], dp[r + <span class="number">1</span>][c]) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -3171,45 +3171,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.64.最小路径和（中等）</title>
-    <url>/LeetCode/LeetCode.64.%E6%9C%80%E5%B0%8F%E8%B7%AF%E5%BE%84%E5%92%8C%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/minimum-path-sum/">LeetCode.64.最小路径和（中等）</a></p>
-<p>给定一个包含非负整数的  <code>_m_ x _n_</code> 网格 <code>grid</code>  ，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。</p>
-<p><strong>说明：</strong>每次只能向下或者向右移动一步。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>要达到右下角<code>[m, n]</code>，只有两种可能：</p>
-<ol>
-<li> 从上边<code>[m - 1, n]</code>来</li>
-<li> 从左边<code>[m, n - 1]</code>来</li>
-</ol>
-<p><code>[m - 1, n]</code>怎么达到？  按道理有3条路径，从上来、从左来、从下来。<br>但是从下来不考虑，因为从起点到终点的路径是要从上到下的，如果从下面上来最后还是要下去，路径和增大了，多此一举。</p>
-<p>同理中间的格子，如果是从右边过来也是多此一举，因为起点到终点的路径是要从左到右的。</p>
-<p>所以对于每个格子，只考虑从上和从左过来。</p>
-<p>某个状态的问题就拆解为了子问题+有限步骤，并且符合最优子结构，也无后效性。  而且有大量重叠子问题，比如到达<code>[i, j]</code>格的路径和，在计算到达<code>[i + 1][j]</code>路径数和到达<code>[i][j + 1]</code>路径和时都会用到。</p>
-<p>符合使用动态规划所有条件。</p>
-<p><strong>状态转移方程</strong><br>设<code>dp[i][j]</code>为达到方格<code>[i, j]</code>的路径和。<br><code>dp[i][j] = dp[i - 1][j] + dp[i][j - 1]</code></p>
-<p><strong>边界处理</strong><br><code>[0, 0]</code>格没有左边和上面，路径和就是当前元素值。<br>第一行所有格子没有上面，都只能从左边过来，路径和从左边累加。<br>第一列所有格子没有左边，都只能从上边过来，路径和从右边累加。</p>
-<p><strong>复杂度</strong><br>要遍历所有网格，才能找到最少路径和，所以时间无法省略。<br>时间复杂度$O(mn)$。</p>
-<p>如果记录达到所有格子的路径和，空间复杂度$O(mn)$。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minPathSum</span><span class="params">(grid: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = grid.size</span><br><span class="line">        <span class="keyword">val</span> n = grid[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">0</span>] = grid[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) dp[i][<span class="number">0</span>] = dp[i - <span class="number">1</span>][<span class="number">0</span>] + grid[i][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) dp[<span class="number">0</span>][j] = dp[<span class="number">0</span>][j - <span class="number">1</span>] + grid[<span class="number">0</span>][j]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">                dp[i][j] = grid[i][j] + minOf(dp[i - <span class="number">1</span>][j], dp[i][j - <span class="number">1</span>])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[m - <span class="number">1</span>][n - <span class="number">1</span>]</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>空间优化</strong></p>
-<p>由于每个格子的路径数只会从上面和左边的路径和推导而来，而且只会读取上面和左边的项，所以不需要记录所有格子的路径数。</p>
-<p>那么要记录多少个格子的路径和？<br>因为终点格子可以从左边过来，所以要记录左边所有的格子的路径和，所以记录一行是必须的。  读取上一行格子的路径和，直接读取之前记录的行就行了。<br>所以只需要记录一行格子的路径和。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minPathSum</span><span class="params">(grid: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = grid.size</span><br><span class="line">        <span class="keyword">val</span> n = grid[<span class="number">0</span>].size</span><br><span class="line">        <span class="comment">// 存储一行格子的路径数</span></span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        dp[<span class="number">0</span>] = grid[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="comment">// 第一行不能从上边过来，特殊处理</span></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) dp[j] = dp[j - <span class="number">1</span>] + grid[<span class="number">0</span>][j]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="comment">// dp[j]是上面格子的路径数</span></span><br><span class="line">                <span class="comment">// dp[j - 1]是左边格子的路径数</span></span><br><span class="line">                dp[j] = <span class="keyword">if</span> (j == <span class="number">0</span>) grid[i][j] + dp[j]</span><br><span class="line">                <span class="keyword">else</span> grid[i][j] + minOf(dp[j], dp[j - <span class="number">1</span>])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n - <span class="number">1</span>]</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>时间复杂度$O(mn)$<br>空间复杂度$O(n)$</p>
-<p>如果<code>m &lt; n</code>，也可以做到$O(m)$空间复杂度，交换行列把矩阵转置，并不影响结果，再递推就行。</p>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.65.有效数字（困难）</title>
     <url>/LeetCode/LeetCode.65.%E6%9C%89%E6%95%88%E6%95%B0%E5%AD%97%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/valid-number/">LeetCode.65.有效数字（困难）</a></p>
@@ -3422,6 +3383,45 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.64.最小路径和（中等）</title>
+    <url>/LeetCode/LeetCode.64.%E6%9C%80%E5%B0%8F%E8%B7%AF%E5%BE%84%E5%92%8C%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/minimum-path-sum/">LeetCode.64.最小路径和（中等）</a></p>
+<p>给定一个包含非负整数的  <code>_m_ x _n_</code> 网格 <code>grid</code>  ，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。</p>
+<p><strong>说明：</strong>每次只能向下或者向右移动一步。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>要达到右下角<code>[m, n]</code>，只有两种可能：</p>
+<ol>
+<li> 从上边<code>[m - 1, n]</code>来</li>
+<li> 从左边<code>[m, n - 1]</code>来</li>
+</ol>
+<p><code>[m - 1, n]</code>怎么达到？  按道理有3条路径，从上来、从左来、从下来。<br>但是从下来不考虑，因为从起点到终点的路径是要从上到下的，如果从下面上来最后还是要下去，路径和增大了，多此一举。</p>
+<p>同理中间的格子，如果是从右边过来也是多此一举，因为起点到终点的路径是要从左到右的。</p>
+<p>所以对于每个格子，只考虑从上和从左过来。</p>
+<p>某个状态的问题就拆解为了子问题+有限步骤，并且符合最优子结构，也无后效性。  而且有大量重叠子问题，比如到达<code>[i, j]</code>格的路径和，在计算到达<code>[i + 1][j]</code>路径数和到达<code>[i][j + 1]</code>路径和时都会用到。</p>
+<p>符合使用动态规划所有条件。</p>
+<p><strong>状态转移方程</strong><br>设<code>dp[i][j]</code>为达到方格<code>[i, j]</code>的路径和。<br><code>dp[i][j] = dp[i - 1][j] + dp[i][j - 1]</code></p>
+<p><strong>边界处理</strong><br><code>[0, 0]</code>格没有左边和上面，路径和就是当前元素值。<br>第一行所有格子没有上面，都只能从左边过来，路径和从左边累加。<br>第一列所有格子没有左边，都只能从上边过来，路径和从右边累加。</p>
+<p><strong>复杂度</strong><br>要遍历所有网格，才能找到最少路径和，所以时间无法省略。<br>时间复杂度$O(mn)$。</p>
+<p>如果记录达到所有格子的路径和，空间复杂度$O(mn)$。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minPathSum</span><span class="params">(grid: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = grid.size</span><br><span class="line">        <span class="keyword">val</span> n = grid[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">0</span>] = grid[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) dp[i][<span class="number">0</span>] = dp[i - <span class="number">1</span>][<span class="number">0</span>] + grid[i][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) dp[<span class="number">0</span>][j] = dp[<span class="number">0</span>][j - <span class="number">1</span>] + grid[<span class="number">0</span>][j]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">                dp[i][j] = grid[i][j] + minOf(dp[i - <span class="number">1</span>][j], dp[i][j - <span class="number">1</span>])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[m - <span class="number">1</span>][n - <span class="number">1</span>]</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>空间优化</strong></p>
+<p>由于每个格子的路径数只会从上面和左边的路径和推导而来，而且只会读取上面和左边的项，所以不需要记录所有格子的路径数。</p>
+<p>那么要记录多少个格子的路径和？<br>因为终点格子可以从左边过来，所以要记录左边所有的格子的路径和，所以记录一行是必须的。  读取上一行格子的路径和，直接读取之前记录的行就行了。<br>所以只需要记录一行格子的路径和。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">minPathSum</span><span class="params">(grid: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = grid.size</span><br><span class="line">        <span class="keyword">val</span> n = grid[<span class="number">0</span>].size</span><br><span class="line">        <span class="comment">// 存储一行格子的路径数</span></span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        dp[<span class="number">0</span>] = grid[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="comment">// 第一行不能从上边过来，特殊处理</span></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) dp[j] = dp[j - <span class="number">1</span>] + grid[<span class="number">0</span>][j]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="comment">// dp[j]是上面格子的路径数</span></span><br><span class="line">                <span class="comment">// dp[j - 1]是左边格子的路径数</span></span><br><span class="line">                dp[j] = <span class="keyword">if</span> (j == <span class="number">0</span>) grid[i][j] + dp[j]</span><br><span class="line">                <span class="keyword">else</span> grid[i][j] + minOf(dp[j], dp[j - <span class="number">1</span>])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n - <span class="number">1</span>]</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>时间复杂度$O(mn)$<br>空间复杂度$O(n)$</p>
+<p>如果<code>m &lt; n</code>，也可以做到$O(m)$空间复杂度，交换行列把矩阵转置，并不影响结果，再递推就行。</p>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode中等</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.68.文本左右对齐（困难）</title>
     <url>/LeetCode/LeetCode.68.%E6%96%87%E6%9C%AC%E5%B7%A6%E5%8F%B3%E5%AF%B9%E9%BD%90%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/text-justification/">LeetCode.68.文本左右对齐（困难）</a></p>
@@ -3487,6 +3487,34 @@
       <tags>
         <tag>动态规划</tag>
         <tag>LeetCode简单</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.703.数据流中的第 K 大元素（简单）</title>
+    <url>/LeetCode/LeetCode.703.%E6%95%B0%E6%8D%AE%E6%B5%81%E4%B8%AD%E7%9A%84%E7%AC%AC%20K%20%E5%A4%A7%E5%85%83%E7%B4%A0%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/kth-largest-element-in-a-stream/">LeetCode.703.数据流中的第 K 大元素（简单）</a></p>
+<p>设计一个找到数据流中第 k 大元素的类（class）。注意是排序后的第 k 大元素，不是第 k 个不同的元素。</p>
+<p>请实现 KthLargest 类：</p>
+<p>KthLargest(int k, int[] nums) 使用整数 k 和整数流 nums 初始化对象。<br>int add(int val) 将 val 插入数据流 nums 后，返回当前数据流中第 k 大的元素。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：堆"><a href="#解法1：堆" class="headerlink" title="解法1：堆"></a>解法1：堆</h2><p>第k大的数就是数组按照从大到小的顺序下的第k位。</p>
+<p>利用小顶堆的特性，堆只保留k个元素，第1大到第k大的数都在堆里，第k大的数正好是堆顶。</p>
+<p>如果要插入的数比堆顶元素大，堆顶元素就变为了第k+1大的数，应该从堆中舍弃，于是就将堆顶元素替换为新元素，再调整堆使其满足小顶堆的特性，此时堆顶依然是第k大的数。</p>
+<p>如果要插入的数比堆顶元素小，则忽略，因为第k+1大、k+2大等等的数字我们并不关心。</p>
+<p>建立堆的时间是O(n)，一次向下调整堆的时间复杂度是O(log k)。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">KthLargest</span></span>(</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> k: <span class="built_in">Int</span>,</span><br><span class="line">    nums: IntArray</span><br><span class="line">) &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 小根堆</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> heap: IntArray</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 原始堆的长度</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> length = nums.size</span><br><span class="line"></span><br><span class="line">    <span class="keyword">init</span> &#123;</span><br><span class="line">        <span class="comment">// 题意限制 nums 的长度≥ k-1，即 k 的最大值为 nums 的长度 + 1</span></span><br><span class="line">        <span class="comment">// 令 n = nums 的长度，当 k = n + 1 时，给堆预留一个存储空间，用于第一次add时把值放入堆中，以便统计第k大的数</span></span><br><span class="line">        heap = <span class="keyword">if</span> (k == length + <span class="number">1</span>) &#123;</span><br><span class="line">            IntArray(length + <span class="number">1</span>).apply &#123;</span><br><span class="line">                nums.copyInto(<span class="keyword">this</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> nums</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 构建小顶堆</span></span><br><span class="line">        buildMinHeap(heap, length)</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 堆中只保留k个元素，不断的删除堆顶元素，把堆底元素换到堆顶，再调整堆</span></span><br><span class="line">        keepHeapSize(heap, length, k)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">add</span><span class="params">(`<span class="keyword">val</span>`: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="comment">// 题意限制 nums 的长度≥ k-1，即 k 的最大值为 nums 的长度 + 1</span></span><br><span class="line">        <span class="comment">// 当k超过 nums 的长度，刚好是 nums 的长度 + 1 时，在第一次add时，要把add的值放入堆中，以便后续比较</span></span><br><span class="line">        <span class="keyword">if</span> (length &lt; heap.size) &#123;</span><br><span class="line">            <span class="comment">// 堆顶最小元素放到末尾，下面会再把新元素插入插入堆顶，再从堆顶向下调整堆</span></span><br><span class="line">            heap[length] = heap[<span class="number">0</span>]</span><br><span class="line">            <span class="comment">// 改变原始堆长度</span></span><br><span class="line">            length++</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 此时 k &lt;= n，可以保证堆顶元素就是第k大的数</span></span><br><span class="line">            <span class="comment">// 堆顶元素是最小的元素，堆有k个数，堆的其他元素都比堆顶元素大，那么堆顶元素就是第k大的数</span></span><br><span class="line">            <span class="comment">// 如果要插入的数值小于等于最小的元素，堆顶元素依然是第k大的，就要插入的数值就不用插入堆中了</span></span><br><span class="line">            <span class="keyword">if</span> (`<span class="keyword">val</span>` &lt;= heap[<span class="number">0</span>]) &#123;</span><br><span class="line">                <span class="keyword">return</span> heap[<span class="number">0</span>]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果要插入的数值大于最小的元素，当前堆顶元素就不是最小的了，也就是不是第k大的了，就要调整堆了</span></span><br><span class="line">        <span class="comment">// 此时应该将新插入的数放入堆顶，舍弃原来最小的数，因为原来最小的数（原堆顶元素）一定不是第k大的数了，还放在大小为k的堆里没有意义</span></span><br><span class="line">        heap[<span class="number">0</span>] = `<span class="keyword">val</span>`</span><br><span class="line">        <span class="comment">// 新元素插入堆顶后，可能会破坏堆，需要向下调整</span></span><br><span class="line">        sink(heap, <span class="number">1</span>, k)</span><br><span class="line">        <span class="comment">// 调整后的堆顶元素就是最小的元素，也就是第k大的数</span></span><br><span class="line">        <span class="keyword">return</span> heap[<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 保持堆[nums]为指定的大小[size]</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">keepHeapSize</span><span class="params">(nums: <span class="type">IntArray</span>, originalSize: <span class="type">Int</span>, size: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (originalSize &lt;= size) &#123;</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 依次删除堆顶元素</span></span><br><span class="line">        <span class="keyword">for</span> (length <span class="keyword">in</span> originalSize downTo size + <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="comment">// 将堆末尾的数放到堆顶，覆盖原来的数，以达到删除堆顶元素的效果</span></span><br><span class="line">            nums.swap(<span class="number">0</span>, length - <span class="number">1</span>)</span><br><span class="line">            <span class="comment">// 从堆顶开始向下调整堆</span></span><br><span class="line">            <span class="comment">// 最后一个元素已删除，所以不在堆调整范围内</span></span><br><span class="line">            sink(nums, <span class="number">1</span>, length - <span class="number">1</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 末尾空余的位置不管，k就是堆的大小，是小于等于原堆大小的</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 构建初始的小顶堆</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">buildMinHeap</span><span class="params">(nums: <span class="type">IntArray</span>, length: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="comment">// 从最后一个非叶子结点开始到根节点，不停的向下调整堆，最后整体就是小根堆，为什么建堆是这样遍历需要复习堆排序的知识</span></span><br><span class="line">        <span class="keyword">for</span> (parent <span class="keyword">in</span> length / <span class="number">2</span> downTo <span class="number">1</span>) &#123;</span><br><span class="line">            sink(nums, parent, length)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 从第[k]个数开始上向下调整堆[nums]，堆的大小为[length]</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">sink</span><span class="params">(nums: <span class="type">IntArray</span>, k: <span class="type">Int</span>, length: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">var</span> parent = k</span><br><span class="line">        <span class="keyword">while</span> (parent &lt;= length / <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">var</span> child = parent * <span class="number">2</span></span><br><span class="line">            <span class="comment">// child 和 parent 都是编号，在数组的实际索引要减1</span></span><br><span class="line">            <span class="keyword">if</span> (child &lt; length &amp;&amp; nums[child - <span class="number">1</span>] &gt; nums[child]) child++</span><br><span class="line">            <span class="keyword">if</span> (nums[parent - <span class="number">1</span>] &lt;= nums[child - <span class="number">1</span>]) <span class="keyword">break</span></span><br><span class="line">            nums.swap(parent - <span class="number">1</span>, child - <span class="number">1</span>)</span><br><span class="line">            parent = child</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 定义数组IntArray的扩展函数swap，用以交换数组内两个位置[i]和[j]的元素</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> IntArray.<span class="title">swap</span><span class="params">(i: <span class="type">Int</span>, j: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> tmp = <span class="keyword">this</span>[i]</span><br><span class="line">        <span class="keyword">this</span>[i] = <span class="keyword">this</span>[j]</span><br><span class="line">        <span class="keyword">this</span>[j] = tmp</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解法2：二叉搜索树"><a href="#解法2：二叉搜索树" class="headerlink" title="解法2：二叉搜索树"></a>解法2：二叉搜索树</h2><p>二叉搜索树法原理参见二叉搜索树探索卡片<br><a href="https://leetcode-cn.com/explore/learn/card/introduction-to-data-structure-binary-search-tree/66/conclusion/182/">https://leetcode-cn.com/explore/learn/card/introduction-to-data-structure-binary-search-tree/66/conclusion/182/</a><br><code>鉴于我们同时需要插入和搜索操作，为什么不考虑使用一个二叉搜索树结构存储数据呢？ 我们知道，对于二叉搜索树的每个节点来说，它的左子树上所有结点的值均小于它的根结点的值，右子树上所有结点的值均大于它的根结点的值。 换言之，对于二叉搜索树的每个节点来说，若其左子树共有m个节点，那么该节点是组成二叉搜索树的有序数组中第m + 1个值。</code></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">KthLargest</span></span>(k: <span class="built_in">Int</span>, nums: IntArray) &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> bst: TreeNode? = <span class="literal">null</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> kth = k</span><br><span class="line"></span><br><span class="line">    <span class="keyword">init</span> &#123;</span><br><span class="line">        nums.forEach &#123;</span><br><span class="line">            bst = BST.insert(bst, it)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">add</span><span class="params">(`<span class="keyword">val</span>`: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        bst = BST.insert(bst, `<span class="keyword">val</span>`)</span><br><span class="line">        <span class="keyword">val</span> node = BST.search(bst, kth)</span><br><span class="line">        <span class="keyword">return</span> node!!.`<span class="keyword">val</span>`</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> BST &#123;</span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">insert</span><span class="params">(root: <span class="type">TreeNode</span>?, value: <span class="type">Int</span>)</span></span>: TreeNode? &#123;</span><br><span class="line">            <span class="keyword">if</span> (root == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> TreeNode(value, <span class="number">1</span>)</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (value &lt; root.`<span class="keyword">val</span>`) &#123;</span><br><span class="line">                root.left = insert(root.left, value)</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (value &gt; root.`<span class="keyword">val</span>`) &#123;</span><br><span class="line">                root.right = insert(root.right, value)</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 重复元素不添加新节点，只是更新当前节点的计数</span></span><br><span class="line">            root.count++</span><br><span class="line">            <span class="keyword">return</span> root</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">search</span><span class="params">(root: <span class="type">TreeNode</span>?, k: <span class="type">Int</span>)</span></span>: TreeNode? &#123;</span><br><span class="line">            <span class="keyword">if</span> (root == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> root</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 左子树节点数量</span></span><br><span class="line">            <span class="keyword">val</span> leftNodeCount = root.left?.count ?: <span class="number">0</span></span><br><span class="line">            <span class="comment">// 右子树节点数量</span></span><br><span class="line">            <span class="keyword">val</span> rightNodeCount = root.right?.count ?: <span class="number">0</span></span><br><span class="line">            <span class="comment">// 当前节点数量，当前节点可能存在重复的</span></span><br><span class="line">            <span class="keyword">val</span> currentNodeCount = root.count - leftNodeCount - rightNodeCount</span><br><span class="line">            <span class="comment">// 根据二叉搜索树特点，大于当前节点的数都在右子树</span></span><br><span class="line">            <span class="comment">// 如果k小于等于右子树的节点数，说明第k大的数在右子树，要去右子树寻找，否则要在当前节点和左子树中寻找</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                k &lt;= rightNodeCount -&gt; search(root.right, k)</span><br><span class="line">                k &gt; rightNodeCount + currentNodeCount -&gt; search(root.left, k - rightNodeCount - currentNodeCount)</span><br><span class="line">                <span class="keyword">else</span> -&gt; root</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">TreeNode</span></span>(<span class="keyword">var</span> `<span class="keyword">val</span>`: <span class="built_in">Int</span>, <span class="keyword">var</span> count: <span class="built_in">Int</span>) &#123;</span><br><span class="line">        <span class="keyword">var</span> left: TreeNode? = <span class="literal">null</span></span><br><span class="line">        <span class="keyword">var</span> right: TreeNode? = <span class="literal">null</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode简单</tag>
+        <tag>优先队列</tag>
+        <tag>二叉搜索树</tag>
       </tags>
   </entry>
   <entry>
@@ -3803,44 +3831,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.85.最大矩形（困难）</title>
-    <url>/LeetCode/LeetCode.85.%E6%9C%80%E5%A4%A7%E7%9F%A9%E5%BD%A2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/maximal-rectangle/">LeetCode.85.最大矩形（困难）</a></p>
-<p>给定一个仅包含 <code>0</code>  和  <code>1</code>  、大小为  <code>rows x cols</code>  的二维二进制矩阵，找出只包含  <code>1</code>  的最大矩形，并返回其面积。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>如果以某一行为横轴，该行以上的列为纵轴区域，问题就转变为<a href="https://leetcode-cn.com/problems/largest-rectangle-in-histogram/">LeetCode.84.柱状图中最大的矩形（困难）</a>。</p>
-<p>某一行下，每一列下，与行相连的1的个数就是柱子高度。</p>
-<h3 id="整个求解过程"><a href="#整个求解过程" class="headerlink" title="整个求解过程"></a>整个求解过程</h3><ul>
-<li>统计每一行下柱子的高度</li>
-<li>带入<a href="https://leetcode-cn.com/problems/largest-rectangle-in-histogram/">LeetCode.84.柱状图中最大的矩形（困难）</a>的求解公式里求出柱子可以形成的最大矩形面积</li>
-<li>然后在所有行的最大矩形面积里取一个最大值。</li>
-</ul>
-<h3 id="每行柱子高度统计方法优化"><a href="#每行柱子高度统计方法优化" class="headerlink" title="每行柱子高度统计方法优化"></a>每行柱子高度统计方法优化</h3><ul>
-<li>如果到达每一行，再往上遍历遍历每列柱子高度，是有重复计算的。</li>
-<li>可以保存之前行的柱子高度的结果，在到下一行的时候，发现这一行某一列是1，就累加高度，是0就清空柱子高度，因为无法形成柱子。这样就不用重复计算了。</li>
-</ul>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maximalRectangle</span><span class="params">(matrix: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = matrix.size</span><br><span class="line">        <span class="keyword">if</span> (m == <span class="number">0</span>) <span class="keyword">return</span>  <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">var</span> maxArea = <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> heights = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (row <span class="keyword">in</span> <span class="number">0</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (col <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="keyword">if</span> (matrix[row][col] == <span class="string">&#x27;1&#x27;</span>) heights[col]++</span><br><span class="line">                <span class="keyword">else</span> heights[col] = <span class="number">0</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">val</span> area = largestRectangleArea(heights)</span><br><span class="line">            maxArea = maxOf(maxArea, area)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> maxArea</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">largestRectangleArea</span><span class="params">(heights: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = heights.size</span><br><span class="line">        <span class="keyword">var</span> maxArea = <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> stack = ArrayDeque&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            <span class="keyword">while</span> (stack.isNotEmpty() &amp;&amp; heights[i] &lt; heights[stack.peek()]) &#123;</span><br><span class="line">                <span class="keyword">val</span> height = heights[stack.pop()]</span><br><span class="line">                <span class="keyword">val</span> right = i</span><br><span class="line">                <span class="keyword">val</span> left = <span class="keyword">if</span> (stack.isNotEmpty()) stack.peek() <span class="keyword">else</span> -<span class="number">1</span></span><br><span class="line">                <span class="keyword">val</span> width = right - left - <span class="number">1</span></span><br><span class="line">                <span class="keyword">val</span> rectArea = width * height</span><br><span class="line">                maxArea = maxOf(maxArea, rectArea)</span><br><span class="line">            &#125;</span><br><span class="line">            stack.push(i)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 触发末尾递增柱子的矩形面积计算</span></span><br><span class="line">        <span class="keyword">while</span> (stack.isNotEmpty()) &#123;</span><br><span class="line">            <span class="keyword">val</span> height = heights[stack.pop()]</span><br><span class="line">            <span class="keyword">val</span> right = n</span><br><span class="line">            <span class="keyword">val</span> left = <span class="keyword">if</span> (stack.isNotEmpty()) stack.peek() <span class="keyword">else</span> -<span class="number">1</span></span><br><span class="line">            <span class="keyword">val</span> width = right - left - <span class="number">1</span></span><br><span class="line">            <span class="keyword">val</span> rectArea = width * height</span><br><span class="line">            maxArea = maxOf(maxArea, rectArea)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> maxArea</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><h4 id="时间复杂度O-mn"><a href="#时间复杂度O-mn" class="headerlink" title="时间复杂度O(mn)"></a>时间复杂度O(mn)</h4><p>m为矩阵行数，n为矩阵列数。</p>
-<ul>
-<li>求柱子高度需要遍历矩阵所有元素，所有元素有m*n个。</li>
-<li>求每个柱子高度需要O(n)。</li>
-</ul>
-<h4 id="空间复杂度O-n"><a href="#空间复杂度O-n" class="headerlink" title="空间复杂度O(n)"></a>空间复杂度O(n)</h4><ul>
-<li>高度数组占用O(n)。</li>
-<li>求柱子最大矩形面积需要O(n)的栈。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>栈</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.87.扰乱字符串（困难）</title>
     <url>/LeetCode/LeetCode.87.%E6%89%B0%E4%B9%B1%E5%AD%97%E7%AC%A6%E4%B8%B2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/scramble-string/">LeetCode.87.扰乱字符串（困难）</a></p>
@@ -3911,6 +3901,44 @@
       <tags>
         <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.85.最大矩形（困难）</title>
+    <url>/LeetCode/LeetCode.85.%E6%9C%80%E5%A4%A7%E7%9F%A9%E5%BD%A2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/maximal-rectangle/">LeetCode.85.最大矩形（困难）</a></p>
+<p>给定一个仅包含 <code>0</code>  和  <code>1</code>  、大小为  <code>rows x cols</code>  的二维二进制矩阵，找出只包含  <code>1</code>  的最大矩形，并返回其面积。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>如果以某一行为横轴，该行以上的列为纵轴区域，问题就转变为<a href="https://leetcode-cn.com/problems/largest-rectangle-in-histogram/">LeetCode.84.柱状图中最大的矩形（困难）</a>。</p>
+<p>某一行下，每一列下，与行相连的1的个数就是柱子高度。</p>
+<h3 id="整个求解过程"><a href="#整个求解过程" class="headerlink" title="整个求解过程"></a>整个求解过程</h3><ul>
+<li>统计每一行下柱子的高度</li>
+<li>带入<a href="https://leetcode-cn.com/problems/largest-rectangle-in-histogram/">LeetCode.84.柱状图中最大的矩形（困难）</a>的求解公式里求出柱子可以形成的最大矩形面积</li>
+<li>然后在所有行的最大矩形面积里取一个最大值。</li>
+</ul>
+<h3 id="每行柱子高度统计方法优化"><a href="#每行柱子高度统计方法优化" class="headerlink" title="每行柱子高度统计方法优化"></a>每行柱子高度统计方法优化</h3><ul>
+<li>如果到达每一行，再往上遍历遍历每列柱子高度，是有重复计算的。</li>
+<li>可以保存之前行的柱子高度的结果，在到下一行的时候，发现这一行某一列是1，就累加高度，是0就清空柱子高度，因为无法形成柱子。这样就不用重复计算了。</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maximalRectangle</span><span class="params">(matrix: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = matrix.size</span><br><span class="line">        <span class="keyword">if</span> (m == <span class="number">0</span>) <span class="keyword">return</span>  <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">var</span> maxArea = <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> heights = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (row <span class="keyword">in</span> <span class="number">0</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (col <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="keyword">if</span> (matrix[row][col] == <span class="string">&#x27;1&#x27;</span>) heights[col]++</span><br><span class="line">                <span class="keyword">else</span> heights[col] = <span class="number">0</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">val</span> area = largestRectangleArea(heights)</span><br><span class="line">            maxArea = maxOf(maxArea, area)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> maxArea</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">largestRectangleArea</span><span class="params">(heights: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = heights.size</span><br><span class="line">        <span class="keyword">var</span> maxArea = <span class="number">0</span></span><br><span class="line">        <span class="keyword">val</span> stack = ArrayDeque&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            <span class="keyword">while</span> (stack.isNotEmpty() &amp;&amp; heights[i] &lt; heights[stack.peek()]) &#123;</span><br><span class="line">                <span class="keyword">val</span> height = heights[stack.pop()]</span><br><span class="line">                <span class="keyword">val</span> right = i</span><br><span class="line">                <span class="keyword">val</span> left = <span class="keyword">if</span> (stack.isNotEmpty()) stack.peek() <span class="keyword">else</span> -<span class="number">1</span></span><br><span class="line">                <span class="keyword">val</span> width = right - left - <span class="number">1</span></span><br><span class="line">                <span class="keyword">val</span> rectArea = width * height</span><br><span class="line">                maxArea = maxOf(maxArea, rectArea)</span><br><span class="line">            &#125;</span><br><span class="line">            stack.push(i)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 触发末尾递增柱子的矩形面积计算</span></span><br><span class="line">        <span class="keyword">while</span> (stack.isNotEmpty()) &#123;</span><br><span class="line">            <span class="keyword">val</span> height = heights[stack.pop()]</span><br><span class="line">            <span class="keyword">val</span> right = n</span><br><span class="line">            <span class="keyword">val</span> left = <span class="keyword">if</span> (stack.isNotEmpty()) stack.peek() <span class="keyword">else</span> -<span class="number">1</span></span><br><span class="line">            <span class="keyword">val</span> width = right - left - <span class="number">1</span></span><br><span class="line">            <span class="keyword">val</span> rectArea = width * height</span><br><span class="line">            maxArea = maxOf(maxArea, rectArea)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> maxArea</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h3><h4 id="时间复杂度O-mn"><a href="#时间复杂度O-mn" class="headerlink" title="时间复杂度O(mn)"></a>时间复杂度O(mn)</h4><p>m为矩阵行数，n为矩阵列数。</p>
+<ul>
+<li>求柱子高度需要遍历矩阵所有元素，所有元素有m*n个。</li>
+<li>求每个柱子高度需要O(n)。</li>
+</ul>
+<h4 id="空间复杂度O-n"><a href="#空间复杂度O-n" class="headerlink" title="空间复杂度O(n)"></a>空间复杂度O(n)</h4><ul>
+<li>高度数组占用O(n)。</li>
+<li>求柱子最大矩形面积需要O(n)的栈。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>栈</tag>
       </tags>
   </entry>
   <entry>
@@ -4101,40 +4129,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Java并发-CyclicBarrier</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/</url>
-    <content><![CDATA[<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><ul>
-<li>CyclicBarrier构造函数传入一个数字N。</li>
-<li>线程调用CyclicBarrier.await()会阻塞等待，直到有第N个线程调用CyclicBarrier.await()，所有线程一起执行await()方法后续逻辑。</li>
-<li>再次调用await()可以继续这一波操作，循环使用。</li>
-</ul>
-<p>比喻：</p>
-<ul>
-<li>人到齐了一起走，没到齐每个人都一直等着不走。</li>
-<li>走完了过后，下一波人来了继续这个流程。</li>
-</ul>
-<p>可循环利用的屏障。</p>
-<p>举例：</p>
-<p>CyclicBarrier barrier = new CyclicBarrier(5);</p>
-<p>然后各个线程调用barrier.await();</p>
-<p>当有5个线程await()过后，会继续执行await()后续代码</p>
-<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
-<p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
-<p>然后重新计数，继续同样的过程。</p>
-<h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
-<p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
-<p>CountDownLatch是一次性的，而CyclicBarrier则可以被重置而重复使用。</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>CyclicBarrier</tag>
-        <tag>AQS</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Java并发-ReadWriteLock、StampedLock</title>
     <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/</url>
     <content><![CDATA[<h1 id="读写锁存在的意义？解决了什么问题？"><a href="#读写锁存在的意义？解决了什么问题？" class="headerlink" title="读写锁存在的意义？解决了什么问题？"></a>读写锁存在的意义？解决了什么问题？</h1><p>synchronzied和ReentraintLock的锁是排他锁，同一时刻只允许一个线程访问同一个资源。</p>
@@ -4172,9 +4166,43 @@
       </categories>
       <tags>
         <tag>并发</tag>
-        <tag>AQS</tag>
         <tag>ReadWriteLock</tag>
         <tag>StampedLock</tag>
+        <tag>AQS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-CyclicBarrier</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/</url>
+    <content><![CDATA[<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><ul>
+<li>CyclicBarrier构造函数传入一个数字N。</li>
+<li>线程调用CyclicBarrier.await()会阻塞等待，直到有第N个线程调用CyclicBarrier.await()，所有线程一起执行await()方法后续逻辑。</li>
+<li>再次调用await()可以继续这一波操作，循环使用。</li>
+</ul>
+<p>比喻：</p>
+<ul>
+<li>人到齐了一起走，没到齐每个人都一直等着不走。</li>
+<li>走完了过后，下一波人来了继续这个流程。</li>
+</ul>
+<p>可循环利用的屏障。</p>
+<p>举例：</p>
+<p>CyclicBarrier barrier = new CyclicBarrier(5);</p>
+<p>然后各个线程调用barrier.await();</p>
+<p>当有5个线程await()过后，会继续执行await()后续代码</p>
+<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
+<p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
+<p>然后重新计数，继续同样的过程。</p>
+<h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
+<p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
+<p>CountDownLatch是一次性的，而CyclicBarrier则可以被重置而重复使用。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>AQS</tag>
+        <tag>CyclicBarrier</tag>
       </tags>
   </entry>
   <entry>
@@ -4197,6 +4225,37 @@
         <tag>并发</tag>
         <tag>AQS</tag>
         <tag>Semaphore</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-happens-before</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/</url>
+    <content><![CDATA[<h1 id="什么是happens-before原则？"><a href="#什么是happens-before原则？" class="headerlink" title="什么是happens-before原则？"></a>什么是happens-before原则？</h1><p>前一个操作的结果对后续操作是可见的</p>
+<h1 id="为什么需要happens-before原则？"><a href="#为什么需要happens-before原则？" class="headerlink" title="为什么需要happens-before原则？"></a>为什么需要happens-before原则？</h1><p>虚拟机会做编译优化，进行指令重排序，以提高CPU利用率，防止CPU出现空等待；但有些情况是不能重排序的，否则并发下会出问题，所以就要规定这些情况，happens-before原则就是这个规定.</p>
+<h1 id="典型场景？"><a href="#典型场景？" class="headerlink" title="典型场景？"></a>典型场景？</h1><p>比如写一个单例，new一个对象，指令执行的步骤是：</p>
+<ol>
+<li> 给对象分配内存</li>
+<li> 对象初始化</li>
+<li> 将对象内存地址关联</li>
+</ol>
+<p>指令重排序，可能会导致对象还没初始化，就会已经被使用了，所以需要volatile来禁止指令重排序</p>
+<h1 id="有哪些happens-before原则？"><a href="#有哪些happens-before原则？" class="headerlink" title="有哪些happens-before原则？"></a>有哪些happens-before原则？</h1><ol>
+<li> 程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作；</li>
+<li> 锁定规则：一个unLock操作先行发生于后面对同一个锁额lock操作；</li>
+<li> volatile变量规则：对一个变量的写操作先行发生于后面对这个变量的读操作；</li>
+<li> 传递规则：如果操作A先行发生于操作B，而操作B又先行发生于操作C，则可以得出操作A先行发生于操作C；</li>
+<li> 线程启动规则：Thread对象的start()方法先行发生于此线程的每个一个动作；</li>
+<li> 线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生；</li>
+<li> 线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结束、Thread.isAlive()的返回值手段检测到线程已经终止执行；</li>
+<li> 对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始；</li>
+</ol>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>happens-before</tag>
       </tags>
   </entry>
   <entry>
@@ -4269,37 +4328,6 @@
       <tags>
         <tag>并发</tag>
         <tag>ThreadLocal</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-happens-before</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/</url>
-    <content><![CDATA[<h1 id="什么是happens-before原则？"><a href="#什么是happens-before原则？" class="headerlink" title="什么是happens-before原则？"></a>什么是happens-before原则？</h1><p>前一个操作的结果对后续操作是可见的</p>
-<h1 id="为什么需要happens-before原则？"><a href="#为什么需要happens-before原则？" class="headerlink" title="为什么需要happens-before原则？"></a>为什么需要happens-before原则？</h1><p>虚拟机会做编译优化，进行指令重排序，以提高CPU利用率，防止CPU出现空等待；但有些情况是不能重排序的，否则并发下会出问题，所以就要规定这些情况，happens-before原则就是这个规定.</p>
-<h1 id="典型场景？"><a href="#典型场景？" class="headerlink" title="典型场景？"></a>典型场景？</h1><p>比如写一个单例，new一个对象，指令执行的步骤是：</p>
-<ol>
-<li> 给对象分配内存</li>
-<li> 对象初始化</li>
-<li> 将对象内存地址关联</li>
-</ol>
-<p>指令重排序，可能会导致对象还没初始化，就会已经被使用了，所以需要volatile来禁止指令重排序</p>
-<h1 id="有哪些happens-before原则？"><a href="#有哪些happens-before原则？" class="headerlink" title="有哪些happens-before原则？"></a>有哪些happens-before原则？</h1><ol>
-<li> 程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作；</li>
-<li> 锁定规则：一个unLock操作先行发生于后面对同一个锁额lock操作；</li>
-<li> volatile变量规则：对一个变量的写操作先行发生于后面对这个变量的读操作；</li>
-<li> 传递规则：如果操作A先行发生于操作B，而操作B又先行发生于操作C，则可以得出操作A先行发生于操作C；</li>
-<li> 线程启动规则：Thread对象的start()方法先行发生于此线程的每个一个动作；</li>
-<li> 线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生；</li>
-<li> 线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结束、Thread.isAlive()的返回值手段检测到线程已经终止执行；</li>
-<li> 对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始；</li>
-</ol>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>happens-before</tag>
       </tags>
   </entry>
   <entry>
