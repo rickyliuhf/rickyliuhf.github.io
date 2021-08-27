@@ -7827,7 +7827,7 @@
   </entry>
   <entry>
     <title>Android ViewDragHelper源码解析</title>
-    <url>/2015-05-21-viewdraghelper-source-analysis/</url>
+    <url>/Android/Android%20ViewDragHelper%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在自定义ViewGroup的过程中，如果涉及到View的拖动滑动，<code>ViewDragHelper</code>的使用应该是少不了的，它提供了一系列用于用户拖动子View的辅助方法和相关的状态记录，像Navigation Drawer的边缘滑动、QQ5.x的侧滑菜单、知乎里的页面滑动返回都可以由它实现，所以有必要完全掌握它的使用。</p>
 <p>要想完全掌握<code>ViewDragHelper</code>的使用和原理，最好的办法就是读懂它的源码，所以就有了这篇分析，以便在印象模糊之时可以再次快速回顾<code>ViewDragHelper</code>的原理、用法、注意事项等。</p>
 <span id="more"></span>
