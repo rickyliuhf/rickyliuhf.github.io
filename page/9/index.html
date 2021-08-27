@@ -186,6 +186,105 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/" class="post-title-link" itemprop="url">LeetCode.70.爬楼梯（简单）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-31 00:03:00" itemprop="dateCreated datePublished" datetime="2019-10-31T00:03:00+08:00">2019-10-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode.70.爬楼梯（简单）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p> <a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/climbing-stairs/">LeetCode.70.爬楼梯（简单）</a></p>
+<p>假设你正在爬楼梯。需要 n 阶你才能到达楼顶。<br>每次你可以爬 1 或 2 个台阶。你有多少种不同的方法可以爬到楼顶呢？<br>注意：给定 n 是一个正整数。</p>
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>最优化问题，考虑用动态规划，看是否符合动态规划的条件。<br>一般从最终状态做倒推，拆解当前状态问题为上一个状态+有限的步骤。</p>
+<h3 id="倒推"><a href="#倒推" class="headerlink" title="倒推"></a>倒推</h3><p>爬到第n阶，最后一步一定是只有两种可能：</p>
+<ol>
+<li>先爬到第n-1个台阶，再爬1个台阶</li>
+<li>先爬到第n-2个台阶，再爬2个台阶</li>
+</ol>
+<p>把两种可能的方法数累加就是爬到第n阶第方法数。</p>
+<h3 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h3><p>爬到第1阶，只有1种爬法，即爬1个台阶。<br>爬到第2阶，可以从第0阶爬2个台阶，也可以从第1阶爬1个台阶，共2种爬法。</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">climbStairs</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">2</span>) <span class="keyword">return</span> <span class="number">2</span></span><br><span class="line">        <span class="keyword">var</span> pre1 = <span class="number">2</span></span><br><span class="line">        <span class="keyword">var</span> pre2 = <span class="number">1</span></span><br><span class="line">        <span class="keyword">var</span> cur = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">3.</span>.n) &#123;</span><br><span class="line">            cur = pre1 + pre2</span><br><span class="line">            pre2 = pre1</span><br><span class="line">            pre1 = cur</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cur</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/ASM%E5%AD%97%E8%8A%82%E7%A0%81%E6%8F%92%E6%A1%A9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +316,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -454,7 +553,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -566,7 +665,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -702,7 +801,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -957,7 +1056,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1072,7 +1171,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1187,7 +1286,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1367,7 +1466,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1518,7 +1617,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 11:20:14" itemprop="dateModified" datetime="2021-08-27T11:20:14+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1585,108 +1684,6 @@
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/v_july_v/article/details/6530142">从B树、B+树、B*树谈到R 树</a></li>
 <li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/svL_yNmNJ-wj9aGjtO_Yww">拜托，别再问我什么是B+树 了</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_21993785/java/article/details/80580679">B+Tree在数据库索引上拥有独特优势的原因（为什么比红黑树更合适）</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/" class="post-title-link" itemprop="url">Java集合类-ArrayDeque</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-05-14 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-14T20:00:00+08:00">2018-05-14</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 10:20:23" itemprop="dateModified" datetime="2021-08-27T10:20:23+08:00">2021-08-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-ArrayDeque/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="ArrayDeque特点"><a href="#ArrayDeque特点" class="headerlink" title="ArrayDeque特点"></a>ArrayDeque特点</h1><p>基于数组的双端队列。</p>
-<p>分别用两个索引指针指示头尾元素位置，循环访问数组元素，访问头尾元素时间复杂度为O(1)</p>
-<p>容量不够时扩容，容量增加一倍。</p>
-<p>也可以当栈使用。</p>
-<h1 id="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"><a href="#有了LinkedList实现双端队列，为什么还要用ArrayDeque？" class="headerlink" title="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"></a>有了LinkedList实现双端队列，为什么还要用ArrayDeque？</h1><p>数组在内存中是连续存储的，CPU访问内存数据具有空间局部性特点，数组对CPU缓存很友好，可以大大提升访问速度。</p>
-<p>链表每个节点存储位置是分散不连续的，CPU缓存命中率低，CPU访问主存次数增加，速度慢。</p>
-<p>所以需要栈和队列时，优先选择用ArrayDeque。</p>
-<h1 id="ArrayDeque缺点"><a href="#ArrayDeque缺点" class="headerlink" title="ArrayDeque缺点"></a>ArrayDeque缺点</h1><ol>
-<li> ArrayDeque较于链表的方式的缺点就是容量不够时需要扩容，耗费O(n)的时间</li>
-<li> 删除元素后不会缩容，所以不适合数据量变化大且长期处于少数据状态的情况，会浪费空间</li>
-</ol>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/6163166/why-is-arraydeque-better-than-linkedlist">Why is ArrayDeque better than LinkedList</a></li>
-<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/PG6NOMgXS6Slh0aXRv9W-g">死磕 java集合之ArrayDeque源码分析</a></li>
 </ul>
 
       
@@ -1774,7 +1771,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">126</span>
+          <span class="site-state-item-count">127</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
