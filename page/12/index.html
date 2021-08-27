@@ -186,6 +186,140 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/%E6%B5%8F%E8%A7%88%E5%99%A8%E8%AF%B7%E6%B1%82%E7%BD%91%E5%9D%80%E5%AE%8C%E6%95%B4%E8%A7%A3%E6%9E%90%E7%9A%84%E8%BF%87%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E7%BD%91%E7%BB%9C/%E6%B5%8F%E8%A7%88%E5%99%A8%E8%AF%B7%E6%B1%82%E7%BD%91%E5%9D%80%E5%AE%8C%E6%95%B4%E8%A7%A3%E6%9E%90%E7%9A%84%E8%BF%87%E7%A8%8B/" class="post-title-link" itemprop="url">浏览器请求url完整解析的过程</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-06 19:31:00" itemprop="dateCreated datePublished" datetime="2018-03-06T19:31:00+08:00">2018-03-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/%E6%B5%8F%E8%A7%88%E5%99%A8%E8%AF%B7%E6%B1%82%E7%BD%91%E5%9D%80%E5%AE%8C%E6%95%B4%E8%A7%A3%E6%9E%90%E7%9A%84%E8%BF%87%E7%A8%8B/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/浏览器请求网址完整解析的过程/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="基本过程"><a href="#基本过程" class="headerlink" title="基本过程"></a>基本过程</h1><ol>
+<li> 域名解析</li>
+<li> tcp连接</li>
+<li> tls握手</li>
+<li> 发送http请求</li>
+<li> ARP寻找路由器</li>
+<li> 以太网传输数据帧</li>
+<li> 路由转发</li>
+<li> 服务器返回http响应</li>
+<li> 浏览器解析http响应体渲染页面</li>
+<li>TCP四次挥手断开连接</li>
+</ol>
+<h1 id="域名解析"><a href="#域名解析" class="headerlink" title="域名解析"></a>域名解析</h1><p>主流网络通信协议是TCP/IP，数据在网络中的传输是通过IP协议在各个路由器之间传输，找到服务端机器的，IP协议只认IP地址，IP地址全是数字，对于人来说不方便记忆，所以搞了域名，全是英文。所以第一步要先解析域名为IP地址。</p>
+<ol>
+<li> 先看浏览器缓存有没有对应IP。</li>
+<li> 没有则查询操作系统hosts文件里是否有对应IP。</li>
+<li> 没有则向本地DNS服务器发起域名解析。</li>
+<li> 如果本地DNS服务器有对应IP缓存，则直接返回。</li>
+<li> 没有则向根域名服务器请求解析域名，根域名服务器无法解析域名，给出下一级域名服务器地址，本地DNS服务器继续请求，这样一级一级的直到解析出IP地址。</li>
+</ol>
+<h1 id="TCP连接"><a href="#TCP连接" class="headerlink" title="TCP连接"></a>TCP连接</h1><p>浏览器使用HTTP协议传输数据，HTTP要求传输要可靠，所以HTTP底层是基于TCP协议的。</p>
+<p>TCP协议为了可靠性，一开始是要通过三次握手建立连接，验证通信双方的发送数据和接受数据是正常。</p>
+<p>采用三次握手而不是两次握手，是为了防止已失效的连接请求报文突然又传送到了服务端，因而产生错误。</p>
+<p>三次握手还会交换报文初始序号、滑动窗口大小、最大报文长度等信息，这些都是用来保证传输的可靠性的。</p>
+<h1 id="HTTP请求"><a href="#HTTP请求" class="headerlink" title="HTTP请求"></a>HTTP请求</h1><p>HTTP请求分为请求行、请求头、请求体。</p>
+<ul>
+<li>请求行规定了  请求方法类型、url、http协议版本。</li>
+<li>请求头的功能很多，比如说缓存、压缩、支持的编码等，看实际的需求。</li>
+<li>请求体是详细的数据部分。</li>
+</ul>
+<p>浏览器输入一个url访问，都是get请求。</p>
+<p>数据到达传输层，这里使用的是TCP协议，给数据加上TCP报文头，在报文头中填充源端口号、目的端口号、数据字节数编号、接受窗口大小等数据。</p>
+<p>其中端口号的目的是为了把数据交给特定的应用程序做处理，端口号是为了区分同一台主机上不同的应用程序。</p>
+<p>TCP协议还有报文编号、超时重传、流量控制、拥塞控制等机制，都是为了保证  传输的可靠性，保证数据传输到位。这些机制对于HTTP协议是无感的。</p>
+<h2 id="TCP分段"><a href="#TCP分段" class="headerlink" title="TCP分段"></a>TCP分段</h2><p>如果HTTP报文过长，超过TCP规定的最大报文长度，就会分为多个TCP报文传输，TCP分段是为了防止IP层对数据进行分片，因为IP层分片后，除了第一个分片有TCP报文头，其他IP分片  没有TCP报文头，这样如果一个IP分片丢失，就要重传所有的IP分片，因为没办法定位哪个分片丢失，不方便做超时重传，降低了传输吞吐量。</p>
+<p>IP层对数据进行分片是为了防止IP报文大小超过数据链路层的最大传输单元大小，IP数据过长，到数据链路层就无法传输  。</p>
+<h1 id="ARP寻址"><a href="#ARP寻址" class="headerlink" title="ARP寻址"></a>ARP寻址</h1><p>TCP报文到IP层后，会加上IP协议报文头，添加源主机IP地址，目的主机IP地址。IP地址是用来定位网络中的主机的。</p>
+<p>源主机先检查源主机IP地址和目的主机IP地址是否在同一个网络中。</p>
+<h2 id="局域网传输"><a href="#局域网传输" class="headerlink" title="局域网传输"></a>局域网传输</h2><p>如果在同一个网络中，接下来就是局域网通信了。局域网通信识别主机是通过MAC地址来识别的  ，而不是IP地址，所以第一步要先获取主机的MAC地址。这就要用到ARP协议，ARP叫地址解析协议，是用来做IP地址到MAC地址的映射。</p>
+<p>首先源主机在本地局域网中发送一个ARP广播请求，目的主机收到广播请求后对比IP地址是自己的，就返回一个ARP响应包，把目的主机的MAC地址告诉源主机。ARP协议会缓存IP地址和MAC地址的映射关系，下一次就不用发广播来获取MAC地址了，节省通信时间。接下来源主机就把IP数据包加上数据链路层的帧首部，填充源主机和目的主机的MAC地址，通过以太网等局域网手段跟目的主机通信。</p>
+<h2 id="广域网传输"><a href="#广域网传输" class="headerlink" title="广域网传输"></a>广域网传输</h2><p>如果不在同一个网络中，要将数据发送到网络中，也要先通过ARP获取到网关路由器的MAC地址，源主机把数据传递给网关路由器，网关路由器把数据帧首部去掉，发送IP数据报。</p>
+<h1 id="路由转发"><a href="#路由转发" class="headerlink" title="路由转发"></a>路由转发</h1><p>路由器转发数据，要在路由表中查询是否有能与目的IP地址匹配的条目，如果匹配了主机地址，则发送数据给目的主机  ，否则转发给下一个网络的网关路由器。</p>
+<p>数据应该转发给哪个路由器，是根据路由算法来决定的，路由算法会计算得出一个传输代价最小的路径。</p>
+<p>在大型、易变的网络中，会用到动态路由算法，一般使用链路状态路由算法，因为传播的数据量小，节省CPU、内存和网络带宽。</p>
+<p>每个路由器都会将自己与邻居节点之间的链路状态广播出去，发送到整个网络，这样每个路由器都会有网络中所有路由器的状态，形成全网的拓扑视图，然后可以用迪杰斯特拉最短路径算法求出最短路径，就知道路由转发的时候要发给哪个路由器了。当某台路由器链路状态发生变化，采用洪泛法向所有路由器发送状态信息，使其他路由器重新计算最佳路径重新生成路由表。</p>
+<p>路由器之间的通信，也是要走局域网通信的那一套流程，即获得下一跳路由器的MAC地址，然后通过以太网传输数据帧。</p>
+<p>服务端收到消息后也是同样的反向操作流程。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +351,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -432,7 +566,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -642,7 +776,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -770,7 +904,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -873,7 +1007,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -976,7 +1110,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1123,7 +1257,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1233,7 +1367,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1338,7 +1472,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 17:46:41" itemprop="dateModified" datetime="2021-08-27T17:46:41+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1544,216 +1678,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Java垃圾回收算法</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-01-03 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-03T20:00:00+08:00">2018-01-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 17:43:34" itemprop="dateModified" datetime="2021-08-27T17:43:34+08:00">2021-08-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java垃圾回收机制/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="如何判定一个对象是否可以被垃圾回收？"><a href="#如何判定一个对象是否可以被垃圾回收？" class="headerlink" title="如何判定一个对象是否可以被垃圾回收？"></a>如何判定一个对象是否可以被垃圾回收？</h1><h2 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h2><p>记录每个对象被引用数量，产生新引用计数加1，引用失效计数减1</p>
-<p>优点：实现简单<br>缺点：无法解决环形依赖引用</p>
-<h2 id="可达性分析"><a href="#可达性分析" class="headerlink" title="可达性分析"></a>可达性分析</h2><p>一个对象到GC Roots对象没有引用链，表示此对象是没有地方使用，可以被回收。</p>
-<h3 id="可以作为GC-Roots的对象"><a href="#可以作为GC-Roots的对象" class="headerlink" title="可以作为GC Roots的对象"></a>可以作为GC Roots的对象</h3><ol>
-<li> 虚拟机栈中的引用的对象，即栈帧中的局部变量表中引用的对象</li>
-<li> 本地方法栈中引用的对象，即native方法中引用的对象</li>
-<li> 方法区中类的静态属性引用的对象</li>
-<li> 方法区中常量引用的对象</li>
-</ol>
-<p>优点：</p>
-<ul>
-<li>分析更加精确，解决了环形引用的问题</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li> 实现复杂，分析时间长</li>
-<li>分析过程需要保证引用关系不能发生变化，需要GC停顿，即让所有线程的执行都暂停（Stop the world）</li>
-</ul>
-<p>参考《深入理解Java虚拟机（第2版）》3.2 对象已死吗</p>
-<h1 id="GC停顿是什么？"><a href="#GC停顿是什么？" class="headerlink" title="GC停顿是什么？"></a>GC停顿是什么？</h1><p>对象的可达性分析需要枚举GC Roots节点对象，必须要保证对象之间的引用关系不能一直变化，必须要停顿所有线程的执行，这就是Stop the world，也是垃圾回收的性能瓶颈所在。暂停线程的工作，需要等到安全点才能暂停。</p>
-<h1 id="怎么让线程在安全点暂停？"><a href="#怎么让线程在安全点暂停？" class="headerlink" title="怎么让线程在安全点暂停？"></a>怎么让线程在安全点暂停？</h1><p>主动式中断（Voluntary  Suspension），GC需要中断线程时，不直接中断线程，仅仅给每个线程设置一个标志，各线程主动轮询这个标志，发现中断标志为true就自己中断挂起。</p>
-<h1 id="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"><a href="#线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？" class="headerlink" title="线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？"></a>线程不执行代码时（处于睡眠、等待或阻塞），无法主动轮询响应中断标志，虚拟机如果等待其恢复运行时间可能太长，垃圾回收时应该怎么应对？</h1><p>如果一段代码中引用关系不会变化，称为这一段为安全区域，线程执行到安全区域的代码时，会标记自己已经进入了安全区域；虚拟机发起垃圾回收时，就不用管已经位于安全区域的线程了。</p>
-<p>线程离开安全区域时，要检查系统是否已经完成了GC Roots的枚举（或者是检查整个垃圾回收是否已结束），如果还没有完成，就必须要等待，直到收到可以安全离开安全区域的信号为止。</p>
-<h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><h1 id="垃圾回收算法有哪些？分别有什么优缺点-？"><a href="#垃圾回收算法有哪些？分别有什么优缺点-？" class="headerlink" title="垃圾回收算法有哪些？分别有什么优缺点  ？"></a>垃圾回收算法有哪些？分别有什么优缺点  ？</h1><p>垃圾回收算法主要有：</p>
-<ol>
-<li> 标记-清除（Mark-Sweep）</li>
-<li> 复制（Copying）</li>
-<li> 标记-整理（Mark-Compact）</li>
-<li> 分代收集</li>
-</ol>
-<h2 id="标记-清除（Mark-Sweep）"><a href="#标记-清除（Mark-Sweep）" class="headerlink" title="标记-清除（Mark-Sweep）"></a>标记-清除（Mark-Sweep）</h2><p>先标记出内存中所有需要回收的对象，再统一回收所有被标记的对象。标记过程就是对象到GC Roots对象的可达性分析。</p>
-<p>缺点：</p>
-<ol>
-<li>记和清除两个过程都不高效。</li>
-<li>容易产生大量不连续的空间碎片，分配大对象的时候无法找到连续的内存空间时会再次触发垃圾回收。</li>
-</ol>
-<h2 id="复制（Copying）"><a href="#复制（Copying）" class="headerlink" title="复制（Copying）"></a>复制（Copying）</h2><p>将内存分为大小相等的两块，每次只使用其中一块，当这一块内存用完后，将还存活的对象复制到另外一块内存上，再把已使用过的那块内存一次清理掉。</p>
-<p>优点：</p>
-<ol>
-<li> 每次对整半块的内存清理，实现简单</li>
-<li> 内存分配时也没有内存碎片的问题，整体上更高效</li>
-</ol>
-<p>缺点：</p>
-<ol>
-<li> 有一半的内存空间闲置不用浪费了</li>
-<li> 对象存活率较高时，就要进行较多的复制操作，效率降低</li>
-</ol>
-<h2 id="标记-整理（Mark-Compact）"><a href="#标记-整理（Mark-Compact）" class="headerlink" title="标记-整理（Mark-Compact）"></a>标记-整理（Mark-Compact）</h2><p>先标记出内存中所有存活的对象，再统一向内存的一端移动，最后直接清理掉边界以外的内存</p>
-<p>优点：</p>
-<ol>
-<li> 不会产生不连续的内存碎片</li>
-</ol>
-<p>缺点：</p>
-<ol>
-<li> 标记和整理的速度较慢</li>
-</ol>
-<h2 id="分代收集（Generational-Collection）"><a href="#分代收集（Generational-Collection）" class="headerlink" title="分代收集（Generational Collection）"></a>分代收集（Generational Collection）</h2><p>根据对象的存活周期将堆内存划分为几块，这样可以针对不同的区域的特性使用最合适最高效的垃圾回收算法，一般把堆划分为新生代和老年代，默认新生代占堆的三分之一空间，老年代占堆的三分之二空间。</p>
-<p>新生代又被划分为一块较大的Eden区域和两个较小的Survivor区域，每次使用Eden区和其中一个Survivor区。</p>
-<p>在新生代中每次垃圾回收时都有大量的对象死去，只有少量对象存活，采用复制算法，当开始垃圾回收时，将Eden和Survivor中还存活的对象一次性复制到另一块Survivor空间，只要付出少量存活对象的复制成本就可以完成内存回收。在HotSpot虚拟机中Eden区和Survivor区大小比值默认为8:1，新生代只有10%的内存空间被浪费。当新生代空间不够时，需要老年代空间做分配担保，大对象直接存入老年代。</p>
-<p>老年代中对象存活率高，必须使用标记清除或标记整理来进行回收。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824235449.png"></p>
-<p>参考《深入理解Java虚拟机（第2版）》 3.3 垃圾收集算法</p>
-<h1 id="分代收集有什么好处？"><a href="#分代收集有什么好处？" class="headerlink" title="分代收集有什么好处？"></a>分代收集有什么好处？</h1><p>对传统的、基本的GC实现来说，由于它们在GC的整个工作过程中都要“stop-the-world”，如果能想办法缩短GC一次工作的时间长度就是件重要的事情。如果说收集整个GC堆耗时太长，那不如只收集其中的一部分？<br>于是就有好几种不同的划分（partition）GC堆的方式来实现部分收集，而分代式GC就是这其中的一个思路。</p>
-<p>这个思路所基于的基本假设大家都很熟悉了：weak generational hypothesis——大部分对象的生命期很短（die young），而没有die young的对象则很可能会存活很长时间（live long）。</p>
-<p>这是对过往的很多应用行为分析之后得出的一个假设。基于这个假设，如果让新创建的对象都在young gen里创建，然后频繁收集young gen，则大部分垃圾都能在young GC中被收集掉。由于young gen的大小配置通常只占整个GC堆的较小部分，而且较高的对象死亡率（或者说较低的对象存活率）让它非常适合使用copying算法来收集，这样就不但能降低单次GC的时间长度，还可以提高GC的工作效率。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/53613423/answer/135743258">java的gc为什么要分代？ - RednaxelaFX的回答 - 知乎 </a></li>
-</ul>
-<h1 id="基于分代收集回收算法，堆上的内存分配策略是怎样的？"><a href="#基于分代收集回收算法，堆上的内存分配策略是怎样的？" class="headerlink" title="基于分代收集回收算法，堆上的内存分配策略是怎样的？"></a>基于分代收集回收算法，堆上的内存分配策略是怎样的？</h1><p>参考《深入理解Java虚拟机（第2版）》 3.6 内存分配与回收策略</p>
-<h2 id="对象优先在新生代Eden区分配"><a href="#对象优先在新生代Eden区分配" class="headerlink" title="对象优先在新生代Eden区分配"></a>对象优先在新生代Eden区分配</h2><p>当Eden区没有足够的空间分配时，虚拟机发起一次Minor GC。</p>
-<h2 id="大对象直接进入老年代"><a href="#大对象直接进入老年代" class="headerlink" title="大对象直接进入老年代"></a>大对象直接进入老年代</h2><p>例如很长的字符串或很长的数组。</p>
-<h2 id="长期存活的对象进入老年代"><a href="#长期存活的对象进入老年代" class="headerlink" title="长期存活的对象进入老年代"></a>长期存活的对象进入老年代</h2><p>每个对象都有一个年龄计数器，对象在Eden区出生，经过一次Minor GC仍然存活，并能被Survivor容纳，年龄就增加1岁，年龄增加到一定程度（默认为15），就会晋升到老年代。</p>
-<h2 id="动态对象年龄判定"><a href="#动态对象年龄判定" class="headerlink" title="动态对象年龄判定"></a>动态对象年龄判定</h2><p>Survivor空间中相同年龄的对象大小总和大于Survivor空间的一半，年龄大于或等于该年龄的对象就可以直接进入老年代。</p>
-<h2 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h2><p>因为Eden区不足时会触发Minor GC，如果Minor GC后新生代空间仍然不足，需要老年代做分配担保，将存活的对象移动到老年代，如果老年代也没空间了，就要进行Full  GC了，清理整个堆（包括老年代和新生代）。</p>
-<p>Minor  GC  前检查老年代剩余空间是否大于新生代所有对象的大小总和，如果大于，说明进行Minor  GC是安全的，因为最坏情况下新生代对象全部存活并且达到年龄上限，可以安全的移动到老年代；如果老年代剩余空间小于新生代所有对象大小总和，最坏情况下老年代容纳不了新生代所有对象，新的对象也没有办法分配在Eden区了，这个时候按道理就要触发Full  GC了，清理整个堆（包括老年代和新生代）。</p>
-<h1 id="Minor-GC、Full-GC分别是什么？有什么区别？分别在什么时候触发？"><a href="#Minor-GC、Full-GC分别是什么？有什么区别？分别在什么时候触发？" class="headerlink" title="Minor  GC、Full GC分别是什么？有什么区别？分别在什么时候触发？"></a>Minor  GC、Full GC分别是什么？有什么区别？分别在什么时候触发？</h1><ul>
-<li>Minor GC 回收新生代</li>
-<li>Full GC 回收整个堆，包括新生代、老年代、元空间（Java8新增）</li>
-</ul>
-<p>Eden区不足时会触发Minor GC，如果Minor GC后新生代空间仍然不足，需要老年代做分配担保，将存活的对象移动到老年代，如果老年代也没空间了，就要进行Full  GC了，清理整个堆（包括老年代和新生代）。</p>
-<p>如果一开始就能知道老年代空间不足，就不需要先Minor  GC再Full  GC，直接进行Full  GC更省事，所以Minor GC前会判断老年代剩余空间是否大于新生代所有对象大小总和，如果大于，最坏情况下新生代对象全部存活，全部放到老年代还是可以放得下的，如果小于，最坏情况下肯定是放不下，但也有可能经过Minor  GC后，剩余存活对象Survivor放不下但老年代可以放的下，这是不确定的，此时如果设置了允许分配担保失败，会检查老年代剩余空间是否大于历次新生代晋升到老年代的对象的平均总大小，如果大于说明Minor  GC应该是安全，这样也不会频繁触发Full GC，如果小于就直接进行Full GC了。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/41922036/answer/93079526">Major GC和Full GC的区别是什么？触发条件呢？ - RednaxelaFX的回答 - 知乎 </a></li>
-<li>参考《深入理解Java虚拟机（第2版）》 3.6 内存分配与回收策略</li>
-</ul>
-<h1 id="JVM是如何避免Minor-GC时扫描全堆的？"><a href="#JVM是如何避免Minor-GC时扫描全堆的？" class="headerlink" title="JVM是如何避免Minor GC时扫描全堆的？"></a>JVM是如何避免Minor GC时扫描全堆的？</h1><p>垃圾回收时要判断哪些对象可以被回收，要做可达性分析，跟GC Root有引用关系的对象是存活对象，分析引用关系的时候，是不知道一个类被谁引用的，但是反过来可以知道一个类引用了别的什么类。</p>
-<p>这就带来了一个问题，年轻代的Minor GC很频繁，做可达性分析的时候，如果有老年代的对象引用了年轻代的对象，为了找出这个引用关系，你得去扫描整个老年代，一个个检查老年代的对象是否对年轻代的对象有引用，这样效率太低了，扫描了全堆。</p>
-<p>如果能记录下老年代有哪些类引用了年轻代类，那就不用扫描整个老年代了。这就是卡表（Card Table）的作用。</p>
-<p>参考：<a target="_blank" rel="noopener" href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></p>
-<h1 id="Minor-GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？"><a href="#Minor-GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？" class="headerlink" title="Minor GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？"></a>Minor GC时做对象的可达性分析，如果有老年代对象引用新生代时，难道要扫描一遍整个老年代？</h1><p>Minor GC时检查老年代中有没有引用新生代对象是通过检查卡表来完成的，老年代内存被划分为等长的卡页，每个卡页有一个编号，卡表中每一项代表某个卡页是否有对象引用新生代对象，这样Minor GC时就不用扫描整个老年代了，保证频繁进行Minor  GC不会占用太多CPU时间，提高了CPU的吞吐量。</p>
-<p>虚拟机在对老年代中的对象更新引用时，会加入写屏障，暂时中断写操作，检查老年代的对象是否引用了新生代的对象，如果是的话，便更新CardTable，标记这一块卡页为脏。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5c39920b6fb9a049e82bbf94">JVM之卡表（Card Table）</a></li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000004682407">jvm的card table数据结构</a></li>
-</ul>
-<hr>
-<h1 id="卡表（CardTable）是什么？"><a href="#卡表（CardTable）是什么？" class="headerlink" title="卡表（CardTable）是什么？"></a>卡表（CardTable）是什么？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825001223.png"></p>
-<p>讲老年代的空间划分为大小为512B的若干张卡。</p>
-<p>卡表是单字节的数组，数组中每个元素对应着一张卡，当发生老年代对象引用新生代时，虚拟机将该卡对应的卡片元素设置为适当的值。之后Minor GC时通过扫描卡表就可以很快识别出哪些卡中存在老年代指向新生代的引用。用空间换时间，避免了全堆扫描。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></li>
-</ul>
-<h1 id="System-gc-是什么使用场景？"><a href="#System-gc-是什么使用场景？" class="headerlink" title="System.gc()是什么使用场景？"></a>System.gc()是什么使用场景？</h1><p>调用此方法只会建议虚拟机进行垃圾回收，并不会强制执行垃圾回收。</p>
-<p>由于频繁垃圾回收会导致频繁的线程暂停导致性能下降，因此应当尽量让虚拟机自动管理垃圾回收，对不用的对象置为null。</p>
-<p>所以System.gc()可以当作不存在，需要测试垃圾回收时可能需要，平时不应当主动依赖这个方法做垃圾回收。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/66540/when-does-system-gc-do-something">When does System.gc() do something?</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数</a></li>
-</ul>
-<h1 id="垃圾回收的性能瓶颈在哪"><a href="#垃圾回收的性能瓶颈在哪" class="headerlink" title="垃圾回收的性能瓶颈在哪"></a>垃圾回收的性能瓶颈在哪</h1><p>性能瓶颈在于需要暂停所有的线程，影响程序正常运行。</p>
-<p>根据程序特性合理配置各个区域大小，减少垃圾回收触发次数，可以提高性能，因为每次垃圾回收都要暂停所有线程的工作。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li>《深入理解Java虚拟机（第2版）》第3章  垃圾回收器与内存分配策略</li>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/53613423/answer/135743258">java的gc为什么要分代？ - RednaxelaFX的回答 - 知乎 </a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zhxiansheng/p/11294529.html">新生代和老年代垃圾回收的细节
-</a></li>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1825,7 +1749,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">135</span>
+          <span class="site-state-item-count">136</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1838,7 +1762,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">136</span>
+        <span class="site-state-item-count">137</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
