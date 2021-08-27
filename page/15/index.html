@@ -186,6 +186,122 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/" class="post-title-link" itemprop="url">Java并发-ReadWriteLock、StampedLock</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-17 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-17T20:00:00+08:00">2017-10-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-27 23:05:06" itemprop="dateModified" datetime="2021-08-27T23:05:06+08:00">2021-08-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-ReadWriteLock、StampedLock/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读写锁存在的意义？解决了什么问题？"><a href="#读写锁存在的意义？解决了什么问题？" class="headerlink" title="读写锁存在的意义？解决了什么问题？"></a>读写锁存在的意义？解决了什么问题？</h1><p>synchronzied和ReentraintLock的锁是排他锁，同一时刻只允许一个线程访问同一个资源。</p>
+<p>然而在读多写少的情况下，排他锁会让多个并发的读之间互斥，但多个线程同时读不会影响数据的一致性，写的时候保证获取的是排他锁保证数据一致性即可。</p>
+<p>也就是读与读之间不互斥，写与读、写与写之间互斥。</p>
+<p>这样的话就提高了系统整体的吞吐量。</p>
+<h1 id="ReentraintReadWriteLock实现原理是什么？"><a href="#ReentraintReadWriteLock实现原理是什么？" class="headerlink" title="ReentraintReadWriteLock实现原理是什么？"></a>ReentraintReadWriteLock实现原理是什么？</h1><p>内部有ReadLock和WriteLock两个类，分别实现读锁和写锁。</p>
+<p>两个Lock类里是通过Sync来实现锁的语义，Sync类继承AQS，并且分为非公平实现和公平的实现。</p>
+<p>由于AQS的state是int类型的变量，在内存中占用4个字节，也就是32位。将其拆分为两部分：高16位和低16位，其中高16位用来表示读锁的个数，低16位用来表示写锁重入次数。</p>
+<p>当设置读锁成功时，就将高16位加1，释放读锁时，将高16位减1；当设置写锁成功时，就将低16位加1，释放写锁时，将第16位减1。如下图所示。</p>
+<p>这样读锁和写锁就可以都通过CAS去操作同一个state变量，实现读和写之间的互斥。</p>
+<h1 id="读写锁适用场景？"><a href="#读写锁适用场景？" class="headerlink" title="读写锁适用场景？"></a>读写锁适用场景？</h1><p>读多写少，又需要保持线程安全，可以有效提高吞吐量。</p>
+<h1 id="StampedLock解决了什么问题？"><a href="#StampedLock解决了什么问题？" class="headerlink" title="StampedLock解决了什么问题？"></a>StampedLock解决了什么问题？</h1><p>ReentraintReadWriteLock读写锁在读多写少的情况下，必须要等待所有读锁释放才能获取写锁，可能会导致写饥饿，写可能要等待很久，这是一种悲观的读锁。</p>
+<p>正确的做法应该是，如果检测到有写入，已经获取读锁的线程不应该继续读了，把读锁让出来，给写入线程优先执行，写入完成了再读，这样就不会写饥饿了。</p>
+<p>StampedLock做的就是，先不加锁的读数据，读完了检测一下是否有线程写过数据了，有写过数据则需要重新读最新的数据，并且要加悲观读锁读，以阻止新的写入锁获取，确保读的数据一定是最新修改的。</p>
+<p>更通俗的讲就是在读锁没有释放的时候是可以获取到一个写锁，获取到写锁之后，读锁阻塞，这一点和读写锁一致，唯一的区别在于读写锁不支持在没有释放读锁的时候获取写锁。</p>
+<h1 id="StampedLock如何检测是否有数据写入？"><a href="#StampedLock如何检测是否有数据写入？" class="headerlink" title="StampedLock如何检测是否有数据写入？"></a>StampedLock如何检测是否有数据写入？</h1><p>在第一次读数据之前先从StampedLock获取一个stamp，如果有数据写入，StampedLock里的stamp就会变，然后第一次读数据后，检测stamp变了说明有写入。</p>
+<h1 id="StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？"><a href="#StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？" class="headerlink" title="StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？"></a>StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？</h1><p>确实面临同样的问题，但这种情况发生的概率很小，因为StampedLock使用场景就是读多写少，检测到有写操作后，可以认为大概率之后的一段时间是不会有写操作发生的。</p>
+<h1 id="StampedLock如何解决ABA问题？"><a href="#StampedLock如何解决ABA问题？" class="headerlink" title="StampedLock如何解决ABA问题？"></a>StampedLock如何解决ABA问题？</h1><p>StampedLock用一个long类型的state变量保存锁的状态，其中state的低7位存储读锁的个数，第8位存储写锁的标志，第8位为0表示没有获取到写锁，第8位为1表示已获取到写锁。</p>
+<p>每次获取和释放写锁，都会给state加上1000 0000，也就是在state的第8位上加1，这样在高位就产生了进位，每次获取写锁后state的值都不一样，这样就可以知道发生了ABA。</p>
+<p>long总共有64位，高位一共有64-8=56位，一共可以记录2的55次方种状态。</p>
+<h1 id="StampedLock为什么不设计为可重入？"><a href="#StampedLock为什么不设计为可重入？" class="headerlink" title="StampedLock为什么不设计为可重入？"></a>StampedLock为什么不设计为可重入？</h1><p>StampedLock为了解决ABA问题，state变量低7位记录读锁个数，第8位记录是否获取了写锁，第9位到第64位记录了写锁的状态，没有地方存储写锁的重入次数。</p>
+<p>对比ReentraintReadWriteLock的实现原理，其实也可以在state的高位中划分一部分区域记录写锁的重入次数。</p>
+<h1 id="StampedLock的锁升级是为了解决什么问题？"><a href="#StampedLock的锁升级是为了解决什么问题？" class="headerlink" title="StampedLock的锁升级是为了解决什么问题？"></a>StampedLock的锁升级是为了解决什么问题？</h1><p>有时候写数据只在数据处于特定的条件下才去更改，也就是有可能不修改数据，那如果一开始先获取写锁就会阻碍读锁的获取，吞吐量降低，所以得先获取读锁，判断符合特定条件后，确定需要写入了，再获取写锁，此时就是锁的升级，把读锁释放升级为写锁，前提是当前只有一个读锁；</p>
+<p>如果有多个读锁，升级就失败，转为获取正常的写锁，获取不到就阻塞当前线程。</p>
+<h1 id="StampedLock有什么缺点？"><a href="#StampedLock有什么缺点？" class="headerlink" title="StampedLock有什么缺点？"></a>StampedLock有什么缺点？</h1><ol>
+<li> 不可重入</li>
+<li> 不支持Condition</li>
+<li> 不支持公平竞争</li>
+</ol>
+<p>所以也不能完全替代synchronized和ReentrantLock。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +333,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:05:32" itemprop="dateModified" datetime="2021-08-27T22:05:32+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 23:05:06" itemprop="dateModified" datetime="2021-08-27T23:05:06+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -332,7 +448,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:05:32" itemprop="dateModified" datetime="2021-08-27T22:05:32+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 23:05:06" itemprop="dateModified" datetime="2021-08-27T23:05:06+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -503,7 +619,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:05:32" itemprop="dateModified" datetime="2021-08-27T22:05:32+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 23:05:06" itemprop="dateModified" datetime="2021-08-27T23:05:06+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -609,7 +725,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-27 22:05:32" itemprop="dateModified" datetime="2021-08-27T22:05:32+08:00">2021-08-27</time>
+                <time title="修改时间：2021-08-27 23:05:06" itemprop="dateModified" datetime="2021-08-27T23:05:06+08:00">2021-08-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -741,7 +857,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-count">145</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -754,7 +870,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">152</span>
+        <span class="site-state-item-count">154</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
