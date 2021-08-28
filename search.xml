@@ -394,7 +394,9 @@
   <entry>
     <title>Android View 绘制机制</title>
     <url>/Android/Android%20View%20%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6/</url>
-    <content><![CDATA[<h1 id="View绘制整个流程"><a href="#View绘制整个流程" class="headerlink" title="View绘制整个流程"></a>View绘制整个流程</h1><p>Activity走到onResume时，会调用ActivityThread的handleResumeActivity。</p>
+    <content><![CDATA[<span id="more"></span>
+
+<h1 id="View绘制整个流程"><a href="#View绘制整个流程" class="headerlink" title="View绘制整个流程"></a>View绘制整个流程</h1><p>Activity走到onResume时，会调用ActivityThread的handleResumeActivity。</p>
 <p>在这里会创建DecorView，通过WindowManager添加到PhoneWindow中。</p>
 <p>这里也会创建ViewRootImpl，把DecorView的parent指定为ViewRootImpl。</p>
 <p>再调用DecorView的requestLayout，requestLayout会层层的调用parent的requestLayout，最后走到ViewRootImpl的requestLayout。</p>
