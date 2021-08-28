@@ -217,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:59:01" itemprop="dateModified" datetime="2021-08-28T21:59:01+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:59:44" itemprop="dateModified" datetime="2021-08-28T21:59:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -393,7 +393,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:59:01" itemprop="dateModified" datetime="2021-08-28T21:59:01+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:59:44" itemprop="dateModified" datetime="2021-08-28T21:59:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -431,86 +431,14 @@
 
       
           <h1 id="范式解决的是什么问题？"><a href="#范式解决的是什么问题？" class="headerlink" title="范式解决的是什么问题？"></a>范式解决的是什么问题？</h1><p>消除数据冗余，提高增删改查的性能。</p>
-<h1 id="范式的优缺点？"><a href="#范式的优缺点？" class="headerlink" title="范式的优缺点？"></a>范式的优缺点？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231020.png"></p>
-<p>参考：《高性能MySQL》 4.3.1 范式的优点和缺点。</p>
-<h1 id="反范式的优缺点？"><a href="#反范式的优缺点？" class="headerlink" title="反范式的优缺点？"></a>反范式的优缺点？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231049.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231057.png"></p>
-<p>参考：《高性能MySQL》 4.3.2 反范式的优点和缺点</p>
-<h1 id="第一范式"><a href="#第一范式" class="headerlink" title="第一范式"></a>第一范式</h1><p>确保每列保持原子性。</p>
-<p>每列不可再分割，符合原子性特征，不分割的话你增删改查特定的数据发现不是单独的一列就不方便。</p>
-<p>违反第一范式：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231130.png"></p>
-<p>符合第一范式：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231142.png"></p>
-<h2 id="满足第一范式后还存在什么问题？"><a href="#满足第一范式后还存在什么问题？" class="headerlink" title="满足第一范式后还存在什么问题？"></a>满足第一范式后还存在什么问题？</h2><p>但是仅仅符合1NF的设计，仍然会存在数据冗余过大，插入异常，删除异常，修改异常的问题。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231343.png"></p>
-<ol>
-<li> 每一名学生的学号、姓名、系名、系主任这些数据重复多次。每个系与对应的系主任的数据也重复多次——数据冗余过大</li>
-<li> 假如学校新建了一个系，但是暂时还没有招收任何学生（比如3月份就新建了，但要等到8月份才招生），那么是无法将系名与系主任的数据单独地添加到数据表中去的 ——插入异常</li>
-<li> 假如将某个系中所有学生相关的记录都删除，那么所有系与系主任的数据也就随之消失了（一个系所有学生都没有了，并不表示这个系就没有了）。——删除异常</li>
-<li> 假如李小明转系到法律系，那么为了保证数据库中数据的一致性，需要修改三条记录中系与系主任的数据。——修改异常。</li>
-</ol>
-<h1 id="第二范式"><a href="#第二范式" class="headerlink" title="第二范式"></a>第二范式</h1><p>确保每列都和主键相关。</p>
-<p>每列依赖于全部的主键而非部分主键，这样才可以唯一确定一行记录，消除一部分冗余。</p>
-<h2 id="怎样判断表是否符合第二范式？"><a href="#怎样判断表是否符合第二范式？" class="headerlink" title="怎样判断表是否符合第二范式？"></a>怎样判断表是否符合第二范式？</h2><p>第一步：找出数据表中所有的码（单主键或联合主键）。</p>
-<p>第二步：根据第一步所得到的码，找出所有的主属性（主键中的属性）。</p>
-<p>第三步：数据表中，除去所有的主属性，剩下的就都是非主属性了。</p>
-<p>第四步：查看是否存在非主属性对码的部分函数依赖，根据上下文分析属性间依赖关系</p>
-<h2 id="违反第二范式会怎样？"><a href="#违反第二范式会怎样？" class="headerlink" title="违反第二范式会怎样？"></a>违反第二范式会怎样？</h2><p>为了满足第二范式，会把表进行拆分，这样可以消除表中的冗余信息、插入异常、删除异常、修改异常。</p>
-<p>违反第二范式的表：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231441.png"></p>
-<p>属性间依赖关系：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231449.png"></p>
-<p>满足第二范式后表情况：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231504.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231512.png"></p>
-<p>运用第二范式后结果：</p>
-<ol>
-<li>李小明转系到法律系<br> 只需要修改一次李小明对应的系的值即可。——有改进</li>
-<li>数据冗余是否减少了？<br> 学生的姓名、系名与系主任，不再像之前一样重复那么多次了。——有改进</li>
-<li>删除某个系中所有的学生记录<br> 该系的信息仍然全部丢失。——无改进</li>
-<li>插入一个尚无学生的新系的信息。<br> 因为学生表的码是学号，不能为空，所以此操作不被允许。——无改进</li>
-</ol>
-<h1 id="第三范式"><a href="#第三范式" class="headerlink" title="第三范式"></a>第三范式</h1><p>确保每列都和主键直接相关而非间接相关。</p>
-<p>非主键列之间不应该有依赖关系，这样可以消除冗余信息。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231541.png"></p>
-<p>对于选课表，主码为（学号，课名），主属性为学号和课名，非主属性只有一个，为分数，不可能存在传递函数依赖，所以选课表的设计，符合3NF的要求。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231553.png"></p>
-<p>对于学生表，主码为学号，主属性为学号，非主属性为姓名、系名和系主任。因为 学号 → 系名，同时 系名 → 系主任，所以存在非主属性系主任对于码学号的传递函数依赖，所以学生表的设计，不符合3NF的要求。</p>
-<p>为了让数据表设计达到3NF，我们必须进一步进行模式分解为以下形式：</p>
-<ul>
-<li>选课（学号，课名，分数）</li>
-<li>学生（学号，姓名，系名）</li>
-<li>系（系名，系主任）</li>
-</ul>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231621.png"></p>
-<p>结果：</p>
-<ol>
-<li>删除某个系中所有的学生记录<br> 该系的信息不会丢失。——有改进</li>
-<li>插入一个尚无学生的新系的信息。<br> 因为系表与学生表目前是独立的两张表，所以不影响。——有改进</li>
-<li> 数据冗余更加少了。——有改进</li>
-</ol>
-<h1 id="BC范式"><a href="#BC范式" class="headerlink" title="BC范式"></a>BC范式</h1><p>消除多值依赖，不能有多个主键</p>
-<p>符合第三范式的表：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827231650.png"></p>
-<ol>
-<li> 每个仓库只能有一名管理员，一名管理员只能在一个仓库中工作；</li>
-<li> 一个仓库中可以存放多种物品，一种物品也可以存放在不同的仓库中。每种物品在每个仓库中都有对应的数量。</li>
-</ol>
-<p>已知函数依赖集：仓库名 → 管理员，管理员 → 仓库名，（仓库名，物品名）→ 数量</p>
-<p>码：（管理员，物品名），（仓库名，物品名）</p>
-<p>主属性：仓库名、管理员、物品名</p>
-<p>非主属性：数量</p>
-<p>∵ 不存在非主属性对码的部分函数依赖和传递函数依赖。∴ 此关系模式属于3NF。</p>
-<p>好，既然此关系模式已经属于了 3NF，那么这个关系模式是否存在问题呢？我们来看以下几种操作：</p>
-<ol>
-<li> 先新增加一个仓库，但尚未存放任何物品，是否可以为该仓库指派管理员？——不可以，因为物品名也是主属性，根据实体完整性的要求，主属性不能为空。</li>
-<li> 某仓库被清空后，需要删除所有与这个仓库相关的物品存放记录，会带来什么问题？——仓库本身与管理员的信息也被随之删除了。</li>
-<li> 如果某仓库更换了管理员，会带来什么问题？——这个仓库有几条物品存放记录，就要修改多少次管理员信息。</li>
-</ol>
-<p>从这里我们可以得出结论，在某些特殊情况下，即使关系模式符合 3NF 的要求，仍然存在着插入异常，修改异常与删除异常的问题，仍然不是 ”好“ 的设计。</p>
-<p>造成此问题的原因：存在着主属性对于码的部分函数依赖与传递函数依赖。（在此例中就是存在主属性【仓库名】对于码【（管理员，物品名）】的部分函数依赖。</p>
-<p>解决办法就是要在 3NF 的基础上消除主属性对于码的部分与传递函数依赖。</p>
-<p>仓库（仓库名，管理员）</p>
-<p>库存（仓库名，物品名，数量）</p>
-<p>这样，之前的插入异常，修改异常与删除异常的问题就被解决了。</p>
-<h1 id="严格遵守范式会有什么问题？"><a href="#严格遵守范式会有什么问题？" class="headerlink" title="严格遵守范式会有什么问题？"></a>严格遵守范式会有什么问题？</h1><p>一般达到2范式就可以，为了性能和灵活性不需要严格的遵守范式，允许存在冗余，可以带来其他的便利，但是最好要知道是怎么回事。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/20028672">数据库第一二三范式到底在说什么？</a></li>
-</ul>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93-%E8%8C%83%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -560,7 +488,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:59:01" itemprop="dateModified" datetime="2021-08-28T21:59:01+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:59:44" itemprop="dateModified" datetime="2021-08-28T21:59:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -697,7 +625,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:59:01" itemprop="dateModified" datetime="2021-08-28T21:59:01+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:59:44" itemprop="dateModified" datetime="2021-08-28T21:59:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
