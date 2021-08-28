@@ -186,134 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%9A%84Class%E7%BB%93%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%9A%84Class%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">Java的Class结构</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-02-20 20:00:00" itemprop="dateCreated datePublished" datetime="2018-02-20T20:00:00+08:00">2018-02-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%9A%84Class%E7%BB%93%E6%9E%84/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java的Class结构/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="如何方便的查看class结构？"><a href="#如何方便的查看class结构？" class="headerlink" title="如何方便的查看class结构？"></a>如何方便的查看class结构？</h1><ul>
-<li><p>方法一<br>javap -verbose xxx.class</p>
-</li>
-<li><p>方法二<br>Intellij Idea装 jclasslib 插件<br>代码编译后在菜单栏”View”中选择”Show Bytecode With jclasslib”</p>
-</li>
-</ul>
-<h1 id="Class文件的整体结构是怎样的"><a href="#Class文件的整体结构是怎样的" class="headerlink" title="Class文件的整体结构是怎样的?"></a>Class文件的整体结构是怎样的?</h1><p>JVM规范要求每一个字节码文件都要由十部分按照固定的顺序组成。<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210125335546.png"></p>
-<p>class文件各数据项之间没有分隔符。</p>
-<p>class文件采用类似于C语言的伪结构存储数据，这种伪结构只有两种数据类型：无符号数和表。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210125335542.png"></p>
-<p>参考：</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》第6章  类文件结构</li>
-</ul>
-<h1 id="方法表的具体存储格式是怎样的？"><a href="#方法表的具体存储格式是怎样的？" class="headerlink" title="方法表的具体存储格式是怎样的？"></a>方法表的具体存储格式是怎样的？</h1><p>方法表也是由两部分组成：</p>
-<ul>
-<li>第一部分为两个字节描述方法的个数。</li>
-<li>第二部分为每个方法的详细信息。方法的详细信息较为复杂，包括方法的访问标志、方法名、方法的描述符以及方法的属性。</li>
-</ul>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210125235546.png"></p>
-<p>方法名索引、描述符索引，这两个的索引指的是在常量池中的索引，方法名和描述符都存储在class的常量池中，可以通过索引值在常量池中找到。</p>
-<p>属性包括以下3个部分：</p>
-<ol>
-<li> “Code区”：源代码对应的JVM指令操作码，在进行字节码增强时重点操作的就是“Code区”这一部分。</li>
-<li> “LineNumberTable”：行号表，将Code区的操作码和源代码中的行号对应，Debug时会起到作用（源代码走一行，需要走多少个JVM指令操作码）。 </li>
-<li> “LocalVariableTable”：本地变量表，包含This和局部变量，之所以可以在每一个方法内部都可以调用This，是因为JVM将This作为每一个方法的第一个参数隐式进行传入。当然，这是针对非Static方法而言。</li>
-</ol>
-<p>参考：</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》第6章  类文件结构 6.3.6 方法表集合</li>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2019/09/05/java-bytecode-enhancement.html">美团：字节码增强技术探索</a></li>
-</ul>
-<h1 id="class文件结构一个具体的案例"><a href="#class文件结构一个具体的案例" class="headerlink" title="class文件结构一个具体的案例?"></a>class文件结构一个具体的案例?</h1><p>参考《深入理解Java虚拟机（第2版）》第6章 类文件结构 6.3.7 属性表集合 。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">Classfile ~/Demo.class </span><br><span class="line">  Last modified <span class="number">2020</span>-<span class="number">9</span>-<span class="number">30</span>; size <span class="number">338</span> bytes </span><br><span class="line">  MD5 checksum d2cf9d824e949e4dcc98ac47657cba67 </span><br><span class="line">  Compiled from <span class="string">&quot;Demo.java&quot;</span> </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo</span> </span></span><br><span class="line"><span class="class">  <span class="title">minor</span> <span class="title">version</span>: 0 </span></span><br><span class="line"><span class="class">  <span class="title">major</span> <span class="title">version</span>: 52 </span></span><br><span class="line"><span class="class">  <span class="title">flags</span>: <span class="title">ACC_PUBLIC</span>, <span class="title">ACC_SUPER</span> </span></span><br><span class="line"><span class="class"><span class="title">Constant</span> <span class="title">pool</span>: </span></span><br><span class="line"><span class="class">   #1 </span>= Methodref          #<span class="number">4.</span>#<span class="number">18</span>         <span class="comment">// java/lang/Object.&quot;&lt;init&gt;&quot;:()V </span></span><br><span class="line">   #<span class="number">2</span> = Fieldref           #<span class="number">3.</span>#<span class="number">19</span>         <span class="comment">// Demo.m:I </span></span><br><span class="line">   #<span class="number">3</span> = Class              #<span class="number">20</span>            <span class="comment">// Demo </span></span><br><span class="line">   #<span class="number">4</span> = Class              #<span class="number">21</span>            <span class="comment">// java/lang/Object </span></span><br><span class="line">   #<span class="number">5</span> = Utf8               m </span><br><span class="line">   #<span class="number">6</span> = Utf8               I </span><br><span class="line">   #<span class="number">7</span> = Utf8               &lt;init&gt; </span><br><span class="line">   #<span class="number">8</span> = Utf8               ()V </span><br><span class="line">   #<span class="number">9</span> = Utf8               Code </span><br><span class="line">  #<span class="number">10</span> = Utf8               LineNumberTable </span><br><span class="line">  #<span class="number">11</span> = Utf8               LocalVariableTable </span><br><span class="line">  #<span class="number">12</span> = Utf8               <span class="keyword">this</span> </span><br><span class="line">  #<span class="number">13</span> = Utf8               LDemo; </span><br><span class="line">  #<span class="number">14</span> = Utf8               inc </span><br><span class="line">  #<span class="number">15</span> = Utf8               ()I </span><br><span class="line">  #<span class="number">16</span> = Utf8               SourceFile </span><br><span class="line">  #<span class="number">17</span> = Utf8               Demo.java </span><br><span class="line">  #<span class="number">18</span> = NameAndType        #<span class="number">7</span>:#<span class="number">8</span>          <span class="comment">// &quot;&lt;init&gt;&quot;:()V </span></span><br><span class="line">  #<span class="number">19</span> = NameAndType        #<span class="number">5</span>:#<span class="number">6</span>          <span class="comment">// m:I </span></span><br><span class="line">  #<span class="number">20</span> = Utf8               Demo </span><br><span class="line">  #<span class="number">21</span> = Utf8               java/lang/Object </span><br><span class="line">&#123; </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Demo</span><span class="params">()</span></span>; </span><br><span class="line">    descriptor: ()V </span><br><span class="line">    flags: ACC_PUBLIC </span><br><span class="line">    Code: </span><br><span class="line">      stack=<span class="number">1</span>, locals=<span class="number">1</span>, args_size=<span class="number">1</span> </span><br><span class="line">         <span class="number">0</span>: aload_0 </span><br><span class="line">         <span class="number">1</span>: invokespecial #<span class="number">1</span>                  <span class="comment">// Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V </span></span><br><span class="line">         <span class="number">4</span>: <span class="keyword">return</span> </span><br><span class="line">      LineNumberTable: </span><br><span class="line">        line <span class="number">1</span>: <span class="number">0</span> </span><br><span class="line">      LocalVariableTable: </span><br><span class="line">        Start  Length  Slot  Name   Signature </span><br><span class="line">            <span class="number">0</span>       <span class="number">5</span>     <span class="number">0</span>  <span class="keyword">this</span>   LDemo; </span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">inc</span><span class="params">()</span></span>; </span><br><span class="line">    descriptor: ()I </span><br><span class="line">    flags: ACC_PUBLIC </span><br><span class="line">    Code: </span><br><span class="line">      stack=<span class="number">2</span>, locals=<span class="number">1</span>, args_size=<span class="number">1</span> </span><br><span class="line">         <span class="number">0</span>: aload_0 </span><br><span class="line">         <span class="number">1</span>: getfield      #<span class="number">2</span>                  <span class="comment">// Field m:I </span></span><br><span class="line">         <span class="number">4</span>: iconst_1 </span><br><span class="line">         <span class="number">5</span>: iadd </span><br><span class="line">         <span class="number">6</span>: ireturn </span><br><span class="line">      LineNumberTable: </span><br><span class="line">        line <span class="number">5</span>: <span class="number">0</span> </span><br><span class="line">      LocalVariableTable: </span><br><span class="line">        Start  Length  Slot  Name   Signature </span><br><span class="line">            <span class="number">0</span>       <span class="number">7</span>     <span class="number">0</span>  <span class="keyword">this</span>   LDemo; </span><br><span class="line">&#125; </span><br><span class="line">SourceFile: <span class="string">&quot;Demo.java&quot;</span> </span><br></pre></td></tr></table></figure>
-
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li>《深入理解Java虚拟机（第2版）》第6章  类文件结构</li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/webor2006/p/9459681.html">Java字节码方法表与属性表深度剖析</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/webor2006/p/9459681.html">Java字节码方法表与属性表深度剖析</a></li>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2019/09/05/java-bytecode-enhancement.html">美团：字节码增强技术探索</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -345,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -448,7 +320,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -551,7 +423,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -698,7 +570,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -808,7 +680,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -913,7 +785,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1154,7 +1026,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1364,7 +1236,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1561,7 +1433,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:01:30" itemprop="dateModified" datetime="2021-08-28T22:01:30+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1665,6 +1537,112 @@
 <h1 id="线程池有哪些坑？"><a href="#线程池有哪些坑？" class="headerlink" title="线程池有哪些坑？"></a>线程池有哪些坑？</h1><p>要注意ThreadLocal的value内存泄漏问题，要及时remove。</p>
 <h1 id="自定义线程池的场景"><a href="#自定义线程池的场景" class="headerlink" title="自定义线程池的场景"></a>自定义线程池的场景</h1><p>追溯调用线程池之前的堆栈，防止线程里报错不知道外面哪里调用的。</p>
 <h1 id="ForkJoinPool解决了什么问题？"><a href="#ForkJoinPool解决了什么问题？" class="headerlink" title="ForkJoinPool解决了什么问题？"></a>ForkJoinPool解决了什么问题？</h1><p>任务窃取机制，避免了取任务的时候多线程竞争一个队列，减少线程间竞争的等待开销，所以更快。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/" class="post-title-link" itemprop="url">Java并发-happens-before</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-23 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-23T20:00:00+08:00">2017-10-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-happen-before/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="什么是happens-before原则？"><a href="#什么是happens-before原则？" class="headerlink" title="什么是happens-before原则？"></a>什么是happens-before原则？</h1><p>前一个操作的结果对后续操作是可见的</p>
+<h1 id="为什么需要happens-before原则？"><a href="#为什么需要happens-before原则？" class="headerlink" title="为什么需要happens-before原则？"></a>为什么需要happens-before原则？</h1><p>虚拟机会做编译优化，进行指令重排序，以提高CPU利用率，防止CPU出现空等待；但有些情况是不能重排序的，否则并发下会出问题，所以就要规定这些情况，happens-before原则就是这个规定.</p>
+<h1 id="典型场景？"><a href="#典型场景？" class="headerlink" title="典型场景？"></a>典型场景？</h1><p>比如写一个单例，new一个对象，指令执行的步骤是：</p>
+<ol>
+<li> 给对象分配内存</li>
+<li> 对象初始化</li>
+<li> 将对象内存地址关联</li>
+</ol>
+<p>指令重排序，可能会导致对象还没初始化，就会已经被使用了，所以需要volatile来禁止指令重排序</p>
+<h1 id="有哪些happens-before原则？"><a href="#有哪些happens-before原则？" class="headerlink" title="有哪些happens-before原则？"></a>有哪些happens-before原则？</h1><ol>
+<li> 程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作；</li>
+<li> 锁定规则：一个unLock操作先行发生于后面对同一个锁额lock操作；</li>
+<li> volatile变量规则：对一个变量的写操作先行发生于后面对这个变量的读操作；</li>
+<li> 传递规则：如果操作A先行发生于操作B，而操作B又先行发生于操作C，则可以得出操作A先行发生于操作C；</li>
+<li> 线程启动规则：Thread对象的start()方法先行发生于此线程的每个一个动作；</li>
+<li> 线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生；</li>
+<li> 线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结束、Thread.isAlive()的返回值手段检测到线程已经终止执行；</li>
+<li> 对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始；</li>
+</ol>
 
       
     </div>
