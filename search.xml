@@ -509,7 +509,7 @@
 <p>Serializable的序列化过程比较复杂，有很多对象参与工作，例如ObjectStreamClass。</p>
 ]]></content>
       <categories>
-        <category>Android</category>
+        <category>Java</category>
       </categories>
       <tags>
         <tag>Java</tag>
