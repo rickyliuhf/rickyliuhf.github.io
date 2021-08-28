@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="inline、noinline、crossline区别？inline：编译时把inline函数的代码拷贝到调用处 noinline：修饰inline标记的函数的形参，不希望内联lambda crossline：inline函数中的lambda表达式不允许返回到外部函数，只能返回到lambda表达式 inline作用Java中没有函数的概念，Kotlin中的lambda表达式在Java中对应的是一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kotlin内联">
+<meta property="og:url" content="http://rickyqliu.github.io/Kotlin/Kotlin%E5%86%85%E8%81%94/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="inline、noinline、crossline区别？inline：编译时把inline函数的代码拷贝到调用处 noinline：修饰inline标记的函数的形参，不希望内联lambda crossline：inline函数中的lambda表达式不允许返回到外部函数，只能返回到lambda表达式 inline作用Java中没有函数的概念，Kotlin中的lambda表达式在Java中对应的是一个">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-12-05T13:15:00.000Z">
+<meta property="article:modified_time" content="2021-08-28T16:33:28.653Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="Kotlin">
+<meta property="article:tag" content="内联">
+<meta property="article:tag" content="inline">
+<meta property="article:tag" content="noinline">
+<meta property="article:tag" content="crossline">
+<meta property="article:tag" content="inline class">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://rickyqliu.github.io/Kotlin/Kotlin%E5%86%85%E8%81%94/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Kotlin内联 | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Kotlin/Kotlin%E5%86%85%E8%81%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kotlin内联
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-05 21:15:00" itemprop="dateCreated datePublished" datetime="2018-12-05T21:15:00+08:00">2018-12-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kotlin/" itemprop="url" rel="index"><span itemprop="name">Kotlin</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Kotlin/Kotlin%E5%86%85%E8%81%94/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Kotlin/Kotlin内联/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="inline、noinline、crossline区别？"><a href="#inline、noinline、crossline区别？" class="headerlink" title="inline、noinline、crossline区别？"></a>inline、noinline、crossline区别？</h1><p>inline：编译时把inline函数的代码拷贝到调用处</p>
+<p>noinline：修饰inline标记的函数的形参，不希望内联lambda</p>
+<p>crossline：inline函数中的lambda表达式不允许返回到外部函数，只能返回到lambda表达式</p>
+<h1 id="inline作用"><a href="#inline作用" class="headerlink" title="inline作用"></a>inline作用</h1><p>Java中没有函数的概念，Kotlin中的lambda表达式在Java中对应的是一个FunctionN的单个方法的接口类，创建一个lambda表达式相当于创建一个类。</p>
+<p>inline可以修饰函数，inline修饰的函数的形参中有lambda表达式，编译时不会创建对应的FunctionN类，而是直接把lambda表达式代码拷贝到调用处，这样</p>
+<ol>
+<li> 在循环等高频使用一个函数的场景下，内联lambda表达式避免了频繁创建对象，不仅节约了内存，也避免了频繁的垃圾回收，减少系统卡顿</li>
+<li> 减少了函数调用层级，函数调用栈少了一层，减少了性能损耗</li>
+</ol>
+<h1 id="inline会造成什么问题？"><a href="#inline会造成什么问题？" class="headerlink" title="inline会造成什么问题？"></a>inline会造成什么问题？</h1><ol>
+<li> 调用处的代码变多，所以不能内联代码量过大的函数，只适用于内联代码量小的函数</li>
+<li> 我们可以在inline函数形参的 lambda 表达式 中调用return直接返回外部函数，可能会导致inline函数之后的代码无法执行；需要使用return@label的语法，返回到lambda开始执行的位置</li>
+<li> 内联后的lambda表达式已经不是对象了，所以无法作为参数传递、存储在字段中、作为返回值return，需要加noinline解决</li>
+</ol>
+<h1 id="noinline作用"><a href="#noinline作用" class="headerlink" title="noinline作用"></a>noinline作用</h1><p>修饰inline函数的形参中的lambda表达式，表示禁止该lambda表达式内联</p>
+<h1 id="noinline禁止lambda表达式内联的意义是什么？"><a href="#noinline禁止lambda表达式内联的意义是什么？" class="headerlink" title="noinline禁止lambda表达式内联的意义是什么？"></a>noinline禁止lambda表达式内联的意义是什么？</h1><p>内联后的lambda表达式已经不是对象了，所以无法作为对象使用，也就是无法对其进行参数传递、存储在字段中、作为返回值return，需要加noinline解决</p>
+<h1 id="crossinline作用"><a href="#crossinline作用" class="headerlink" title="crossinline作用"></a>crossinline作用</h1><p>既想让内联函数形参中的 lambda 也被 inline，但是又不想让 lambda 对调用方的控制流程产生影响（lambda中return会影响），就用crossline</p>
+<p>crossinline依然是内联的</p>
+<p>直接在lambda表达式中返回外部函数的情况称为非局部返回。</p>
+<p>crossinline修饰的lambda禁止了非局部返回</p>
+<h1 id="crossinline为什么要禁止非局部返回？不禁止会有什么问题？"><a href="#crossinline为什么要禁止非局部返回？不禁止会有什么问题？" class="headerlink" title="crossinline为什么要禁止非局部返回？不禁止会有什么问题？"></a>crossinline为什么要禁止非局部返回？不禁止会有什么问题？</h1><p>内联函数形参中的lambda表达式可能会在另外一个调用栈中执行，例如：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> <span class="title">f</span><span class="params">(<span class="keyword">crossinline</span> body: () -&gt; <span class="type">Unit</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> f = <span class="keyword">object</span>: Runnable &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">run</span><span class="params">()</span></span> = body()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>正常情况下内联的lambda允许非局部返回，返回的是内联函数调用处的函数，但是不在一个调用栈中，非局部返回就无法做到这样的返回，所以必须禁止，用crossinline来禁止非局部返回，但仍然保持内联的特性，把lambda表达式的代码展开铺平。</p>
+<h1 id="内联类"><a href="#内联类" class="headerlink" title="内联类"></a>内联类</h1><ul>
+<li>内联函数，可以消除函数调用的开销。</li>
+<li>内联类，则是可以消除创建对象的开销。</li>
+</ul>
+<p>用途：</p>
+<ul>
+<li>严格的类型别名</li>
+<li>任何你想得到的包装类（wrapper）</li>
+</ul>
+<p>参考：<a target="_blank" rel="noopener" href="https://aisia.moe/2018/07/03/inline-class/">Kotlin 1.3 前瞻之 Inline Class</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.github.io/Kotlin/Kotlin%E5%86%85%E8%81%94/" title="Kotlin内联">http://rickyqliu.github.io/Kotlin/Kotlin内联/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Kotlin/" rel="tag"># Kotlin</a>
+              <a href="/tags/%E5%86%85%E8%81%94/" rel="tag"># 内联</a>
+              <a href="/tags/inline/" rel="tag"># inline</a>
+              <a href="/tags/noinline/" rel="tag"># noinline</a>
+              <a href="/tags/crossline/" rel="tag"># crossline</a>
+              <a href="/tags/inline-class/" rel="tag"># inline class</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Kotlin/Kotlin%E7%A9%BA%E5%AE%89%E5%85%A8/" rel="prev" title="Kotlin空安全">
+      <i class="fa fa-chevron-left"></i> Kotlin空安全
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Gradle/Gradle%E4%B9%8BTransform/" rel="next" title="Gradle之Transform">
+      Gradle之Transform <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#inline%E3%80%81noinline%E3%80%81crossline%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">inline、noinline、crossline区别？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#inline%E4%BD%9C%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">inline作用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#inline%E4%BC%9A%E9%80%A0%E6%88%90%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">inline会造成什么问题？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#noinline%E4%BD%9C%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">noinline作用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#noinline%E7%A6%81%E6%AD%A2lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%86%85%E8%81%94%E7%9A%84%E6%84%8F%E4%B9%89%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">5.</span> <span class="nav-text">noinline禁止lambda表达式内联的意义是什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#crossinline%E4%BD%9C%E7%94%A8"><span class="nav-number">6.</span> <span class="nav-text">crossinline作用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#crossinline%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%A6%81%E6%AD%A2%E9%9D%9E%E5%B1%80%E9%83%A8%E8%BF%94%E5%9B%9E%EF%BC%9F%E4%B8%8D%E7%A6%81%E6%AD%A2%E4%BC%9A%E6%9C%89%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">7.</span> <span class="nav-text">crossinline为什么要禁止非局部返回？不禁止会有什么问题？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E8%81%94%E7%B1%BB"><span class="nav-number">8.</span> <span class="nav-text">内联类</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">Follow your heart</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">170</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">214</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu-blog.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.github.io/Kotlin/Kotlin%E5%86%85%E8%81%94/";
+    this.page.identifier = "Kotlin/Kotlin内联/";
+    this.page.title = "Kotlin内联";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu-blog.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

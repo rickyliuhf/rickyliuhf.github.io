@@ -979,6 +979,56 @@
       </tags>
   </entry>
   <entry>
+    <title>Kotlin内联</title>
+    <url>/Kotlin/Kotlin%E5%86%85%E8%81%94/</url>
+    <content><![CDATA[<h1 id="inline、noinline、crossline区别？"><a href="#inline、noinline、crossline区别？" class="headerlink" title="inline、noinline、crossline区别？"></a>inline、noinline、crossline区别？</h1><p>inline：编译时把inline函数的代码拷贝到调用处</p>
+<p>noinline：修饰inline标记的函数的形参，不希望内联lambda</p>
+<p>crossline：inline函数中的lambda表达式不允许返回到外部函数，只能返回到lambda表达式</p>
+<h1 id="inline作用"><a href="#inline作用" class="headerlink" title="inline作用"></a>inline作用</h1><p>Java中没有函数的概念，Kotlin中的lambda表达式在Java中对应的是一个FunctionN的单个方法的接口类，创建一个lambda表达式相当于创建一个类。</p>
+<p>inline可以修饰函数，inline修饰的函数的形参中有lambda表达式，编译时不会创建对应的FunctionN类，而是直接把lambda表达式代码拷贝到调用处，这样</p>
+<ol>
+<li> 在循环等高频使用一个函数的场景下，内联lambda表达式避免了频繁创建对象，不仅节约了内存，也避免了频繁的垃圾回收，减少系统卡顿</li>
+<li> 减少了函数调用层级，函数调用栈少了一层，减少了性能损耗</li>
+</ol>
+<h1 id="inline会造成什么问题？"><a href="#inline会造成什么问题？" class="headerlink" title="inline会造成什么问题？"></a>inline会造成什么问题？</h1><ol>
+<li> 调用处的代码变多，所以不能内联代码量过大的函数，只适用于内联代码量小的函数</li>
+<li> 我们可以在inline函数形参的 lambda 表达式 中调用return直接返回外部函数，可能会导致inline函数之后的代码无法执行；需要使用return@label的语法，返回到lambda开始执行的位置</li>
+<li> 内联后的lambda表达式已经不是对象了，所以无法作为参数传递、存储在字段中、作为返回值return，需要加noinline解决</li>
+</ol>
+<h1 id="noinline作用"><a href="#noinline作用" class="headerlink" title="noinline作用"></a>noinline作用</h1><p>修饰inline函数的形参中的lambda表达式，表示禁止该lambda表达式内联</p>
+<h1 id="noinline禁止lambda表达式内联的意义是什么？"><a href="#noinline禁止lambda表达式内联的意义是什么？" class="headerlink" title="noinline禁止lambda表达式内联的意义是什么？"></a>noinline禁止lambda表达式内联的意义是什么？</h1><p>内联后的lambda表达式已经不是对象了，所以无法作为对象使用，也就是无法对其进行参数传递、存储在字段中、作为返回值return，需要加noinline解决</p>
+<h1 id="crossinline作用"><a href="#crossinline作用" class="headerlink" title="crossinline作用"></a>crossinline作用</h1><p>既想让内联函数形参中的 lambda 也被 inline，但是又不想让 lambda 对调用方的控制流程产生影响（lambda中return会影响），就用crossline</p>
+<p>crossinline依然是内联的</p>
+<p>直接在lambda表达式中返回外部函数的情况称为非局部返回。</p>
+<p>crossinline修饰的lambda禁止了非局部返回</p>
+<h1 id="crossinline为什么要禁止非局部返回？不禁止会有什么问题？"><a href="#crossinline为什么要禁止非局部返回？不禁止会有什么问题？" class="headerlink" title="crossinline为什么要禁止非局部返回？不禁止会有什么问题？"></a>crossinline为什么要禁止非局部返回？不禁止会有什么问题？</h1><p>内联函数形参中的lambda表达式可能会在另外一个调用栈中执行，例如：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> <span class="title">f</span><span class="params">(<span class="keyword">crossinline</span> body: () -&gt; <span class="type">Unit</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> f = <span class="keyword">object</span>: Runnable &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">run</span><span class="params">()</span></span> = body()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>正常情况下内联的lambda允许非局部返回，返回的是内联函数调用处的函数，但是不在一个调用栈中，非局部返回就无法做到这样的返回，所以必须禁止，用crossinline来禁止非局部返回，但仍然保持内联的特性，把lambda表达式的代码展开铺平。</p>
+<h1 id="内联类"><a href="#内联类" class="headerlink" title="内联类"></a>内联类</h1><ul>
+<li>内联函数，可以消除函数调用的开销。</li>
+<li>内联类，则是可以消除创建对象的开销。</li>
+</ul>
+<p>用途：</p>
+<ul>
+<li>严格的类型别名</li>
+<li>任何你想得到的包装类（wrapper）</li>
+</ul>
+<p>参考：<a href="https://aisia.moe/2018/07/03/inline-class/">Kotlin 1.3 前瞻之 Inline Class</a></p>
+]]></content>
+      <categories>
+        <category>Kotlin</category>
+      </categories>
+      <tags>
+        <tag>Kotlin</tag>
+        <tag>内联</tag>
+        <tag>inline</tag>
+        <tag>noinline</tag>
+        <tag>crossline</tag>
+        <tag>inline class</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Kotlin空安全</title>
     <url>/Kotlin/Kotlin%E7%A9%BA%E5%AE%89%E5%85%A8/</url>
     <content><![CDATA[<h1 id="Kotlin调Java可能返回为空的函数"><a href="#Kotlin调Java可能返回为空的函数" class="headerlink" title="Kotlin调Java可能返回为空的函数"></a>Kotlin调Java可能返回为空的函数</h1><p>Java 中的任何引用都可能是 null，这使得 Kotlin 对来自 Java 的对象要求严格空安全是不现实的。 Java 声明的类型在 Kotlin 中会被特别对待并称为平台类型。</p>

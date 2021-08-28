@@ -186,6 +186,132 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E5%B9%B6%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E5%B9%B6%E5%8F%91/" class="post-title-link" itemprop="url">SQLite并发</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-03-16 20:31:00" itemprop="dateCreated datePublished" datetime="2017-03-16T20:31:00+08:00">2017-03-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E5%B9%B6%E5%8F%91/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="数据库/SQLite并发/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="SQLite支持多线程吗？"><a href="#SQLite支持多线程吗？" class="headerlink" title="SQLite支持多线程吗？"></a>SQLite支持多线程吗？</h1><p>SQLite支持多线程，但是是有条件的支持，也就是：</p>
+<ul>
+<li>同一个连接不能在多线程中使用，不同连接才可以在多线程中使用，这个是最宏观的SQLite多线程准则。</li>
+<li>SQLite的文件锁是粗颗粒的，也就是以数据库文件为维度加锁，涉及到5种锁状态。</li>
+</ul>
+<p>为了确保数据库安全，SQLite 内部抽象了两种类型的互斥锁（锁的具体实现和宿主平台有关）来应对线程并发问题：</p>
+<ul>
+<li>fullMutex<br>可以理解为 connection mutex，和连接句柄（上问描述的 sqlite3 结构体）绑定。<br>保证任何时候，最多只有一个线程在执行基于连接的事务。</li>
+<li>coreMutex<br>当前进程中，与文件绑定的锁。<br>用于保护数据库相关临界资源，确保在任何时候，最多只有一个线程在访问。</li>
+</ul>
+<h2 id="SQLite三种线程模型"><a href="#SQLite三种线程模型" class="headerlink" title="SQLite三种线程模型"></a>SQLite三种线程模型</h2><ul>
+<li>single-thread<ul>
+<li>  coreMutex 和 fullMutex 都被禁用。</li>
+<li>  用户层需要确保在任何时候只有一个线程访问 API，否则抛出异常。</li>
+</ul>
+</li>
+<li>multi-thread<ul>
+<li>  coreMutex 保留，fullMutex 禁用。</li>
+<li>  可以多个线程基于不同的连接并发访问数据库，但单个连接在任何时候只能被一个线程访问。</li>
+<li>单个 connection，如果并发访问，会抛出异常。<ul>
+<li>  报错信息：illegal multi-threaded access to database connection。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>serialized<ul>
+<li>  coreMutex 和 fullMutex 都保留。</li>
+</ul>
+</li>
+</ul>
+<h1 id="同一个数据库连接多线程访问会有什么问题？"><a href="#同一个数据库连接多线程访问会有什么问题？" class="headerlink" title="同一个数据库连接多线程访问会有什么问题？"></a>同一个数据库连接多线程访问会有什么问题？</h1><p>一个数据库连接对应一个事务操作，多线程访问一个连接会造成事务不原子化，事务执行结果会混乱。</p>
+<h1 id="不同的连接同时写数据库会发生什么？"><a href="#不同的连接同时写数据库会发生什么？" class="headerlink" title="不同的连接同时写数据库会发生什么？"></a>不同的连接同时写数据库会发生什么？</h1><p>就走入了SQLite本身的锁机制。</p>
+<p>写数据会去获取保留锁、独占锁。</p>
+<p>如果还有连接要写入，就会返回SQLITE_BUSY。</p>
+<h1 id="Android中的SQLite的Thread-Mode是什么？"><a href="#Android中的SQLite的Thread-Mode是什么？" class="headerlink" title="Android中的SQLite的Thread Mode是什么？"></a>Android中的SQLite的Thread Mode是什么？</h1><p><a target="_blank" rel="noopener" href="http://www.sqlite.org/threadsafe.html">SQLite官网</a>说默认线程模式是serialized</p>
+<p>Android的SQLiteDatabase类的<a target="_blank" rel="noopener" href="http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html">setLockingEnabled(boolean lockingEnabled)文档</a>说，默认线程模式是Multi-thread。</p>
+<p>API 16 setLockingEnabled() 方法又废弃了。</p>
+<p>不管怎么说肯定不是single-thread，不是multi-thread就是serialized。</p>
+<p>参考：<br><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/11167834/what-is-the-default-threading-mode-of-sqlite-in-android">What is the Default Threading mode of SQLite in Android?</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E5%B9%B6%E5%8F%91%E3%80%81%E4%BA%8B%E5%8A%A1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +343,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:24:05" itemprop="dateModified" datetime="2021-08-29T00:24:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -345,7 +471,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:24:05" itemprop="dateModified" datetime="2021-08-29T00:24:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -523,7 +649,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:24:05" itemprop="dateModified" datetime="2021-08-29T00:24:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -618,7 +744,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:24:05" itemprop="dateModified" datetime="2021-08-29T00:24:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -755,7 +881,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:24:05" itemprop="dateModified" datetime="2021-08-29T00:24:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -871,7 +997,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:24:05" itemprop="dateModified" datetime="2021-08-29T00:24:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -992,7 +1118,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:24:05" itemprop="dateModified" datetime="2021-08-29T00:24:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1129,7 +1255,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:24:05" itemprop="dateModified" datetime="2021-08-29T00:24:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1225,7 +1351,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:24:05" itemprop="dateModified" datetime="2021-08-29T00:24:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:33:28" itemprop="dateModified" datetime="2021-08-29T00:33:28+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1356,7 +1482,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">169</span>
+          <span class="site-state-item-count">170</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1369,7 +1495,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">209</span>
+        <span class="site-state-item-count">214</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
