@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Java 自动装箱、Integer缓存  title: 序列化：Serializable与Parceabletags:   Java 自动装箱 Integer缓存categories: Javadate: 2018&#x2F;10&#x2F;23 22:03   自动装箱和自动拆箱是怎么回事？实际发生了什么？如下的Java代码： 12Integer a &#x3D; 10;int b &#x3D; a; 在Intellij idea里通">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ricky.L的随笔">
+<meta property="og:url" content="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="Java 自动装箱、Integer缓存  title: 序列化：Serializable与Parceabletags:   Java 自动装箱 Integer缓存categories: Javadate: 2018&#x2F;10&#x2F;23 22:03   自动装箱和自动拆箱是怎么回事？实际发生了什么？如下的Java代码： 12Integer a &#x3D; 10;int b &#x3D; a; 在Intellij idea里通">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-08-28T13:53:14.310Z">
+<meta property="article:modified_time" content="2021-08-28T13:53:14.310Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title> | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-08-28 21:53:14" itemprop="dateCreated datePublished" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Java/Java 自动装箱、Integer缓存/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Java 自动装箱、Integer缓存</p>
+<hr>
+<p>title: 序列化：Serializable与Parceable<br>tags: </p>
+<ul>
+<li>Java</li>
+<li>自动装箱</li>
+<li>Integer缓存<br>categories:</li>
+<li>Java<br>date: 2018/10/23 22:03</li>
+</ul>
+<hr>
+<h1 id="自动装箱和自动拆箱是怎么回事？实际发生了什么？"><a href="#自动装箱和自动拆箱是怎么回事？实际发生了什么？" class="headerlink" title="自动装箱和自动拆箱是怎么回事？实际发生了什么？"></a>自动装箱和自动拆箱是怎么回事？实际发生了什么？</h1><p>如下的Java代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Integer a = 10;</span><br><span class="line">int b = a;</span><br></pre></td></tr></table></figure>
+<p>在Intellij idea里通过View - Show Bytecode查看字节码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">L0</span><br><span class="line"> LINENUMBER 3 L0</span><br><span class="line"> BIPUSH 10</span><br><span class="line"> INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;</span><br><span class="line"> ASTORE 1</span><br><span class="line">L1</span><br><span class="line"> LINENUMBER 4 L1</span><br><span class="line"> ALOAD 1</span><br><span class="line"> INVOKEVIRTUAL java/lang/Integer.intValue ()I</span><br><span class="line"> ISTORE 2</span><br></pre></td></tr></table></figure>
+<p>可以看到int对象的自动装箱，是调用了Integer.valueOf()方法，自动拆卸是调用了Integer.intValue()。</p>
+<h1 id="触发自动装箱和自动拆箱的场景有哪些？"><a href="#触发自动装箱和自动拆箱的场景有哪些？" class="headerlink" title="触发自动装箱和自动拆箱的场景有哪些？"></a>触发自动装箱和自动拆箱的场景有哪些？</h1><p>自动装箱的场景：<br>    1. 基本类型赋值给包装类型，如 Integer a = 10;</p>
+<p>自动拆箱的场景：<br>    1. 包装类型赋值给基本类型<br>    2. 参与表达式运算或算数运算</p>
+<p>进行 <code>=</code> 赋值操作（装箱或拆箱）<br>进行<code>+</code>，<code>-</code>，<code>*</code>，<code>/</code>混合运算 （拆箱）<br>进行<code>&gt;</code>, <code>&lt;</code>, <code>==</code>比较运算（拆箱） </p>
+<p>当 <code>==</code>运算符的两个操作数都是 包装器类型的引用，则是比较指向的是否是同一个对象。</p>
+<p>而如果其中有一个操作数是表达式（即包含算术运算）则比较的是数值（即会触发自动拆箱的过程）调用equals进行比较（装箱）。</p>
+<p>ArrayList,HashMap等集合类 添加基础类型数据时，因为集合只能添加引用类型（装箱）。</p>
+<h1 id="自动装箱解决了什么问题？有哪些场景不得不使用包装类？"><a href="#自动装箱解决了什么问题？有哪些场景不得不使用包装类？" class="headerlink" title="自动装箱解决了什么问题？有哪些场景不得不使用包装类？"></a>自动装箱解决了什么问题？有哪些场景不得不使用包装类？</h1><ol>
+<li> 集合类只能使用包装类型，不允许使用基本类型，所以需要有包装类</li>
+<li> 由于基本类型没有null的状态，所以需要有包装类对象能够表示null</li>
+<li> 泛型只针对类，不能使用基本类型</li>
+<li> 反射也只能反射类，不能反射基本类型</li>
+<li> 包装类一旦创建，是值不可变的对象，不容易赋值出错</li>
+</ol>
+<h1 id="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"><a href="#为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？" class="headerlink" title="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"></a>为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？</h1><p>这需要从Java虚拟机的角度解释性能问题，当执行一个方法中的算术运算时，虚拟机是基于栈帧中的操作数栈进行数据的读取和运算。</p>
+<p>如果参与运算的是基本数据类型，由于基本类型大小是固定的，一来本身占用空间小，二来基本类型的变量值可以直接存入局部变量表，直接从局部变量表中读取数据速度很快（跟访问对象的方式相比而言）；基本也不需要垃圾回收，局部变量表是位于栈帧中的，方法执行完毕，栈帧出栈，基本数据类型的变量都会自动释放内存。</p>
+<p>如果参与运算的是包装类对象，对象创建后是位于堆中，对象在局部变量表中存储的只是对象指针，指向其在堆中的位置，运算时先访问局部变量表，再访问堆中的对象内部的值，比直接访问局部变量表要多一次额外的访问；其次创建对象占用了额外的空间，因为对象比基本类型要多耗费额外的空间，如对象头等；再次对象创建后还需要垃圾回收，增加了垃圾回收的负担。</p>
+<p>基本类型在方法传参时是值的拷贝传递，对象类型在方法传参是引用传递。</p>
+<h1 id="Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？"><a href="#Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？" class="headerlink" title="Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？"></a>Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？</h1><p>Kotlin只是在语法层面屏蔽了内部的实现细节，在编译时，还是会把Kotlin的基本数据类型对应的对象类型还是换转为Java基本数据类型，这可以通过反编译Kotlin为Java后看出，这样Kotlin更加彻底面向对象，更加的函数式</p>
+<h1 id="Kotiln中整数数组为什么不直接使用-Array-而是-IntArray-？"><a href="#Kotiln中整数数组为什么不直接使用-Array-而是-IntArray-？" class="headerlink" title="Kotiln中整数数组为什么不直接使用 Array 而是 IntArray ？"></a>Kotiln中整数数组为什么不直接使用 Array<Int> 而是 IntArray ？</h1><p>IntArray最终会编译成int[]。</p>
+<p>Array<Int>最终会编译成Integer[]。</p>
+<p>可以通过查看字节码来验证这一点。</p>
+<p>包装类型遍历时会有自动装箱和拆箱的过程，会创建大量的临时对象，加重了垃圾回收的负担，垃圾回收多了会引发stop the world，进而会增加卡顿的几率。</p>
+<h1 id="自动装箱和拆箱会产生什么问题？"><a href="#自动装箱和拆箱会产生什么问题？" class="headerlink" title="自动装箱和拆箱会产生什么问题？"></a>自动装箱和拆箱会产生什么问题？</h1><p>在自动拆卸时，当包装类变量为null时，会发生空指针异常，例如</p>
+<p>Integer a  = null;</p>
+<p>int b = a;</p>
+<p>第二句赋值时会调用a.intValue()，然而a是null，会抛出空指针异常。</p>
+<p>自动装箱会创建包装类对象，如果在大的循环中有自动装箱的发生，会创建很多临时的无用的包装类对象，增加了垃圾回收的负担，垃圾回收会引发stop the world停止所有的线程工作，导致系统的吞吐量降低。</p>
+<h1 id="Integer的缓存机制是怎么回事？"><a href="#Integer的缓存机制是怎么回事？" class="headerlink" title="Integer的缓存机制是怎么回事？"></a>Integer的缓存机制是怎么回事？</h1><p>学会看字节码就知道自动装箱拆箱实际调用的是什么。</p>
+<p>Intellij idea里通过View - Show Bytecode</p>
+<p>以Integer为例</p>
+<p>Integer a = 3;</p>
+<p>字节码指令为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ICONST_3</span><br><span class="line">INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;</span><br><span class="line">ASTORE 3</span><br></pre></td></tr></table></figure>
+
+<p>看到调用的是Integer.valueOf()方法</p>
+<p>Integer.valueOf()内部会用到IntegerCache，默认-128到127的Integer对象都会被缓存，通过valueOf()返回这个范围内的Integer对象都是同一个</p>
+<h1 id="两个值相等的Integer对象，-比较，是否相等？"><a href="#两个值相等的Integer对象，-比较，是否相等？" class="headerlink" title="两个值相等的Integer对象，==比较，是否相等？"></a>两个值相等的Integer对象，==比较，是否相等？</h1><p>要看Integer对象是如何从创建出来的。</p>
+<p>如果Integer是new出来的，==比较对象的内存地址，肯定不相等。</p>
+<p>如果Integer是通过Integer.valueOf()创建出来的，如果值是[-128,127]之间的数，会用缓存的Integer对象，即是同一个Integer对象。</p>
+<p>其中自动装修也会调用Integer.valueOf()方法生成Integer对象，触发自动装箱的代码如 Integer a = 3。</p>
+<h1 id="其他基本类型的包装类是否跟Integer一样都有Cache？"><a href="#其他基本类型的包装类是否跟Integer一样都有Cache？" class="headerlink" title="其他基本类型的包装类是否跟Integer一样都有Cache？"></a>其他基本类型的包装类是否跟Integer一样都有Cache？</h1><p>Java的基本类型有八种：</p>
+<ol>
+<li> 字符类型：char</li>
+<li> 布尔类型：boolean</li>
+<li>数值类型：<ol>
+<li> 整数类型：byte、short、int、long</li>
+<li> 浮点数类型：float、double</li>
+</ol>
+</li>
+</ol>
+<p>整数类型Byte、Short、Integer、Long都有Cache机制，缓存的数值范围都是[-128,127]。</p>
+<p>字符类型Character有Cache机制，缓存范围[0,127]的ASCII字符。</p>
+<p>布尔类型Boolean有Cache机制，定了两个TRUE和FALSE的常量，通过Boolean.valueOf(boolean b)返回的都是这两个常量的其中之一。</p>
+<p>浮点数类型没有Cache机制，valueOf方法都是直接new一个Float或Double对象；某个范围内整数数值是有限个的，所以缓存有意义，命中率也高，而浮点数某个范围内的数值个数是无穷多个，即使做缓存，缓存命中率低，没有起到缓存的作用，反而占用了存储空间，故而浮点数不需要缓存。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/" title="">http://rickyqliu.github.io/Java/Java 自动装箱、Integer缓存/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/LeetCode/LeetCode.304.%E4%BA%8C%E7%BB%B4%E5%8C%BA%E5%9F%9F%E5%92%8C%E6%A3%80%E7%B4%A2%20-%20%E7%9F%A9%E9%98%B5%E4%B8%8D%E5%8F%AF%E5%8F%98%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="prev" title="LeetCode.304.二维区域和检索 - 矩阵不可变（中等）">
+      <i class="fa fa-chevron-left"></i> LeetCode.304.二维区域和检索 - 矩阵不可变（中等）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Android/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/" rel="next" title="">
+       <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E5%92%8C%E8%87%AA%E5%8A%A8%E6%8B%86%E7%AE%B1%E6%98%AF%E6%80%8E%E4%B9%88%E5%9B%9E%E4%BA%8B%EF%BC%9F%E5%AE%9E%E9%99%85%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">自动装箱和自动拆箱是怎么回事？实际发生了什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%A6%E5%8F%91%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E5%92%8C%E8%87%AA%E5%8A%A8%E6%8B%86%E7%AE%B1%E7%9A%84%E5%9C%BA%E6%99%AF%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">触发自动装箱和自动拆箱的场景有哪些？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F%E6%9C%89%E5%93%AA%E4%BA%9B%E5%9C%BA%E6%99%AF%E4%B8%8D%E5%BE%97%E4%B8%8D%E4%BD%BF%E7%94%A8%E5%8C%85%E8%A3%85%E7%B1%BB%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">自动装箱解决了什么问题？有哪些场景不得不使用包装类？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88Java%E8%BF%98%E8%A6%81%E5%AE%9A%E4%B9%89%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%EF%BC%8C%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8%E5%8C%85%E8%A3%85%E7%B1%BB%E5%AE%8C%E5%85%A8%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%B8%8D%E5%B0%B1%E8%A1%8C%E4%BA%86%E5%90%97%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kotlin%E5%B7%B2%E7%BB%8F%E5%BA%9F%E5%BC%83%E4%BA%86%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%EF%BC%8C%E5%B7%B2%E7%BB%8F%E5%85%A8%E6%98%AF%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%BA%86%EF%BC%8CKotlin%E8%BF%99%E6%A0%B7%E5%81%9A%E6%B2%A1%E6%9C%89%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E5%90%97%EF%BC%9F"><span class="nav-number">5.</span> <span class="nav-text">Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kotiln%E4%B8%AD%E6%95%B4%E6%95%B0%E6%95%B0%E7%BB%84%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8-Array-%E8%80%8C%E6%98%AF-IntArray-%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">Kotiln中整数数组为什么不直接使用 Array 而是 IntArray ？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E5%92%8C%E6%8B%86%E7%AE%B1%E4%BC%9A%E4%BA%A7%E7%94%9F%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">7.</span> <span class="nav-text">自动装箱和拆箱会产生什么问题？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Integer%E7%9A%84%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6%E6%98%AF%E6%80%8E%E4%B9%88%E5%9B%9E%E4%BA%8B%EF%BC%9F"><span class="nav-number">8.</span> <span class="nav-text">Integer的缓存机制是怎么回事？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A4%E4%B8%AA%E5%80%BC%E7%9B%B8%E7%AD%89%E7%9A%84Integer%E5%AF%B9%E8%B1%A1%EF%BC%8C-%E6%AF%94%E8%BE%83%EF%BC%8C%E6%98%AF%E5%90%A6%E7%9B%B8%E7%AD%89%EF%BC%9F"><span class="nav-number">9.</span> <span class="nav-text">两个值相等的Integer对象，&#x3D;&#x3D;比较，是否相等？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%9F%BA%E6%9C%AC%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8C%85%E8%A3%85%E7%B1%BB%E6%98%AF%E5%90%A6%E8%B7%9FInteger%E4%B8%80%E6%A0%B7%E9%83%BD%E6%9C%89Cache%EF%BC%9F"><span class="nav-number">10.</span> <span class="nav-text">其他基本类型的包装类是否跟Integer一样都有Cache？</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">Follow your heart</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">165</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">200</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu-blog.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/";
+    this.page.identifier = "Java/Java 自动装箱、Integer缓存/";
+    this.page.title = "";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu-blog.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
