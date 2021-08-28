@@ -91,7 +91,11 @@
       </categories>
       <tags>
         <tag>Android</tag>
+        <tag>ApplicationThread</tag>
         <tag>App启动</tag>
+        <tag>Zygote</tag>
+        <tag>AMS</tag>
+        <tag>app_process</tag>
       </tags>
   </entry>
   <entry>
