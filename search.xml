@@ -725,7 +725,9 @@
   <entry>
     <title>序列化：Serializable与Parceable</title>
     <url>/Java/Java%20Serializable%E5%BA%8F%E5%88%97%E5%8C%96/</url>
-    <content><![CDATA[<h1 id="序列化的意义和价值是什么？"><a href="#序列化的意义和价值是什么？" class="headerlink" title="序列化的意义和价值是什么？"></a>序列化的意义和价值是什么？</h1><p>序列化就是把对象转换为字节序列。</p>
+    <content><![CDATA[<span id="more"></span>
+
+<h1 id="序列化的意义和价值是什么？"><a href="#序列化的意义和价值是什么？" class="headerlink" title="序列化的意义和价值是什么？"></a>序列化的意义和价值是什么？</h1><p>序列化就是把对象转换为字节序列。</p>
 <p>反序列化就是把字节序列还原为对象。</p>
 <p>对象是程序运行时的信息载体，序列化机制使得对象信息可以脱离程序的运行而独立存在，这样便于进行网络传输或持久性存储到磁盘。</p>
 <h1 id="序列化考量的重点是什么？"><a href="#序列化考量的重点是什么？" class="headerlink" title="序列化考量的重点是什么？"></a>序列化考量的重点是什么？</h1><ol>
@@ -787,18 +789,10 @@
       </tags>
   </entry>
   <entry>
-    <title></title>
+    <title>Java 自动装箱、Integer缓存</title>
     <url>/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/</url>
-    <content><![CDATA[<p>Java 自动装箱、Integer缓存</p>
-<hr>
-<p>title: 序列化：Serializable与Parceable<br>tags: </p>
-<ul>
-<li>Java</li>
-<li>自动装箱</li>
-<li>Integer缓存<br>categories:</li>
-<li>Java<br>date: 2018/10/23 22:03</li>
-</ul>
-<hr>
+    <content><![CDATA[<span id="more"></span>
+
 <h1 id="自动装箱和自动拆箱是怎么回事？实际发生了什么？"><a href="#自动装箱和自动拆箱是怎么回事？实际发生了什么？" class="headerlink" title="自动装箱和自动拆箱是怎么回事？实际发生了什么？"></a>自动装箱和自动拆箱是怎么回事？实际发生了什么？</h1><p>如下的Java代码：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Integer a = 10;</span><br><span class="line">int b = a;</span><br></pre></td></tr></table></figure>
 <p>在Intellij idea里通过View - Show Bytecode查看字节码：</p>
@@ -859,6 +853,14 @@
 <p>布尔类型Boolean有Cache机制，定了两个TRUE和FALSE的常量，通过Boolean.valueOf(boolean b)返回的都是这两个常量的其中之一。</p>
 <p>浮点数类型没有Cache机制，valueOf方法都是直接new一个Float或Double对象；某个范围内整数数值是有限个的，所以缓存有意义，命中率也高，而浮点数某个范围内的数值个数是无穷多个，即使做缓存，缓存命中率低，没有起到缓存的作用，反而占用了存储空间，故而浮点数不需要缓存。</p>
 ]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>自动装箱</tag>
+        <tag>Integer缓存</tag>
+      </tags>
   </entry>
   <entry>
     <title>LeetCode.10.正则表达式匹配（困难）</title>
