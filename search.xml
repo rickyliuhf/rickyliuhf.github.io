@@ -454,6 +454,8 @@
     <title>Android Zygote</title>
     <url>/Android/Android%20Zygote/</url>
     <content><![CDATA[<h1 id="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？"><a href="#为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？" class="headerlink" title="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？"></a>为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？</h1><p>Zygote 作为一个孵化器，可以提前加载一些资源，这样 fork() 时基于 Copy-On-Write 机制创建的其他进程就能直接使用这些资源，而不用重新加载。</p>
+<span id="more"></span>
+
 <p>比如 system_server 就可以直接使用 Zygote 中的 JNI 函数、共享库、常用的类、以及主题资源。</p>
 <p>应用在启动的时候需要做很多准备工作，包括启动虚拟机，加载各类系统资源等等，这些都是非常耗时的，如果能在zygote里就给这些必要的初始化工作做好，子进程在fork的时候就能直接共享，那么这样的话效率就会非常高。</p>
 <p>这个就是zygote存在的价值，这一点呢SystemServer是替代不了的，主要是因为SystemServer里跑了一堆系统服务，这些是不能继承到应用进程的。</p>
@@ -549,7 +551,7 @@
     <content><![CDATA[<h1 id="Context、ContextImpl、ContextWrapper关系？"><a href="#Context、ContextImpl、ContextWrapper关系？" class="headerlink" title="Context、ContextImpl、ContextWrapper关系？"></a>Context、ContextImpl、ContextWrapper关系？</h1><ul>
 <li>Context是行为的抽象接口。</li>
 <li>ContextImpl是Android平台上的具体实现。</li>
-<li>ContextWrapper是装饰器可以修改Context的行为而不修改原始的Context对象。</li>
+<li>ContextWrapper是装饰器可以修改Context的行为而不修改原始的Context对象。<span id="more"></span></li>
 </ul>
 <h1 id="ContextWrapper装饰Context有什么具体场景？"><a href="#ContextWrapper装饰Context有什么具体场景？" class="headerlink" title="ContextWrapper装饰Context有什么具体场景？"></a>ContextWrapper装饰Context有什么具体场景？</h1><p>比如遇到Receiver的时候，ReceiverRestrictedContext就能够限制Receiver调用startService，让应用程序的Receiver不能够启动Service。通过实现装饰器，能够提供各种各样的装饰，并且也为Android应用程序组件提供了应用环境。</p>
 <h1 id="Context类继承关系"><a href="#Context类继承关系" class="headerlink" title="Context类继承关系"></a>Context类继承关系</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828170109.png"></p>
@@ -625,7 +627,7 @@
 <li>  Scrap</li>
 <li>  Cache</li>
 <li>  ViewCacheExtension</li>
-<li>  RecycledViewPool</li>
+<li>  RecycledViewPool<span id="more"></span></li>
 </ul>
 <h2 id="Scrap"><a href="#Scrap" class="headerlink" title="Scrap"></a>Scrap</h2><p>对应ListView 的Active View，就是屏幕内的缓存数据，就是相当于换了个名字，可以直接拿来复用。</p>
 <h2 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h2><p>刚刚移出屏幕的缓存数据，默认大小是2个，当其容量被充满同时又有新的数据添加的时候，会根据FIFO原则，把优先进入的缓存数据移出并放到下一级缓存中，然后再把新的数据添加进来。</p>

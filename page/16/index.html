@@ -217,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -323,7 +323,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -443,7 +443,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -577,7 +577,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -707,7 +707,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -814,7 +814,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -855,19 +855,15 @@
 <li>  Scrap</li>
 <li>  Cache</li>
 <li>  ViewCacheExtension</li>
-<li>  RecycledViewPool</li>
-</ul>
-<h2 id="Scrap"><a href="#Scrap" class="headerlink" title="Scrap"></a>Scrap</h2><p>对应ListView 的Active View，就是屏幕内的缓存数据，就是相当于换了个名字，可以直接拿来复用。</p>
-<h2 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h2><p>刚刚移出屏幕的缓存数据，默认大小是2个，当其容量被充满同时又有新的数据添加的时候，会根据FIFO原则，把优先进入的缓存数据移出并放到下一级缓存中，然后再把新的数据添加进来。</p>
-<p>Cache里面的数据是干净的，也就是携带了原来的ViewHolder的所有数据信息，数据可以直接来拿来复用。</p>
-<p>需要注意的是，cache是根据position来寻找数据的，这个postion是根据第一个或者最后一个可见的item的position以及用户操作行为（上拉还是下拉）。</p>
-<p>举个栗子：当前屏幕内第一个可见的item的position是1，用户进行了一个下拉操作，那么当前预测的position就相当于（1-1=0），也就是position=0的那个item要被拉回到屏幕，此时RecyclerView就从Cache里面找position=0的数据，如果找到了就直接拿来复用。</p>
-<h2 id="ViewCacheExtension"><a href="#ViewCacheExtension" class="headerlink" title="ViewCacheExtension"></a>ViewCacheExtension</h2><p>用户自定义的缓存策略。</p>
-<p>用户没有定义的时候，将跳过。</p>
-<h2 id="RecycledViewPool"><a href="#RecycledViewPool" class="headerlink" title="RecycledViewPool"></a>RecycledViewPool</h2><p>Cache默认的缓存数量是2个，当Cache缓存满了以后会根据FIFO（先进先出）的规则把Cache先缓存进去的ViewHolder移出并缓存到RecycledViewPool中，RecycledViewPool默认的缓存数量是5个。</p>
-<p>RecycledViewPool与Cache相比不同的是，从Cache里面移出的ViewHolder再存入RecycledViewPool之前ViewHolder的数据会被全部重置，相当于一个新的ViewHolder，而且Cache是根据position来获取ViewHolder，而RecycledViewPool是根据itemType获取的，如果没有重写getItemType（）方法，itemType就是默认的。</p>
-<p>因为RecycledViewPool缓存的ViewHolder是全新的，所以取出来的时候需要走onBindViewHolder（）方法。</p>
-
+<li>  RecycledViewPool
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/Android/RecyclerView%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -917,7 +913,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1048,7 +1044,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1259,7 +1255,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1436,7 +1432,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:56:41" itemprop="dateModified" datetime="2021-08-28T21:56:41+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:57:25" itemprop="dateModified" datetime="2021-08-28T21:57:25+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
