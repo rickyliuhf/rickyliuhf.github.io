@@ -186,146 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Android/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/" class="post-title-link" itemprop="url">未命名</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-08-28 21:53:14" itemprop="dateCreated datePublished" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Android/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Java 自动装箱、Integer缓存/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Java 自动装箱、Integer缓存</p>
-<hr>
-<p>title: 序列化：Serializable与Parceable<br>tags: </p>
-<ul>
-<li>Java</li>
-<li>自动装箱</li>
-<li>Integer缓存<br>categories:</li>
-<li>Java<br>date: 2018/10/23 22:03</li>
-</ul>
-<hr>
-<h1 id="自动装箱和自动拆箱是怎么回事？实际发生了什么？"><a href="#自动装箱和自动拆箱是怎么回事？实际发生了什么？" class="headerlink" title="自动装箱和自动拆箱是怎么回事？实际发生了什么？"></a>自动装箱和自动拆箱是怎么回事？实际发生了什么？</h1><p>如下的Java代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Integer a = 10;</span><br><span class="line">int b = a;</span><br></pre></td></tr></table></figure>
-<p>在Intellij idea里通过View - Show Bytecode查看字节码：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">L0</span><br><span class="line"> LINENUMBER 3 L0</span><br><span class="line"> BIPUSH 10</span><br><span class="line"> INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;</span><br><span class="line"> ASTORE 1</span><br><span class="line">L1</span><br><span class="line"> LINENUMBER 4 L1</span><br><span class="line"> ALOAD 1</span><br><span class="line"> INVOKEVIRTUAL java/lang/Integer.intValue ()I</span><br><span class="line"> ISTORE 2</span><br></pre></td></tr></table></figure>
-<p>可以看到int对象的自动装箱，是调用了Integer.valueOf()方法，自动拆卸是调用了Integer.intValue()。</p>
-<h1 id="触发自动装箱和自动拆箱的场景有哪些？"><a href="#触发自动装箱和自动拆箱的场景有哪些？" class="headerlink" title="触发自动装箱和自动拆箱的场景有哪些？"></a>触发自动装箱和自动拆箱的场景有哪些？</h1><p>自动装箱的场景：<br>    1. 基本类型赋值给包装类型，如 Integer a = 10;</p>
-<p>自动拆箱的场景：<br>    1. 包装类型赋值给基本类型<br>    2. 参与表达式运算或算数运算</p>
-<p>进行 <code>=</code> 赋值操作（装箱或拆箱）<br>进行<code>+</code>，<code>-</code>，<code>*</code>，<code>/</code>混合运算 （拆箱）<br>进行<code>&gt;</code>, <code>&lt;</code>, <code>==</code>比较运算（拆箱） </p>
-<p>当 <code>==</code>运算符的两个操作数都是 包装器类型的引用，则是比较指向的是否是同一个对象。</p>
-<p>而如果其中有一个操作数是表达式（即包含算术运算）则比较的是数值（即会触发自动拆箱的过程）调用equals进行比较（装箱）。</p>
-<p>ArrayList,HashMap等集合类 添加基础类型数据时，因为集合只能添加引用类型（装箱）。</p>
-<h1 id="自动装箱解决了什么问题？有哪些场景不得不使用包装类？"><a href="#自动装箱解决了什么问题？有哪些场景不得不使用包装类？" class="headerlink" title="自动装箱解决了什么问题？有哪些场景不得不使用包装类？"></a>自动装箱解决了什么问题？有哪些场景不得不使用包装类？</h1><ol>
-<li> 集合类只能使用包装类型，不允许使用基本类型，所以需要有包装类</li>
-<li> 由于基本类型没有null的状态，所以需要有包装类对象能够表示null</li>
-<li> 泛型只针对类，不能使用基本类型</li>
-<li> 反射也只能反射类，不能反射基本类型</li>
-<li> 包装类一旦创建，是值不可变的对象，不容易赋值出错</li>
-</ol>
-<h1 id="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"><a href="#为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？" class="headerlink" title="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"></a>为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？</h1><p>这需要从Java虚拟机的角度解释性能问题，当执行一个方法中的算术运算时，虚拟机是基于栈帧中的操作数栈进行数据的读取和运算。</p>
-<p>如果参与运算的是基本数据类型，由于基本类型大小是固定的，一来本身占用空间小，二来基本类型的变量值可以直接存入局部变量表，直接从局部变量表中读取数据速度很快（跟访问对象的方式相比而言）；基本也不需要垃圾回收，局部变量表是位于栈帧中的，方法执行完毕，栈帧出栈，基本数据类型的变量都会自动释放内存。</p>
-<p>如果参与运算的是包装类对象，对象创建后是位于堆中，对象在局部变量表中存储的只是对象指针，指向其在堆中的位置，运算时先访问局部变量表，再访问堆中的对象内部的值，比直接访问局部变量表要多一次额外的访问；其次创建对象占用了额外的空间，因为对象比基本类型要多耗费额外的空间，如对象头等；再次对象创建后还需要垃圾回收，增加了垃圾回收的负担。</p>
-<p>基本类型在方法传参时是值的拷贝传递，对象类型在方法传参是引用传递。</p>
-<h1 id="Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？"><a href="#Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？" class="headerlink" title="Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？"></a>Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？</h1><p>Kotlin只是在语法层面屏蔽了内部的实现细节，在编译时，还是会把Kotlin的基本数据类型对应的对象类型还是换转为Java基本数据类型，这可以通过反编译Kotlin为Java后看出，这样Kotlin更加彻底面向对象，更加的函数式</p>
-<h1 id="Kotiln中整数数组为什么不直接使用-Array-而是-IntArray-？"><a href="#Kotiln中整数数组为什么不直接使用-Array-而是-IntArray-？" class="headerlink" title="Kotiln中整数数组为什么不直接使用 Array 而是 IntArray ？"></a>Kotiln中整数数组为什么不直接使用 Array<Int> 而是 IntArray ？</h1><p>IntArray最终会编译成int[]。</p>
-<p>Array<Int>最终会编译成Integer[]。</p>
-<p>可以通过查看字节码来验证这一点。</p>
-<p>包装类型遍历时会有自动装箱和拆箱的过程，会创建大量的临时对象，加重了垃圾回收的负担，垃圾回收多了会引发stop the world，进而会增加卡顿的几率。</p>
-<h1 id="自动装箱和拆箱会产生什么问题？"><a href="#自动装箱和拆箱会产生什么问题？" class="headerlink" title="自动装箱和拆箱会产生什么问题？"></a>自动装箱和拆箱会产生什么问题？</h1><p>在自动拆卸时，当包装类变量为null时，会发生空指针异常，例如</p>
-<p>Integer a  = null;</p>
-<p>int b = a;</p>
-<p>第二句赋值时会调用a.intValue()，然而a是null，会抛出空指针异常。</p>
-<p>自动装箱会创建包装类对象，如果在大的循环中有自动装箱的发生，会创建很多临时的无用的包装类对象，增加了垃圾回收的负担，垃圾回收会引发stop the world停止所有的线程工作，导致系统的吞吐量降低。</p>
-<h1 id="Integer的缓存机制是怎么回事？"><a href="#Integer的缓存机制是怎么回事？" class="headerlink" title="Integer的缓存机制是怎么回事？"></a>Integer的缓存机制是怎么回事？</h1><p>学会看字节码就知道自动装箱拆箱实际调用的是什么。</p>
-<p>Intellij idea里通过View - Show Bytecode</p>
-<p>以Integer为例</p>
-<p>Integer a = 3;</p>
-<p>字节码指令为</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ICONST_3</span><br><span class="line">INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;</span><br><span class="line">ASTORE 3</span><br></pre></td></tr></table></figure>
-
-<p>看到调用的是Integer.valueOf()方法</p>
-<p>Integer.valueOf()内部会用到IntegerCache，默认-128到127的Integer对象都会被缓存，通过valueOf()返回这个范围内的Integer对象都是同一个</p>
-<h1 id="两个值相等的Integer对象，-比较，是否相等？"><a href="#两个值相等的Integer对象，-比较，是否相等？" class="headerlink" title="两个值相等的Integer对象，==比较，是否相等？"></a>两个值相等的Integer对象，==比较，是否相等？</h1><p>要看Integer对象是如何从创建出来的。</p>
-<p>如果Integer是new出来的，==比较对象的内存地址，肯定不相等。</p>
-<p>如果Integer是通过Integer.valueOf()创建出来的，如果值是[-128,127]之间的数，会用缓存的Integer对象，即是同一个Integer对象。</p>
-<p>其中自动装修也会调用Integer.valueOf()方法生成Integer对象，触发自动装箱的代码如 Integer a = 3。</p>
-<h1 id="其他基本类型的包装类是否跟Integer一样都有Cache？"><a href="#其他基本类型的包装类是否跟Integer一样都有Cache？" class="headerlink" title="其他基本类型的包装类是否跟Integer一样都有Cache？"></a>其他基本类型的包装类是否跟Integer一样都有Cache？</h1><p>Java的基本类型有八种：</p>
-<ol>
-<li> 字符类型：char</li>
-<li> 布尔类型：boolean</li>
-<li>数值类型：<ol>
-<li> 整数类型：byte、short、int、long</li>
-<li> 浮点数类型：float、double</li>
-</ol>
-</li>
-</ol>
-<p>整数类型Byte、Short、Integer、Long都有Cache机制，缓存的数值范围都是[-128,127]。</p>
-<p>字符类型Character有Cache机制，缓存范围[0,127]的ASCII字符。</p>
-<p>布尔类型Boolean有Cache机制，定了两个TRUE和FALSE的常量，通过Boolean.valueOf(boolean b)返回的都是这两个常量的其中之一。</p>
-<p>浮点数类型没有Cache机制，valueOf方法都是直接new一个Float或Double对象；某个范围内整数数值是有限个的，所以缓存有意义，命中率也高，而浮点数某个范围内的数值个数是无穷多个，即使做缓存，缓存命中率低，没有起到缓存的作用，反而占用了存储空间，故而浮点数不需要缓存。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -350,7 +210,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-08-28 21:53:14" itemprop="dateCreated datePublished" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+              <time title="创建时间：2021-08-28 21:54:52" itemprop="dateCreated datePublished" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
             </span>
 
           
@@ -497,7 +357,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:53:14" itemprop="dateModified" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:54:52" itemprop="dateModified" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -597,7 +457,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:53:14" itemprop="dateModified" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:54:52" itemprop="dateModified" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -698,7 +558,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:53:14" itemprop="dateModified" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:54:52" itemprop="dateModified" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -795,7 +655,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:53:14" itemprop="dateModified" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:54:52" itemprop="dateModified" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -891,7 +751,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:53:14" itemprop="dateModified" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:54:52" itemprop="dateModified" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -991,7 +851,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:53:14" itemprop="dateModified" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:54:52" itemprop="dateModified" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1089,7 +949,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:53:14" itemprop="dateModified" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:54:52" itemprop="dateModified" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1195,7 +1055,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 21:53:14" itemprop="dateModified" datetime="2021-08-28T21:53:14+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 21:54:52" itemprop="dateModified" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1237,6 +1097,103 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/LeetCode/LeetCode.85.%E6%9C%80%E5%A4%A7%E7%9F%A9%E5%BD%A2%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.213.%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8D%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/LeetCode/LeetCode.213.%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8D%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" class="post-title-link" itemprop="url">LeetCode.213.打家劫舍 II（中等）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-03 23:40:00" itemprop="dateCreated datePublished" datetime="2020-11-03T23:40:00+08:00">2020-11-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 21:54:52" itemprop="dateModified" datetime="2021-08-28T21:54:52+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode.213.%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8D%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode.213.打家劫舍 II（中等）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/house-robber-ii/">LeetCode.213.打家劫舍 II（中等）</a></p>
+<p>你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 围成一圈 ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警 。</p>
+<p>给定一个代表每个房屋存放金额的非负整数数组，计算你 在不触动警报装置的情况下 ，今晚能够偷窃到的最高金额。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/LeetCode/LeetCode.213.%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8D%20II%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1327,7 +1284,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">165</span>
+          <span class="site-state-item-count">164</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
