@@ -186,6 +186,137 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Binder%E6%9C%BA%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Android/Android%20Binder%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Android Binder机制</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-07-20 20:21:00" itemprop="dateCreated datePublished" datetime="2018-07-20T20:21:00+08:00">2018-07-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/Android%20Binder%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android Binder机制/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h1 id="Binder机制概述"><a href="#Binder机制概述" class="headerlink" title="Binder机制概述"></a>Binder机制概述</h1><p>Android是基于Linux的，Linux的进程之间的内存地址空间是相互隔离的，进程之间无法直接访问对方的数据，这就需要有一个进程之间都可以访问的地方做数据交换，这就是内核空间。</p>
+<p>传统的Linux跨进程通信机制下，通常是进程A把数据复制到内核中的一个缓冲区中，进程B从内核的缓冲区中读取数据。</p>
+<p>Binder进程间通信机制自然也是要通过内核空间来进行的，但是又不是传统的Linux通信机制，怎么样去在内核中做一些操作呢？Linux有一个动态内核可加载模块，Binder就是加载了 Binder驱动  模块，来在内核中做一些操作，实现跨进程通信。</p>
+<h2 id="Binder驱动具体做了什么呢-？"><a href="#Binder驱动具体做了什么呢-？" class="headerlink" title="Binder驱动具体做了什么呢  ？"></a>Binder驱动具体做了什么呢  ？</h2><p>Binder驱动在内核空间中创建一个数据缓冲区，再通过内存映射机制，把缓冲区与数据接受进程用户空间地址做映射，这样数据发送进程的数据把数据拷贝到内核缓冲区过后，数据接受进程就可以直接  获取到数据，避免了一次内核空间的数据拷贝，提高了性能。</p>
+<h2 id="Binder机制还保证了进程间通信的安全性。"><a href="#Binder机制还保证了进程间通信的安全性。" class="headerlink" title="Binder机制还保证了进程间通信的安全性。"></a>Binder机制还保证了进程间通信的安全性。</h2><p>传统进程通信机制缺乏足够的安全措施：在传统进程通信中，只能由发送进程在请求中自行填入UID与PID，容易被恶意程序利用，是不可靠的。只有内置在进程通信机制内的可靠的进程身份标记才能提供必要的安全保障，Android的应用程序有自己UID，可用于鉴别进程身份。</p>
+<p>Binder机制为每个进程分配了UID/PID来作为鉴别身份的标识，并且在Binder通信时会根据UID/PID进行有效性检测。传统的进程通信方式对于通信双方的身份并没有做出严格的验证，如socket通信ip地址是客户端手动填入，容易出现伪造。</p>
+<h2 id="Binder通信整体机制"><a href="#Binder通信整体机制" class="headerlink" title="Binder通信整体机制"></a>Binder通信整体机制</h2><ol>
+<li> Server端向ServiceManager注册Binder对象，建立Binder名称和Binder引用的映射关系，这样Client端可以通过Binder名字获取Server中Binder实体的引用。在Android系统启动的时候，会初始化各种系统服务，这些系统服务会注册到ServiceManager。</li>
+<li> Client通过名字从ServiceManager获取到Binder实体引用，通常获取到的是一个Proxy代理对象</li>
+<li> Client调用代理对象的方法，代理对象会把要调用的方法的方法名称、参数等信息封装成Parcel对象，发送给Binder驱动</li>
+<li> Server会读取Binder驱动中的请求数据，解包Parcel对象，并把结果也以Parcel对象的形式返回</li>
+<li> 客户端发起Binder调用的时候会阻塞，服务端会有一个Binder线程池来响应处理客户端的请求</li>
+<li> 全程使用代理模式屏蔽进程间通信细节</li>
+</ol>
+<h1 id="Binder的优势是什么？"><a href="#Binder的优势是什么？" class="headerlink" title="Binder的优势是什么？"></a>Binder的优势是什么？</h1><ol>
+<li> 数据拷贝仅需一次，性能仅此于共享内存，优于管道、消息队列、套接字等通信方式</li>
+<li> C/S架构比共享内存清晰</li>
+<li> 传统IPC不做权限校验，由上层使用者自己实现，Binder做了权限控制</li>
+</ol>
+<h1 id="Binder的原理什么"><a href="#Binder的原理什么" class="headerlink" title="Binder的原理什么?"></a>Binder的原理什么?</h1><p>Binder是基于共享内存的，但是使用了mmap内存映射，只有一次用户空间到内核空间的拷贝，速度快。</p>
+<p>在实际的实现中，binder 是作为一个特殊的字符型设备而存在的，设备节点为 /dev/binder, 其实现遵循linux设备驱动模型。</p>
+<h1 id="Binder机制的安全性是如何保证的？"><a href="#Binder机制的安全性是如何保证的？" class="headerlink" title="Binder机制的安全性是如何保证的？"></a>Binder机制的安全性是如何保证的？</h1><p>传统进程通信机制缺乏足够的安全措施：</p>
+<ul>
+<li>传统进程通信的接收进程无法获得发送进程可靠的用户标识/进程标识（UID/PID），因而无法鉴别对方身份。</li>
+<li>在传统进程通信中，只能由发送进程在请求中自行填入UID与PID，容易被恶意程序利用，是不可靠的。</li>
+<li> 传统进程通信的访问接入点是公开的，如FIFO与unix domain socket的路径名，socket的ip地址与端口号，lSystem V键值等，知道这些接入点的任何程序都可能试图建立连接，很难阻止恶意程序获得连接，如通过猜测地址获得连接等。</li>
+</ul>
+<p>只有内置在进程通信机制内的可靠的进程身份标记才能提供必要的安全保障。<br>Android的应用程序有自己UID，可用于鉴别进程身份。</p>
+<h1 id="Binder的异常传递机制是怎样的？"><a href="#Binder的异常传递机制是怎样的？" class="headerlink" title="Binder的异常传递机制是怎样的？"></a>Binder的异常传递机制是怎样的？</h1><p>可以推断所有Binder实体对象方法中发生的异常都会被处理。无非一种是将异常信息发送给对端进程，另一种是将异常信息在本进程输出。而这些处理都不会使Server进程退出。</p>
+<p>仔细思考这样设计也是很合理的。作为Server进程，它在什么时候执行，该执行些什么都不由自己掌控，而是由Client进程控制。因此抛出异常本质上与Client进程相关，让一个Client进程的行为导致Server进程退出显然是不合理的。此外，Server进程可能关联着千百个Client，不能由于一个Client的错误行为而影响本可以正常获取服务的其他Client。</p>
+<h1 id="系统服务和context-bindService-的方式有什么区别？"><a href="#系统服务和context-bindService-的方式有什么区别？" class="headerlink" title="系统服务和context.bindService()的方式有什么区别？"></a>系统服务和context.bindService()的方式有什么区别？</h1><p>服务可分为系统服务与普通服务，系统服务一般是在系统启动的时候，由SystemServer进程创建并注册到ServiceManager中的。而普通服务一般是通过ActivityManagerService启动的服务，或者说通过四大组件中的Service组件启动的服务。这两种服务在实现跟使用上是有不同的，主要从以下几个方面：</p>
+<ul>
+<li>服务的启动方式</li>
+<li>服务的注册与管理</li>
+<li>服务的请求使用方式</li>
+</ul>
+<h1 id="Binder缓冲区为什么大小是1MB？为什么不能更大？"><a href="#Binder缓冲区为什么大小是1MB？为什么不能更大？" class="headerlink" title="Binder缓冲区为什么大小是1MB？为什么不能更大？"></a>Binder缓冲区为什么大小是1MB？为什么不能更大？</h1><p>因为缓冲区会他通过mmap映射到用户进程的虚拟地址空间，内存映射的空间不能太大。</p>
+<h1 id="Binder应用场景？"><a href="#Binder应用场景？" class="headerlink" title="Binder应用场景？"></a>Binder应用场景？</h1><ol>
+<li>跨进程通信</li>
+<li>跨进程观察者模式</li>
+<li>App提权</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%E7%AD%BE%E5%90%8D%E6%9C%BA%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +348,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -342,7 +473,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -460,7 +591,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -562,7 +693,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -672,7 +803,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -792,7 +923,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -900,7 +1031,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1106,7 +1237,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1267,7 +1398,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:16:39" itemprop="dateModified" datetime="2021-08-29T00:16:39+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1355,136 +1486,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ConcurrentHashMap%E5%8E%9F%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ConcurrentHashMap%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Java集合类-ConcurrentHashMap原理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-05-07 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-07T20:00:00+08:00">2018-05-07</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:11:35" itemprop="dateModified" datetime="2021-08-29T00:11:35+08:00">2021-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ConcurrentHashMap%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-ConcurrentHashMap原理/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h1><p>高性能且线程安全的哈希表。</p>
-<h1 id="线程安全是怎么实现的？"><a href="#线程安全是怎么实现的？" class="headerlink" title="线程安全是怎么实现的？"></a>线程安全是怎么实现的？</h1><p>Java7中ConcurrentHashMap将哈希表分割成为多个段（Segment），每一个段继承ReentrantLock，对每一段进行加锁。每个Segment里类似又有一个小的HashMap，等于是双重哈希表。</p>
-<p>Java8中采用了自旋CAS和synchronzied保证线程安全，锁的粒度调整为对table数组中每个元素进行加锁；put元素时，定位到桶位置后，通过synchronzied给桶中链表首节点或红黑树根节点加锁。这样多线程竞争哈希表同一个桶位置的几率又降低了。</p>
-<p>java8的ConcurrentHashMap的数据结构参考java8的HashMap，采用数组+链表+红黑树。</p>
-<ul>
-<li><p>put方法里，是一个无限循环，即自旋，修改table数组都是通过cas操作，自旋锁的机制避免了阻塞和恢复线程的上下文切换开销。</p>
-</li>
-<li><p>只要当前桶位置没有元素，就先自旋CAS进行更新。</p>
-</li>
-<li><p>存在hash冲突或修改已有的值时，需要进入桶内部的链表或红黑树进行操作时，才开始用synchronized真正加锁。</p>
-</li>
-</ul>
-<p>get是不加锁的，所以与CopyOnWriteArrayList一样，不保证读数据的实时性，数据是弱一致性。</p>
-<p>size的求法和LongAdder里的思路一样，将大小数据分段累加，避免多线程竞争，用自旋cas保证数据更新的原子性。</p>
-<h1 id="不能解决什么问题？"><a href="#不能解决什么问题？" class="headerlink" title="不能解决什么问题？"></a>不能解决什么问题？</h1><p>因为数据是弱一致性的，get时并不加锁，所以对读数据实时性要求高的需求不能满足。</p>
-<p>例如线程1在某一时刻执行了put(key, value)，先线程2随后立即get(key)不一定能读取到线程1刚put的，因为put可能正在进行中还没结束。</p>
-<h1 id="扩容机制是怎样的？"><a href="#扩容机制是怎样的？" class="headerlink" title="扩容机制是怎样的？"></a>扩容机制是怎样的？</h1><p>本来一个线程扩容时，其他线程应该都阻塞等待这个线程扩容完成后才能对哈希表进行读写，这就成了并发的瓶颈。</p>
-<p>ConcurrentHashMap具体实现是，反正你闲着也是闲着，不如一起来扩容。</p>
-<p>扩容时nextTable会指向扩容后的数组，扩容方法transfer里通过自旋进行。</p>
-<p>多个线程通过sizeCtl判断当前所处状态，再通过transferIndex协调各线程应该操作哪一些桶。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/ZOKEKAI/article/details/90051567">ConcurrentHashMap1.8 - 扩容详解（图文并茂）</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/lfs2640666960/p/9621461.html">深入理解HashMap+ConcurrentHashMap的扩容策略  </a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/487d00afe6ca">ConcurrentHashMap源码分析（JDK8） 扩容实现机制</a></li>
-</ul>
-<h1 id="跟同样是线程安全的Hashtable有何区别？"><a href="#跟同样是线程安全的Hashtable有何区别？" class="headerlink" title="跟同样是线程安全的Hashtable有何区别？"></a>跟同样是线程安全的Hashtable有何区别？</h1><p>Hashtable的线程安全是对整个哈希表上锁（在多数方法上加上sychronized），其中一个线程访问哈希表时，其他线程只能等待，很多没有必要上锁的场景也上锁，因此在多线程竞争激烈的情况下整体访问速度会变慢。</p>
-<p>ConcurrentHashMap把哈希表分割成若干个段，修改每一段时仅针对访问的段上锁，不同的线程访问不同的段时互不干扰，减少了多个线程争抢同一把锁的几率，减少了线程等待的时间，所以提高了性能。</p>
-<p>分段锁是怎么实现的？</p>
-<p>get方法不加锁，结点类里的value设置了volatile保证了value在多线程下的可见性，保证get到value最新的修改值。</p>
-<p>总结：</p>
-<ol>
-<li> 循环+CAS实现自旋锁，减少线程阻塞恢复的上下文切换消耗</li>
-<li> size更新采用LongAdder分段锁思想，减少竞争</li>
-<li> LongAdder机制中的字节填充解决伪共享</li>
-<li> 多线程协同分组扩容。</li>
-</ol>
-<h1 id="与Collections-synchronizedMap-的区别？"><a href="#与Collections-synchronizedMap-的区别？" class="headerlink" title="与Collections.synchronizedMap()的区别？"></a>与Collections.synchronizedMap()的区别？</h1><p>Collections.synchronizedMap()对HashMap做了一层装饰，用synchronized锁住整个哈希表，以保证各操作的线程安全，锁的粒度比较大。<br>性能比ConcurrentHashMap更差，但可以保证读的实时性。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://crossoverjie.top/2018/07/23/java-senior/ConcurrentHashMap/">HashMap? ConcurrentHashMap? 相信看完这篇没人能难住你！</a></li>
-<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5dee05ac6fb9a0163f77beb6">深入解析 ConcurrentHashMap 实现内幕，吊打面试官？没问题</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/heqiyoujing/p/11143525.html">ConcurrentHashMap面试题</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1556,20 +1557,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">167</span>
+          <span class="site-state-item-count">168</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">206</span>
+        <span class="site-state-item-count">208</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
