@@ -137,6 +137,7 @@
 <li>服务的注册与管理</li>
 <li>服务的请求使用方式</li>
 </ul>
+<h1 id="Binder缓冲区为什么大小是1MB？为什么不能更大？"><a href="#Binder缓冲区为什么大小是1MB？为什么不能更大？" class="headerlink" title="Binder缓冲区为什么大小是1MB？为什么不能更大？"></a>Binder缓冲区为什么大小是1MB？为什么不能更大？</h1><p>因为缓冲区会他通过mmap映射到用户进程的虚拟地址空间，内存映射的空间不能太大。</p>
 <h1 id="Binder应用场景？"><a href="#Binder应用场景？" class="headerlink" title="Binder应用场景？"></a>Binder应用场景？</h1><ol>
 <li>跨进程通信</li>
 <li>跨进程观察者模式</li>
