@@ -186,6 +186,123 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/TCP%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E7%BD%91%E7%BB%9C/TCP%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6/" class="post-title-link" itemprop="url">TCP拥塞控制</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-13 19:31:00" itemprop="dateCreated datePublished" datetime="2018-03-13T19:31:00+08:00">2018-03-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/TCP%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/TCP拥塞控制/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="什么情况下才算发生了网络拥塞？"><a href="#什么情况下才算发生了网络拥塞？" class="headerlink" title="什么情况下才算发生了网络拥塞？"></a>什么情况下才算发生了网络拥塞？</h1><p>发送方有TCP报文超时了没有收到ACK确认报文</p>
+<h1 id="拥塞控制的过程是怎样的？"><a href="#拥塞控制的过程是怎样的？" class="headerlink" title="拥塞控制的过程是怎样的？"></a>拥塞控制的过程是怎样的？</h1><p>慢启动、拥塞避免、快重传、快恢复</p>
+<p>拥塞窗口，拥塞窗口大小cwnd（congestion window）表示可以发送的报文字节数，单位是一个MSS（最大报文长度）</p>
+<h2 id="慢启动"><a href="#慢启动" class="headerlink" title="慢启动"></a>慢启动</h2><p>拥塞窗口初始大小为1，每收到一个ACK，拥塞窗口大小+1，实际效果就是每过一个RTT，拥塞窗口大小为原来的2倍，以指数增长率增长，先慢后快，达到慢开始门限ssthresh则停止慢开始，执行拥塞避免算法。</p>
+<p>翻倍后如果大小超过阈值则窗口大小设为阈值。</p>
+<p>例如：</p>
+<p>初始窗口大小为1</p>
+<p>发送第一个报文M0，收到ACK1后窗口大小+1，变为2</p>
+<p>发送M1、M2，收到ACK2、ACK3后，窗口大小+2，变为4</p>
+<p>再发送4个报文，收到4个ACK后，窗口大小+4，变为8</p>
+<h2 id="拥塞避免"><a href="#拥塞避免" class="headerlink" title="拥塞避免"></a>拥塞避免</h2><p>每过一个RTT（受到一个ACK），拥塞窗口大小+1</p>
+<p>线性增长，避免增长过快</p>
+<h2 id="发生拥塞"><a href="#发生拥塞" class="headerlink" title="发生拥塞"></a>发生拥塞</h2><p>发送方有报文超时，未收到ACK确认报文</p>
+<p>无论是在慢开始阶段还是拥塞避免阶段，做出以下调整：</p>
+<ol>
+<li>把慢开始门限ssthresh设置为出现拥塞时发送方拥塞窗口大小的一半（不小于2）</li>
+<li>拥塞窗口大小设为1，执行慢开始</li>
+</ol>
+<p>目的：</p>
+<p>迅速减少发送方发送到网络的报文数，在发生拥塞时路由器有足够的时间把队列中挤压的报文发完</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20180825255523.jpeg"></p>
+<h2 id="快速重传"><a href="#快速重传" class="headerlink" title="快速重传"></a>快速重传</h2><p>发送方收到了三个序号重复的ACK报文，认为该序号的报文丢失，则不等待定时器结束就直接重传该序号的报文</p>
+<h2 id="快速恢复"><a href="#快速恢复" class="headerlink" title="快速恢复"></a>快速恢复</h2><p>发送方收到了三个序号重复的ACK报文，认为该序号的报文丢失，慢开始门限设置为拥塞窗口大小的一半，拥塞窗口不设置为1，也设置为原窗口大小的一半，并执行拥塞避免算法，线性增大拥塞窗口。</p>
+<p>因为跳过了拥塞窗口从1开始的慢开始过程，所以称为快恢复。</p>
+<p>发送方窗口大小为  流量控制的滑动窗口和拥塞窗口  的较小值</p>
+<h1 id="快速重传有什么问题？"><a href="#快速重传有什么问题？" class="headerlink" title="快速重传有什么问题？"></a>快速重传有什么问题？</h1><p>与基于定时器的超时重传拥有同样的问题，即：</p>
+<p>不确定应该重发哪些序号的报文，如果只重发一个可能会拖慢整体传输时长，如果重发多个可能会浪费流量、增加整体传输时长，需要知道哪些序号的报文是丢失的，只重发丢失的报文。  </p>
+<p>发送方收到同一个序号的多个ACK确认，发送方并不清楚这些ACK是由哪些序号的报文传输成功后ACK回来的，可能会重发接收方已经收到的报文，浪费流量。</p>
+<h1 id="带选择确认的重传（SACK）解决了什么？"><a href="#带选择确认的重传（SACK）解决了什么？" class="headerlink" title="带选择确认的重传（SACK）解决了什么？"></a>带选择确认的重传（SACK）解决了什么？</h1><p>一端在发送ACK时通过在TCP报文头部增加SACK（Selective Acknowledgment）选项，告知对方已经收到的包序号区间范围，让对方只重传丢失的报文，并且可以一次性集中重传，避免了网络流量的浪费，也避免了长时间的超时等待。</p>
+<p>SACK需要客户端和服务的都开启该功能</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/TCP%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +334,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -322,7 +439,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -422,7 +539,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -532,7 +649,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -630,7 +747,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -757,7 +874,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -884,7 +1001,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1023,7 +1140,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1160,7 +1277,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 00:48:11" itemprop="dateModified" datetime="2021-08-29T00:48:11+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1267,140 +1384,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/%E6%B5%8F%E8%A7%88%E5%99%A8%E8%AF%B7%E6%B1%82%E7%BD%91%E5%9D%80%E5%AE%8C%E6%95%B4%E8%A7%A3%E6%9E%90%E7%9A%84%E8%BF%87%E7%A8%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%BD%91%E7%BB%9C/%E6%B5%8F%E8%A7%88%E5%99%A8%E8%AF%B7%E6%B1%82%E7%BD%91%E5%9D%80%E5%AE%8C%E6%95%B4%E8%A7%A3%E6%9E%90%E7%9A%84%E8%BF%87%E7%A8%8B/" class="post-title-link" itemprop="url">浏览器请求url完整解析的过程</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-03-06 19:31:00" itemprop="dateCreated datePublished" datetime="2018-03-06T19:31:00+08:00">2018-03-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 00:44:19" itemprop="dateModified" datetime="2021-08-29T00:44:19+08:00">2021-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/%E6%B5%8F%E8%A7%88%E5%99%A8%E8%AF%B7%E6%B1%82%E7%BD%91%E5%9D%80%E5%AE%8C%E6%95%B4%E8%A7%A3%E6%9E%90%E7%9A%84%E8%BF%87%E7%A8%8B/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/浏览器请求网址完整解析的过程/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="基本过程"><a href="#基本过程" class="headerlink" title="基本过程"></a>基本过程</h1><ol>
-<li> 域名解析</li>
-<li> tcp连接</li>
-<li> tls握手</li>
-<li> 发送http请求</li>
-<li> ARP寻找路由器</li>
-<li> 以太网传输数据帧</li>
-<li> 路由转发</li>
-<li> 服务器返回http响应</li>
-<li> 浏览器解析http响应体渲染页面</li>
-<li>TCP四次挥手断开连接</li>
-</ol>
-<h1 id="域名解析"><a href="#域名解析" class="headerlink" title="域名解析"></a>域名解析</h1><p>主流网络通信协议是TCP/IP，数据在网络中的传输是通过IP协议在各个路由器之间传输，找到服务端机器的，IP协议只认IP地址，IP地址全是数字，对于人来说不方便记忆，所以搞了域名，全是英文。所以第一步要先解析域名为IP地址。</p>
-<ol>
-<li> 先看浏览器缓存有没有对应IP。</li>
-<li> 没有则查询操作系统hosts文件里是否有对应IP。</li>
-<li> 没有则向本地DNS服务器发起域名解析。</li>
-<li> 如果本地DNS服务器有对应IP缓存，则直接返回。</li>
-<li> 没有则向根域名服务器请求解析域名，根域名服务器无法解析域名，给出下一级域名服务器地址，本地DNS服务器继续请求，这样一级一级的直到解析出IP地址。</li>
-</ol>
-<h1 id="TCP连接"><a href="#TCP连接" class="headerlink" title="TCP连接"></a>TCP连接</h1><p>浏览器使用HTTP协议传输数据，HTTP要求传输要可靠，所以HTTP底层是基于TCP协议的。</p>
-<p>TCP协议为了可靠性，一开始是要通过三次握手建立连接，验证通信双方的发送数据和接受数据是正常。</p>
-<p>采用三次握手而不是两次握手，是为了防止已失效的连接请求报文突然又传送到了服务端，因而产生错误。</p>
-<p>三次握手还会交换报文初始序号、滑动窗口大小、最大报文长度等信息，这些都是用来保证传输的可靠性的。</p>
-<h1 id="HTTP请求"><a href="#HTTP请求" class="headerlink" title="HTTP请求"></a>HTTP请求</h1><p>HTTP请求分为请求行、请求头、请求体。</p>
-<ul>
-<li>请求行规定了  请求方法类型、url、http协议版本。</li>
-<li>请求头的功能很多，比如说缓存、压缩、支持的编码等，看实际的需求。</li>
-<li>请求体是详细的数据部分。</li>
-</ul>
-<p>浏览器输入一个url访问，都是get请求。</p>
-<p>数据到达传输层，这里使用的是TCP协议，给数据加上TCP报文头，在报文头中填充源端口号、目的端口号、数据字节数编号、接受窗口大小等数据。</p>
-<p>其中端口号的目的是为了把数据交给特定的应用程序做处理，端口号是为了区分同一台主机上不同的应用程序。</p>
-<p>TCP协议还有报文编号、超时重传、流量控制、拥塞控制等机制，都是为了保证  传输的可靠性，保证数据传输到位。这些机制对于HTTP协议是无感的。</p>
-<h2 id="TCP分段"><a href="#TCP分段" class="headerlink" title="TCP分段"></a>TCP分段</h2><p>如果HTTP报文过长，超过TCP规定的最大报文长度，就会分为多个TCP报文传输，TCP分段是为了防止IP层对数据进行分片，因为IP层分片后，除了第一个分片有TCP报文头，其他IP分片  没有TCP报文头，这样如果一个IP分片丢失，就要重传所有的IP分片，因为没办法定位哪个分片丢失，不方便做超时重传，降低了传输吞吐量。</p>
-<p>IP层对数据进行分片是为了防止IP报文大小超过数据链路层的最大传输单元大小，IP数据过长，到数据链路层就无法传输  。</p>
-<h1 id="ARP寻址"><a href="#ARP寻址" class="headerlink" title="ARP寻址"></a>ARP寻址</h1><p>TCP报文到IP层后，会加上IP协议报文头，添加源主机IP地址，目的主机IP地址。IP地址是用来定位网络中的主机的。</p>
-<p>源主机先检查源主机IP地址和目的主机IP地址是否在同一个网络中。</p>
-<h2 id="局域网传输"><a href="#局域网传输" class="headerlink" title="局域网传输"></a>局域网传输</h2><p>如果在同一个网络中，接下来就是局域网通信了。局域网通信识别主机是通过MAC地址来识别的  ，而不是IP地址，所以第一步要先获取主机的MAC地址。这就要用到ARP协议，ARP叫地址解析协议，是用来做IP地址到MAC地址的映射。</p>
-<p>首先源主机在本地局域网中发送一个ARP广播请求，目的主机收到广播请求后对比IP地址是自己的，就返回一个ARP响应包，把目的主机的MAC地址告诉源主机。ARP协议会缓存IP地址和MAC地址的映射关系，下一次就不用发广播来获取MAC地址了，节省通信时间。接下来源主机就把IP数据包加上数据链路层的帧首部，填充源主机和目的主机的MAC地址，通过以太网等局域网手段跟目的主机通信。</p>
-<h2 id="广域网传输"><a href="#广域网传输" class="headerlink" title="广域网传输"></a>广域网传输</h2><p>如果不在同一个网络中，要将数据发送到网络中，也要先通过ARP获取到网关路由器的MAC地址，源主机把数据传递给网关路由器，网关路由器把数据帧首部去掉，发送IP数据报。</p>
-<h1 id="路由转发"><a href="#路由转发" class="headerlink" title="路由转发"></a>路由转发</h1><p>路由器转发数据，要在路由表中查询是否有能与目的IP地址匹配的条目，如果匹配了主机地址，则发送数据给目的主机  ，否则转发给下一个网络的网关路由器。</p>
-<p>数据应该转发给哪个路由器，是根据路由算法来决定的，路由算法会计算得出一个传输代价最小的路径。</p>
-<p>在大型、易变的网络中，会用到动态路由算法，一般使用链路状态路由算法，因为传播的数据量小，节省CPU、内存和网络带宽。</p>
-<p>每个路由器都会将自己与邻居节点之间的链路状态广播出去，发送到整个网络，这样每个路由器都会有网络中所有路由器的状态，形成全网的拓扑视图，然后可以用迪杰斯特拉最短路径算法求出最短路径，就知道路由转发的时候要发给哪个路由器了。当某台路由器链路状态发生变化，采用洪泛法向所有路由器发送状态信息，使其他路由器重新计算最佳路径重新生成路由表。</p>
-<p>路由器之间的通信，也是要走局域网通信的那一套流程，即获得下一跳路由器的MAC地址，然后通过以太网传输数据帧。</p>
-<p>服务端收到消息后也是同样的反向操作流程。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1472,7 +1455,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">171</span>
+          <span class="site-state-item-count">172</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
