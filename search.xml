@@ -489,6 +489,7 @@
       <tags>
         <tag>Android</tag>
         <tag>Zygote</tag>
+        <tag>fork()</tag>
       </tags>
   </entry>
   <entry>
@@ -535,6 +536,33 @@
         <tag>Android</tag>
         <tag>补间动画</tag>
         <tag>属性动画</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android之Context、ContextImp、ContextWrapper</title>
+    <url>/Android/Android%E4%B9%8BContext%E3%80%81ContextImp%E3%80%81ContextWrapper/</url>
+    <content><![CDATA[<h1 id="Context、ContextImpl、ContextWrapper关系？"><a href="#Context、ContextImpl、ContextWrapper关系？" class="headerlink" title="Context、ContextImpl、ContextWrapper关系？"></a>Context、ContextImpl、ContextWrapper关系？</h1><ul>
+<li>Context是行为的抽象接口。</li>
+<li>ContextImpl是Android平台上的具体实现。</li>
+<li>ContextWrapper是装饰器可以修改Context的行为而不修改原始的Context对象。</li>
+</ul>
+<h1 id="ContextWrapper装饰Context有什么具体场景？"><a href="#ContextWrapper装饰Context有什么具体场景？" class="headerlink" title="ContextWrapper装饰Context有什么具体场景？"></a>ContextWrapper装饰Context有什么具体场景？</h1><p>比如遇到Receiver的时候，ReceiverRestrictedContext就能够限制Receiver调用startService，让应用程序的Receiver不能够启动Service。通过实现装饰器，能够提供各种各样的装饰，并且也为Android应用程序组件提供了应用环境。</p>
+<h1 id="Context类继承关系"><a href="#Context类继承关系" class="headerlink" title="Context类继承关系"></a>Context类继承关系</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828170109.png"></p>
+<h1 id="ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？"><a href="#ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？" class="headerlink" title="ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？"></a>ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？</h1><ul>
+<li>Activity通过ContextWrapper的成员mBase来引用了一个ContextImpl对象，这样，Activity组件以后就可以通过这个ContextImpl对象来执行一些具体的操作（启动Service等）。</li>
+<li>同时ContextImpl类又通过自己的成员mOuterContext引用了与它关联的Activity，这样ContextImpl类也可以操作Activity。</li>
+</ul>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828170210.png"></p>
+<h1 id="ContextThemeWrapper使用场景？"><a href="#ContextThemeWrapper使用场景？" class="headerlink" title="ContextThemeWrapper使用场景？"></a>ContextThemeWrapper使用场景？</h1><p>可以传一个主题样式id过来，用style中的各个属性，覆盖原有Context中的属性，在动态替换主题的时候会比较有用。</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>Context</tag>
+        <tag>ContextImp</tag>
+        <tag>ContextWrapper</tag>
       </tags>
   </entry>
   <entry>
