@@ -186,6 +186,114 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/" class="post-title-link" itemprop="url">Java并发-CyclicBarrier</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-18 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-18T20:00:00+08:00">2017-10-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-CyclicBarrier/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><ul>
+<li>CyclicBarrier构造函数传入一个数字N。</li>
+<li>线程调用CyclicBarrier.await()会阻塞等待，直到有第N个线程调用CyclicBarrier.await()，所有线程一起执行await()方法后续逻辑。</li>
+<li>再次调用await()可以继续这一波操作，循环使用。</li>
+</ul>
+<p>比喻：</p>
+<ul>
+<li>人到齐了一起走，没到齐每个人都一直等着不走。</li>
+<li>走完了过后，下一波人来了继续这个流程。</li>
+</ul>
+<p>可循环利用的屏障。</p>
+<p>举例：</p>
+<p>CyclicBarrier barrier = new CyclicBarrier(5);</p>
+<p>然后各个线程调用barrier.await();</p>
+<p>当有5个线程await()过后，会继续执行await()后续代码</p>
+<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
+<p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
+<p>然后重新计数，继续同样的过程。</p>
+<h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
+<p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
+<p>CountDownLatch是一次性的，而CyclicBarrier则可以被重置而重复使用。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +325,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -333,7 +441,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -448,7 +556,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -619,7 +727,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -694,129 +802,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%E7%AD%BE%E5%90%8D%E6%9C%BA%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Android/Android%E7%AD%BE%E5%90%8D%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Android签名机制</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-15 19:21:00" itemprop="dateCreated datePublished" datetime="2017-07-15T19:21:00+08:00">2017-07-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Android/Android%E7%AD%BE%E5%90%8D%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android签名机制/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="数字签名解决了什么？"><a href="#数字签名解决了什么？" class="headerlink" title="数字签名解决了什么？"></a>数字签名解决了什么？</h1><p>校验apk文件的完整性，检查是否有损坏或篡改。</p>
-<h1 id="数字签名格式"><a href="#数字签名格式" class="headerlink" title="数字签名格式"></a>数字签名格式</h1><p>我们在对Apk签名时并没有直接指定私钥、公钥和数字证书，而是使用keystore文件，这些信息都包含在了keystore文件中。根据编码不同，keystore文件分为很多种，Android使用的是Java标准keystore格式JKS(Java Key Storage)，所以通过Android Studio导出的keystore文件是以.jks结尾的。</p>
-<p>keystore使用的证书标准是X.509，X.509标准也有多种编码格式，常用的有两种：pem（Privacy Enhanced Mail）和der（Distinguished Encoding Rules）。jks使用的是der格式，Android也支持直接使用pem格式的证书进行签名。</p>
-<h1 id="v1签名"><a href="#v1签名" class="headerlink" title="v1签名"></a>v1签名</h1><p>v1签名也就是jar签名机制</p>
-<p>签名过程：</p>
-<ol>
-<li> 先对apk中每个文件用SHA-1哈希算法求得摘要，再用BASE64编码，将这些信息保存在apk解压后的META-INF目录下的MANIFEST.MF里。</li>
-<li> 再对MANIFEST.MF整个文件以及MANIFEST.MF每个条目用SHA-1求得摘要，再用BASE64编码，存入META-INF/CERT.SF。</li>
-<li> 对CERT.SF计算摘要，用Android签名文件中的私钥加密这个摘要，作为签名存入CERT.RSA</li>
-</ol>
-<p>MANIFEST.MF和CERT.SF保证apk数据的完整性，CERT.RSA从整体上保证了数据的完整性和来源可靠。</p>
-<p>MANIFEST.MF和CERT.SF可能会被篡改，但最终CERT.RSA中的签名是由私钥加密生成的，没有私钥就不可能生成同样的签名。</p>
-<p>CERT.RSA还存储了签名文件（keystore）的公钥，用于解密CERT.RSA中的签名，校验apk时，如果CERT.SF求得摘要后跟签名不一致，说明CERT.SF被篡改过。</p>
-<p>v1签名缺点:</p>
-<ol>
-<li> META-INF不在校验访问，这样可以在这个目录下任意放置文件。</li>
-<li> 每一个文件计算摘要，比较耗时。</li>
-</ol>
-<p>CERT.RSA中存储了什么？</p>
-<p>签名文件的公钥、签名、签名算法、签名所有者信息。</p>
-<h1 id="v2签名"><a href="#v2签名" class="headerlink" title="v2签名"></a>v2签名</h1><ul>
-<li>v1签名验证的是每一个文件的完整性。</li>
-<li>v2签名验证的是整个apk的字节流。</li>
-</ul>
-<p>APK签名信息存储在“APK签名分块”。</p>
-<p>ZIP包原本的数据从头到尾分为三块：文件数据区、目录数据区、目录结尾数据区。</p>
-<p>APK签名分块是位于文件数据区和目录数据区之间的，目录结尾数据区中记录了目录数据区的地址位置（也就是相当于开头的偏移量），加入APK签名分块后，仅需要修改目录数据区的地址，不影响ZIP其他原来的数据。</p>
-<p>APK 签名方案 v2 负责保护第 1、3、4 部分的完整性，以及第 2 部分包含的“APK 签名方案 v2 分块”中的  signed data 分块的完整性。</p>
-<p>优势：</p>
-<ol>
-<li> 对整个zip分块计算哈希摘要，计算量减少，同时可以并行，速度更快。</li>
-<li> 验证了整个zip文件，不会漏校验zip中的数据。</li>
-</ol>
-<h1 id="v3签名"><a href="#v3签名" class="headerlink" title="v3签名"></a>v3签名</h1><p>android系统里不同的keystore签名的apk不能覆盖安装，但是keystore可能因为各种不可控的原因泄露了，按照这样的机制app的发布者就束手无策，别人就可以用恶意的apk覆盖安装发布者发布的正常的apk。如果能用新的keystore签名重新签名app，并能覆盖安装用旧的keystore签名的apk，就可以解决keystore泄露的问题了。</p>
-<p>但是也不能让任意的keystore签名的apk可以覆盖安装任意apk，这样keystore签名就失去了校验开发者身份的功能，覆盖安装apk时，android系统得知道新的apk用的新的签名也是同一个发布者签上的，那怎样保证这点？</p>
-<p>v3签名使用密钥轮转机制，让apk可以变更签名，在签名数据库新增了一个块，专门存储证书链，建立一个签名信任链，老的证书在前，新的证书在后，新的证书中的签名是由老的数字证书对应的keystore的私钥加密的，所以在覆盖安装apk时，就可以用旧apk中的老的数字证书中的公钥解密新的数字证书中的签名，得到新的数字证书的内容哈希摘要，再根据新证书中指明的哈希算法，计算新证书内容的哈希摘要，对比两个哈希摘要是否一致，一致则说明可信赖，可以覆盖安装。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/RecyclerView%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -848,7 +833,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -951,7 +936,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1082,7 +1067,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1293,7 +1278,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1470,7 +1455,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 17:13:34" itemprop="dateModified" datetime="2021-08-28T17:13:34+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 17:14:13" itemprop="dateModified" datetime="2021-08-28T17:14:13+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
