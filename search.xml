@@ -465,6 +465,60 @@
       </tags>
   </entry>
   <entry>
+    <title>Java Serializable序列化</title>
+    <url>/Java/Java%20Serializable%E5%BA%8F%E5%88%97%E5%8C%96/</url>
+    <content><![CDATA[<h1 id="序列化的意义和价值是什么？"><a href="#序列化的意义和价值是什么？" class="headerlink" title="序列化的意义和价值是什么？"></a>序列化的意义和价值是什么？</h1><p>序列化就是把对象转换为字节序列。</p>
+<p>反序列化就是把字节序列还原为对象。</p>
+<p>对象是程序运行时的信息载体，序列化机制使得对象信息可以脱离程序的运行而独立存在，这样便于进行网络传输或持久性存储到磁盘。</p>
+<h1 id="序列化考量的重点是什么？"><a href="#序列化考量的重点是什么？" class="headerlink" title="序列化考量的重点是什么？"></a>序列化考量的重点是什么？</h1><ol>
+<li> 协议是否跨平台</li>
+<li> 序列化速度</li>
+<li> 字节序列大小</li>
+</ol>
+<h1 id="Serializable底层运作机制是怎样的？"><a href="#Serializable底层运作机制是怎样的？" class="headerlink" title="Serializable底层运作机制是怎样的？"></a>Serializable底层运作机制是怎样的？</h1><p>查看ObjectInputStream的readObject方法  和 ObjectOutputStream的writeObject的代码。</p>
+<p>主要运用了反射。</p>
+<h1 id="Serializable如何自定义决定哪些字段写入和读取？"><a href="#Serializable如何自定义决定哪些字段写入和读取？" class="headerlink" title="Serializable如何自定义决定哪些字段写入和读取？"></a>Serializable如何自定义决定哪些字段写入和读取？</h1><ol>
+<li> 通过transient关键字修饰属性，排除在序列化之外</li>
+<li> 在类中增加writeObejct和readObject方法，JDK中的ArrayList、HashMap等都复写了writeObject</li>
+<li> 在类中增加writeReplace和readResolve方法，提供了writeReplace就不会执行writeObject，提供了readResolve就不会执行readObject</li>
+<li> 实现Externalizable接口，显式实现readExternal和writeExternal</li>
+</ol>
+<p>Java为用户定义了默认的序列化、反序列化方法，其实就是ObjectOutputStream的defaultWriteObject方法和ObjectInputStream的defaultReadObject方法。</p>
+<p>为什么HashMap要自定义序列化逻辑呢？<br>可能的原因是，存储数据的数组table，一般都是不满的（因为HashMap的负载因子默认0.75，超过就会扩容），里面肯定会有很多null，如果是默认的序列化，这些null也会被被序列化，显然这些null是没有必要的做序列化的。</p>
+<p>ArrayList自定义序列化方法，也是因为elementData数组可能没存满。</p>
+<h1 id="serialVersionUID是干什么的？"><a href="#serialVersionUID是干什么的？" class="headerlink" title="serialVersionUID是干什么的？"></a>serialVersionUID是干什么的？</h1><p>反序列化需要指定一个类，但是类的结构会变更，如何保证已经序列化的字节序列与当前的类结构是对应上的，可以在字节序列和类中分别存储一个版本号，只有版本号相同，就当做是可转行的，版本号不同反序列化就报错。</p>
+<p>类中指定版本号是使用private static final long serialVersionUID属性，值为任意。如果不声明这个属性，虚拟机会根据类信息自动生成一个版本号。</p>
+<p>这样随着class的升级，就无法正确反序列化；不指定版本号另一个明显隐患是，不利于jvm间的移植，可能class文件没有更改，但不同jvm可能计算的规则不一样，这样也会导致无法反序列化。</p>
+<h1 id="什么情况下需要修改serialVersionUID呢？"><a href="#什么情况下需要修改serialVersionUID呢？" class="headerlink" title="什么情况下需要修改serialVersionUID呢？"></a>什么情况下需要修改serialVersionUID呢？</h1><p>分三种情况：</p>
+<ol>
+<li> 如果只是修改了方法，反序列化不容影响，则无需修改版本号；</li>
+<li> 如果只是修改了静态变量，瞬态变量（transient修饰的变量），反序列化不受影响，无需修改版本号；</li>
+<li> 如果修改了非瞬态变量，则可能导致反序列化失败。如果新类中实例变量的类型与序列化时类的类型不一致，则会反序列化失败，这时候需要更改serialVersionUID。如果只是新增了实例变量，则反序列化回来新增的是默认值；如果减少了实例变量，反序列化时会忽略掉减少的实例变量。</li>
+</ol>
+<h1 id="Serializable序列化会有什么问题？"><a href="#Serializable序列化会有什么问题？" class="headerlink" title="Serializable序列化会有什么问题？"></a>Serializable序列化会有什么问题？</h1><p>当程序试图序列化一个对象时，会先检查此对象是否已经序列化过，只有此对象从未（在此虚拟机）被序列化过，才会将此对象序列化为字节序列输出。</p>
+<p>如果序列化一个可变对象（对象内的内容可更改）后，更改了对象内容，再次序列化，并不会再次将此对象转换为字节序列，而只是保存序列化编号。</p>
+<h1 id="Serializable反序列化会有什么问题？"><a href="#Serializable反序列化会有什么问题？" class="headerlink" title="Serializable反序列化会有什么问题？"></a>Serializable反序列化会有什么问题？</h1><p>反序列化不会调用类的构造函数，会调用第一个非序列化父类的无参构造函数</p>
+<p>这点可以通过 ObjectInputSteam -&gt; readObject -&gt; readObject0 -&gt; readOrdinaryObject -&gt; desc.newInstance() 得知，desc是ObjectStreamClass的实例，ObjectStreamClass.newInstance()的注释是：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/**</span><br><span class="line"> * Creates a new instance of the represented class.  If the class is</span><br><span class="line"> * externalizable, invokes its public no-arg constructor; otherwise, if the</span><br><span class="line"> * class is serializable, invokes the no-arg constructor of the first</span><br><span class="line"> * non-serializable superclass.  Throws UnsupportedOperationException if</span><br><span class="line"> * this class descriptor is not associated with a class, if the associated</span><br><span class="line"> * class is non-serializable or if the appropriate no-arg constructor is</span><br><span class="line"> * inaccessible/unavailable.</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<p>这样设计的目的是什么？</p>
+<p>推测是因为如果调用了类的构造函数，如果构造函数中有改变类属性状态的代码，反序列化后就得不到序列化时的状态了，所以不能调用。</p>
+<h1 id="Serializable的具体序列化执行过程中哪些地方用到了大量的反射？"><a href="#Serializable的具体序列化执行过程中哪些地方用到了大量的反射？" class="headerlink" title="Serializable的具体序列化执行过程中哪些地方用到了大量的反射？"></a>Serializable的具体序列化执行过程中哪些地方用到了大量的反射？</h1><p>因为没有在代码层面手动写入特定字段，序列化都是全自动化的，在ObjectOutputStream底层都是通过反射获取类的字段信息，defaultWriteFields()读取类的属性字段是通过Field，Field从ObjectStreamClass的getFields()得来，getFields()内部还是反射。</p>
+<p>ObjectInputStream也通过反射创建类。</p>
+<h1 id="Serializable的具体序列化执行过程中哪些地方创建了大量的临时对象？会有什么问题？"><a href="#Serializable的具体序列化执行过程中哪些地方创建了大量的临时对象？会有什么问题？" class="headerlink" title="Serializable的具体序列化执行过程中哪些地方创建了大量的临时对象？会有什么问题？"></a>Serializable的具体序列化执行过程中哪些地方创建了大量的临时对象？会有什么问题？</h1><p>创建大量的临时对象会引发频繁的垃圾回收，垃圾回收会stop the world，进而引起进程的卡顿。</p>
+<p>Serializable的序列化过程比较复杂，有很多对象参与工作，例如ObjectStreamClass。</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>Serializable</tag>
+        <tag>序列化</tag>
+        <tag>serialVersionUID</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.10.正则表达式匹配（困难）</title>
     <url>/LeetCode/LeetCode.10.%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%8C%B9%E9%85%8D%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/regular-expression-matching/">LeetCode.10.正则表达式匹配（困难）</a></p>
@@ -5983,43 +6037,6 @@
       </tags>
   </entry>
   <entry>
-    <title>TCP报文编号</title>
-    <url>/%E7%BD%91%E7%BB%9C/TCP%E6%8A%A5%E6%96%87%E7%BC%96%E5%8F%B7/</url>
-    <content><![CDATA[<h1 id="TCP为什么要给报文编号？不编号会有什么问题？"><a href="#TCP为什么要给报文编号？不编号会有什么问题？" class="headerlink" title="TCP为什么要给报文编号？不编号会有什么问题？"></a>TCP为什么要给报文编号？不编号会有什么问题？</h1><p>保证报文的不重复、不丢失、不乱序。</p>
-<p>作为一个可靠的传输层协议，TCP 需要在不稳定的网络环境中构建一个可靠的传输层，网络的不确定性可能会导致数据包的缺失和顺序颠倒等问题，常见的问题可能包括：</p>
-<ul>
-<li>数据包被发送方多次发送造成数据的重复；</li>
-<li>数据包在传输的过程中被路由或者其他节点丢失；</li>
-<li>数据包到达接收方可能无法按照发送顺序；</li>
-</ul>
-<p>为了解决上述这些可能存在的问题，TCP 协议要求发送方在数据包中加入『序列号』字段，有了数据包对应的序列号，我们就可以：</p>
-<ul>
-<li>接收方可以通过序列号对重复的数据包进行去重；</li>
-<li>发送方会在对应数据包未被 ACK 时进行重复发送；</li>
-<li>接收方可以根据数据包的序列号对它们进行重新排序；</li>
-</ul>
-<p>序列号在 TCP 连接中有着非常重要的作用，初始序列号作为 TCP 连接的一部分也需要在三次握手期间进行初始化，由于 TCP 连接通信的双方都需要获得初始序列号，所以它们其实需要向对方发送 SYN 控制消息并携带自己期望的初始化序列号 SEQ，对方在收到 SYN 消息之后会通过 ACK 控制消息以及 SEQ+1 来进行确认。</p>
-<h1 id="为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？"><a href="#为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？" class="headerlink" title="为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？"></a>为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？</h1><p>TCP把数据视为一个无结构但有序的字节流，序号建立在传输的字节流之上，而不建立在报文段之上。</p>
-<p>接收端给发送端的Ack确认只会确认最后一个连续的包，比如，发送端发了1,2,3,4,5一共五份数据，接收端收到了1，2，于是回ack 3，然后收到了4（注意此时3没收到），此时的TCP会怎么办？我们要知道，因为正如前面所说的，SeqNum和Ack是以字节数为单位，所以ack的时候，不能跳着确认，只能确认最大的连续收到的包，不然，发送端就以为之前的都收到了。</p>
-<p>因为TCP有窗口拥塞控制，窗口的拥塞是基于字节的，所以必须给字节编号，如果给数据包编号，拥塞窗口无法调节大小。</p>
-<h1 id="TCP三次握手中的初始序号是固定的吗？"><a href="#TCP三次握手中的初始序号是固定的吗？" class="headerlink" title="TCP三次握手中的初始序号是固定的吗？"></a>TCP三次握手中的初始序号是固定的吗？</h1><p>不是固定的，是动态增长+随机选取，可以避免相邻的TCP会话的序列号有重叠，否则并不知道报文是旧连接的还是新连接的</p>
-<p>如果初始序号是固定的，攻击者就可以很容易伪造TCP报文发起攻击，初始序号需要动态生成，提高攻击成本。</p>
-<p>源IP地址、源端口、目标IP地址、目标端口唯一确定一个TCP会话，允许刚释放的TCP端口重用，如果旧会话中的分组报文仍然在网络中，新会话建立后可能会收到旧会话产生的分组报文，如果序号是一直递增的，就可以分辨出报文是属于旧会话的还是新会话的。</p>
-<p>关于ISN的初始化。ISN是不能hard code的，不然会出问题的——比如：如果连接建好后始终用1来做ISN，如果client发了30个segment过去，但是网络断了，于是 client重连，又用了1做ISN，但是之前连接的那些包到了，于是就被当成了新连接的包，此时，client的Sequence Number 可能是3，而Server端认为client端的这个号是30了。全乱了。<a href="http://tools.ietf.org/html/rfc793">RFC793</a>中说，ISN会和一个假的时钟绑在一起，这个时钟会在每4微秒对ISN做加一操作，直到超过2^32，又从0开始。这样，一个ISN的周期大约是4.55个小时。因为，我们假设我们的TCP Segment在网络上的存活时间不会超过Maximum Segment Lifetime（缩写为MSL – <a href="http://en.wikipedia.org/wiki/Maximum_Segment_Lifetime">Wikipedia语条</a>），所以，只要MSL的值小于4.55小时，那么，我们就不会重用到ISN。</p>
-<h1 id="报文编号和确认应答机制存在什么问题？"><a href="#报文编号和确认应答机制存在什么问题？" class="headerlink" title="报文编号和确认应答机制存在什么问题？"></a>报文编号和确认应答机制存在什么问题？</h1><p>队头阻塞。</p>
-<p>TCP数据包是有序传输，中间一个数据包丢失，会等待该数据包重传，造成后面的数据包的阻塞。</p>
-]]></content>
-      <categories>
-        <category>网络</category>
-      </categories>
-      <tags>
-        <tag>网络</tag>
-        <tag>TCP</tag>
-        <tag>报文编号</tag>
-        <tag>队头阻塞</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>TCP如何保证可靠性</title>
     <url>/%E7%BD%91%E7%BB%9C/TCP%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E5%8F%AF%E9%9D%A0%E6%80%A7/</url>
     <content><![CDATA[<h1 id="TCP是什么？"><a href="#TCP是什么？" class="headerlink" title="TCP是什么？"></a>TCP是什么？</h1><p>面向连接、保证可靠性传输、基于字节流的传输层通信协议</p>
@@ -6079,6 +6096,43 @@
       <tags>
         <tag>网络</tag>
         <tag>TCP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>TCP报文编号</title>
+    <url>/%E7%BD%91%E7%BB%9C/TCP%E6%8A%A5%E6%96%87%E7%BC%96%E5%8F%B7/</url>
+    <content><![CDATA[<h1 id="TCP为什么要给报文编号？不编号会有什么问题？"><a href="#TCP为什么要给报文编号？不编号会有什么问题？" class="headerlink" title="TCP为什么要给报文编号？不编号会有什么问题？"></a>TCP为什么要给报文编号？不编号会有什么问题？</h1><p>保证报文的不重复、不丢失、不乱序。</p>
+<p>作为一个可靠的传输层协议，TCP 需要在不稳定的网络环境中构建一个可靠的传输层，网络的不确定性可能会导致数据包的缺失和顺序颠倒等问题，常见的问题可能包括：</p>
+<ul>
+<li>数据包被发送方多次发送造成数据的重复；</li>
+<li>数据包在传输的过程中被路由或者其他节点丢失；</li>
+<li>数据包到达接收方可能无法按照发送顺序；</li>
+</ul>
+<p>为了解决上述这些可能存在的问题，TCP 协议要求发送方在数据包中加入『序列号』字段，有了数据包对应的序列号，我们就可以：</p>
+<ul>
+<li>接收方可以通过序列号对重复的数据包进行去重；</li>
+<li>发送方会在对应数据包未被 ACK 时进行重复发送；</li>
+<li>接收方可以根据数据包的序列号对它们进行重新排序；</li>
+</ul>
+<p>序列号在 TCP 连接中有着非常重要的作用，初始序列号作为 TCP 连接的一部分也需要在三次握手期间进行初始化，由于 TCP 连接通信的双方都需要获得初始序列号，所以它们其实需要向对方发送 SYN 控制消息并携带自己期望的初始化序列号 SEQ，对方在收到 SYN 消息之后会通过 ACK 控制消息以及 SEQ+1 来进行确认。</p>
+<h1 id="为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？"><a href="#为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？" class="headerlink" title="为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？"></a>为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？</h1><p>TCP把数据视为一个无结构但有序的字节流，序号建立在传输的字节流之上，而不建立在报文段之上。</p>
+<p>接收端给发送端的Ack确认只会确认最后一个连续的包，比如，发送端发了1,2,3,4,5一共五份数据，接收端收到了1，2，于是回ack 3，然后收到了4（注意此时3没收到），此时的TCP会怎么办？我们要知道，因为正如前面所说的，SeqNum和Ack是以字节数为单位，所以ack的时候，不能跳着确认，只能确认最大的连续收到的包，不然，发送端就以为之前的都收到了。</p>
+<p>因为TCP有窗口拥塞控制，窗口的拥塞是基于字节的，所以必须给字节编号，如果给数据包编号，拥塞窗口无法调节大小。</p>
+<h1 id="TCP三次握手中的初始序号是固定的吗？"><a href="#TCP三次握手中的初始序号是固定的吗？" class="headerlink" title="TCP三次握手中的初始序号是固定的吗？"></a>TCP三次握手中的初始序号是固定的吗？</h1><p>不是固定的，是动态增长+随机选取，可以避免相邻的TCP会话的序列号有重叠，否则并不知道报文是旧连接的还是新连接的</p>
+<p>如果初始序号是固定的，攻击者就可以很容易伪造TCP报文发起攻击，初始序号需要动态生成，提高攻击成本。</p>
+<p>源IP地址、源端口、目标IP地址、目标端口唯一确定一个TCP会话，允许刚释放的TCP端口重用，如果旧会话中的分组报文仍然在网络中，新会话建立后可能会收到旧会话产生的分组报文，如果序号是一直递增的，就可以分辨出报文是属于旧会话的还是新会话的。</p>
+<p>关于ISN的初始化。ISN是不能hard code的，不然会出问题的——比如：如果连接建好后始终用1来做ISN，如果client发了30个segment过去，但是网络断了，于是 client重连，又用了1做ISN，但是之前连接的那些包到了，于是就被当成了新连接的包，此时，client的Sequence Number 可能是3，而Server端认为client端的这个号是30了。全乱了。<a href="http://tools.ietf.org/html/rfc793">RFC793</a>中说，ISN会和一个假的时钟绑在一起，这个时钟会在每4微秒对ISN做加一操作，直到超过2^32，又从0开始。这样，一个ISN的周期大约是4.55个小时。因为，我们假设我们的TCP Segment在网络上的存活时间不会超过Maximum Segment Lifetime（缩写为MSL – <a href="http://en.wikipedia.org/wiki/Maximum_Segment_Lifetime">Wikipedia语条</a>），所以，只要MSL的值小于4.55小时，那么，我们就不会重用到ISN。</p>
+<h1 id="报文编号和确认应答机制存在什么问题？"><a href="#报文编号和确认应答机制存在什么问题？" class="headerlink" title="报文编号和确认应答机制存在什么问题？"></a>报文编号和确认应答机制存在什么问题？</h1><p>队头阻塞。</p>
+<p>TCP数据包是有序传输，中间一个数据包丢失，会等待该数据包重传，造成后面的数据包的阻塞。</p>
+]]></content>
+      <categories>
+        <category>网络</category>
+      </categories>
+      <tags>
+        <tag>网络</tag>
+        <tag>TCP</tag>
+        <tag>报文编号</tag>
+        <tag>队头阻塞</tag>
       </tags>
   </entry>
   <entry>
