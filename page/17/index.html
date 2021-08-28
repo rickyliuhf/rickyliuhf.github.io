@@ -186,184 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B4%A2%E5%BC%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E6%95%B0%E6%8D%AE%E5%BA%93/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B4%A2%E5%BC%95/" class="post-title-link" itemprop="url">数据库索引</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-03-15 20:31:00" itemprop="dateCreated datePublished" datetime="2017-03-15T20:31:00+08:00">2017-03-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E6%95%B0%E6%8D%AE%E5%BA%93/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B4%A2%E5%BC%95/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="数据库/数据库索引/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <span id="more"></span>
-
-<h1 id="索引的作用？"><a href="#索引的作用？" class="headerlink" title="索引的作用？"></a>索引的作用？</h1><p>按某列的条件做查询后（where子句中访问的列），需要线性扫描全表太慢了。</p>
-<p>用B+树实现索引可以在对数时间内完成查询。</p>
-<h1 id="索引为什么不用平衡二叉查找树，要用B树或B-树做索引？"><a href="#索引为什么不用平衡二叉查找树，要用B树或B-树做索引？" class="headerlink" title="索引为什么不用平衡二叉查找树，要用B树或B+树做索引？"></a>索引为什么不用平衡二叉查找树，要用B树或B+树做索引？</h1><p>B树又称多路平衡二叉查找树，一个结点存储多个值，可以降低树的高度，即降低了访问结点的次数，一次访问可以认为是一次IO，降低了IO次数就会提高整体的访问速度。</p>
-<h1 id="为什么不用哈希表做索引？查询时间复杂度不是O-1"><a href="#为什么不用哈希表做索引？查询时间复杂度不是O-1" class="headerlink" title="为什么不用哈希表做索引？查询时间复杂度不是O(1)?"></a>为什么不用哈希表做索引？查询时间复杂度不是O(1)?</h1><ol>
-<li> 哈希索引对于范围查询和排序却无法很好地支持，最终导致全表扫描</li>
-<li> 哈希索引不支持多列联合索引的最左匹配规则</li>
-<li> 如果有大量重复键值的情况下，哈希索引的效率会很低，因为存在哈希碰撞问题</li>
-</ol>
-<h1 id="为什么用B-树做索引而不用B树？"><a href="#为什么用B-树做索引而不用B树？" class="headerlink" title="为什么用B+树做索引而不用B树？"></a>为什么用B+树做索引而不用B树？</h1><p>由于B+树的内部节点只存放键，不存放值，因此，一次读取，可以在内存页中获取更多的键，有利于更快地缩小查找范围。</p>
-<p> B+树的叶节点由一条链相连，因此，当需要进行一次全数据遍历的时候，B+树只需要使用O(logN)时间找到最小的一个节点，然后通过链进行O(N)的顺序遍历即可。</p>
-<p>而B树则需要对树的每一层进行遍历，这会需要更多的内存置换次数，因此也就需要花费更多的时间。</p>
-<h1 id="使用B树做索引的好处？"><a href="#使用B树做索引的好处？" class="headerlink" title="使用B树做索引的好处？"></a>使用B树做索引的好处？</h1><p>B树可以在内部节点同时存储键和值，因此，把频繁访问的数据放在靠近根节点的地方将会大大提高热点数据的查询效率。这种特性使得B树在特定数据重复多次查询的场景中更加高效。</p>
-<h1 id="索引有什么缺点？"><a href="#索引有什么缺点？" class="headerlink" title="索引有什么缺点？"></a>索引有什么缺点？</h1><ol>
-<li> 占用空间，因为会把列的信息都复制一遍</li>
-<li> 插入、修改、删除时需要额外花时间更新索引</li>
-</ol>
-<h1 id="索引适用场景？"><a href="#索引适用场景？" class="headerlink" title="索引适用场景？"></a>索引适用场景？</h1><p>适用查询非常频繁而更新不频繁的列。</p>
-<h2 id="where子句中对列的访问"><a href="#where子句中对列的访问" class="headerlink" title="where子句中对列的访问"></a>where子句中对列的访问</h2><h2 id="order-by"><a href="#order-by" class="headerlink" title="order by"></a>order by</h2><p>当我们使用order by将查询结果按照某个字段排序时，如果该字段没有建立索引，那么执行计划会将查询出的所有数据使用外部排序（将数据从硬盘分批读取到内存使用内部排序，最后合并排序结果），这个操作是很影响性能的，因为需要将查询涉及到的所有数据从磁盘中读到内存（如果单条数据过大或者数据量过多都会降低效率），更无论读到内存之后的排序了。</p>
-<p>但是如果我们对该字段建立索引alter table 表名 add index(字段名)，那么由于索引本身是有序的，因此直接按照索引的顺序和映射关系逐条取出数据即可。而且如果分页的，那么只用取出索引表某个范围内的索引对应的数据，而不用像上述那取出所有数据进行排序再返回某个范围内的数据。（从磁盘取数据是最影响性能的）</p>
-<h2 id="join"><a href="#join" class="headerlink" title="join"></a>join</h2><p>对join语句匹配关系（on）涉及的字段建立索引能够提高效率</p>
-<h2 id="索引覆盖"><a href="#索引覆盖" class="headerlink" title="索引覆盖"></a>索引覆盖</h2><p>如果要查询的字段都建立过索引，那么引擎会直接在索引表中查询而不会访问原始数据（否则只要有一个字段没有建立索引就会做全表扫描），这叫索引覆盖。因此我们需要尽可能的在select后只写必要的查询字段，以增加索引覆盖的几率。</p>
-<h1 id="为什么外键要加索引？"><a href="#为什么外键要加索引？" class="headerlink" title="为什么外键要加索引？"></a>为什么外键要加索引？</h1><p>避免子表上的全表扫描。（外键在子表上，外键对应主表的主键）</p>
-<p>假设删除departments主表id=10的记录，如果employees子表的department_id外键没有索引，那么就会全表扫描employees子表，以确认是否存在department id=10的记录。</p>
-<h1 id="联合索引是什么？"><a href="#联合索引是什么？" class="headerlink" title="联合索引是什么？"></a>联合索引是什么？</h1><p>对多个字段联合创建的索引。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827232210.png"></p>
-<p>只有在查询条件中使用了这些字段的左边字段时，索引才会被使用，使用组合索引时遵循最左前缀集合。</p>
-<p>通俗理解：</p>
-<p>利用索引中的附加列，您可以缩小搜索的范围，但使用一个具有两列的索引 不同于使用两个单独的索引。复合索引的结构与电话簿类似，人名由姓和名构成，电话簿首先按姓氏对进行排序，然后按名字对有相同姓氏的人进行排序。如果您知道姓，电话簿将非常有用；如果您知道姓和名，电话簿则更为有用，但如果您只知道名不姓，电话簿将没有用处。</p>
-<p>所以说创建复合索引时，应该仔细考虑列的顺序。对索引中的所有列执行搜索或仅对前几列执行搜索时，复合索引非常有用；仅对后面的任意列执行搜索时，复合索引则没有用处。</p>
-<p>查英语字典、汉语字典也是这样。</p>
-<h1 id="联合索引的底层实现是怎样的？"><a href="#联合索引的底层实现是怎样的？" class="headerlink" title="联合索引的底层实现是怎样的？"></a>联合索引的底层实现是怎样的？</h1><p>索引的底层是一颗B+树，联合索引当然还是一颗B+树，只不过联合索引的健值数量不是一个，而是多个。</p>
-<p>构建一颗B+树只能根据一个值来构建，因此数据库依据联合索引最左的字段来构建B+树。</p>
-<p>例子：假如创建一个（a,b)的联合索引，那么它的索引树是这样的：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827232238.png"></p>
-<p>可以看到a的值是有顺序的，1，1，2，2，3，3，而b的值是没有顺序的1，2，1，4，1，2。所以b = 2这种查询条件没有办法利用索引，因为联合索引首先是按a排序的，b是无序的。</p>
-<p>同时我们还可以发现在a值相等的情况下，b值又是按顺序排列的，但是这种顺序是相对的。所以最左匹配原则遇上范围查询就会停止，剩下的字段都无法使用索引。例如a = 1 and b = 2 a,b字段都可以使用索引，因为在a值确定的情况下b是相对有序的，而a&gt;1and b=2，a字段可以匹配上索引，但b值不可以，因为a的值是一个范围，在这个范围中b是无序的。</p>
-<p>联合索引会对最左边第一个字段排序，在第一个字段的排序基础上，然后在对第二个字段进行排序，以此类推。</p>
-<p>所以如果要利用到联合索引中靠后列的索引，前面列就必须相等，如果前面列不相等（比如用范围查询），那么后面的列没办法保证顺序，后面列的顺序都是在前面列相等的情况下才保持顺序的。</p>
-<h1 id="为什么表必须有主键，并且推荐使用整型的自增主键？"><a href="#为什么表必须有主键，并且推荐使用整型的自增主键？" class="headerlink" title="为什么表必须有主键，并且推荐使用整型的自增主键？"></a>为什么表必须有主键，并且推荐使用整型的自增主键？</h1><p>不建主键不代表没有主键，没有建主键innodb会帮你选一个字段，一个可以标识唯一的字段，选为默认字段，如果这个字段唯一的话，不重复，可一键唯一索引的话，就会作为类似于唯一索引，用这个字段来作为唯一索引来维护整个表的数据。如果没有，mysql会生成一个唯一的列，类似于rowid，只不过你看不到，他会用生成的这个唯一列，维护B+Tree的结构，查数据的时候还是用B+Tree的结构去查找。</p>
-<h2 id="为什么推荐整型呢？"><a href="#为什么推荐整型呢？" class="headerlink" title="为什么推荐整型呢？"></a>为什么推荐整型呢？</h2><p>我们想象一下查找过程，是把节点load到内存然后在内存里去比较大小，也就是在查找的过程中要不断的去进行数据的比对。假设UUID，既不自增也不是整形。问一下，是整形的1&lt;2比较的效率高还是字符串的“abc”和“abe”比较的效率高呢？显然是前者，因为字符串的比较是转换成ASICI一位一位的比，如果最后一位不一样，比到最后才比较出大小，就比整形比较慢多了，存储空间来说，整形更小。索引越节约资源越好。</p>
-<p>表因为使用UUId（随机ID）作为主键，使数据存储稀疏，这就会出现聚簇索引有可能有比全表扫面更慢，<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827232458.png"></p>
-<p>所以建议使用int的auto_increment作为主键。<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210827232514.png"><br>主键的值是顺序的，所以每一条记录都存储在上一条记录的后面。当达到页的最大填充因子时，下一条记录就会写入新的页中。一旦数据按照这种顺序的方式加载，主键页就会近似于被顺序的记录填满。</p>
-<h2 id="为什么是自增的呢？"><a href="#为什么是自增的呢？" class="headerlink" title="为什么是自增的呢？"></a>为什么是自增的呢？</h2><p>聚簇索引的数据的物理存放顺序与索引顺序是一致的，即：只要索引是相邻的，那么对应的数据一定也是相邻地存放在磁盘上的。如果主键不是自增id，那么可以想象，它会干些什么，不断地调整数据的物理地址、分页，当然也有其他一些措施来减少这些操作，但却无法彻底避免。但，如果是自增的，那就简单了，它只需要一 页一页地写，索引结构相对紧凑，磁盘碎片少，效率也高。</p>
-<h1 id="聚簇索引是什么？"><a href="#聚簇索引是什么？" class="headerlink" title="聚簇索引是什么？"></a>聚簇索引是什么？</h1><p>聚簇索引并不是一种单独的索引类型，而是一种数据存储方式。</p>
-<p>数据库表数据是用B+树来存储组织的，那么这个B+树可以认为是一种索引，这就是聚簇索引。</p>
-<p>索引是针对某一列而言的，一般的聚簇索引就是主键列。</p>
-<p>聚簇索引确定了表数据的物理存储顺序，聚簇索引B+树的叶子结点存储的是整个行数据</p>
-<p>由于聚簇索引规定数据在表中的物理存储顺序，因此一个表只能包含一个聚簇索引。</p>
-<p>聚簇索引类似于电话簿，按姓氏排列数据。汉语字典也是聚簇索引的典型应用，在汉语字典里，索引项是字母+声调，字典正文也是按照先字母再声调的顺序排列。</p>
-<p>当查询使用聚簇索引时，在对应的叶子节点，可以获取到整行数据，因此不用再次进行回表查询。</p>
-<p>如果是普通的索引，B+树的叶子结点存储的行的主键，然后需要再去聚簇索引下去查询一遍，找到完整的行数据，有一个回表查询的过程，所以在聚簇索引上查询会少了回表查询的过程，查询速度快。</p>
-<p>MySQL官方对聚簇索引的解释：</p>
-<p><strong>The InnoDB term for a primary key index</strong>. InnoDB table storage is organized based on the values of the primary key columns, to speed up queries and sorts involving the primary key columns. For best performance, choose the primary key columns carefully based on the most performance-critical queries. Because modifying the columns of the clustered index is an expensive operation, choose primary columns that are rarely or never updated.</p>
-<p>注意标黑的那段话，聚簇索引就是主键的一种术语。</p>
-<h1 id="聚簇索引有什么用？"><a href="#聚簇索引有什么用？" class="headerlink" title="聚簇索引有什么用？"></a>聚簇索引有什么用？</h1><p>聚簇索引对于那些经常要搜索范围值的列特别有效。使用聚簇索引找到包含第一个值的行后，便可以确保包含后续索引值的行在物理相邻。例如，如果应用程序执行的一个查询经常检索某一日期范围内的记录，则使用<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95">聚集索引</a>可以迅速找到包含开始日期的行，然后检索表中所有相邻的行，直到到达结束日期。这样有助于提高此类查询的性能。同样，如果对从表中检索的数据进行排序时经常要用到某一列，则可以将该表在该列上聚簇（物理排序），避免每次查询该列时都进行排序，从而节省成本。</p>
-<p>在聚簇索引下，数据在物理上按顺序排在数据页上，重复值也排在一起，因而在那些包含范围检查(between、&lt;、&lt;=、&gt;、&gt;=)或使用group by或orderby的查询时，一旦找到具有范围中第一个键值的行，具有后续索引值的行保证物理上毗连在一起而不必进一步搜索，避免了大范围扫描，可以大大提高查询速度。</p>
-<h1 id="为什么非聚簇索引结构叶子节点存储的是主键值？"><a href="#为什么非聚簇索引结构叶子节点存储的是主键值？" class="headerlink" title="为什么非聚簇索引结构叶子节点存储的是主键值？"></a>为什么非聚簇索引结构叶子节点存储的是主键值？</h1><p>为了一致性和节省存储空间。已经维护了一套主键索引+数据的B+Tree结构，如果再有其他的非主键索引的话，索引的叶子节点存储的是主键，这是为了节省空间，因为继续存数据的话，那就会导致一份数据存了多份，空间占用就会翻倍。另一方面也是一致性的考虑，都通过主键索引来找到最终的数据，避免维护多份数据导致不一致的情况。</p>
-<h1 id="哪些列适合作为聚簇索引？"><a href="#哪些列适合作为聚簇索引？" class="headerlink" title="哪些列适合作为聚簇索引？"></a>哪些列适合作为聚簇索引？</h1><p>1、主键列,该列在where子句中使用并且插入是随机的。</p>
-<p>2、按范围存取的列，如pri_order &gt; 100 and pri_order &lt; 200。</p>
-<p>3、在group by或order by中使用的列。</p>
-<p>4、不经常修改的列。</p>
-<p>5、在连接操作中使用的列。</p>
-<h1 id="聚簇索引的优点和缺点？"><a href="#聚簇索引的优点和缺点？" class="headerlink" title="聚簇索引的优点和缺点？"></a>聚簇索引的优点和缺点？</h1><h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><ol>
-<li> 适合范围查询</li>
-<li> 适配排序</li>
-<li> 当通过聚簇索引查找目标数据时理论上比非聚簇索引要快，因为非聚簇索引只能定位到对应主键，然后要再回表查询聚簇索引，才能找到完整的行数据。</li>
-</ol>
-<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><p>1.插入速度严重依赖于插入顺序，按照主键的顺序插入是最快的方式，否则将会出现页分裂，严重影响性能。因此，对于InnoDB表，我们一般都会定义一个自增的ID列为主键。</p>
-<p>2.更新主键的代价很高，因为将会导致被更新的行移动。因此，对于InnoDB表，我们一般定义主键为不可更新。</p>
-<p>3.二级索引访问需要两次索引查找，第一次找到主键值，第二次根据主键值找到行数据。</p>
-<p>二级索引的叶节点存储的是主键值，而不是行指针（非聚簇索引存储的是指针或者说是地址），这是为了减少当出现行移动或数据页分裂时二级索引的维护工作，但会让二级索引占用更多的空间。</p>
-<p>4.采用聚簇索引插入新值比采用非聚簇索引插入新值的速度要慢很多，因为插入要保证主键不能重复，判断主键不能重复，采用的方式在不同的索引下面会有很大的性能差距，聚簇索引遍历所有的叶子节点，非聚簇索引也判断所有的叶子节点，但是聚簇索引的叶子节点除了带有主键还有记录值，记录的大小往往比主键要大的多。这样就会导致聚簇索引在判定新记录携带的主键是否重复时进行昂贵的I/O代价。</p>
-<h1 id="二级索引是什么？"><a href="#二级索引是什么？" class="headerlink" title="二级索引是什么？"></a>二级索引是什么？</h1><p>表中的聚簇索引（clustered index ）就是一级索引，除此之外，表上的其他非聚簇索引都是二级索引，又叫辅助索引（secondary indexes）。</p>
-<p>除了聚簇索引以外的所有索引都称为二级索引，二级索引的叶子节点内容是主键的值。</p>
-<p>二级索引没有存储全部的数据，假如二级索引满足查询需求，则直接返回，即为覆盖索引，反之则需要回表去主键索引(聚簇索引)查询。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827233004.png"></p>
-<h1 id="何时使用聚簇索引与非聚簇索引？"><a href="#何时使用聚簇索引与非聚簇索引？" class="headerlink" title="何时使用聚簇索引与非聚簇索引？"></a>何时使用聚簇索引与非聚簇索引？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827233032.png"></p>
-<h1 id="索引的设计原则"><a href="#索引的设计原则" class="headerlink" title="索引的设计原则"></a>索引的设计原则</h1><p>（1）适合索引的列是出现在where子句中的列，或者连接子句中指定的列，即较频繁作为查询条件的字段才去创建索引</p>
-<p>（2）取值离散小、查询中很少涉及、重复值比较多的列，索引效果较差，没有必要在此列建立索引</p>
-<p>（3）使用短索引，如果对长字符串列进行索引，应该指定一个前缀长度，这样能够节省大量索引空间</p>
-<p>（4）不要过度索引。索引需要额外的磁盘空间，并降低写操作的性能。在修改表内容的时候，索引会进行更新甚至重构，索引列越多，这个时间就会越长。所以只保持需要的索引有利于查询即可。</p>
-<p>（5）更新频繁字段不适合创建索引。</p>
-<h1 id="什么情况下索引会失效？"><a href="#什么情况下索引会失效？" class="headerlink" title="什么情况下索引会失效？"></a>什么情况下索引会失效？</h1><ol>
-<li> 不在索引列上做任何操作（计算、函数、（自动or手动）类型转换），会导致索引失效而转向全表扫描</li>
-<li> 存储引擎不能使用索引范围条件右边的列</li>
-<li> 尽量使用覆盖索引（只访问索引的查询（索引列和查询列一致）），减少select *</li>
-<li> mysql在使用不等于（！=或者&lt;&gt;）的时候无法使用索引会导致全表扫描</li>
-<li> is null,is not null也无法使用索引</li>
-<li> like以通配符开头（’%abc…’）mysql索引失效会变成全表扫描的操作。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93-%E8%8C%83%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -395,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:11:40" itemprop="dateModified" datetime="2021-08-28T22:11:40+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -459,6 +281,243 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Java/Java%20Integer%E7%BC%93%E5%AD%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Java/Java%20Integer%E7%BC%93%E5%AD%98/" class="post-title-link" itemprop="url">Java Integer缓存</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-10-25 20:25:00" itemprop="dateCreated datePublished" datetime="2016-10-25T20:25:00+08:00">2016-10-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 22:11:40" itemprop="dateModified" datetime="2021-08-28T22:11:40+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Java/Java%20Integer%E7%BC%93%E5%AD%98/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Java/Java Integer缓存/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h1 id="Integer的缓存机制是怎么回事？"><a href="#Integer的缓存机制是怎么回事？" class="headerlink" title="Integer的缓存机制是怎么回事？"></a>Integer的缓存机制是怎么回事？</h1><p>学会看字节码就知道自动装箱拆箱实际调用的是什么。</p>
+<p>Intellij idea里通过View - Show Bytecode</p>
+<p>以Integer为例</p>
+<p>Integer a = 3;</p>
+<p>字节码指令为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ICONST_3</span><br><span class="line">INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;</span><br><span class="line">ASTORE 3</span><br></pre></td></tr></table></figure>
+
+<p>看到调用的是Integer.valueOf()方法</p>
+<p>Integer.valueOf()内部会用到IntegerCache，默认-128到127的Integer对象都会被缓存，通过valueOf()返回这个范围内的Integer对象都是同一个</p>
+<h1 id="两个值相等的Integer对象，-比较，是否相等？"><a href="#两个值相等的Integer对象，-比较，是否相等？" class="headerlink" title="两个值相等的Integer对象，==比较，是否相等？"></a>两个值相等的Integer对象，==比较，是否相等？</h1><p>要看Integer对象是如何从创建出来的。</p>
+<p>如果Integer是new出来的，==比较对象的内存地址，肯定不相等。</p>
+<p>如果Integer是通过Integer.valueOf()创建出来的，如果值是[-128,127]之间的数，会用缓存的Integer对象，即是同一个Integer对象。</p>
+<p>其中自动装修也会调用Integer.valueOf()方法生成Integer对象，触发自动装箱的代码如 Integer a = 3。</p>
+<h1 id="其他基本类型的包装类是否跟Integer一样都有Cache？"><a href="#其他基本类型的包装类是否跟Integer一样都有Cache？" class="headerlink" title="其他基本类型的包装类是否跟Integer一样都有Cache？"></a>其他基本类型的包装类是否跟Integer一样都有Cache？</h1><p>Java的基本类型有八种：</p>
+<ol>
+<li> 字符类型：char</li>
+<li> 布尔类型：boolean</li>
+<li>数值类型：<ol>
+<li> 整数类型：byte、short、int、long</li>
+<li> 浮点数类型：float、double</li>
+</ol>
+</li>
+</ol>
+<p>整数类型Byte、Short、Integer、Long都有Cache机制，缓存的数值范围都是[-128,127]。</p>
+<p>字符类型Character有Cache机制，缓存范围[0,127]的ASCII字符。</p>
+<p>布尔类型Boolean有Cache机制，定了两个TRUE和FALSE的常量，通过Boolean.valueOf(boolean b)返回的都是这两个常量的其中之一。</p>
+<p>浮点数类型没有Cache机制，valueOf方法都是直接new一个Float或Double对象；某个范围内整数数值是有限个的，所以缓存有意义，命中率也高，而浮点数某个范围内的数值个数是无穷多个，即使做缓存，缓存命中率低，没有起到缓存的作用，反而占用了存储空间，故而浮点数不需要缓存。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/" class="post-title-link" itemprop="url">Java 自动装箱</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-10-23 22:03:00" itemprop="dateCreated datePublished" datetime="2016-10-23T22:03:00+08:00">2016-10-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 22:11:40" itemprop="dateModified" datetime="2021-08-28T22:11:40+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Java/Java 自动装箱、Integer缓存/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h1 id="自动装箱和自动拆箱是怎么回事？实际发生了什么？"><a href="#自动装箱和自动拆箱是怎么回事？实际发生了什么？" class="headerlink" title="自动装箱和自动拆箱是怎么回事？实际发生了什么？"></a>自动装箱和自动拆箱是怎么回事？实际发生了什么？</h1><p>如下的Java代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Integer a = 10;</span><br><span class="line">int b = a;</span><br></pre></td></tr></table></figure>
+<p>在Intellij idea里通过View - Show Bytecode查看字节码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">L0</span><br><span class="line"> LINENUMBER 3 L0</span><br><span class="line"> BIPUSH 10</span><br><span class="line"> INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;</span><br><span class="line"> ASTORE 1</span><br><span class="line">L1</span><br><span class="line"> LINENUMBER 4 L1</span><br><span class="line"> ALOAD 1</span><br><span class="line"> INVOKEVIRTUAL java/lang/Integer.intValue ()I</span><br><span class="line"> ISTORE 2</span><br></pre></td></tr></table></figure>
+<p>可以看到int对象的自动装箱，是调用了Integer.valueOf()方法，自动拆卸是调用了Integer.intValue()。</p>
+<h1 id="触发自动装箱和自动拆箱的场景有哪些？"><a href="#触发自动装箱和自动拆箱的场景有哪些？" class="headerlink" title="触发自动装箱和自动拆箱的场景有哪些？"></a>触发自动装箱和自动拆箱的场景有哪些？</h1><p>自动装箱的场景：<br>    1. 基本类型赋值给包装类型，如 Integer a = 10;</p>
+<p>自动拆箱的场景：<br>    1. 包装类型赋值给基本类型<br>    2. 参与表达式运算或算数运算</p>
+<p>进行 <code>=</code> 赋值操作（装箱或拆箱）<br>进行<code>+</code>，<code>-</code>，<code>*</code>，<code>/</code>混合运算 （拆箱）<br>进行<code>&gt;</code>, <code>&lt;</code>, <code>==</code>比较运算（拆箱） </p>
+<p>当 <code>==</code>运算符的两个操作数都是 包装器类型的引用，则是比较指向的是否是同一个对象。</p>
+<p>而如果其中有一个操作数是表达式（即包含算术运算）则比较的是数值（即会触发自动拆箱的过程）调用equals进行比较（装箱）。</p>
+<p>ArrayList,HashMap等集合类 添加基础类型数据时，因为集合只能添加引用类型（装箱）。</p>
+<h1 id="自动装箱解决了什么问题？有哪些场景不得不使用包装类？"><a href="#自动装箱解决了什么问题？有哪些场景不得不使用包装类？" class="headerlink" title="自动装箱解决了什么问题？有哪些场景不得不使用包装类？"></a>自动装箱解决了什么问题？有哪些场景不得不使用包装类？</h1><ol>
+<li> 集合类只能使用包装类型，不允许使用基本类型，所以需要有包装类</li>
+<li> 由于基本类型没有null的状态，所以需要有包装类对象能够表示null</li>
+<li> 泛型只针对类，不能使用基本类型</li>
+<li> 反射也只能反射类，不能反射基本类型</li>
+<li> 包装类一旦创建，是值不可变的对象，不容易赋值出错</li>
+</ol>
+<h1 id="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"><a href="#为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？" class="headerlink" title="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"></a>为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？</h1><p>这需要从Java虚拟机的角度解释性能问题，当执行一个方法中的算术运算时，虚拟机是基于栈帧中的操作数栈进行数据的读取和运算。</p>
+<p>如果参与运算的是基本数据类型，由于基本类型大小是固定的，一来本身占用空间小，二来基本类型的变量值可以直接存入局部变量表，直接从局部变量表中读取数据速度很快（跟访问对象的方式相比而言）；基本也不需要垃圾回收，局部变量表是位于栈帧中的，方法执行完毕，栈帧出栈，基本数据类型的变量都会自动释放内存。</p>
+<p>如果参与运算的是包装类对象，对象创建后是位于堆中，对象在局部变量表中存储的只是对象指针，指向其在堆中的位置，运算时先访问局部变量表，再访问堆中的对象内部的值，比直接访问局部变量表要多一次额外的访问；其次创建对象占用了额外的空间，因为对象比基本类型要多耗费额外的空间，如对象头等；再次对象创建后还需要垃圾回收，增加了垃圾回收的负担。</p>
+<p>基本类型在方法传参时是值的拷贝传递，对象类型在方法传参是引用传递。</p>
+<h1 id="Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？"><a href="#Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？" class="headerlink" title="Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？"></a>Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？</h1><p>Kotlin只是在语法层面屏蔽了内部的实现细节，在编译时，还是会把Kotlin的基本数据类型对应的对象类型还是换转为Java基本数据类型，这可以通过反编译Kotlin为Java后看出，这样Kotlin更加彻底面向对象，更加的函数式</p>
+<h1 id="Kotiln中整数数组为什么不直接使用-Array-而是-IntArray-？"><a href="#Kotiln中整数数组为什么不直接使用-Array-而是-IntArray-？" class="headerlink" title="Kotiln中整数数组为什么不直接使用 Array 而是 IntArray ？"></a>Kotiln中整数数组为什么不直接使用 Array<Int> 而是 IntArray ？</h1><p>IntArray最终会编译成int[]。</p>
+<p>Array<Int>最终会编译成Integer[]。</p>
+<p>可以通过查看字节码来验证这一点。</p>
+<p>包装类型遍历时会有自动装箱和拆箱的过程，会创建大量的临时对象，加重了垃圾回收的负担，垃圾回收多了会引发stop the world，进而会增加卡顿的几率。</p>
+<h1 id="自动装箱和拆箱会产生什么问题？"><a href="#自动装箱和拆箱会产生什么问题？" class="headerlink" title="自动装箱和拆箱会产生什么问题？"></a>自动装箱和拆箱会产生什么问题？</h1><p>在自动拆卸时，当包装类变量为null时，会发生空指针异常，例如</p>
+<p>Integer a  = null;</p>
+<p>int b = a;</p>
+<p>第二句赋值时会调用a.intValue()，然而a是null，会抛出空指针异常。</p>
+<p>自动装箱会创建包装类对象，如果在大的循环中有自动装箱的发生，会创建很多临时的无用的包装类对象，增加了垃圾回收的负担，垃圾回收会引发stop the world停止所有的线程工作，导致系统的吞吐量降低。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Java/Java%20Serializable%E5%BA%8F%E5%88%97%E5%8C%96/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -490,7 +549,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:11:40" itemprop="dateModified" datetime="2021-08-28T22:11:40+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -627,7 +686,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:11:40" itemprop="dateModified" datetime="2021-08-28T22:11:40+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -723,7 +782,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 22:07:44" itemprop="dateModified" datetime="2021-08-28T22:07:44+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 22:11:40" itemprop="dateModified" datetime="2021-08-28T22:11:40+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -854,7 +913,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">165</span>
+          <span class="site-state-item-count">166</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
