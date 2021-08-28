@@ -186,6 +186,336 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/" class="post-title-link" itemprop="url">B树、B+树</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-07-05 20:00:00" itemprop="dateCreated datePublished" datetime="2018-07-05T20:00:00+08:00">2018-07-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/B树、B+树/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="B和B-里的B是什么意思"><a href="#B和B-里的B是什么意思" class="headerlink" title="B和B+里的B是什么意思?"></a>B和B+里的B是什么意思?</h1><p>B是Balanced的缩写，平衡的意思。</p>
+<p>全称可以叫多路（多叉）平衡查找（搜索）树。</p>
+<h2 id="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"><a href="#多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？" class="headerlink" title="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"></a>多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？</h2><p>由于平衡二叉查找树只有两个分叉，查询叶子结点需要访问$log_2{n}$次节点，即树的高度。</p>
+<p>如果要减少查找次数，就要让树变矮一点。</p>
+<p>那么一个节点有多个分叉，同时让一个节点存储多个值，就可以降低树的高度，进而减少节点平均的访问次数。</p>
+<h2 id="减少节点的访问次数有什么好处？"><a href="#减少节点的访问次数有什么好处？" class="headerlink" title="减少节点的访问次数有什么好处？"></a>减少节点的访问次数有什么好处？</h2><p>访问节点的成本可能非常大，减少访问节点的次数，就可以降低总的访问成本。</p>
+<p>例如访问IO比访问内存要慢的多，文件系统中普遍采用多路平衡查找树作为存储数据的结构。</p>
+<h2 id="B树与B-的区别？"><a href="#B树与B-的区别？" class="headerlink" title="B树与B+的区别？"></a>B树与B+的区别？</h2><p>B树与B+共同点：</p>
+<ol>
+<li> 都是一个节点按顺序存储多个值</li>
+<li> 每个节点可以有多个分叉</li>
+</ol>
+<p>B树独有：</p>
+<ol>
+<li> 非叶子节点存储了数据，非叶子节点占用空间更大</li>
+</ol>
+<p>B+树独有：</p>
+<ol>
+<li> 非叶子节点不存数据只存索引信息，数据全部在叶子节点，非叶子节点占用空间更小</li>
+<li> 叶子结点用双向链表相连，便于顺序查找</li>
+</ol>
+<h2 id="B-树作为数据库索引有什么优势？"><a href="#B-树作为数据库索引有什么优势？" class="headerlink" title="B+树作为数据库索引有什么优势？"></a>B+树作为数据库索引有什么优势？</h2><p>非叶子结点的大小可以设置为一页，内存从外存读取数据是按页读取的，这样就减少了IO访问次数。</p>
+<p>结点内部是有序的，可以再用二分查找去查找元素。</p>
+<p>B+树的非叶子结点不存储数据，只存键，这样同样空间大小可以存的键就更多，非叶子结点的数量就会减少，IO访问次数也就变少了。</p>
+<p>B+树的叶子结点用双链表链接，这样对区间查询友好，只需要通过非叶结点查找到区间范围，然后顺序遍历即可，可以减少对非叶结点的访问，进而减少IO访问次数。因为由于虚拟内存机制，非叶结点加载到内存后，可能也会被置换到外存，减少对非叶结点的访问次数，也就降低了置换次数，置换是需要IO访问的。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://draveness.me/whys-the-design-mysql-b-plus-tree/">为什么 MySQL 使用 B+ 树</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/v_july_v/article/details/6530142">从B树、B+树、B*树谈到R 树</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/svL_yNmNJ-wj9aGjtO_Yww">拜托，别再问我什么是B+树 了</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_21993785/java/article/details/80580679">B+Tree在数据库索引上拥有独特优势的原因（为什么比红黑树更合适）</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/" class="post-title-link" itemprop="url">Java集合类-ArrayDeque</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-14 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-14T20:00:00+08:00">2018-05-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-ArrayDeque/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ArrayDeque特点"><a href="#ArrayDeque特点" class="headerlink" title="ArrayDeque特点"></a>ArrayDeque特点</h1><p>基于数组的双端队列。</p>
+<p>分别用两个索引指针指示头尾元素位置，循环访问数组元素，访问头尾元素时间复杂度为O(1)</p>
+<p>容量不够时扩容，容量增加一倍。</p>
+<p>也可以当栈使用。</p>
+<h1 id="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"><a href="#有了LinkedList实现双端队列，为什么还要用ArrayDeque？" class="headerlink" title="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"></a>有了LinkedList实现双端队列，为什么还要用ArrayDeque？</h1><p>数组在内存中是连续存储的，CPU访问内存数据具有空间局部性特点，数组对CPU缓存很友好，可以大大提升访问速度。</p>
+<p>链表每个节点存储位置是分散不连续的，CPU缓存命中率低，CPU访问主存次数增加，速度慢。</p>
+<p>所以需要栈和队列时，优先选择用ArrayDeque。</p>
+<h1 id="ArrayDeque缺点"><a href="#ArrayDeque缺点" class="headerlink" title="ArrayDeque缺点"></a>ArrayDeque缺点</h1><ol>
+<li> ArrayDeque较于链表的方式的缺点就是容量不够时需要扩容，耗费O(n)的时间</li>
+<li> 删除元素后不会缩容，所以不适合数据量变化大且长期处于少数据状态的情况，会浪费空间</li>
+</ol>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/6163166/why-is-arraydeque-better-than-linkedlist">Why is ArrayDeque better than LinkedList</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/PG6NOMgXS6Slh0aXRv9W-g">死磕 java集合之ArrayDeque源码分析</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/" class="post-title-link" itemprop="url">Java集合类-CopyOnWriteArrayList</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-13 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-13T20:00:00+08:00">2018-05-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-CopyOnWriteArrayList/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ArrayList存在什么问题？"><a href="#ArrayList存在什么问题？" class="headerlink" title="ArrayList存在什么问题？"></a>ArrayList存在什么问题？</h1><p>ArrayList是线程不安全的。</p>
+<p>可以用Collections.synchronizedList()加全局独占锁保证线程安全，但在读多写少的情况下，多线程读之间互斥降低了系统吞吐量。</p>
+<p>如果读与读之间不互斥，写与写、写与读才互斥，这样可以保证最大的吞吐量，这就是CopyOnWriteArrayList。</p>
+<h1 id="CopyOnWriteArrayList保证线程安全的原理？"><a href="#CopyOnWriteArrayList保证线程安全的原理？" class="headerlink" title="CopyOnWriteArrayList保证线程安全的原理？"></a>CopyOnWriteArrayList保证线程安全的原理？</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Appends the specified element to the end of this list.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> e element to be appended to this list</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; (as specified by &#123;<span class="doctag">@link</span> Collection#add&#125;)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Object[] elements = getArray();</span><br><span class="line">        <span class="keyword">int</span> len = elements.length;</span><br><span class="line">        Object[] newElements = Arrays.copyOf(elements, len + <span class="number">1</span>);</span><br><span class="line">        newElements[len] = e;</span><br><span class="line">        setArray(newElements);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">get</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> get(getArray(), index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果用读写锁保证并发，可以保证读读之间没有阻塞等待，但有线程写数据时，读线程必须阻塞等待，这保证了每次都都可以读到最新修改的值。</p>
+<p>CopyOnWriteArrayList牺牲了读的实时性，读操作不上锁，只在写数据时使用ReentrantLock上锁，写数据时会把原数组拷贝到新的数组中，写数据的同时再有线程读数据，读到的是之前数组的值，不保证数据实时性，只保证最终结果一致性，牺牲了数据实时性，换取了读操作没有阻塞等待。</p>
+<p>对数据实时性要求很高的需求，不要使用CopyOnWriteArrayList。</p>
+<p>线程1在add数据时，线程2随后get数据，不一定能获取到线程1刚add的的元素，因为线程1可能还没执行完。</p>
+<h1 id="CopyOnWriteArrayList存在什么问题？"><a href="#CopyOnWriteArrayList存在什么问题？" class="headerlink" title="CopyOnWriteArrayList存在什么问题？"></a>CopyOnWriteArrayList存在什么问题？</h1><ol>
+<li> 读数据不是实时的，读的时候可能正在写数据，读不到最新的值，也不会阻塞等待，适合读多写少的场景</li>
+<li> 每次写数据都要复制整个数组，如果写操作频繁，会频繁触发垃圾回收，垃圾回收又会导致线程停顿，造成APP卡顿变多</li>
+</ol>
+<h1 id="CopyOnWriteArrayList适用场景？"><a href="#CopyOnWriteArrayList适用场景？" class="headerlink" title="CopyOnWriteArrayList适用场景？"></a>CopyOnWriteArrayList适用场景？</h1><ol>
+<li> 高并发</li>
+<li> 读多写少</li>
+<li> 对读数据实时性要求不高</li>
+</ol>
+<h1 id="为什么没有扩容"><a href="#为什么没有扩容" class="headerlink" title="为什么没有扩容?"></a>为什么没有扩容?</h1><p>因为每次add元素都要拷贝数组，这个时间消耗是必须的，所以也没必要扩容了，拷贝数据到一个恰好比原数组多一个位置的新数组。</p>
+<h1 id="Vector有什么问题"><a href="#Vector有什么问题" class="headerlink" title="Vector有什么问题?"></a>Vector有什么问题?</h1><ol>
+<li> Vector是线程安全的列表，底层实现也是数组，但是几乎每一个方法都加上了synchonized，多线程读操作之间会互斥，读多写少的情况下，吞吐量不高</li>
+<li> Vector扩容，容量是翻倍，指数增长，ArrayList只增长为原来的1.5倍，更节约空间。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayList/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +547,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -337,7 +667,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -445,7 +775,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -651,7 +981,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -812,7 +1142,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -935,7 +1265,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1065,7 +1395,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1366,377 +1696,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/http2%E3%80%81quic/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%BD%91%E7%BB%9C/http2%E3%80%81quic/" class="post-title-link" itemprop="url">http2、quic</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-04-05 20:31:00" itemprop="dateCreated datePublished" datetime="2018-04-05T20:31:00+08:00">2018-04-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/http2%E3%80%81quic/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/http2、quic/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="tcp队头阻塞是什么？"><a href="#tcp队头阻塞是什么？" class="headerlink" title="tcp队头阻塞是什么？"></a>tcp队头阻塞是什么？</h1><p>tcp是按字节有序传输的，如果发送方发送了一连串的报文，中间有个报文没有收到ACK确认，会一直等待超时然后重传报文，发送方的滑动窗口一直不能移动，导致不能发送更多的报文。</p>
-<p>这样http请求之间就不是独立的，会互相影响。</p>
-<h1 id="http队头阻塞是什么？"><a href="#http队头阻塞是什么？" class="headerlink" title="http队头阻塞是什么？"></a>http队头阻塞是什么？</h1><p>多个http请求只能顺序请求，因为http请求和响应没有编号，同时执行多个请求，不按顺序返回响应，客户端无法分辨是哪个响应对应哪个请求，这样如果前面的请求处理较慢，后面的请求都会被阻塞。</p>
-<h1 id="http2解决了什么？"><a href="#http2解决了什么？" class="headerlink" title="http2解决了什么？"></a>http2解决了什么？</h1><ol>
-<li> http报文分片</li>
-<li> http header压缩</li>
-<li> 支持服务端推送</li>
-<li> 基于TLS实现安全传输（与https相同）</li>
-</ol>
-<h2 id="报文分片"><a href="#报文分片" class="headerlink" title="报文分片"></a>报文分片</h2><p>http报文是纯文本的，http2报文是二进制字节流，对报文进行了分片并编号，相当于把tcp的报文分段编号实现搬到应用层。</p>
-<p>同一个tcp连接可以同时传输多个http报文分片，实现多路复用，解决http请求对头阻塞问题。</p>
-<h2 id="服务端推送"><a href="#服务端推送" class="headerlink" title="服务端推送"></a>服务端推送</h2><p>客户端请求一个html，服务端可以把相关的css、png等资源一同返回给客户端，减少客户端请求次数。</p>
-<h1 id="QUIC解决了什么？"><a href="#QUIC解决了什么？" class="headerlink" title="QUIC解决了什么？"></a>QUIC解决了什么？</h1><p>Quick UDP Internet Connection</p>
-<p>基于udp实现，在应用层实现传输可靠性，非常的自由灵活。</p>
-<p>主要改进：</p>
-<ol>
-<li> 快速握手</li>
-<li> 避免对头阻塞的多路复用</li>
-<li> 连接迁移</li>
-</ol>
-<h2 id="快速握手"><a href="#快速握手" class="headerlink" title="快速握手"></a>快速握手</h2><p>在HTTPS协议中，由于TCP和TLS都各需要自3次握手，导致连接建立过程较为复杂和耗时，降低了HTTPS的效率。</p>
-<p>QUIC选择UDP来作为其底层协议，就可以将连接建立和密钥协商的过程合二为一，简化操作流程，提高连接效率。</p>
-<p>在连接建立成功后， 客户端会缓存起来原始的连接信息等。 在接下来与相同的服务器建立连接的过程中， 客户端能够在不增加额外RTT的情况下建立一个加密的连接，数据要发送的数据可以在握手的包中捎带着发送过去，而不用等待服务器的回复，从而实现0RTT。</p>
-<p>所以，所谓QUIC的0RTT是指在建立连接之后，后续发送数据都不需要增加额外的RTT时间，最开始的握手还是需要1RTT的时间消耗的。</p>
-<h2 id="多路复用"><a href="#多路复用" class="headerlink" title="多路复用"></a>多路复用</h2><h3 id="为什么quic能解决队头阻塞？"><a href="#为什么quic能解决队头阻塞？" class="headerlink" title="为什么quic能解决队头阻塞？"></a>为什么quic能解决队头阻塞？</h3><ul>
-<li>http队头阻塞用http分片解决。</li>
-<li>tcp队头阻塞用udp协议代替，在应用层重新实现可靠传输机制，http请求之间是独立互不影响的。</li>
-</ul>
-<h3 id="为什么不修改tcp协议解决队头阻塞？"><a href="#为什么不修改tcp协议解决队头阻塞？" class="headerlink" title="为什么不修改tcp协议解决队头阻塞？"></a>为什么不修改tcp协议解决队头阻塞？</h3><ol>
-<li> tcp在操作系统层面实现，普及比较麻烦。</li>
-<li> 各种网络中间设备（如网关、防火墙、代理服务器）为了效率最优化，保持了约定俗成的潜规则，如某些防火墙只允许特定端口，中间代理会删除报头中不认识的选项字段</li>
-</ol>
-<h2 id="连接迁移"><a href="#连接迁移" class="headerlink" title="连接迁移"></a>连接迁移</h2><p>一个TCP连接由四元组确定：源ip、源端口号、目标ip、目标端口号。</p>
-<p>任何一个元素变化了，tcp就要重新建立连接，例如移动手机在移动网络和WiFi切换，重新建立连接会带来数据传输时延。</p>
-<p>而QUIC的连接不依赖于四元组，以一个随机ID作为标识，这样IP或端口发生变化，只要连接ID不变，还是认为是一个连接，应用层感知不到底层tcp连接的变化，这样把影响就降到最低。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Task/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Android/Android%20Task/" class="post-title-link" itemprop="url">Android Task</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-04-03 20:31:00" itemprop="dateCreated datePublished" datetime="2018-04-03T20:31:00+08:00">2018-04-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Android/Android%20Task/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android Task/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在日常开发过程中，只要涉及到activity，那么对task相关的东西总会或多或少的接触到，不过对task相关的一些配置的作用理解的还不是很透彻，官方文档在细节上说的也不够清楚，要透彻理解还是得自己写demo实践检验，所以便有了这篇总结。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/Android/Android%20Task/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/https%E3%80%81TLS%E6%8F%A1%E6%89%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%BD%91%E7%BB%9C/https%E3%80%81TLS%E6%8F%A1%E6%89%8B/" class="post-title-link" itemprop="url">https、TLS握手</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-04-03 20:31:00" itemprop="dateCreated datePublished" datetime="2018-04-03T20:31:00+08:00">2018-04-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/https%E3%80%81TLS%E6%8F%A1%E6%89%8B/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/https、TLS握手/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="http传输数据存在哪些问题？"><a href="#http传输数据存在哪些问题？" class="headerlink" title="http传输数据存在哪些问题？"></a>http传输数据存在哪些问题？</h1><p>不使用SSL/TLS的HTTP通信，就是不加密的通信。所有信息明文传播，带来了三大风险。<br>（1） 窃听风险（eavesdropping）：第三方可以获知通信内容。<br>（2） 篡改风险（tampering）：第三方可以修改通信内容。<br>（3） 冒充风险（pretending）：第三方可以冒充他人身份参与通信。</p>
-<p>Charles抓包就是中间人拦截监听。</p>
-<h1 id="https新引入了什么？解决了什么问题？"><a href="#https新引入了什么？解决了什么问题？" class="headerlink" title="https新引入了什么？解决了什么问题？"></a>https新引入了什么？解决了什么问题？</h1><ol>
-<li> 数据加密传输，防止窃听</li>
-<li> 校验数据，防止篡改</li>
-<li> 使用数字证书验证身份，防止身份被冒充</li>
-</ol>
-<h1 id="https缺点是什么？"><a href="#https缺点是什么？" class="headerlink" title="https缺点是什么？"></a>https缺点是什么？</h1><ol>
-<li> TLS握手增加了建立连接的时间</li>
-<li> 每次加密解密数据需要占用额外的时间和CPU资源</li>
-</ol>
-<h1 id="https如何保证数据的完整性？"><a href="#https如何保证数据的完整性？" class="headerlink" title="https如何保证数据的完整性？"></a>https如何保证数据的完整性？</h1><p>http验证数据完整性存在的问题：</p>
-<p>http通信是不加密的，即使对报文做了哈希摘要，并放在报文中传输，http通信内容被拦截篡改后，一并把哈希摘要也改掉，客户端是没办法识别报文是否被篡改。</p>
-<p>https改进：</p>
-<p>对报文的哈希摘要进行加密，另一方接受到报文并重新计算报文的哈希摘要，再对比解密后的摘要，检查是否一致。</p>
-<p>对摘要的加密用对称加密，对称加密的秘钥用非对称加密方式加解密。</p>
-<h1 id="https加密过程是怎样的？"><a href="#https加密过程是怎样的？" class="headerlink" title="https加密过程是怎样的？"></a>https加密过程是怎样的？</h1><p>采用对称加密方式加密报文，对称加密的秘钥用非对称加密方式加密后传递给通信双方。</p>
-<p>因为：</p>
-<ol>
-<li> 对称加密速度快，但是通信双方都需要同一个密钥，密钥在传输过程中被窃取泄露后就不安全了</li>
-<li> 非对称加密速度慢，但私钥不公开，只传递公钥出去，可以保证安全性</li>
-</ol>
-<h1 id="https通信过程是怎样的？"><a href="#https通信过程是怎样的？" class="headerlink" title="https通信过程是怎样的？"></a>https通信过程是怎样的？</h1><ol>
-<li> 客户端发起SSL/TLS连接</li>
-<li> 客户端获取服务端数字证书，验证服务端身份</li>
-<li> 两端生成随机数，由服务端根据随机数，用私钥加密得到对称加密密钥</li>
-<li> http的请求和响应报文都用对称加密密钥加密后再传输</li>
-</ol>
-<h1 id="SSL-TLS握手过程是怎样的？"><a href="#SSL-TLS握手过程是怎样的？" class="headerlink" title="SSL/TLS握手过程是怎样的？"></a>SSL/TLS握手过程是怎样的？</h1><p>有四次握手</p>
-<ol>
-<li> 客户端请求建立SSL链接，并向服务端发送一个随机数–Client random和客户端支持的加密方法，比如RSA公钥加密，此时是明文传输。</li>
-<li> 服务端回复一种客户端支持的加密方法、一个随机数–Server random、授信的服务器证书和非对称加密的公钥。</li>
-<li> 客户端收到服务端的回复后利用服务端的公钥，加上新的随机数–Premaster secret 通过服务端下发的公钥及加密方法进行加密，发送给服务器。</li>
-<li> 服务端收到客户端的回复，利用已知的加解密方式进行解密，同时利用Client random、Server random和Premaster secret通过一定的算法生成HTTP链接数据传输的对称加密key – session key。</li>
-</ol>
-<p>此后的HTTP链接数据传输即通过对称加密方式进行加密传输。</p>
-<h2 id="为什么需要3个随机数作为对称加密的密钥？"><a href="#为什么需要3个随机数作为对称加密的密钥？" class="headerlink" title="为什么需要3个随机数作为对称加密的密钥？"></a>为什么需要3个随机数作为对称加密的密钥？</h2><p>不管是客户端还是服务器，都需要随机数，这样生成的密钥才不会每次都一样。由于SSL协议中证书是静态的，因此十分有必要引入一种随机因素来保证协商出来的密钥的随机性。</p>
-<p>对于RSA密钥交换算法来说，pre-master-key本身就是一个随机数，再加上hello消息中的随机，三个随机数通过一个密钥导出器最终导出一个对称密钥。</p>
-<p>pre master的存在，在于SSL协议不信任每个主机都能产生完全随机的随机数，如果随机数不随机，那么pre master secret就有可能被猜出来，那么仅适用pre master secret作为密钥就不合适了，因此必须引入新的随机因素，那么客户端和服务器加上pre master secret三个随机数一同生成的密钥就不容易被猜出了，一个伪随机可能完全不随机，可是是三个伪随机就十分接近随机了，每增加一个自由度，随机性增加的可不是一。</p>
-<h1 id="还有什么密钥交换算法？"><a href="#还有什么密钥交换算法？" class="headerlink" title="还有什么密钥交换算法？"></a>还有什么密钥交换算法？</h1><p>ECDHE ：“短暂 - 椭圆曲线 - 迪菲 - 赫尔曼”算法（ephemeral Elliptic Curve Diffie–Hellman）。</p>
-<p>RSA 是比较传统的密钥交换算法，它不具备前向安全的性质，因此现在很少服务器使用的。而 ECDHE 算法具有前向安全，所以被广泛使用。</p>
-<p>客户端和服务端双方在一个可以被窥探的信道下给双方建立起一个相同的密钥。</p>
-<p>发送公有的参数，保留私有的参数，双方经过计算可以得到一个一致的结果，一致的结果可以用作会话密钥，这个运算的逆运算复杂度很高，所以不会泄露。</p>
-<p><strong>为什么参数被窥探后还能够达到保密的效果?</strong></p>
-<p>Deffie-Hellman算法的有效性依赖于计算离散对数的难度。</p>
-<h1 id="https总共有多少次握手了？"><a href="#https总共有多少次握手了？" class="headerlink" title="https总共有多少次握手了？"></a>https总共有多少次握手了？</h1><p>SSL是在TCP之上，在HTTP之下。</p>
-<p>TCP先三次握手建立连接，然后SSL四次握手，最后进行HTTP通信。</p>
-<h1 id="https的身份认证是如何实现的？"><a href="#https的身份认证是如何实现的？" class="headerlink" title="https的身份认证是如何实现的？"></a>https的身份认证是如何实现的？</h1><p>通过数字证书验证通信方身份。</p>
-<h2 id="如何验证证书是否可信？"><a href="#如何验证证书是否可信？" class="headerlink" title="如何验证证书是否可信？"></a>如何验证证书是否可信？</h2><p>服务端证书都是向CA这类的权威机构申请的，CA颁发证书时会用根证书的私钥去给申请的证书的哈希摘要做加密作为申请的证书的签名。</p>
-<p>客户端收到服务端的证书后，查询证书的颁发者，一直寻找到根证书，然后用根证书里的公钥去解密其颁发的证书的签名，对比证书文件的哈希摘要是否一致，这样就验证了身份没有被篡改。</p>
-<h2 id="数字证书验证身份的过程是怎样的？"><a href="#数字证书验证身份的过程是怎样的？" class="headerlink" title="数字证书验证身份的过程是怎样的？"></a>数字证书验证身份的过程是怎样的？</h2><p>服务端向CA（数字证书认证机构）提交自己的公钥申请数字证书，CA颁发证书，并把服务端的公钥内嵌在颁发的证书中，再对整个证书计算哈希摘要，用一个私钥加密这个哈希摘要，确保了申请到的证书在传输过程中可以校验证书是否被篡改，校验是通过CA提供的根证书里的公钥解密服务端证书中的哈希摘要，再计算服务端证书文件的哈希摘要，对比两者是否一致，根证书一般已事先内嵌客户端。</p>
-<p>证书可以有信任链。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827203913.png"></p>
-<h1 id="https单向认证是什么？"><a href="#https单向认证是什么？" class="headerlink" title="https单向认证是什么？"></a>https单向认证是什么？</h1><ol>
-<li> 客户端发起请求，传送支持的TLS版本、摘要算法、随机数等信息</li>
-<li> 服务端返回确认的TLS版本、摘要算法，并再发送生成的随机数、服务端的证书</li>
-<li> 客户端验证证书是否可信，不可信则弹窗警告，可信则用随机数生成一个用于对称加密的密钥，用于接下来加密报文，用服务端证书的公钥加密发送给服务端</li>
-<li> 服务端接收到会话密钥，用私钥解密，得到会话密钥，返回ACK确认消息</li>
-</ol>
-<h1 id="https双向认证是什么？"><a href="#https双向认证是什么？" class="headerlink" title="https双向认证是什么？"></a>https双向认证是什么？</h1><p>单向认证是客户端验证服务端的证书来检验服务端身份是否合法。</p>
-<p>双向认证是服务端也要求验证客户端的证书来检验客户端的身份是否合法。服务端会在发送证书给客户端时，要求客户端也发送证书给服务端。</p>
-<p>双向认证使用场景：</p>
-<p>使用网上银行可能需要在电脑上插U盾之类的东西，就是生成客户端证书的。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/10/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><a class="extend next" rel="next" href="/page/12/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/10/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><a class="extend next" rel="next" href="/page/12/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1804,7 +1767,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">158</span>
+          <span class="site-state-item-count">162</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1817,7 +1780,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">189</span>
+        <span class="site-state-item-count">194</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

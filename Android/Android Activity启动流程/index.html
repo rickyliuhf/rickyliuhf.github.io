@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Activity的启动流程是怎样的？ 为什么Activity生命周期函数是运行在UI线程的?因为ActivityManagerService通过Binder通信给App进程的IApplicationThread这个Binder对象发送Activity生命周期的事件，而IApplicationThread是执行在Binder线程池中的，Activity生命周期函数需要执行在主线程，所以需要通过App">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android Activity启动流程">
+<meta property="og:url" content="http://rickyqliu.github.io/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="Activity的启动流程是怎样的？ 为什么Activity生命周期函数是运行在UI线程的?因为ActivityManagerService通过Binder通信给App进程的IApplicationThread这个Binder对象发送Activity生命周期的事件，而IApplicationThread是执行在Binder线程池中的，Activity生命周期函数需要执行在主线程，所以需要通过App">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/picportal/pic/raw/master/img/20210828194324.png">
+<meta property="article:published_time" content="2018-07-23T13:13:00.000Z">
+<meta property="article:modified_time" content="2021-08-28T11:47:56.893Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Activity启动">
+<meta property="article:tag" content="ApplicationThread">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/picportal/pic/raw/master/img/20210828194324.png">
+
+<link rel="canonical" href="http://rickyqliu.github.io/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Android Activity启动流程 | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android Activity启动流程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-07-23 21:13:00" itemprop="dateCreated datePublished" datetime="2018-07-23T21:13:00+08:00">2018-07-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android Activity启动流程/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Activity的启动流程是怎样的？"><a href="#Activity的启动流程是怎样的？" class="headerlink" title="Activity的启动流程是怎样的？"></a>Activity的启动流程是怎样的？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828194324.png"></p>
+<h1 id="为什么Activity生命周期函数是运行在UI线程的"><a href="#为什么Activity生命周期函数是运行在UI线程的" class="headerlink" title="为什么Activity生命周期函数是运行在UI线程的?"></a>为什么Activity生命周期函数是运行在UI线程的?</h1><p>因为ActivityManagerService通过Binder通信给App进程的IApplicationThread这个Binder对象发送Activity生命周期的事件，而IApplicationThread是执行在Binder线程池中的，Activity生命周期函数需要执行在主线程，所以需要通过App进程的Handler转发一下，以执行在App进程的主线程。</p>
+<h1 id="ApplicationThread的作用是什么？"><a href="#ApplicationThread的作用是什么？" class="headerlink" title="ApplicationThread的作用是什么？"></a>ApplicationThread的作用是什么？</h1><p>ApplicationThread是ActivityThread的内部类，继承ApplicationThreadNative,也是一个Binder对象。在此处它是作为IApplicationThread对象的server端等待client端的请求然后进行处理，最大的client就是AMS。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationThread</span> <span class="keyword">extends</span> <span class="title">ApplicationThreadNative</span> </span>&#123;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">    schedulePauseActivity()</span><br><span class="line">    scheduleStopActivity()</span><br><span class="line">    scheduleResumeActivity()</span><br><span class="line">    scheduleSendResult()</span><br><span class="line">    scheduleLaunchActivity()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看出来它继承了ApplicationThreadNative的,并且它内部有非常多的scheduleXXX的方法，这些 schedulexxx的方法会进一步的通过往外发送消息给ActivityThread的mH这个消息队列来做处理。</p>
+<h1 id="两个Activity相互跳转的生命周期？"><a href="#两个Activity相互跳转的生命周期？" class="headerlink" title="两个Activity相互跳转的生命周期？"></a>两个Activity相互跳转的生命周期？</h1><p>A Activity跳转到B Activity</p>
+<p>A.onPause() -&gt; B.onCreate() -&gt; B.onStart() -&gt; B.onResume() -&gt; A.onStop()</p>
+<p>B Activity返回到A Activity</p>
+<p>B.onPause() -&gt; A.onStart() -&gt; A.onResume() -&gt; B.onStop() -&gt; B.onDestroy()</p>
+<p>一言以蔽之：</p>
+<ol>
+<li> 旧页面的onPause调用过后，才会调用新页面的onCreate</li>
+<li> 要进入的页面的onResume调用后，才会调用之前页面的onStop</li>
+</ol>
+<h1 id="什么情况下Activity会重建？"><a href="#什么情况下Activity会重建？" class="headerlink" title="什么情况下Activity会重建？"></a>什么情况下Activity会重建？</h1><p>用户期望 Activity 的界面状态在整个配置变更（例如旋转或切换到多窗口模式）期间保持不变。但是，默认情况下，系统会在发生此类配置更改时销毁 Activity，从而清除存储在 Activity 实例中的任何界面状态。同样，如果用户暂时从您的应用切换到其他应用，并在稍后返回您的应用，他们也希望界面状态保持不变。但是，当用户离开应用且您的 Activity 停止时，系统可能会销毁该应用的进程。</p>
+<h1 id="Activity重建的时候怎么保存和恢复参数？"><a href="#Activity重建的时候怎么保存和恢复参数？" class="headerlink" title="Activity重建的时候怎么保存和恢复参数？"></a>Activity重建的时候怎么保存和恢复参数？</h1><ol>
+<li> onSaveInstance、onRestoreInstance方法，把对象序列化传递到Bundle对象中</li>
+<li> 单例存储。</li>
+<li> 数据持久化，重建后再读取。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.github.io/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/" title="Android Activity启动流程">http://rickyqliu.github.io/Android/Android Activity启动流程/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Activity%E5%90%AF%E5%8A%A8/" rel="tag"># Activity启动</a>
+              <a href="/tags/ApplicationThread/" rel="tag"># ApplicationThread</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Android/Android%20Zygote/" rel="prev" title="Android Zygote">
+      <i class="fa fa-chevron-left"></i> Android Zygote
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Gradle/Gradle%E4%B9%8BTransform/" rel="next" title="Gradle之Transform">
+      Gradle之Transform <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Activity%E7%9A%84%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">Activity的启动流程是怎样的？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88Activity%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%87%BD%E6%95%B0%E6%98%AF%E8%BF%90%E8%A1%8C%E5%9C%A8UI%E7%BA%BF%E7%A8%8B%E7%9A%84"><span class="nav-number">2.</span> <span class="nav-text">为什么Activity生命周期函数是运行在UI线程的?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ApplicationThread%E7%9A%84%E4%BD%9C%E7%94%A8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">ApplicationThread的作用是什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A4%E4%B8%AAActivity%E7%9B%B8%E4%BA%92%E8%B7%B3%E8%BD%AC%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">两个Activity相互跳转的生命周期？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8BActivity%E4%BC%9A%E9%87%8D%E5%BB%BA%EF%BC%9F"><span class="nav-number">5.</span> <span class="nav-text">什么情况下Activity会重建？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Activity%E9%87%8D%E5%BB%BA%E7%9A%84%E6%97%B6%E5%80%99%E6%80%8E%E4%B9%88%E4%BF%9D%E5%AD%98%E5%92%8C%E6%81%A2%E5%A4%8D%E5%8F%82%E6%95%B0%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">Activity重建的时候怎么保存和恢复参数？</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">Follow your heart</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">162</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">194</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu-blog.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.github.io/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/";
+    this.page.identifier = "Android/Android Activity启动流程/";
+    this.page.title = "Android Activity启动流程";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu-blog.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

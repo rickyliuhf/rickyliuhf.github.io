@@ -1,6 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Android Activity启动流程</title>
+    <url>/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/</url>
+    <content><![CDATA[<h1 id="Activity的启动流程是怎样的？"><a href="#Activity的启动流程是怎样的？" class="headerlink" title="Activity的启动流程是怎样的？"></a>Activity的启动流程是怎样的？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828194324.png"></p>
+<h1 id="为什么Activity生命周期函数是运行在UI线程的"><a href="#为什么Activity生命周期函数是运行在UI线程的" class="headerlink" title="为什么Activity生命周期函数是运行在UI线程的?"></a>为什么Activity生命周期函数是运行在UI线程的?</h1><p>因为ActivityManagerService通过Binder通信给App进程的IApplicationThread这个Binder对象发送Activity生命周期的事件，而IApplicationThread是执行在Binder线程池中的，Activity生命周期函数需要执行在主线程，所以需要通过App进程的Handler转发一下，以执行在App进程的主线程。</p>
+<h1 id="ApplicationThread的作用是什么？"><a href="#ApplicationThread的作用是什么？" class="headerlink" title="ApplicationThread的作用是什么？"></a>ApplicationThread的作用是什么？</h1><p>ApplicationThread是ActivityThread的内部类，继承ApplicationThreadNative,也是一个Binder对象。在此处它是作为IApplicationThread对象的server端等待client端的请求然后进行处理，最大的client就是AMS。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationThread</span> <span class="keyword">extends</span> <span class="title">ApplicationThreadNative</span> </span>&#123;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">    schedulePauseActivity()</span><br><span class="line">    scheduleStopActivity()</span><br><span class="line">    scheduleResumeActivity()</span><br><span class="line">    scheduleSendResult()</span><br><span class="line">    scheduleLaunchActivity()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看出来它继承了ApplicationThreadNative的,并且它内部有非常多的scheduleXXX的方法，这些 schedulexxx的方法会进一步的通过往外发送消息给ActivityThread的mH这个消息队列来做处理。</p>
+<h1 id="两个Activity相互跳转的生命周期？"><a href="#两个Activity相互跳转的生命周期？" class="headerlink" title="两个Activity相互跳转的生命周期？"></a>两个Activity相互跳转的生命周期？</h1><p>A Activity跳转到B Activity</p>
+<p>A.onPause() -&gt; B.onCreate() -&gt; B.onStart() -&gt; B.onResume() -&gt; A.onStop()</p>
+<p>B Activity返回到A Activity</p>
+<p>B.onPause() -&gt; A.onStart() -&gt; A.onResume() -&gt; B.onStop() -&gt; B.onDestroy()</p>
+<p>一言以蔽之：</p>
+<ol>
+<li> 旧页面的onPause调用过后，才会调用新页面的onCreate</li>
+<li> 要进入的页面的onResume调用后，才会调用之前页面的onStop</li>
+</ol>
+<h1 id="什么情况下Activity会重建？"><a href="#什么情况下Activity会重建？" class="headerlink" title="什么情况下Activity会重建？"></a>什么情况下Activity会重建？</h1><p>用户期望 Activity 的界面状态在整个配置变更（例如旋转或切换到多窗口模式）期间保持不变。但是，默认情况下，系统会在发生此类配置更改时销毁 Activity，从而清除存储在 Activity 实例中的任何界面状态。同样，如果用户暂时从您的应用切换到其他应用，并在稍后返回您的应用，他们也希望界面状态保持不变。但是，当用户离开应用且您的 Activity 停止时，系统可能会销毁该应用的进程。</p>
+<h1 id="Activity重建的时候怎么保存和恢复参数？"><a href="#Activity重建的时候怎么保存和恢复参数？" class="headerlink" title="Activity重建的时候怎么保存和恢复参数？"></a>Activity重建的时候怎么保存和恢复参数？</h1><ol>
+<li> onSaveInstance、onRestoreInstance方法，把对象序列化传递到Bundle对象中</li>
+<li> 单例存储。</li>
+<li> 数据持久化，重建后再读取。</li>
+</ol>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>Activity启动</tag>
+        <tag>ApplicationThread</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android App启动流程</title>
+    <url>/Android/Android%20App%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/</url>
+    <content><![CDATA[<h1 id="Android系统启动流程是怎样的？"><a href="#Android系统启动流程是怎样的？" class="headerlink" title="Android系统启动流程是怎样的？"></a>Android系统启动流程是怎样的？</h1><p>当按电源键触发开机，首先会从 ROM 中预定义的地方加载引导程序 BootLoader 到 RAM 中，并执行 BootLoader 程序启动 Linux Kernel， 然后启动用户级别的第一个进程： init 进程。</p>
+<p>init 进程会解析 init.rc 脚本做一些初始化工作，包括挂载文件系统、创建工作目录以及启动系统服务进程等，其中系统服务进程包括 Zygote、service manager、media 等。</p>
+<p>在 Zygote 中会进一步去启动 system_server 进程，然后在 system_server 进程中会启动 AMS、WMS、PMS 等服务，等这些服务启动之后，AMS 中就会打开 Launcher 应用的 home Activity，最终就看到了手机的 “桌面”。</p>
+<p>init.rc中引入了Zygote的启动脚本，Zygote的启动脚本存放在system/core/rootdir目录中，zygote的启动脚本其实也就是用app_process来启动一个java程序。</p>
+<h1 id="SystemServer什么时候被启动？"><a href="#SystemServer什么时候被启动？" class="headerlink" title="SystemServer什么时候被启动？"></a>SystemServer什么时候被启动？</h1><p>android 29源码启动SystemServer流程：</p>
+<p>init进程解析init.rc脚本</p>
+<p>init.rc脚本中有执行app_process程序的代码。</p>
+<p>service zygote /system/bin/app_process32 -Xzygote /system/bin –zygote –start-system-server –socket-name=zygote</p>
+<p>app_process是启动java程序用的，没有指定要运行的类名，还是会走app_process的main方法，源码如下：</p>
+<p><a href="https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/cmds/app_process/app_main.cpp">https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/cmds/app_process/app_main.cpp</a></p>
+<p>main方法中识别到–zygote参数会执行com.android.internal.os.ZygoteInit的Java类的main方法。</p>
+<p>识别到–start-system-server的参数，会执行forkSystemServer方法启动系统服务进程。</p>
+<p>得到系统服务进程的pid后，执行ZygoteInit的handleSystemServerProcess() -&gt;ZygoteInit.zygoteInit() -&gt; RuntimeInit.applicationInit() -&gt; findStaticMain()，最后得到MethodAndArgsCaller，是一个Runnable，返回给ZygoteInit的main()中调用forkSystemServer()的地方执行run()。</p>
+<p>MethodAndArgsCaller的run()里通过反射按照给定参数执行给定的方法，方法是main，是哪个类的main方法？类名是在ZygoteInit的forkSystemServer()指定的，类名是com.android.server.SystemServer。</p>
+<h1 id="Launcher中点击App图标后，App启动流程是怎样的？"><a href="#Launcher中点击App图标后，App启动流程是怎样的？" class="headerlink" title="Launcher中点击App图标后，App启动流程是怎样的？"></a>Launcher中点击App图标后，App启动流程是怎样的？</h1><p>以下时序图基于Android 9.0源码。</p>
+<h2 id="Launcher向AMS发起startActivity请求"><a href="#Launcher向AMS发起startActivity请求" class="headerlink" title="Launcher向AMS发起startActivity请求"></a>Launcher向AMS发起startActivity请求</h2><p>点击桌面App图标，Launcher进程采用Binder IPC向system_server进程的ActivityManagerService发起startActivity请求。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828192213.png"></p>
+<h2 id="zygote进程创建App进程"><a href="#zygote进程创建App进程" class="headerlink" title="zygote进程创建App进程"></a>zygote进程创建App进程</h2><p>system_server进程的AMS接收到请求后，向zygote进程发送创建进程的请求</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828192228.png"></p>
+<h2 id="Zygote进程fork出新的子进程"><a href="#Zygote进程fork出新的子进程" class="headerlink" title="Zygote进程fork出新的子进程"></a>Zygote进程fork出新的子进程</h2><p>即App进程。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828192241.png"></p>
+<h2 id="App进程运行ActivityThread-main"><a href="#App进程运行ActivityThread-main" class="headerlink" title="App进程运行ActivityThread.main()"></a>App进程运行ActivityThread.main()</h2><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828192256.png"></p>
+<h2 id="App进程跨进程绑定ApplicationThread给系统进程的AMS"><a href="#App进程跨进程绑定ApplicationThread给系统进程的AMS" class="headerlink" title="App进程跨进程绑定ApplicationThread给系统进程的AMS"></a>App进程跨进程绑定ApplicationThread给系统进程的AMS</h2><p>AMS做好准备工作后，让App进程创建Application实例，并调用Application的onCreate()。</p>
+<p><strong>为什么要绑定ApplicationThread给AMS？</strong></p>
+<p>ActivityThread.attach()里调用IActivityManager.attachApplication()会把当前ActivityThread实例里的ApplicationThread实例对象传递给AMS，AMS把App进程的ApplicationThread存在ProcessRecord的thread属性中</p>
+<p><strong>ApplicationThread是什么？</strong></p>
+<p>ApplicationThread是一个IBinder对象，是给system_server进程中的AMS要发送数据给App进程时用的，这属于跨进程通信。</p>
+<p>AMS保存了App进程的ApplicationThread后，经过一系列准备，最终调用App进程ActivityThread的handleBindApplication()，这里会调用mInstrumentation.callApplicationOnCreate()</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828192310.png"></p>
+<h2 id="AMS发送启动Activity的请求"><a href="#AMS发送启动Activity的请求" class="headerlink" title="AMS发送启动Activity的请求"></a>AMS发送启动Activity的请求</h2><p>在ActivityManagerService的attachApplication方法中调用了attachApplicationLocked进行绑定，从上面代码可以发现attachApplicationLocked中有两个重要的方法：thread.bindApplication和mStackSupervisor.attachApplicationLocked(app)。thread.bindApplication中的thread其实就是ActivityThread里ApplicationThread对象在AMS的代理对象，故此方法将最终调用ApplicationThread的bindApplication方法。而mStackSupervisor.attachApplicationLocked(app)主要是AMS启动Activity的作用。</p>
+<p>在realStartActivityLocked方法中，创建了ClientTransaction对象并将App进程的ApplicationThread传递进去，接着为ClientTransaction对象添加LaunchActivityItem的callback，最终调用ClientLifecycleManager.scheduleTransaction()启动activity。</p>
+<p>ClientLifecycleManager.scheduleTransaction()内部调用了App进程的ApplicationThread的scheduleTransaction(ClientTransaction)，该方法实际调用了ActivityThread的scheduleTransaction(ClientTransaction)</p>
+<p>ClientTransactionHandler是ActivityThread的父类，所以下面时序图的ClientTransactionHandler代表ActivityThread，H是ActivityThread内部的Handler</p>
+<p>ActivityThread的scheduleTransaction(ClientTransaction)向ActivityThread的Handler发送EXECUTE_TRANSACTION的消息，处理Activity的启动。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828192520.png"></p>
+<h2 id="ActivityThread的Handler处理启动Activity的请求"><a href="#ActivityThread的Handler处理启动Activity的请求" class="headerlink" title="ActivityThread的Handler处理启动Activity的请求"></a>ActivityThread的Handler处理启动Activity的请求</h2><p>ActivityThread的Handler对EXECUTE_TRANSACTION的消息处理主要是执行TransactionExecutor.execute(ClientTransaction)</p>
+<p>TransactionExecutor.execute(ClientTransaction)主要是执行</p>
+<p>executeCallbacks(transaction)</p>
+<p>executeLifecycleState(transaction)</p>
+<p>executeCallbacks()中会取出ClientTransaction的callbacks，对callbacks列表的每一项item执行execute()，callbacks每一项的类型为ClientTransactionItem</p>
+<p><strong>ClientTransaction的callbacks在哪添加的？</strong></p>
+<p>AMS的ActivityStackSupervisor的realStartActivityLocked()中添加的LaunchActivityItem。</p>
+<p>LaunchActivityItem的execute()中会调用ActivityThread的。handleLaunchActivity()，然后调用performLaunchActivity()，在这里通过Instrumentation.newActivity()创建Activity实例，然后调用Activity的onCreate()。</p>
+<p><strong>executeLifecycleState()做了什么？</strong></p>
+<p>获取ClientTransaction的getLifecycleStateRequest()，做Activity生命周期的回调。</p>
+<p>Activity的onStart()、onResume()是在这里触发的。</p>
+<p>具体看源码。</p>
+<p><strong>ClientTransaction的mLifecycleStateRequest是在哪设置的？</strong></p>
+<p>AMS的ActivityStackSupervisor的realStartActivityLocked()中创建了ResumeActivityItem，通过clientTransaction.setLifecycleStateRequest(lifecycleItem)设置添加。</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>App启动</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Android Binder机制</title>
     <url>/Android/Android%20Binder%E6%9C%BA%E5%88%B6/</url>
     <content><![CDATA[<h1 id="Binder机制概述"><a href="#Binder机制概述" class="headerlink" title="Binder机制概述"></a>Binder机制概述</h1><p>Android是基于Linux的，Linux的进程之间的内存地址空间是相互隔离的，进程之间无法直接访问对方的数据，这就需要有一个进程之间都可以访问的地方做数据交换，这就是内核空间。</p>
@@ -261,6 +355,38 @@
       </tags>
   </entry>
   <entry>
+    <title>Android View Touch事件分发</title>
+    <url>/Android/Android%20View%20Touch%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91/</url>
+    <content><![CDATA[<h1 id="事件是如何从屏幕点击最终到达-Activity-的？"><a href="#事件是如何从屏幕点击最终到达-Activity-的？" class="headerlink" title="事件是如何从屏幕点击最终到达 Activity 的？"></a>事件是如何从屏幕点击最终到达 Activity 的？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171545.png"></p>
+<h1 id="CANCEL-事件什么时候会触发？"><a href="#CANCEL-事件什么时候会触发？" class="headerlink" title="CANCEL 事件什么时候会触发？"></a>CANCEL 事件什么时候会触发？</h1><ol>
+<li> View 收到 ACTION_DOWN 事件以后，上一个事件还没有结束（可能因为 APP 的切换、ANR 等导致系统扔掉了后续的事件），这个时候会先执行一次 ACTION_CANCEL。</li>
+<li> 子 View 之前拦截了事件，但是后面父 View 重新拦截了事件，这个时候会给子 View 发送 ACTION_CANCEL 事件。</li>
+</ol>
+<h1 id="如何解决滑动冲突？"><a href="#如何解决滑动冲突？" class="headerlink" title="如何解决滑动冲突？"></a>如何解决滑动冲突？</h1><ul>
+<li>  通过重写父类的 onInterceptTouchEvent 来拦截滑动事件。</li>
+<li>  通过在子类中调用 parent.requestDisallowInterceptTouchEvent 来通知父类是否要拦截事件。</li>
+</ul>
+<h1 id="Touch事件分发流程"><a href="#Touch事件分发流程" class="headerlink" title="Touch事件分发流程"></a>Touch事件分发流程</h1><p>Activity -&gt; Window -&gt; DecorView -&gt; ViewGroup -&gt; View.dispatchTouchEvent()</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171640.png"></p>
+<p>注意点：</p>
+<ul>
+<li>如果在执行ACTION_DOWN时返回false，后面一系列的ACTION_MOVE、ACTION_UP事件都不会执行。</li>
+<li>如果在最上层的View的onTouchEvent在DOWN时间返回true，虽然ViewGroup的onInterceptTouchEvent（）对DOWN事件返回了false，但后续的事件（MOVE、UP）依然会传递给它的onInterceptTouchEvent()</li>
+<li>onInterceptTouchEvent（）一旦返回一次true，就再也不会被调用了。</li>
+<li>当dispatchTouchEvent（）事件分发时，只有前一个事件（如ACTION_DOWN）返回true，才会收到后一个事件（ACTION_MOVE和ACTION_UP）</li>
+<li>dispatchTouchEvent()、 onTouchEvent() 消费事件、终结事件传递（返回true）</li>
+<li>onInterceptTouchEvent 并不能消费事件，它相当于是一个分叉口起到分流导流的作用，对后续的ACTION_MOVE和ACTION_UP事件接收起到非常大的作用。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>Touch事件</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Android View 绘制机制</title>
     <url>/Android/Android%20View%20%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6/</url>
     <content><![CDATA[<h1 id="View绘制整个流程"><a href="#View绘制整个流程" class="headerlink" title="View绘制整个流程"></a>View绘制整个流程</h1><p>Activity走到onResume时，会调用ActivityThread的handleResumeActivity。</p>
@@ -317,6 +443,52 @@
         <tag>DecorView</tag>
         <tag>requestLayout()</tag>
         <tag>invalidate()</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android Zygote</title>
+    <url>/Android/Android%20Zygote/</url>
+    <content><![CDATA[<h1 id="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？"><a href="#为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？" class="headerlink" title="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？"></a>为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？</h1><p>Zygote 作为一个孵化器，可以提前加载一些资源，这样 fork() 时基于 Copy-On-Write 机制创建的其他进程就能直接使用这些资源，而不用重新加载。</p>
+<p>比如 system_server 就可以直接使用 Zygote 中的 JNI 函数、共享库、常用的类、以及主题资源。</p>
+<p>应用在启动的时候需要做很多准备工作，包括启动虚拟机，加载各类系统资源等等，这些都是非常耗时的，如果能在zygote里就给这些必要的初始化工作做好，子进程在fork的时候就能直接共享，那么这样的话效率就会非常高。</p>
+<p>这个就是zygote存在的价值，这一点呢SystemServer是替代不了的，主要是因为SystemServer里跑了一堆系统服务，这些是不能继承到应用进程的。</p>
+<p>而且我们应用进程在启动的时候，内存空间除了必要的资源外，最好是干干净净的，不要继承一堆乱七八糟的东西。</p>
+<p>所以呢，不如给SystemServer和应用进程里都要用到的资源抽出来单独放在一个进程里，也就是这的zygote进程，然后zygote进程再分别孵化出SystemServer进程和应用进程。</p>
+<p>孵化出来之后，SystemServer进程和应用进程就可以各干各的事了。</p>
+<h1 id="Zygote预加载了那些资源？"><a href="#Zygote预加载了那些资源？" class="headerlink" title="Zygote预加载了那些资源？"></a>Zygote预加载了那些资源？</h1><p>Zygote进程，是由init进程通过解析init.rc文件后fork生成的，Zygote进程主要包含：</p>
+<ul>
+<li>加载ZygoteInit类，注册Zygote Socket服务端套接字</li>
+<li>加载虚拟机</li>
+<li>提前加载类preloadClasses</li>
+<li>提前加载资源preloadResouces</li>
+</ul>
+<p>ZygoteInit.preload()</p>
+<p>preloadClasses()用来预加载类<br>会读取配置文件/system/etc/preloaded-classes，部分内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">com.android.internal.util.ParseUtils</span><br><span class="line">com.android.internal.util.Preconditions</span><br><span class="line">dalvik.system.CloseGuard</span><br><span class="line">dalvik.system.DalvikLogHandler</span><br><span class="line">java.io.ByteArrayInputStream</span><br><span class="line">java.io.ByteArrayOutputStream</span><br><span class="line">javax.crypto.AEADBadTagException</span><br><span class="line">javax.crypto.BadPaddingException</span><br><span class="line">org.ccil.cowan.tagsoup.ElementType</span><br><span class="line">org.json.JSONArray</span><br><span class="line">org.json.JSONException</span><br><span class="line">org.w3c.dom.Element</span><br><span class="line">org.w3c.dom.Node</span><br><span class="line">sun.misc.LRUCache</span><br><span class="line">sun.misc.Unsafe</span><br></pre></td></tr></table></figure>
+<p>都是android sdk的类和java包类。</p>
+<p>加载类的方式就是直接Class.forName()<br>// Load and explicitly initialize the given class. Use<br>// Class.forName(String, boolean, ClassLoader) to avoid repeated stack lookups<br>// (to derive the caller’s class-loader). Use true to force initialization, and<br>// null for the boot classpath class-loader (could as well cache the<br>// class-loader of this class in a variable).<br>Class.forName(line, true, null); </p>
+<p>preloadResources()方法加载资源，加载过程就是调用一些Resources类的obtainTypedArray，然后遍历每项资源，调用Resources.getDrawable()，Resources的内部应该有缓存。</p>
+<p>也就是framework.jar和framework-res.jar里的东西。</p>
+<p>每一个app进程都应该公用这些东西，不应该重新加载一遍。</p>
+<h2 id="system-framework-下的各种jar是什么时候加载的？在哪里指定加载的？"><a href="#system-framework-下的各种jar是什么时候加载的？在哪里指定加载的？" class="headerlink" title="/system/framework/下的各种jar是什么时候加载的？在哪里指定加载的？"></a>/system/framework/下的各种jar是什么时候加载的？在哪里指定加载的？</h2><p>在init.rc中export BOOTCLASSPATH</p>
+<h1 id="Zygote进程启动流程"><a href="#Zygote进程启动流程" class="headerlink" title="Zygote进程启动流程"></a>Zygote进程启动流程</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828193745.png"></p>
+<h1 id="Zygote-进程和SystemServer进程通信为什么不采用-Binder-而采用Socket？"><a href="#Zygote-进程和SystemServer进程通信为什么不采用-Binder-而采用Socket？" class="headerlink" title="Zygote 进程和SystemServer进程通信为什么不采用 Binder 而采用Socket？"></a>Zygote 进程和SystemServer进程通信为什么不采用 Binder 而采用Socket？</h1><p>原因是因为fork只能拷贝当前线程，不支持多线程的fork。</p>
+<p>如果zygote使用binder的多线程模型与system_server进程进行通讯的话，fork()出的App进程的binder通讯没法用，那么只能再使用exec()启动一个新进程。</p>
+<p>但是exec()启动的新进程不再包含zygote进程的信息，那这样的就失去了fork的作用了，fork的原理就是copy-on-write机制，zygote进程中已经启动了虚拟机、进行资源和类的预加载以及各种初始化操作，App进程用时拷贝即可。</p>
+<p>所以最终zygote采用的方案就是socket + epoll，然后fork出子进程后再在子进程中启动binder线程池。</p>
+<h1 id="fork为什么不允许多线程？"><a href="#fork为什么不允许多线程？" class="headerlink" title="fork为什么不允许多线程？"></a>fork为什么不允许多线程？</h1><p>fork() 时只会把调用线程拷贝到子进程、其他线程都会立即停止，那如果一个线程在 fork() 前占用了某个互斥量，fork() 后被立即停止，这个互斥量就得不到释放，再去请求该互斥量就会发生死锁了。</p>
+<p>我们知道通过fork创建的一个子进程几乎但不完全与父进程相同。子进程得到与父进程用户级虚拟地址空间相同的（但是独立的）一份拷贝，包括文本、数据和bss段、堆以及用户栈等。子进程还获得与父进程任何打开文件描述符相同的拷贝，这就意味着子进程可以读写父进程中任何打开的文件，父进程和子进程之间最大的区别在于它们有着不同的PID。</p>
+<p>但是有一点需要注意的是，在Linux中，fork的时候只复制当前线程到子进程，在<a href="http://linux.die.net/man/2/fork">fork(2)-Linux Man Page</a>中有着这样一段相关的描述：</p>
+<p>The child process is created with a single thread–the one that called fork(). The entire virtual address space of the parent is replicated in the child, including the states of mutexes, condition variables, and other pthreads objects; the use of pthread_atfork(3) may be helpful for dealing with problems that this can cause.</p>
+<p>也就是说除了调用fork的线程外，其他线程在子进程中“蒸发”了。</p>
+<p>这就是多线程中fork所带来的一切问题的根源所在了。</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>Zygote</tag>
       </tags>
   </entry>
   <entry>

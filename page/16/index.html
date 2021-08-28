@@ -186,6 +186,480 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Handler%E6%9C%BA%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Android/Android%20Handler%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Android Handler机制</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-12 21:32:00" itemprop="dateCreated datePublished" datetime="2017-07-12T21:32:00+08:00">2017-07-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/Android%20Handler%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android Handler机制/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Handler消息机制是怎样的过程？"><a href="#Handler消息机制是怎样的过程？" class="headerlink" title="Handler消息机制是怎样的过程？"></a>Handler消息机制是怎样的过程？</h1><p>Looper.loop()流程：</p>
+<ol>
+<li><p> 通过MessageQueue.next() 取Message，没有消息就阻塞当前线程</p>
+</li>
+<li><p> 拿到Message返回给Looper.loop的调用处，调用Message绑定的Handler的dispatchMessage处理消息。</p>
+</li>
+<li><p> 处理结束又回到第1步，无限循环</p>
+</li>
+</ol>
+<p>每个线程都有各自的Looper，每个Looper有一个MessageQueue</p>
+<p>消息是链表，按时间when排序。</p>
+<h1 id="等待新消息阻塞线程和有新消息产生恢复线程的过程是怎样的？"><a href="#等待新消息阻塞线程和有新消息产生恢复线程的过程是怎样的？" class="headerlink" title="等待新消息阻塞线程和有新消息产生恢复线程的过程是怎样的？"></a>等待新消息阻塞线程和有新消息产生恢复线程的过程是怎样的？</h1><p>调用 MessageQueue.next() 方法的时候会调用 Native 层的 nativePollOnce() 方法进行精准时间的阻塞。在 Native 层，将进入 pullInner() 方法，使用 epoll_wait 阻塞等待以读取管道的通知。如果没有从 Native 层得到消息，那么这个方法就不会返回。此时主线程会释放 CPU 资源进入休眠状态。</p>
+<p>当我们加入消息的时候，会调用 MessageQueue.enqueueMessage() 方法，添加完 Message 后，如果消息队列被阻塞，则会调用 Native 层的 nativeWake() 方法去唤醒。它通过向管道中写入一个消息，结束上述阻塞，触发上面提到的 nativePollOnce() 方法返回，好让加入的 Message 得到分发处理。</p>
+<h1 id="Looper-loop-里面有死循环，为什么没有阻塞主线程？"><a href="#Looper-loop-里面有死循环，为什么没有阻塞主线程？" class="headerlink" title="Looper.loop()里面有死循环，为什么没有阻塞主线程？"></a>Looper.loop()里面有死循环，为什么没有阻塞主线程？</h1><p>loop()里会从消息队列取消息，取不到消息就阻塞当前线程，释放CPU给其他线程使用，有消息时会唤醒阻塞等待的线程。</p>
+<h1 id="IdleHandler是干什么的？"><a href="#IdleHandler是干什么的？" class="headerlink" title="IdleHandler是干什么的？"></a>IdleHandler是干什么的？</h1><p>IdleHandler只有一个方法boolean queueIdle()。</p>
+<p>此方法在MessageQueue.next()中调用，MessageQueue.next()又在Looper.loop()中调用。</p>
+<p>queueIdle()调用时机：</p>
+<p>当前消息队列没有可以处理的消息，进入空闲状态，在阻塞等待新的消息前（nativePollOnce方法会阻塞等待新消息），先调用IdleHandler的queueIdle()。</p>
+<p>返回true表示下一轮处理完消息后还会回调。</p>
+<p>返回false表示这是单次回调，这次回调后不会再回调了。</p>
+<p>有新消息时系统会调用MessageQueue的enqueueMessage()，enqueueMessage()调用nativeWake()，唤醒线程。</p>
+<p>可以向MessageQueue添加多个IdleHandler。</p>
+<h1 id="IdleHandler有什么应用场景？"><a href="#IdleHandler有什么应用场景？" class="headerlink" title="IdleHandler有什么应用场景？"></a>IdleHandler有什么应用场景？</h1><p>可以作为View绘制完成的回调，做启动时间优化。</p>
+<p>Activity的onCreate，onStart，onResume中耗时较短但非必要的代码可以放到IdleHandler中执行，减少启动时间。</p>
+<p>Activity的onResume是在绘制View之前发生的。</p>
+<p>因为在ActivityThread的handleResumeActivity()中，调用performResumeActivity()对应Activity的onResume()，然后调用wm.addView(decor,l)对应绘制。</p>
+<h1 id="postDelayed-Runnable-r-long-delayMillis-是如何实现的？"><a href="#postDelayed-Runnable-r-long-delayMillis-是如何实现的？" class="headerlink" title="postDelayed(Runnable r, long delayMillis)是如何实现的？"></a>postDelayed(Runnable r, long delayMillis)是如何实现的？</h1><p>首先从消息池获取一个Message对象，将Runnable对象放入Message的callback属性中；</p>
+<p>再通过当前时间和延迟时间计算Runnable执行的时间，调用MessageQueue的enqueueMessage()把消息插入消息链表，执行时间会存入Message对象的when属性中，消息链表是按Message的执行时间升序排序的，插入也会插入到符合顺序的位置。</p>
+<h1 id="sendMessage-Message-msg-和post-Runnable-r-有什么区别？"><a href="#sendMessage-Message-msg-和post-Runnable-r-有什么区别？" class="headerlink" title="sendMessage(Message msg)和post(Runnable r)有什么区别？"></a>sendMessage(Message msg)和post(Runnable r)有什么区别？</h1><p>post()会将Runnable放入一个Message对象的callback属性中，还是会转换为Message，本质上没有区别，只不过post要写的参数更少，使用更方便。</p>
+<h1 id="使用Handler有什么要注意的？"><a href="#使用Handler有什么要注意的？" class="headerlink" title="使用Handler有什么要注意的？"></a>使用Handler有什么要注意的？</h1><p>要避免内存泄露，自定义Handler要定义静态内部类，并且用弱引用引用外部对象，避免外部对象在消息池中一直被引用而不能垃圾回收进而导致内存泄露。</p>
+<h1 id="quit和quitSafely的区别？"><a href="#quit和quitSafely的区别？" class="headerlink" title="quit和quitSafely的区别？"></a>quit和quitSafely的区别？</h1><p>quit() 和 quitSafely() 的本质就是让消息队列的 next() 返回 null，以此来退出Looper.loop()。</p>
+<p>quit() 调用后直接终止 Looper，不在处理任何 Message，所有尝试把 Message 放进消息队列的操作都会失败，比如 Handler.sendMessage() 会返回 false，但是存在不安全性，因为有可能有 Message 还在消息队列中没来的及处理就终止 Looper 了。</p>
+<p>quitSafely() 调用后会在所有消息都处理后再终止 Looper，所有尝试把 Message 放进消息队列的操作也都会失败。</p>
+<h1 id="同步消息和异步消息有什么区别？同步屏障（Barrier）是干什么的？"><a href="#同步消息和异步消息有什么区别？同步屏障（Barrier）是干什么的？" class="headerlink" title="同步消息和异步消息有什么区别？同步屏障（Barrier）是干什么的？"></a>同步消息和异步消息有什么区别？同步屏障（Barrier）是干什么的？</h1><p>Handler创建时可以传递一个async的布尔值参数，带这个参数的构造函数只有系统才能调用，我们创建Handler时async传的是false，通过Handler进行sendMessage或post都是同步消息，如果async传true，则通过Handler发送的都是异步消息。</p>
+<p>Handler的sendMessage、post、postDelayed最终都会调用enqueueMessage，这里会判断如果构造Handler时的async传了true，就设置Message.setAsynchronous(true)。</p>
+<p>同步消息和异步消息在没有往消息队列插入同步屏障时没有区别，插入同步屏障后，执行的优先级会有变化。</p>
+<p>MessageQueue里的消息都是按照时间升序排序的，执行也是按时间由小到大的Message依次执行，如果有一个高优先级的消息需要立即执行，如果把新消息时间设置为当前时间，可能有好几个消息都是这样，原来的按时间顺序执行的机制就没办法保证执行的先后顺序，这就需要另外的机制来保证，即同步屏障机制。</p>
+<p>同步屏障也是一个Message对象，但是没有target（没有绑定Handler），通过MessageQueue的postSyncBarrier(long when)方法向消息队列添加。</p>
+<p>在MessageQueue的next()方法中，如果从消息队列取出的是同步屏障的Message（target==null），则从消息队列后面找一个异步消息来执行，如果没找到则一直阻塞等待异步消息。</p>
+<p>应用场景：</p>
+<p>app层无法调用同步屏障，在系统源码里有使用，如ViewRootImpl的schedualeTraversals，向MessageQueue中添加了内存屏障，保证了measure、layout、draw能够优于普通的Message而得到立即执行。</p>
+<h1 id="为什么-View-post-里可以拿到-View-的宽高信息呢？"><a href="#为什么-View-post-里可以拿到-View-的宽高信息呢？" class="headerlink" title="为什么 View.post 里可以拿到 View 的宽高信息呢？"></a>为什么 View.post 里可以拿到 View 的宽高信息呢？</h1><p>View.post 和 Handler.post 的区别就是：</p>
+<ol>
+<li> 如果在 performTraversals 前调用 View.post，则会将消息进行保存，之后在 dispatchAttachedToWindow 的时候通过 ViewRootImpl 中的 Handler 进行调用。</li>
+<li> 如果在 performTraversals 以后调用 View.post，则直接通过 ViewRootImpl 中的 Handler 进行调用。</li>
+</ol>
+<p>因为 View.post 的 Runnable 执行的时候，已经执行过 performTraversals 了，也就是 View 的 measure layout draw 方法都执行过了，自然可以获取到 View 的宽高信息了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20View%20%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Android/Android%20View%20%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Android View 绘制机制</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-05-25 20:32:00" itemprop="dateCreated datePublished" datetime="2017-05-25T20:32:00+08:00">2017-05-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/Android%20View%20%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android View 绘制机制/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="View绘制整个流程"><a href="#View绘制整个流程" class="headerlink" title="View绘制整个流程"></a>View绘制整个流程</h1><p>Activity走到onResume时，会调用ActivityThread的handleResumeActivity。</p>
+<p>在这里会创建DecorView，通过WindowManager添加到PhoneWindow中。</p>
+<p>这里也会创建ViewRootImpl，把DecorView的parent指定为ViewRootImpl。</p>
+<p>再调用DecorView的requestLayout，requestLayout会层层的调用parent的requestLayout，最后走到ViewRootImpl的requestLayout。</p>
+<p>然后走到ViewRootImpl.scheduleTraversals()，注册垂直同步监听。</p>
+<p>当垂直同步信号来临时，去调用ViewRootImpl.doTraversal() .</p>
+<p>再调用ViewRootImpl.performTraversals()，然后依次调用performMeasure()、performLayout()、performDraw()。</p>
+<hr>
+<p>View.invalidate()也会层层调用parent的invalidateChildInParent，最后调用到ViewRootImpl的invalidateChildInParent，然后调用ViewRootImpl.scheduleTraversals()。</p>
+<p>等待垂直同步信号来临时，调用ViewRootImpl.doTraversal()，由于没有给View设置FORCE_LAYOUT的flag，所以不会走measure和layout，只会performDraw()，并且只绘制dirty区域。</p>
+<h1 id="首次-View-的绘制流程是在什么时候触发的？"><a href="#首次-View-的绘制流程是在什么时候触发的？" class="headerlink" title="首次 View 的绘制流程是在什么时候触发的？"></a>首次 View 的绘制流程是在什么时候触发的？</h1><p>ActivityThread.handleResumeActivity 里触发的。</p>
+<p>ActivityThread.handleResumeActivity 里会调用 wm.addView 来添加 DecorView，wm 是 WindowManagerImpl</p>
+<p>最终通过 WindowManagerImpl.addView -&gt; WindowManagerGlobal.addView -&gt; ViewRootImpl.setView -&gt; ViewRootImpl.requestLayout 就触发了第一次 View 的绘制。</p>
+<h1 id="ViewRootImpl-创建的时机？"><a href="#ViewRootImpl-创建的时机？" class="headerlink" title="ViewRootImpl 创建的时机？"></a>ViewRootImpl 创建的时机？</h1><p>ActivityThread.handleResumeActivity -&gt; WindowManagerImpl.addView -&gt; WindowManagerGlobal.addView  中创建ViewRootImpl</p>
+<h1 id="DecorView的创建时机？"><a href="#DecorView的创建时机？" class="headerlink" title="DecorView的创建时机？"></a>DecorView的创建时机？</h1><p>ActivityThread.handleResumeActivity()中ActivityClientRecord.window.getDecorView();</p>
+<p>PhoneWindow.getDecorView()调用installDecor() -&gt; generateDecor()去new DecorView()</p>
+<h1 id="ViewRootImpl-和-DecorView-的关系是什么？"><a href="#ViewRootImpl-和-DecorView-的关系是什么？" class="headerlink" title="ViewRootImpl 和 DecorView 的关系是什么？"></a>ViewRootImpl 和 DecorView 的关系是什么？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172333.png"></p>
+<p>在 ViewRootImpl.setView 里，通过 DecorView.assignParent 把 ViewRootImpl 设置为 DecorView 的 parent。</p>
+<p>所以 ViewRootImpl 和 DecorView 的关系就是 ViewRootImpl 是 DecorView 的 parent。</p>
+<p>因为 DecorView 是我们布局的顶层，现在我们就知道层层调用 requestLayout 等方法是怎么调用到 ViewRootImpl 里的了。</p>
+<h1 id="Activity、PhoneWindow、DecorView、ViewRootImpl-的关系？"><a href="#Activity、PhoneWindow、DecorView、ViewRootImpl-的关系？" class="headerlink" title="Activity、PhoneWindow、DecorView、ViewRootImpl 的关系？"></a>Activity、PhoneWindow、DecorView、ViewRootImpl 的关系？</h1><ul>
+<li>PhoneWindow 其实是 Window 的唯一子类，是 Activity 和 View 交互系统的中间层。</li>
+<li>DecorView 是整个 View 层级的最顶层。</li>
+<li>ViewRootImpl 是 DecorView 的 parent，但是他并不是一个真正的 View，只是继承了 ViewParent 接口，用来掌管 View 的各种事件，包括 requestLayout、invalidate、dispatchInputEvent 等等。</li>
+</ul>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172438.png"></p>
+<h1 id="如何触发重新绘制？"><a href="#如何触发重新绘制？" class="headerlink" title="如何触发重新绘制？"></a>如何触发重新绘制？</h1><p>View的 requestLayout 和 invalidate</p>
+<h1 id="View-requestLayout-流程？"><a href="#View-requestLayout-流程？" class="headerlink" title="View.requestLayout()流程？"></a>View.requestLayout()流程？</h1><p>层层调用 parent 的 requestLayout  ，一直到ViewRootImpl.requestLayout()</p>
+<p>ViewRootImpl.requestLayout() 调用 scheduleTraversals() -&gt; doTraversal() -&gt; performTraversals() 开启绘制流程。</p>
+<p>在 performTraversals 里，就是熟悉的 performMeasure -&gt; performLayout -&gt; performDraw 三个流程了。</p>
+<p>在performDraw View 的绘制过程中，我们可以看到，只有 flag 被设置为 PFLAG_DIRTY_OPAQUE 才会进行绘制（这里划重点）。这也就是大家经常说的 requestLayout 不会引发 draw。</p>
+<h1 id="View-invalidate-流程？"><a href="#View-invalidate-流程？" class="headerlink" title="View.invalidate()流程？"></a>View.invalidate()流程？</h1><p>invalidate -&gt; invalidateInternal  -&gt; parent.invalidateChild</p>
+<p>invalidateChild的while 循环里，会层层计算 parent 的 dirty 区域，最终会调用到 ViewRootImpl.invalidateChildInParent -&gt; ViewRootImpl.invalidateRectOnScreen -&gt; ViewRootImpl.scheduleTraversals -&gt; ViewRootImpl.performDraw -&gt; ViewRootImpl.draw -&gt; DecorView的draw()</p>
+<p>View.draw 方法，根据 PFLAG_DIRTY_OPAQUE flag 去决定是否重新绘制。</p>
+<h1 id="requestLayout-和-invalidate-的区别？"><a href="#requestLayout-和-invalidate-的区别？" class="headerlink" title="requestLayout 和 invalidate 的区别？"></a>requestLayout 和 invalidate 的区别？</h1><p>requestLayout 和 invalidate 都会触发整个绘制流程。但是在 measure 和 layout 过程中，只会对 flag 设置为 FORCE_LAYOUT 的情况进行重新测量和布局，而 draw 只会重绘 flag 为 dirty 的区域。</p>
+<p>requestLayout 是用来设置 FORCE_LAYOUT 标志，invalidate 用来设置 dirty 标志。所以 requestLayout 只会触发 measure 和 layout，invalidate 只会触发 draw。</p>
+<h1 id="requestLayout-一定会触发onMeasure和onLayout吗？"><a href="#requestLayout-一定会触发onMeasure和onLayout吗？" class="headerlink" title="requestLayout 一定会触发onMeasure和onLayout吗？"></a>requestLayout 一定会触发onMeasure和onLayout吗？</h1><p>不一定。</p>
+<p>ViewRootImpl.performMeasure，最终调用的是 View.measure。<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172624.png"><br>measureSpec 和 oldMeasureSpec 不相符的时候才会onMeasure。</p>
+<p>ViewRootImpl.performLayout()：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172646.png"><br>位置有变化才去onLayout。</p>
+<h1 id="PFLAG-DIRTY-OPAQUE是什么意思？"><a href="#PFLAG-DIRTY-OPAQUE是什么意思？" class="headerlink" title="PFLAG_DIRTY_OPAQUE是什么意思？"></a>PFLAG_DIRTY_OPAQUE是什么意思？</h1><p>不透明，实心。</p>
+<p>实心控件：控件的onDraw方法能够保证此控件的所有区域都会被其所绘制的内容完全覆盖。换句话说，通过此控件所属的区域无法看到此控件之下的内容，也就是既没有半透明也没有空缺的部分。</p>
+<h1 id="什么时候View的flag-被设置为-PFLAG-DIRTY-OPAQUE？"><a href="#什么时候View的flag-被设置为-PFLAG-DIRTY-OPAQUE？" class="headerlink" title="什么时候View的flag 被设置为 PFLAG_DIRTY_OPAQUE？"></a>什么时候View的flag 被设置为 PFLAG_DIRTY_OPAQUE？</h1><p>invalidate 会调用 parent.invalidateChild，在这里被赋值的。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172722.png"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20View%20Touch%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Android/Android%20View%20Touch%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91/" class="post-title-link" itemprop="url">Android View Touch事件分发</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-05-22 19:25:00" itemprop="dateCreated datePublished" datetime="2017-05-22T19:25:00+08:00">2017-05-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/Android%20View%20Touch%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android View Touch事件分发/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="事件是如何从屏幕点击最终到达-Activity-的？"><a href="#事件是如何从屏幕点击最终到达-Activity-的？" class="headerlink" title="事件是如何从屏幕点击最终到达 Activity 的？"></a>事件是如何从屏幕点击最终到达 Activity 的？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171545.png"></p>
+<h1 id="CANCEL-事件什么时候会触发？"><a href="#CANCEL-事件什么时候会触发？" class="headerlink" title="CANCEL 事件什么时候会触发？"></a>CANCEL 事件什么时候会触发？</h1><ol>
+<li> View 收到 ACTION_DOWN 事件以后，上一个事件还没有结束（可能因为 APP 的切换、ANR 等导致系统扔掉了后续的事件），这个时候会先执行一次 ACTION_CANCEL。</li>
+<li> 子 View 之前拦截了事件，但是后面父 View 重新拦截了事件，这个时候会给子 View 发送 ACTION_CANCEL 事件。</li>
+</ol>
+<h1 id="如何解决滑动冲突？"><a href="#如何解决滑动冲突？" class="headerlink" title="如何解决滑动冲突？"></a>如何解决滑动冲突？</h1><ul>
+<li>  通过重写父类的 onInterceptTouchEvent 来拦截滑动事件。</li>
+<li>  通过在子类中调用 parent.requestDisallowInterceptTouchEvent 来通知父类是否要拦截事件。</li>
+</ul>
+<h1 id="Touch事件分发流程"><a href="#Touch事件分发流程" class="headerlink" title="Touch事件分发流程"></a>Touch事件分发流程</h1><p>Activity -&gt; Window -&gt; DecorView -&gt; ViewGroup -&gt; View.dispatchTouchEvent()</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171640.png"></p>
+<p>注意点：</p>
+<ul>
+<li>如果在执行ACTION_DOWN时返回false，后面一系列的ACTION_MOVE、ACTION_UP事件都不会执行。</li>
+<li>如果在最上层的View的onTouchEvent在DOWN时间返回true，虽然ViewGroup的onInterceptTouchEvent（）对DOWN事件返回了false，但后续的事件（MOVE、UP）依然会传递给它的onInterceptTouchEvent()</li>
+<li>onInterceptTouchEvent（）一旦返回一次true，就再也不会被调用了。</li>
+<li>当dispatchTouchEvent（）事件分发时，只有前一个事件（如ACTION_DOWN）返回true，才会收到后一个事件（ACTION_MOVE和ACTION_UP）</li>
+<li>dispatchTouchEvent()、 onTouchEvent() 消费事件、终结事件传递（返回true）</li>
+<li>onInterceptTouchEvent 并不能消费事件，它相当于是一个分叉口起到分流导流的作用，对后续的ACTION_MOVE和ACTION_UP事件接收起到非常大的作用。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/RecyclerView%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Android/RecyclerView%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">RecyclerView缓存机制</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-05-05 21:33:00" itemprop="dateCreated datePublished" datetime="2017-05-05T21:33:00+08:00">2017-05-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/RecyclerView%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/RecyclerView缓存机制/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="RecyclerView的缓存分为四级"><a href="#RecyclerView的缓存分为四级" class="headerlink" title="RecyclerView的缓存分为四级"></a>RecyclerView的缓存分为四级</h1><ul>
+<li>  Scrap</li>
+<li>  Cache</li>
+<li>  ViewCacheExtension</li>
+<li>  RecycledViewPool</li>
+</ul>
+<h2 id="Scrap"><a href="#Scrap" class="headerlink" title="Scrap"></a>Scrap</h2><p>对应ListView 的Active View，就是屏幕内的缓存数据，就是相当于换了个名字，可以直接拿来复用。</p>
+<h2 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h2><p>刚刚移出屏幕的缓存数据，默认大小是2个，当其容量被充满同时又有新的数据添加的时候，会根据FIFO原则，把优先进入的缓存数据移出并放到下一级缓存中，然后再把新的数据添加进来。</p>
+<p>Cache里面的数据是干净的，也就是携带了原来的ViewHolder的所有数据信息，数据可以直接来拿来复用。</p>
+<p>需要注意的是，cache是根据position来寻找数据的，这个postion是根据第一个或者最后一个可见的item的position以及用户操作行为（上拉还是下拉）。</p>
+<p>举个栗子：当前屏幕内第一个可见的item的position是1，用户进行了一个下拉操作，那么当前预测的position就相当于（1-1=0），也就是position=0的那个item要被拉回到屏幕，此时RecyclerView就从Cache里面找position=0的数据，如果找到了就直接拿来复用。</p>
+<h2 id="ViewCacheExtension"><a href="#ViewCacheExtension" class="headerlink" title="ViewCacheExtension"></a>ViewCacheExtension</h2><p>用户自定义的缓存策略。</p>
+<p>用户没有定义的时候，将跳过。</p>
+<h2 id="RecycledViewPool"><a href="#RecycledViewPool" class="headerlink" title="RecycledViewPool"></a>RecycledViewPool</h2><p>Cache默认的缓存数量是2个，当Cache缓存满了以后会根据FIFO（先进先出）的规则把Cache先缓存进去的ViewHolder移出并缓存到RecycledViewPool中，RecycledViewPool默认的缓存数量是5个。</p>
+<p>RecycledViewPool与Cache相比不同的是，从Cache里面移出的ViewHolder再存入RecycledViewPool之前ViewHolder的数据会被全部重置，相当于一个新的ViewHolder，而且Cache是根据position来获取ViewHolder，而RecycledViewPool是根据itemType获取的，如果没有重写getItemType（）方法，itemType就是默认的。</p>
+<p>因为RecycledViewPool缓存的ViewHolder是全新的，所以取出来的时候需要走onBindViewHolder（）方法。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93/Android%E4%B8%AD%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3%E7%9A%84%E7%B1%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +691,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -348,7 +822,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -559,7 +1033,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -736,7 +1210,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -862,7 +1336,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1038,7 +1512,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1170,241 +1644,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Java/Java%20Serializable%E5%BA%8F%E5%88%97%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Java/Java%20Serializable%E5%BA%8F%E5%88%97%E5%8C%96/" class="post-title-link" itemprop="url">序列化：Serializable与Parceable</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-08-05 21:03:00" itemprop="dateCreated datePublished" datetime="2016-08-05T21:03:00+08:00">2016-08-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Java/Java%20Serializable%E5%BA%8F%E5%88%97%E5%8C%96/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Java/Java Serializable序列化/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="序列化的意义和价值是什么？"><a href="#序列化的意义和价值是什么？" class="headerlink" title="序列化的意义和价值是什么？"></a>序列化的意义和价值是什么？</h1><p>序列化就是把对象转换为字节序列。</p>
-<p>反序列化就是把字节序列还原为对象。</p>
-<p>对象是程序运行时的信息载体，序列化机制使得对象信息可以脱离程序的运行而独立存在，这样便于进行网络传输或持久性存储到磁盘。</p>
-<h1 id="序列化考量的重点是什么？"><a href="#序列化考量的重点是什么？" class="headerlink" title="序列化考量的重点是什么？"></a>序列化考量的重点是什么？</h1><ol>
-<li> 协议是否跨平台</li>
-<li> 序列化速度</li>
-<li> 字节序列大小</li>
-</ol>
-<h1 id="Serializable底层运作机制是怎样的？"><a href="#Serializable底层运作机制是怎样的？" class="headerlink" title="Serializable底层运作机制是怎样的？"></a>Serializable底层运作机制是怎样的？</h1><p>查看ObjectInputStream的readObject方法  和 ObjectOutputStream的writeObject的代码。</p>
-<p>主要运用了反射。</p>
-<h1 id="Serializable如何自定义决定哪些字段写入和读取？"><a href="#Serializable如何自定义决定哪些字段写入和读取？" class="headerlink" title="Serializable如何自定义决定哪些字段写入和读取？"></a>Serializable如何自定义决定哪些字段写入和读取？</h1><ol>
-<li> 通过transient关键字修饰属性，排除在序列化之外</li>
-<li> 在类中增加writeObejct和readObject方法，JDK中的ArrayList、HashMap等都复写了writeObject</li>
-<li> 在类中增加writeReplace和readResolve方法，提供了writeReplace就不会执行writeObject，提供了readResolve就不会执行readObject</li>
-<li> 实现Externalizable接口，显式实现readExternal和writeExternal</li>
-</ol>
-<p>Java为用户定义了默认的序列化、反序列化方法，其实就是ObjectOutputStream的defaultWriteObject方法和ObjectInputStream的defaultReadObject方法。</p>
-<p>为什么HashMap要自定义序列化逻辑呢？<br>可能的原因是，存储数据的数组table，一般都是不满的（因为HashMap的负载因子默认0.75，超过就会扩容），里面肯定会有很多null，如果是默认的序列化，这些null也会被被序列化，显然这些null是没有必要的做序列化的。</p>
-<p>ArrayList自定义序列化方法，也是因为elementData数组可能没存满。</p>
-<h1 id="serialVersionUID是干什么的？"><a href="#serialVersionUID是干什么的？" class="headerlink" title="serialVersionUID是干什么的？"></a>serialVersionUID是干什么的？</h1><p>反序列化需要指定一个类，但是类的结构会变更，如何保证已经序列化的字节序列与当前的类结构是对应上的，可以在字节序列和类中分别存储一个版本号，只有版本号相同，就当做是可转行的，版本号不同反序列化就报错。</p>
-<p>类中指定版本号是使用private static final long serialVersionUID属性，值为任意。如果不声明这个属性，虚拟机会根据类信息自动生成一个版本号。</p>
-<p>这样随着class的升级，就无法正确反序列化；不指定版本号另一个明显隐患是，不利于jvm间的移植，可能class文件没有更改，但不同jvm可能计算的规则不一样，这样也会导致无法反序列化。</p>
-<h1 id="什么情况下需要修改serialVersionUID呢？"><a href="#什么情况下需要修改serialVersionUID呢？" class="headerlink" title="什么情况下需要修改serialVersionUID呢？"></a>什么情况下需要修改serialVersionUID呢？</h1><p>分三种情况：</p>
-<ol>
-<li> 如果只是修改了方法，反序列化不容影响，则无需修改版本号；</li>
-<li> 如果只是修改了静态变量，瞬态变量（transient修饰的变量），反序列化不受影响，无需修改版本号；</li>
-<li> 如果修改了非瞬态变量，则可能导致反序列化失败。如果新类中实例变量的类型与序列化时类的类型不一致，则会反序列化失败，这时候需要更改serialVersionUID。如果只是新增了实例变量，则反序列化回来新增的是默认值；如果减少了实例变量，反序列化时会忽略掉减少的实例变量。</li>
-</ol>
-<h1 id="Serializable序列化会有什么问题？"><a href="#Serializable序列化会有什么问题？" class="headerlink" title="Serializable序列化会有什么问题？"></a>Serializable序列化会有什么问题？</h1><p>当程序试图序列化一个对象时，会先检查此对象是否已经序列化过，只有此对象从未（在此虚拟机）被序列化过，才会将此对象序列化为字节序列输出。</p>
-<p>如果序列化一个可变对象（对象内的内容可更改）后，更改了对象内容，再次序列化，并不会再次将此对象转换为字节序列，而只是保存序列化编号。</p>
-<h1 id="Serializable反序列化会有什么问题？"><a href="#Serializable反序列化会有什么问题？" class="headerlink" title="Serializable反序列化会有什么问题？"></a>Serializable反序列化会有什么问题？</h1><p>反序列化不会调用类的构造函数，会调用第一个非序列化父类的无参构造函数</p>
-<p>这点可以通过 ObjectInputSteam -&gt; readObject -&gt; readObject0 -&gt; readOrdinaryObject -&gt; desc.newInstance() 得知，desc是ObjectStreamClass的实例，ObjectStreamClass.newInstance()的注释是：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * Creates a new instance of the represented class.  If the class is</span><br><span class="line"> * externalizable, invokes its public no-arg constructor; otherwise, if the</span><br><span class="line"> * class is serializable, invokes the no-arg constructor of the first</span><br><span class="line"> * non-serializable superclass.  Throws UnsupportedOperationException if</span><br><span class="line"> * this class descriptor is not associated with a class, if the associated</span><br><span class="line"> * class is non-serializable or if the appropriate no-arg constructor is</span><br><span class="line"> * inaccessible/unavailable.</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
-
-<p>这样设计的目的是什么？</p>
-<p>推测是因为如果调用了类的构造函数，如果构造函数中有改变类属性状态的代码，反序列化后就得不到序列化时的状态了，所以不能调用。</p>
-<h1 id="Serializable的具体序列化执行过程中哪些地方用到了大量的反射？"><a href="#Serializable的具体序列化执行过程中哪些地方用到了大量的反射？" class="headerlink" title="Serializable的具体序列化执行过程中哪些地方用到了大量的反射？"></a>Serializable的具体序列化执行过程中哪些地方用到了大量的反射？</h1><p>因为没有在代码层面手动写入特定字段，序列化都是全自动化的，在ObjectOutputStream底层都是通过反射获取类的字段信息，defaultWriteFields()读取类的属性字段是通过Field，Field从ObjectStreamClass的getFields()得来，getFields()内部还是反射。</p>
-<p>ObjectInputStream也通过反射创建类。</p>
-<h1 id="Serializable的具体序列化执行过程中哪些地方创建了大量的临时对象？会有什么问题？"><a href="#Serializable的具体序列化执行过程中哪些地方创建了大量的临时对象？会有什么问题？" class="headerlink" title="Serializable的具体序列化执行过程中哪些地方创建了大量的临时对象？会有什么问题？"></a>Serializable的具体序列化执行过程中哪些地方创建了大量的临时对象？会有什么问题？</h1><p>创建大量的临时对象会引发频繁的垃圾回收，垃圾回收会stop the world，进而引起进程的卡顿。</p>
-<p>Serializable的序列化过程比较复杂，有很多对象参与工作，例如ObjectStreamClass。</p>
-<h1 id="Parceable底层运作机制是怎样的？"><a href="#Parceable底层运作机制是怎样的？" class="headerlink" title="Parceable底层运作机制是怎样的？"></a>Parceable底层运作机制是怎样的？</h1><p>Interface for classes whose instances can be written to and restored from a Parcel. Classes implementing the Parcelable interface must also have a non-null static field called CREATOR of a type that implements the Parcelable.Creator interface.<br>A typical implementation of Parcelable is:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyParcelable</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mData;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">describeContents</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel out, <span class="keyword">int</span> flags)</span> </span>&#123;</span><br><span class="line">        out.writeInt(mData);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Parcelable.Creator&lt;MyParcelable&gt; CREATOR</span><br><span class="line">            = <span class="keyword">new</span> Parcelable.Creator&lt;MyParcelable&gt;() &#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> MyParcelable <span class="title">createFromParcel</span><span class="params">(Parcel in)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> MyParcelable(in);</span><br><span class="line">        &#125;</span><br><span class="line">  </span><br><span class="line">        <span class="keyword">public</span> MyParcelable[] newArray(<span class="keyword">int</span> size) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> MyParcelable[size];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">MyParcelable</span><span class="params">(Parcel in)</span> </span>&#123;</span><br><span class="line">        mData = in.readInt();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Parcelable通过Parcel的一系列read和write方法实现序列化，Parcel的read和write方法都是在native层实现。</p>
-<p>Parcel把对象数据直接序列化输出在内存，并且数据结构很紧凑，几乎只存储数据值，不存储额外的信息，而Serializable会存储很多额外的信息，所以Parcel序列化的输出的信息量就比Serializable少，同时没有用反射，而是直接操作内存指针，因此速度更快。<br>缺点：<br>    1. 由于数据紧凑，没有存储必要的判断信息，不能用于持久化存储，因为反序列化时，缺乏足够的信息来保证数据恢复的正确性。<br>    2. 需要手动指定哪些字段写入，并且写入顺序和读入顺序要一致</p>
-<h1 id="Parceable与Serializable有什么区别？"><a href="#Parceable与Serializable有什么区别？" class="headerlink" title="Parceable与Serializable有什么区别？"></a>Parceable与Serializable有什么区别？</h1><p>Serializable 会使用反射，序列化和反序列化过程需要大量 I/O 操作。</p>
-<p>Parcelable  自已实现封送和解封（marshalled &amp;unmarshalled）操作不需要用反射，数据也存放在 Native 内存中，效率要快很多。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828174331.png"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20ViewDragHelper%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Android/Android%20ViewDragHelper%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" class="post-title-link" itemprop="url">Android ViewDragHelper源码解析</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-21 17:58:17" itemprop="dateCreated datePublished" datetime="2015-05-21T17:58:17+08:00">2015-05-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-28 19:21:25" itemprop="dateModified" datetime="2021-08-28T19:21:25+08:00">2021-08-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Android/Android%20ViewDragHelper%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android ViewDragHelper源码解析/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在自定义ViewGroup的过程中，如果涉及到View的拖动滑动，<code>ViewDragHelper</code>的使用应该是少不了的，它提供了一系列用于用户拖动子View的辅助方法和相关的状态记录，像Navigation Drawer的边缘滑动、QQ5.x的侧滑菜单、知乎里的页面滑动返回都可以由它实现，所以有必要完全掌握它的使用。</p>
-<p>要想完全掌握<code>ViewDragHelper</code>的使用和原理，最好的办法就是读懂它的源码，所以就有了这篇分析，以便在印象模糊之时可以再次快速回顾<code>ViewDragHelper</code>的原理、用法、注意事项等。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/Android/Android%20ViewDragHelper%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/15/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><span class="page-number current">16</span>
+    <a class="extend prev" rel="prev" href="/page/15/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><span class="page-number current">16</span><a class="page-number" href="/page/17/">17</a><a class="extend next" rel="next" href="/page/17/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1472,7 +1715,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">158</span>
+          <span class="site-state-item-count">162</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1485,7 +1728,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">189</span>
+        <span class="site-state-item-count">194</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

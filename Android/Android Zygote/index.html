@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？Zygote 作为一个孵化器，可以提前加载一些资源，这样 fork() 时基于 Copy-On-Write 机制创建的其他进程就能直接使用这些资源，而不用重新加载。 比如 system_server 就可以直接使用 Zygote 中的 JNI 函数、共享库、常用的类、以及主题资源。 应用在启动的时候需要做很多准备工作，包括启动虚拟机">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android Zygote">
+<meta property="og:url" content="http://rickyqliu.github.io/Android/Android%20Zygote/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？Zygote 作为一个孵化器，可以提前加载一些资源，这样 fork() 时基于 Copy-On-Write 机制创建的其他进程就能直接使用这些资源，而不用重新加载。 比如 system_server 就可以直接使用 Zygote 中的 JNI 函数、共享库、常用的类、以及主题资源。 应用在启动的时候需要做很多准备工作，包括启动虚拟机">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/picportal/pic/raw/master/img/20210828193745.png">
+<meta property="article:published_time" content="2018-07-22T14:12:00.000Z">
+<meta property="article:modified_time" content="2021-08-28T11:47:56.893Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Zygote">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/picportal/pic/raw/master/img/20210828193745.png">
+
+<link rel="canonical" href="http://rickyqliu.github.io/Android/Android%20Zygote/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Android Zygote | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Zygote/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android Zygote
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-07-22 22:12:00" itemprop="dateCreated datePublished" datetime="2018-07-22T22:12:00+08:00">2018-07-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-28 19:47:56" itemprop="dateModified" datetime="2021-08-28T19:47:56+08:00">2021-08-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/Android%20Zygote/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android Zygote/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？"><a href="#为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？" class="headerlink" title="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？"></a>为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？</h1><p>Zygote 作为一个孵化器，可以提前加载一些资源，这样 fork() 时基于 Copy-On-Write 机制创建的其他进程就能直接使用这些资源，而不用重新加载。</p>
+<p>比如 system_server 就可以直接使用 Zygote 中的 JNI 函数、共享库、常用的类、以及主题资源。</p>
+<p>应用在启动的时候需要做很多准备工作，包括启动虚拟机，加载各类系统资源等等，这些都是非常耗时的，如果能在zygote里就给这些必要的初始化工作做好，子进程在fork的时候就能直接共享，那么这样的话效率就会非常高。</p>
+<p>这个就是zygote存在的价值，这一点呢SystemServer是替代不了的，主要是因为SystemServer里跑了一堆系统服务，这些是不能继承到应用进程的。</p>
+<p>而且我们应用进程在启动的时候，内存空间除了必要的资源外，最好是干干净净的，不要继承一堆乱七八糟的东西。</p>
+<p>所以呢，不如给SystemServer和应用进程里都要用到的资源抽出来单独放在一个进程里，也就是这的zygote进程，然后zygote进程再分别孵化出SystemServer进程和应用进程。</p>
+<p>孵化出来之后，SystemServer进程和应用进程就可以各干各的事了。</p>
+<h1 id="Zygote预加载了那些资源？"><a href="#Zygote预加载了那些资源？" class="headerlink" title="Zygote预加载了那些资源？"></a>Zygote预加载了那些资源？</h1><p>Zygote进程，是由init进程通过解析init.rc文件后fork生成的，Zygote进程主要包含：</p>
+<ul>
+<li>加载ZygoteInit类，注册Zygote Socket服务端套接字</li>
+<li>加载虚拟机</li>
+<li>提前加载类preloadClasses</li>
+<li>提前加载资源preloadResouces</li>
+</ul>
+<p>ZygoteInit.preload()</p>
+<p>preloadClasses()用来预加载类<br>会读取配置文件/system/etc/preloaded-classes，部分内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">com.android.internal.util.ParseUtils</span><br><span class="line">com.android.internal.util.Preconditions</span><br><span class="line">dalvik.system.CloseGuard</span><br><span class="line">dalvik.system.DalvikLogHandler</span><br><span class="line">java.io.ByteArrayInputStream</span><br><span class="line">java.io.ByteArrayOutputStream</span><br><span class="line">javax.crypto.AEADBadTagException</span><br><span class="line">javax.crypto.BadPaddingException</span><br><span class="line">org.ccil.cowan.tagsoup.ElementType</span><br><span class="line">org.json.JSONArray</span><br><span class="line">org.json.JSONException</span><br><span class="line">org.w3c.dom.Element</span><br><span class="line">org.w3c.dom.Node</span><br><span class="line">sun.misc.LRUCache</span><br><span class="line">sun.misc.Unsafe</span><br></pre></td></tr></table></figure>
+<p>都是android sdk的类和java包类。</p>
+<p>加载类的方式就是直接Class.forName()<br>// Load and explicitly initialize the given class. Use<br>// Class.forName(String, boolean, ClassLoader) to avoid repeated stack lookups<br>// (to derive the caller’s class-loader). Use true to force initialization, and<br>// null for the boot classpath class-loader (could as well cache the<br>// class-loader of this class in a variable).<br>Class.forName(line, true, null); </p>
+<p>preloadResources()方法加载资源，加载过程就是调用一些Resources类的obtainTypedArray，然后遍历每项资源，调用Resources.getDrawable()，Resources的内部应该有缓存。</p>
+<p>也就是framework.jar和framework-res.jar里的东西。</p>
+<p>每一个app进程都应该公用这些东西，不应该重新加载一遍。</p>
+<h2 id="system-framework-下的各种jar是什么时候加载的？在哪里指定加载的？"><a href="#system-framework-下的各种jar是什么时候加载的？在哪里指定加载的？" class="headerlink" title="/system/framework/下的各种jar是什么时候加载的？在哪里指定加载的？"></a>/system/framework/下的各种jar是什么时候加载的？在哪里指定加载的？</h2><p>在init.rc中export BOOTCLASSPATH</p>
+<h1 id="Zygote进程启动流程"><a href="#Zygote进程启动流程" class="headerlink" title="Zygote进程启动流程"></a>Zygote进程启动流程</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828193745.png"></p>
+<h1 id="Zygote-进程和SystemServer进程通信为什么不采用-Binder-而采用Socket？"><a href="#Zygote-进程和SystemServer进程通信为什么不采用-Binder-而采用Socket？" class="headerlink" title="Zygote 进程和SystemServer进程通信为什么不采用 Binder 而采用Socket？"></a>Zygote 进程和SystemServer进程通信为什么不采用 Binder 而采用Socket？</h1><p>原因是因为fork只能拷贝当前线程，不支持多线程的fork。</p>
+<p>如果zygote使用binder的多线程模型与system_server进程进行通讯的话，fork()出的App进程的binder通讯没法用，那么只能再使用exec()启动一个新进程。</p>
+<p>但是exec()启动的新进程不再包含zygote进程的信息，那这样的就失去了fork的作用了，fork的原理就是copy-on-write机制，zygote进程中已经启动了虚拟机、进行资源和类的预加载以及各种初始化操作，App进程用时拷贝即可。</p>
+<p>所以最终zygote采用的方案就是socket + epoll，然后fork出子进程后再在子进程中启动binder线程池。</p>
+<h1 id="fork为什么不允许多线程？"><a href="#fork为什么不允许多线程？" class="headerlink" title="fork为什么不允许多线程？"></a>fork为什么不允许多线程？</h1><p>fork() 时只会把调用线程拷贝到子进程、其他线程都会立即停止，那如果一个线程在 fork() 前占用了某个互斥量，fork() 后被立即停止，这个互斥量就得不到释放，再去请求该互斥量就会发生死锁了。</p>
+<p>我们知道通过fork创建的一个子进程几乎但不完全与父进程相同。子进程得到与父进程用户级虚拟地址空间相同的（但是独立的）一份拷贝，包括文本、数据和bss段、堆以及用户栈等。子进程还获得与父进程任何打开文件描述符相同的拷贝，这就意味着子进程可以读写父进程中任何打开的文件，父进程和子进程之间最大的区别在于它们有着不同的PID。</p>
+<p>但是有一点需要注意的是，在Linux中，fork的时候只复制当前线程到子进程，在<a target="_blank" rel="noopener" href="http://linux.die.net/man/2/fork">fork(2)-Linux Man Page</a>中有着这样一段相关的描述：</p>
+<p>The child process is created with a single thread–the one that called fork(). The entire virtual address space of the parent is replicated in the child, including the states of mutexes, condition variables, and other pthreads objects; the use of pthread_atfork(3) may be helpful for dealing with problems that this can cause.</p>
+<p>也就是说除了调用fork的线程外，其他线程在子进程中“蒸发”了。</p>
+<p>这就是多线程中fork所带来的一切问题的根源所在了。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.github.io/Android/Android%20Zygote/" title="Android Zygote">http://rickyqliu.github.io/Android/Android Zygote/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Zygote/" rel="tag"># Zygote</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Android/Android%20App%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/" rel="prev" title="Android App启动流程">
+      <i class="fa fa-chevron-left"></i> Android App启动流程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/" rel="next" title="Android Activity启动流程">
+      Android Activity启动流程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8Zygote%E5%AD%B5%E5%8C%96%E4%B8%80%E4%B8%AA%E8%BF%9B%E7%A8%8B%EF%BC%9F%E7%9B%B4%E6%8E%A5%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E8%BF%9B%E7%A8%8B%E4%BC%9A%E6%9C%89%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zygote%E9%A2%84%E5%8A%A0%E8%BD%BD%E4%BA%86%E9%82%A3%E4%BA%9B%E8%B5%84%E6%BA%90%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">Zygote预加载了那些资源？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#system-framework-%E4%B8%8B%E7%9A%84%E5%90%84%E7%A7%8Djar%E6%98%AF%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%8A%A0%E8%BD%BD%E7%9A%84%EF%BC%9F%E5%9C%A8%E5%93%AA%E9%87%8C%E6%8C%87%E5%AE%9A%E5%8A%A0%E8%BD%BD%E7%9A%84%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">&#x2F;system&#x2F;framework&#x2F;下的各种jar是什么时候加载的？在哪里指定加载的？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zygote%E8%BF%9B%E7%A8%8B%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">Zygote进程启动流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zygote-%E8%BF%9B%E7%A8%8B%E5%92%8CSystemServer%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E9%87%87%E7%94%A8-Binder-%E8%80%8C%E9%87%87%E7%94%A8Socket%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">Zygote 进程和SystemServer进程通信为什么不采用 Binder 而采用Socket？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#fork%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E5%85%81%E8%AE%B8%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%9F"><span class="nav-number">5.</span> <span class="nav-text">fork为什么不允许多线程？</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">Follow your heart</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">162</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">194</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu-blog.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.github.io/Android/Android%20Zygote/";
+    this.page.identifier = "Android/Android Zygote/";
+    this.page.title = "Android Zygote";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu-blog.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
