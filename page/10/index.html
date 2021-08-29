@@ -186,6 +186,105 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/" class="post-title-link" itemprop="url">LeetCode.70.爬楼梯（简单）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-31 00:03:00" itemprop="dateCreated datePublished" datetime="2019-10-31T00:03:00+08:00">2019-10-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode.70.爬楼梯（简单）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p> <a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/climbing-stairs/">LeetCode.70.爬楼梯（简单）</a></p>
+<p>假设你正在爬楼梯。需要 n 阶你才能到达楼顶。<br>每次你可以爬 1 或 2 个台阶。你有多少种不同的方法可以爬到楼顶呢？<br>注意：给定 n 是一个正整数。</p>
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>最优化问题，考虑用动态规划，看是否符合动态规划的条件。<br>一般从最终状态做倒推，拆解当前状态问题为上一个状态+有限的步骤。</p>
+<h3 id="倒推"><a href="#倒推" class="headerlink" title="倒推"></a>倒推</h3><p>爬到第n阶，最后一步一定是只有两种可能：</p>
+<ol>
+<li>先爬到第n-1个台阶，再爬1个台阶</li>
+<li>先爬到第n-2个台阶，再爬2个台阶</li>
+</ol>
+<p>把两种可能的方法数累加就是爬到第n阶第方法数。</p>
+<h3 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h3><p>爬到第1阶，只有1种爬法，即爬1个台阶。<br>爬到第2阶，可以从第0阶爬2个台阶，也可以从第1阶爬1个台阶，共2种爬法。</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">climbStairs</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">2</span>) <span class="keyword">return</span> <span class="number">2</span></span><br><span class="line">        <span class="keyword">var</span> pre1 = <span class="number">2</span></span><br><span class="line">        <span class="keyword">var</span> pre2 = <span class="number">1</span></span><br><span class="line">        <span class="keyword">var</span> cur = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">3.</span>.n) &#123;</span><br><span class="line">            cur = pre1 + pre2</span><br><span class="line">            pre2 = pre1</span><br><span class="line">            pre1 = cur</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cur</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanaryEx%E6%B5%85%E6%9E%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +316,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -313,7 +412,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -447,7 +546,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -684,7 +783,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -796,7 +895,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -932,7 +1031,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1187,7 +1286,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1302,7 +1401,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1417,7 +1516,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1562,179 +1661,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ACRA%E5%8E%9F%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ACRA%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">崩溃收集 - ACRA原理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-06-15 20:37:00" itemprop="dateCreated datePublished" datetime="2019-06-15T20:37:00+08:00">2019-06-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ACRA%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="源码分析/ACRA原理/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="为什么要ACRA简介"><a href="#为什么要ACRA简介" class="headerlink" title="为什么要ACRA简介"></a>为什么要ACRA简介</h1><p>项目主页：<a target="_blank" rel="noopener" href="https://github.com/ACRA/acra">https://github.com/ACRA/acra</a></p>
-<ol>
-<li> ACRA历史悠久，github显示最早的4.2.3的版本是2011年7月2日。</li>
-<li> Issues里不停的有人报问题，也在不停的发新的release，项目处于积极的持续维护的状态。</li>
-<li>自定义性很强，框架所有功能都是可配置自定义的，也提供了服务端的标准实现。</li>
-<li>使用广泛。ACRA is used in 1.57% (<a target="_blank" rel="noopener" href="https://www.appbrain.com/stats/libraries/details/acra/acra">See AppBrain/stats</a>) of all apps on Google Play as of June 2020. That’s over  <strong>13 thousand apps</strong>  and over  <strong>5 billion downloads</strong>  including ACRA.</li>
-</ol>
-<h1 id="Android上捕获崩溃的基本原理是什么？"><a href="#Android上捕获崩溃的基本原理是什么？" class="headerlink" title="Android上捕获崩溃的基本原理是什么？"></a>Android上捕获崩溃的基本原理是什么？</h1><p>通过Thread.setDefaultUncaughtExceptionHandler()设置一个UncaughtExceptionHandler，当有未捕获的异常出现时，会调用UncaughtExceptionHandler的uncaughtException(Thread,Throwable)</p>
-<h1 id="ACRA框架大致原理"><a href="#ACRA框架大致原理" class="headerlink" title="ACRA框架大致原理"></a>ACRA框架大致原理</h1><ul>
-<li>通过Thread.setDefaultUncaughtExceptionHandler()捕获崩溃异常对象。</li>
-<li>调用配置的多个Collector收集崩溃发生时的环境信息，可以通过SPI注入自定义Collector收集想要的数据。</li>
-<li>把异常堆栈和环境信息存储到文件。</li>
-<li>立即开启新的进程上传文件。</li>
-</ul>
-<h1 id="为什么采用文件存储？"><a href="#为什么采用文件存储？" class="headerlink" title="为什么采用文件存储？"></a>为什么采用文件存储？</h1><p>这是跟崩溃的场景有关。</p>
-<p>崩溃数据不会频繁产生，并且崩溃后立即上传，存储到文件直接上传文件是最方便的。</p>
-<p>数据库存储主要针对批量查询或者复杂约束条件的场景，否则发挥不出来明显优势。<br>甚至有一定劣势，比如数据库如果损坏，所有信息都读取不到了，单个崩溃产生的文件如果损坏了不影响其他文件。</p>
-<h1 id="为什么上传错误要在单独的进程里执行？"><a href="#为什么上传错误要在单独的进程里执行？" class="headerlink" title="为什么上传错误要在单独的进程里执行？"></a>为什么上传错误要在单独的进程里执行？</h1><p>因为崩溃要立刻上传，但是当前进程已经要停止了，网络请求耗时的话可能没有请求完就结束了，所以单独开一个进程做上传，不受崩溃进程的影响。</p>
-<p>参考：<a target="_blank" rel="noopener" href="https://github.com/ACRA/acra/issues/375">https://github.com/ACRA/acra/issues/375</a></p>
-<h1 id="如何对崩溃做唯一标识以便统计崩溃次数？"><a href="#如何对崩溃做唯一标识以便统计崩溃次数？" class="headerlink" title="如何对崩溃做唯一标识以便统计崩溃次数？"></a>如何对崩溃做唯一标识以便统计崩溃次数？</h1><p>后端要对上传的崩溃做唯一性识别以统计同一个崩溃的次数。</p>
-<p>把异常对象传递给 StacktraceCollector.getStackTraceHash(Throwable) 返回一个字符串，作为这个异常对象的唯一标识。</p>
-<p>源码如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> String <span class="title">getStackTraceHash</span><span class="params">(<span class="meta">@Nullable</span> Throwable th)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> StringBuilder res = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">    Throwable cause = th;</span><br><span class="line">    <span class="keyword">while</span> (cause != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">final</span> StackTraceElement[] stackTraceElements = cause.getStackTrace();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">final</span> StackTraceElement e : stackTraceElements) &#123;</span><br><span class="line">            res.append(e.getClassName());</span><br><span class="line">            res.append(e.getMethodName());</span><br><span class="line">        &#125;</span><br><span class="line">        cause = cause.getCause();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Integer.toHexString(res.toString().hashCode());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>遍历StackTraceElement数组，把每一个StackTraceElement的类名和方法名拼接为字符串，以字符串的hashCode为唯一标识。</p>
-<p>也就是异常里的方法调用栈中的所有类名和方法名作为异常唯一标识。</p>
-<h1 id="程序入口在哪？"><a href="#程序入口在哪？" class="headerlink" title="程序入口在哪？"></a>程序入口在哪？</h1><p>在自定义的Application的attachBaseContext()中调用ACRA.init(application);</p>
-<h1 id="ACRA-init-application-做了什么？"><a href="#ACRA-init-application-做了什么？" class="headerlink" title="ACRA.init(application)做了什么？"></a>ACRA.init(application)做了什么？</h1><p>主要是在非崩溃发送的进程中，创建ErrorReporterImpl对象，保存为单例</p>
-<h1 id="ErrorReporterImpl构造函数里做了什么？"><a href="#ErrorReporterImpl构造函数里做了什么？" class="headerlink" title="ErrorReporterImpl构造函数里做了什么？"></a>ErrorReporterImpl构造函数里做了什么？</h1><p>主要执行的逻辑：</p>
-<ol>
-<li> 创建了CrashReportDataFactory，并调用其collectStartUp()，收集App启动时的信息，如App启动时间</li>
-<li> 调用了Thread.setDefaultUncaughtExceptionHandler()拦截崩溃处理</li>
-<li> 如果checkReportsOnApplicationStart为true，就创建一个StartupProcessorExecutor，调用其processReports()，进行崩溃信息上报</li>
-</ol>
-<h1 id="CrashReportDataFactory-collectStartUp-做了什么？"><a href="#CrashReportDataFactory-collectStartUp-做了什么？" class="headerlink" title="CrashReportDataFactory.collectStartUp()做了什么？"></a>CrashReportDataFactory.collectStartUp()做了什么？</h1><p>CrashReportDataFactory构造函数里通过<code>CoreConfiguration.pluginLoader().loadEnabled(config,Collector.class)</code>加载出一个<code>List&lt;Collector&gt;</code>。</p>
-<p>collectStartUp()在Collector列表中寻找ApplicationStartupCollector调用其collectApplicationStartUp()。</p>
-<h1 id="Collector是什么？"><a href="#Collector是什么？" class="headerlink" title="Collector是什么？"></a>Collector是什么？</h1><p>所有崩溃相关的信息都是通过Collector来收集，实现类都在org.acra.collector包下，收集如线程信息、内存信息、堆栈信息等。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210829162713.png"></p>
-<h1 id="ApplicationStartupCollector-collectApplicationStartUp-是做什么的？"><a href="#ApplicationStartupCollector-collectApplicationStartUp-是做什么的？" class="headerlink" title="ApplicationStartupCollector.collectApplicationStartUp()是做什么的？"></a>ApplicationStartupCollector.collectApplicationStartUp()是做什么的？</h1><p>在application启动时收集必要的信息，例如app启动时间</p>
-<h1 id="CoreConfiguration-pluginLoader-loadEnabled-config-Collector-class-底层原理是什么？"><a href="#CoreConfiguration-pluginLoader-loadEnabled-config-Collector-class-底层原理是什么？" class="headerlink" title="CoreConfiguration.pluginLoader().loadEnabled(config,Collector.class)底层原理是什么？"></a>CoreConfiguration.pluginLoader().loadEnabled(config,Collector.class)底层原理是什么？</h1><h2 id="CoreConfiguration-pluginLoader-获取的是什么类？"><a href="#CoreConfiguration-pluginLoader-获取的是什么类？" class="headerlink" title="CoreConfiguration.pluginLoader()获取的是什么类？"></a>CoreConfiguration.pluginLoader()获取的是什么类？</h2><p>ACRA.init(application)里会创建一个CoreConfigurationBuilder对象，CoreConfigurationBuilder构造函数里会创建一个BaseCoreConfigurationBuilder，BaseCoreConfigurationBuilder构造函数里会创建一个ServicePluginLoader，这是默认的pluginLoader，外部可以通过CoreConfigurationBuilder.setPluginLoader来设置其他的pluginLoader。</p>
-<h2 id="ServicePluginLoader-loadEnabled-做了什么？"><a href="#ServicePluginLoader-loadEnabled-做了什么？" class="headerlink" title="ServicePluginLoader.loadEnabled()做了什么？"></a>ServicePluginLoader.loadEnabled()做了什么？</h2><p>通过ServiceLoader.load(clazz, getClass().getClassLoader())利用ServiceLoader的SPI机制加载所有的Collector的实现类，只保留Collector.enabled()返回true的Collector，汇总成一个Collector列表，并返回。</p>
-<h2 id="ServiceLoader机制是怎样的？"><a href="#ServiceLoader机制是怎样的？" class="headerlink" title="ServiceLoader机制是怎样的？"></a>ServiceLoader机制是怎样的？</h2><p>ServiceLoader.load(org.acra.collector.Collector.class)会去META-INF/services目录下寻找文件名为org.acra.collector.Collector的文件，文件里每一行都是org.acra.collector.Collector实现类的全限定名，然后ServiceLoader会把所有这个文件里指定的类都创建出来并返回。</p>
-<p>用AutoService框架可以通过注解在实现类上标明接口，就可以避免自己手动创建META-INF/services下文件的繁琐过程，ACRA使用了AutoService，在所有Collector的实现类上都标明了@AutoService(Collector.class)。</p>
-<h1 id="StartupProcessorExecutor的processReports-做了什么？"><a href="#StartupProcessorExecutor的processReports-做了什么？" class="headerlink" title="StartupProcessorExecutor的processReports()做了什么？"></a>StartupProcessorExecutor的processReports()做了什么？</h1><ol>
-<li><p> StartupProcessorExecutor构造函数会创建ReportLocator对象，通过reportLocator.getUnapprovedReports()和reportLocator.getApprovedReports()获取待上传的崩溃信息的文件。</p>
-</li>
-<li><p> 通过config.pluginLoader().loadEnabled(config,StartupProcessor.class)获取一个List<StartupProcessor>，遍历调用processReports(reports)</p>
-</li>
-<li><p> StartupProcessor有两个子类，LimiterStartupProcessor、UnapprovedStartupProcessor</p>
-</li>
-<li><p> approved文件夹下有文件，就依次调用SchedulerStarter.scheduleReports() -&gt; DefaultSenderScheduler.scheduleReportSending() -&gt; SendingConductor.sendReports() -&gt; ReportDistributor.distribute() -&gt; ReportDistributor.sendCrashReport()，遍历所有的ReportSender并调用其send()发送上报</p>
-</li>
-</ol>
-<p>根据ReportExecutor.execute(reportBuilder)的逻辑，approved目录下有文件，说明是要上报发送文件的，但是可能因为各种原因没有上报成功，所以这里重新发送。</p>
-<h2 id="reportLocator-getUnapprovedReports-和reportLocator-getApprovedReports-的区别？"><a href="#reportLocator-getUnapprovedReports-和reportLocator-getApprovedReports-的区别？" class="headerlink" title="reportLocator.getUnapprovedReports()和reportLocator.getApprovedReports()的区别？"></a>reportLocator.getUnapprovedReports()和reportLocator.getApprovedReports()的区别？</h2><p>关于ACRA对日志文件位置的处理主要是ReportLocator来设置的。</p>
-<p>acra内部使用文件对崩溃日志进行保存，该类用来获取文件夹的名字。</p>
-<p>内部有两个文件夹acra-unapproved(未处理)，acra-approved(处理过)分别用来保存未处理及处理过的崩溃文件。</p>
-<h2 id="unapproved和approved的崩溃文件分别是什么情况会产生？什么状态算approved？什么状态算unapproved？"><a href="#unapproved和approved的崩溃文件分别是什么情况会产生？什么状态算approved？什么状态算unapproved？" class="headerlink" title="unapproved和approved的崩溃文件分别是什么情况会产生？什么状态算approved？什么状态算unapproved？"></a>unapproved和approved的崩溃文件分别是什么情况会产生？什么状态算approved？什么状态算unapproved？</h2><p>通过Thread.UncaughtExceptionHandler拦截到崩溃异常后，会收集崩溃相关所有信息，存储到一个文件，文件位于unapproved文件夹下；</p>
-<p>当决定要发送上传崩溃信息文件了，就会把崩溃信息文件从unapproved文件夹移动到approved文件夹，再上传approved文件夹下的文件里的信息。</p>
-<p>ErrorReporterImpl实现了Thread.UncaughtExceptionHandler，具体做了什么？</p>
-<p>核心代码：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">uncaughtException</span><span class="params">(<span class="meta">@Nullable</span> Thread t, <span class="meta">@NonNull</span> Throwable e)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Generate and send crash report</span></span><br><span class="line">    <span class="keyword">new</span> ReportBuilder()</span><br><span class="line">            .uncaughtExceptionThread(t)</span><br><span class="line">            .exception(e)</span><br><span class="line">            .customData(customData)</span><br><span class="line">            .endApplication()</span><br><span class="line">            .build(reportExecutor);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>ReportBuilder的build()里其实是执行了reportExecutor.execute(reportBuilder)，在这个方法里实现了崩溃信息上报。</p>
-<h1 id="ReportExecutor-execute-reportBuilder-做了什么？"><a href="#ReportExecutor-execute-reportBuilder-做了什么？" class="headerlink" title="ReportExecutor.execute(reportBuilder)做了什么？"></a>ReportExecutor.execute(reportBuilder)做了什么？</h1><p>常规逻辑主要如下：<br>    1. crashReportDataFactory.createCrashData(reportBuilder) 创建崩溃数据项<br>    2. saveCrashReportFile(reportFile, crashReportData) 保存崩溃数据到本地文件中<br>    3. sendReport(reportFile, executor.hasInteractions()) 根据初始化的配置是否立刻上报发送崩溃信息</p>
-<h2 id="crashReportDataFactory-createCrashData-reportBuilder-做了什么？"><a href="#crashReportDataFactory-createCrashData-reportBuilder-做了什么？" class="headerlink" title="crashReportDataFactory.createCrashData(reportBuilder)做了什么？"></a>crashReportDataFactory.createCrashData(reportBuilder)做了什么？</h2><p>遍历所有的启用的Collector实现类，在单独的线程池里并发调用Collector的collect()方法收集信息，结果存到CrashReportData类中，CrashReportData以json存储信息。</p>
-<h2 id="saveCrashReportFile-reportFile-crashReportData-做了什么？"><a href="#saveCrashReportFile-reportFile-crashReportData-做了什么？" class="headerlink" title="saveCrashReportFile(reportFile, crashReportData) 做了什么？"></a>saveCrashReportFile(reportFile, crashReportData) 做了什么？</h2><p>把crashReportData转为json字符串，写入ACRA-unapproved目录下的文件中</p>
-<h2 id="sendReport-reportFile-executor-hasInteractions-做了什么？"><a href="#sendReport-reportFile-executor-hasInteractions-做了什么？" class="headerlink" title="sendReport(reportFile, executor.hasInteractions()) 做了什么？"></a>sendReport(reportFile, executor.hasInteractions()) 做了什么？</h2><p>把崩溃信息文件从ACRA-unapproved目录移动到ACRA-approved下</p>
-<p>通过CoreConfiguration.reportSenderFactoryClasses()或CoreConfiguration.pluginLoader().loadEnabled(ReportSenderFactory.class)去加载ReportSenderFactory实现类，再创建ReportSender实例。</p>
-<p>调用SchedulerStarter.scheduleReports() -&gt; DefaultSenderScheduler.scheduleReportSending() 。</p>
-<p>如果ReportSender是要后台发送的就用JobSenderService执行，JobSenderService是运行在单独的:acra进程中，JobSenderService做的就是创建一个SendingConductor对象，并调用SendingConductor.sendReports() 。</p>
-<p>如果是前台发送的就再依次调用SendingConductor.sendReports() -&gt; ReportDistributor.distribute() -&gt; ReportDistributor.sendCrashReport()，遍历所有的ReportSender并调用其send()发送上报。</p>
-<p>ReportSender默认的实现有<br>    1. EmailIntentSender，通过Intent调起邮件App发送，前台发送<br>    2. HttpSender，Http网络请求发送上传，后台发送</p>
-<h2 id="次要的逻辑有什么？"><a href="#次要的逻辑有什么？" class="headerlink" title="次要的逻辑有什么？"></a>次要的逻辑有什么？</h2><p>先获取所有ReportingAdministrator的实现类，ReportingAdministrator是控制是否应该发送崩溃报告，这里起作用的是LimitingReportAdministrator。</p>
-<p>先调用ReportingAdministrator.shouldStartCollecting(context,config,reportBuilder)决定是否允许收集信息，也就是记录通过Thead.setDefaultUncaughtExceptionHandler()拦截到的崩溃异常，返回true表示允许，返回false表示不允许。允许的话就会调用crashReportDataFactory.createCrashData(reportBuilder)。</p>
-<p>允许收集信息后，再调用ReportingAdministrator.shouldSendReport(crashReportData)决定是否应该上报，这里会把前面收集到的信息封装为crashReportData，传给shouldSendReport()决定是否应该上报这个崩溃信息。</p>
-<p>如果ReportingAdministrator.shouldSendReport(crashReportData)返回false，即不允许发送崩溃报告，则调用ReportingAdministrator.notifyReportDropped()通知外部崩溃报告被丢弃，没有上报。</p>
-<p><strong>ReportingAdministrator总体来说起到了发送崩溃报告时的拦截器的作用。</strong></p>
-<h1 id="对特定功能处理过程交给拦截器处理，拦截器可以动态注入"><a href="#对特定功能处理过程交给拦截器处理，拦截器可以动态注入" class="headerlink" title="对特定功能处理过程交给拦截器处理，拦截器可以动态注入"></a>对特定功能处理过程交给拦截器处理，拦截器可以动态注入</h1><p>通过PluginLoader动态注入加载创建各种用户可扩展类，例如Collector、ConfigurationBuilderFactory、ReportingAdministrator、ReportInteraction、SenderSchedulerFactory、ReportSenderFactory、StartupProcessor。</p>
-<p>PluginLoader可以在运行时手动load class（SimplePluginLoader），也可以通过ServiceLoad机制去动态加载（ServicePluginLoader）。</p>
-<h1 id="Log、EventLog、DropboxLog之间的区别？"><a href="#Log、EventLog、DropboxLog之间的区别？" class="headerlink" title="Log、EventLog、DropboxLog之间的区别？"></a>Log、EventLog、DropboxLog之间的区别？</h1><p>在Logcat输出的日志主要是给App开发者看的。</p>
-<p>EventLog和DropboxLog输出的日志主要是给平台开发者看的，区别在于EventLog不会保存到文件，DropBoxLog会保存到文件。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/4434192/dropboxmanager-use-cases">https://stackoverflow.com/questions/4434192/dropboxmanager-use-cases</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1806,7 +1732,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">179</span>
+          <span class="site-state-item-count">180</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1819,7 +1745,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">233</span>
+        <span class="site-state-item-count">235</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

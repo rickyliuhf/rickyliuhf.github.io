@@ -10076,6 +10076,278 @@
       </tags>
   </entry>
   <entry>
+    <title>卡顿检测 - TraceCanary浅析</title>
+    <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20TraceCanary%E6%B5%85%E6%9E%90/</url>
+    <content><![CDATA[<h1 id="TraceCanary原理概述"><a href="#TraceCanary原理概述" class="headerlink" title="TraceCanary原理概述"></a>TraceCanary原理概述</h1><p>监控主线程卡顿有两种方案：</p>
+<ol>
+<li> 监控主线程Looper的相邻两次的dispatchMessage的耗时；</li>
+<li> 通过Choreographer监控相邻两次垂直同步信号的时间差。</li>
+</ol>
+<p>当耗时超过阈值，导出当前主线程的堆栈，分析堆栈。</p>
+<p>这两种方法的问题在于，导出的堆栈中并不一定有导致卡顿的方法，无法获取到每个函数的调用耗时，判断并不准确。</p>
+<p>所以就用ASM对App的每个方法做了字节码插桩，在函数执行的执行前后打点统计函数耗时。为每个插桩的函数分配一个独立的ID，在插桩完成后输出一份ID和方法名的映射表，以供分析。</p>
+<span id="more"></span>
+
+<h1 id="需要了解的背景知识"><a href="#需要了解的背景知识" class="headerlink" title="需要了解的背景知识"></a>需要了解的背景知识</h1><ol>
+<li>Handler机制</li>
+<li>Choreographer机制</li>
+<li>Binder机制</li>
+<li>Activity启动流程</li>
+<li>Gradle Plugin</li>
+<li>ASM、Visitor模式、JVM字节码指令执行过程</li>
+</ol>
+<h1 id="TracePlugin里的init方法中创建的AnrTracer、FrameTracer、EvilMethodTracer、StartupTracer分别是做什么的？"><a href="#TracePlugin里的init方法中创建的AnrTracer、FrameTracer、EvilMethodTracer、StartupTracer分别是做什么的？" class="headerlink" title="TracePlugin里的init方法中创建的AnrTracer、FrameTracer、EvilMethodTracer、StartupTracer分别是做什么的？"></a>TracePlugin里的init方法中创建的AnrTracer、FrameTracer、EvilMethodTracer、StartupTracer分别是做什么的？</h1><ol>
+<li> FrameTracer负责帧率检测</li>
+<li> AnrTracer负责ANR问题检测</li>
+<li> EvilMethodTracer负责检测慢函数</li>
+<li> StartupTracer负责应用启动耗时检测</li>
+</ol>
+<p>创建Matrix实例的时候会在Matrix的构造函数调用所有Plugin的init()方法。</p>
+<h1 id="LooperMonitor是做什么的？"><a href="#LooperMonitor是做什么的？" class="headerlink" title="LooperMonitor是做什么的？"></a>LooperMonitor是做什么的？</h1><p>在主线程Looper处理每个消息的前后添加回调方法</p>
+<p>回调方法为 LooperDispatchListener 接口的 dispatchStart() 和 dispatchEnd()</p>
+<p>原理如下：</p>
+<p>给Looper设置自定义的Printer</p>
+<p>Printer仅有一个println(String)方法，会在Looper的loop()方法中处理Message的前后各调用一次</p>
+<p>对于主线程的Looper来说，相当于是在主线程的方法调用前后插桩，可以统计方法的耗时</p>
+<p>通过Looper.setMessageLogging()给Looper设置自定义的LooperPrinter，封装在了LooperMonitor的resetPrinter()方法中，在LooperMonitor的构造函数里会执行</p>
+<p>LooperMonitor的构造函数里又向Looper的MessageQueue添加了IdleHandler</p>
+<p>IdleHandler接口有一个boolean queueIdle()，该方法会在MessageQueue.next()中执行，next()是从消息队列中取一个消息对象返回给Looper用的，如果消息队列为空，就会调用queueIdle()</p>
+<p>返回true表示下一轮处理完消息后还会回调</p>
+<p>返回false表示这是单次回调，这次回调后不会再回调了</p>
+<p>LooperMonitor里添加IdleHandler是做什么呢？</p>
+<p>通过代码查看LooperMonitor中的queueIdle方法，做的是隔60秒以上再执行一下resetPrinter()，目的是防止app中其他地方给主线程的Looper设置了Printer覆盖掉了LooperMonitor里的Printer，这样就没办法执行监控了，所以需要检查并重新设置</p>
+<p>为什么要通过IdleHandler来设置呢？</p>
+<p>因为queueIdle执行时，主线程没有其他事情做了，消息队列的消息都处理完了，所以在这里执行resetPrinter()不会对主线程造成卡顿</p>
+<h1 id="Choreographer中的mCallbackQueues是做什么的？"><a href="#Choreographer中的mCallbackQueues是做什么的？" class="headerlink" title="Choreographer中的mCallbackQueues是做什么的？"></a>Choreographer中的mCallbackQueues是做什么的？</h1><p>为什么要分CALLBACK_INPUT、CALLBACK_ANIMATION、CALLBACK_INSETS_ANIMATION、CALLBACK_TRAVERSAL、CALLBACK_COMMIT几种类型？区分类型的好处在哪？</p>
+<p>垂直同步信号来临之前，有些任务就已经被安排了，通过mCallbackQueues存储了下一帧要执行的任务，在垂直同步信号来临后，执行doFrame()方法，依次执行预期要执行的任务。</p>
+<p>分类的好处：</p>
+<ol>
+<li> 不同类型的任务可以集中执行</li>
+<li> 可以统计每个类型的任务的耗时，如果不分类就不方便统计了</li>
+<li> 可以决定每种类型的任务的执行顺序，便于统一控制</li>
+</ol>
+<h1 id="TraceCanary可以在gradle里配置哪些选项？每个选项的作用是什么"><a href="#TraceCanary可以在gradle里配置哪些选项？每个选项的作用是什么" class="headerlink" title="TraceCanary可以在gradle里配置哪些选项？每个选项的作用是什么?"></a>TraceCanary可以在gradle里配置哪些选项？每个选项的作用是什么?</h1><p>可配置项都在MatrixTraceExtension类里，目前4个成员变量：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">boolean enable;</span><br><span class="line">String baseMethodMapFile;</span><br><span class="line">String blackListFile;</span><br><span class="line">String customDexTransformName;</span><br></pre></td></tr></table></figure>
+
+<p>官方文档和示例代码中的配置选项 <a href="https://github.com/Tencent/matrix#matrix_android_cn">https://github.com/Tencent/matrix#matrix_android_cn</a></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">trace &#123;</span><br><span class="line">    enable = true</span><br><span class="line">    baseMethodMapFile = &quot;$&#123;project.projectDir&#125;/matrixTrace/methodMapping.txt&quot;</span><br><span class="line">    blackListFile = &quot;$&#123;project.projectDir&#125;/matrixTrace/blackMethodList.txt&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个配置项具体什么意思？</p>
+<h2 id="enable"><a href="#enable" class="headerlink" title="enable"></a>enable</h2><p>控制是否进行拦截transform任务进行字节码插桩<br>在MatrixPlugin中控制是否执行MatrixTraceTransform.inject()</p>
+<h2 id="baseMethodMapFile"><a href="#baseMethodMapFile" class="headerlink" title="baseMethodMapFile"></a>baseMethodMapFile</h2><p>用于存储ASM插装拦截的每个方法的方法名称和生成的方法id之间的映射关系</p>
+<h2 id="blackListFile"><a href="#blackListFile" class="headerlink" title="blackListFile"></a>blackListFile</h2><p>指定一个黑名单文件，文件内容格式如下:<br>[package]<br>-keepclass aa/bb/cc<br>-keeppackage com/squareup/<br>黑名单里的类和包下的类都不会进行字节码插桩<br>在TraceClassAdapter调用MethodCollector.isNeedTrace()会用到黑名单列表</p>
+<h2 id="customDexTransformName"><a href="#customDexTransformName" class="headerlink" title="customDexTransformName"></a>customDexTransformName</h2><p>因为android的构建由buildType和flavor组成了各种variant，可能只想给特定variant进行字节码插桩</p>
+<h1 id="Matrix-Gradle-Plugin"><a href="#Matrix-Gradle-Plugin" class="headerlink" title="Matrix Gradle Plugin"></a>Matrix Gradle Plugin</h1><h2 id="MatrixPlugin做了什么？为什么要在project-afterEvaluate后去做？"><a href="#MatrixPlugin做了什么？为什么要在project-afterEvaluate后去做？" class="headerlink" title="MatrixPlugin做了什么？为什么要在project.afterEvaluate后去做？"></a>MatrixPlugin做了什么？为什么要在project.afterEvaluate后去做？</h2><p>project.afterEvaluate()方法作用：<br>该project所有的task都configuration完成后会调用，这样就可以获取到该project的task<br>This can be used to do things like performing additional configuration once all the definitions in a build script have been applied<br><a href="https://docs.gradle.org/current/userguide/build_lifecycle.html#sec:project_evaluation">https://docs.gradle.org/current/userguide/build_lifecycle.html#sec:project_evaluation</a></p>
+<p>主要在afterEvaluate后执行MatrixTraceTransform.inject()</p>
+<h2 id="MatrixTraceTransform-inject-做了什么？"><a href="#MatrixTraceTransform-inject-做了什么？" class="headerlink" title="MatrixTraceTransform.inject()做了什么？"></a>MatrixTraceTransform.inject()做了什么？</h2><p>因为需要获取到transformClassesWithDexTask系列的任务，这些任务都是TransformTask的子类，需要通过反射将TransformTask内部的transform给替换为自定义的Transform（即MatrixTraceTransform）实现字节码插桩</p>
+<p>最终gradle编译时会调用MatrixTraceTransform的transform()方法，先调用自定义的doTransform()，再调用origTransform.transform()</p>
+<h2 id="MatrixTraceTransform-inject-的Configuration的setMethodMapFilePath、setIgnoreMethodMapFilePath、setMappingPath、setTraceClassOut作用是什么？"><a href="#MatrixTraceTransform-inject-的Configuration的setMethodMapFilePath、setIgnoreMethodMapFilePath、setMappingPath、setTraceClassOut作用是什么？" class="headerlink" title="MatrixTraceTransform.inject()的Configuration的setMethodMapFilePath、setIgnoreMethodMapFilePath、setMappingPath、setTraceClassOut作用是什么？"></a>MatrixTraceTransform.inject()的Configuration的setMethodMapFilePath、setIgnoreMethodMapFilePath、setMappingPath、setTraceClassOut作用是什么？</h2><p>setMethodMapFilePath()设置的文件，存储内容是：方法id和每个方法的映射表<br>setIgnoreMethodMapFilePath()设置的文件，存储内容是：不进行插装的方法列表<br>setMappingPath()设置的混淆的mapping文件路径，用于把ASM拦截到的类和方法还原成原始的类名和方法名<br>setTraceClassOut()设置的ASM字节码插装后class文件保存路径，用于原本编译流程中的Transform任务作为输入；在CollectJarInputTask、CollectDirectoryInputTask会用到；目录默认位于builds/outputs/traceClassOut</p>
+<h2 id="MatrixTraceTransform的doTransform-在做什么"><a href="#MatrixTraceTransform的doTransform-在做什么" class="headerlink" title="MatrixTraceTransform的doTransform()在做什么?"></a>MatrixTraceTransform的doTransform()在做什么?</h2><p>三步走：<br>    1. 解析proguard的mapping文件，记录保存混淆前后类名、方法名的映射关系<br>    2. 收集项目所有class的方法信息，给每个方法生成一个唯一的id标识，所有信息在内存中保存一份，也输出一份到文件中，以查找方法id和每个方法的映射关系<br>    3. 对项目中所有class的方法进行字节码插桩</p>
+<h2 id="MatrixTraceTransform的doTransform-中的ParseMappingTask、MappingCollector在干什么？"><a href="#MatrixTraceTransform的doTransform-中的ParseMappingTask、MappingCollector在干什么？" class="headerlink" title="MatrixTraceTransform的doTransform()中的ParseMappingTask、MappingCollector在干什么？"></a>MatrixTraceTransform的doTransform()中的ParseMappingTask、MappingCollector在干什么？</h2><p>对应doTransform()三步走的第一步</p>
+<p>读取mapping.txt里的类和方法混淆前后的映射关系，存储到MappingCollector的各个属性中</p>
+<p>proguard mapping路径示例<br>build\outputs\mapping\midongPlay\release</p>
+<p>mapping.txt大致内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">com.google.common.collect.Synchronized$SynchronizedBiMap -&gt; dc0$e:</span><br><span class="line">    java.util.Set valueSet -&gt; f</span><br><span class="line">    com.google.common.collect.BiMap inverse -&gt; g</span><br><span class="line">    1:1:java.lang.Object delegate():1160:1160 -&gt; c</span><br><span class="line">    1:3:java.lang.Object forcePut(java.lang.Object,java.lang.Object):1189:1191 -&gt; forcePut</span><br><span class="line">    2:2:java.util.Map delegate():1160:1160 -&gt; c</span><br><span class="line">    4:5:com.google.common.collect.BiMap inverse():1200:1201 -&gt; inverse</span><br><span class="line">    1:1:java.util.Collection values():1160:1160 -&gt; values</span><br></pre></td></tr></table></figure>
+
+<h2 id="doTransform-第一步的CollectDirectoryInputTask、CollectJarInputTask在做什么？"><a href="#doTransform-第一步的CollectDirectoryInputTask、CollectJarInputTask在做什么？" class="headerlink" title="doTransform()第一步的CollectDirectoryInputTask、CollectJarInputTask在做什么？"></a>doTransform()第一步的CollectDirectoryInputTask、CollectJarInputTask在做什么？</h2><p>CollectDirectoryInputTask中通过反射把DirectoryInput的file属性替换为traceClassOut目录的位置<br>CollectJarInputTask中通过反射把JarInput的file属性替换为traceClassOut目录的位置</p>
+<p>DirectoryInput是接口，实现类是ImmutableDirectoryInput，ImmutableDirectoryInput的父类是QualifiedContentImpl，里面有一个file属性。<br>JarInput是接口，实现类是ImmutableJarInput，ImmutableJarInput的父类是QualifiedContentImpl，里面有一个file属性。</p>
+<h2 id="traceClassOut目录的值是什么？里面存放的是什么？有什么作用？"><a href="#traceClassOut目录的值是什么？里面存放的是什么？有什么作用？" class="headerlink" title="traceClassOut目录的值是什么？里面存放的是什么？有什么作用？"></a>traceClassOut目录的值是什么？里面存放的是什么？有什么作用？</h2><p>存储的是doTransform第三步用ASM进行字节码插桩后class文件和jar文件。<br>在doTransform第一步中，CollectDirectoryInputTask、CollectJarInputTask会填充dirInputOutMap、jarInputOutMap两个map，map的key是原始的输入，value是ASM插桩后字节码文件的输出路径<br>在doTransform第三步中，dirInputOutMap、jarInputOutMap会传递给MethodTracer.trace()，最后分别在innerTraceMethodFromSrc()、innerTraceMethodFromJar()把traceClassOut路径赋值作为ASM的输出路径</p>
+<h2 id="为什么要替换DirectoryInput的file属性？这个file属性有什么用？"><a href="#为什么要替换DirectoryInput的file属性？这个file属性有什么用？" class="headerlink" title="为什么要替换DirectoryInput的file属性？这个file属性有什么用？"></a>为什么要替换DirectoryInput的file属性？这个file属性有什么用？</h2><p>DirectoryInput和JarInput代表的是当前Transform任务的输入，替换输入的file属性，相当于改变了任务的输入。</p>
+<h2 id="为什么要改变Transform任务的输入？是为了达成什么目的？"><a href="#为什么要改变Transform任务的输入？是为了达成什么目的？" class="headerlink" title="为什么要改变Transform任务的输入？是为了达成什么目的？"></a>为什么要改变Transform任务的输入？是为了达成什么目的？</h2><p>因为MatrixTraceTransform.inject()中拦截了所有的TransformTask，把TransformTask的transform属性都替换为了MatrixTraceTransform，同时将原来的Transform对象也传给了MatrixTraceTransform。<br>在MatrixTraceTransform的transform()方法里，会先执行doTransform()，然后再执行原始的Transform对象的transform()，原始的Transform对象就可以用经过ASM字节码插桩后的class作为输入了</p>
+<h2 id="MethodCollector在做什么？"><a href="#MethodCollector在做什么？" class="headerlink" title="MethodCollector在做什么？"></a>MethodCollector在做什么？</h2><p>收集项目代码、依赖jar包中所有方法的信息<br>方法信息包括名称、描述符、访问限定符、所属类名、唯一标识的id<br>其中方法id是通过一个全局变量自增生成，每扫描到一个方法，方法id变量就自增加1</p>
+<p>具体过程：</p>
+<p>收集DirectoryInput指定的目录下的所有class文件路径，针对每个class文件执行CollectSrcTask。<br>针对所有JarInput指定的jar路径，执行CollectJarTask。</p>
+<p>CollectSrcTask中使用ASM处理每一个class文件，处理过程交给了TraceClassAdapter类。<br>CollectJarTask会用ZipFile遍历每一个Entry，检查是class就使用ASM处理class文件，处理过程交给了TraceClassAdapter类。</p>
+<p>ASM相关代码调用如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">InputStream is = new FileInputStream(classFile);</span><br><span class="line">ClassReader classReader = new ClassReader(is);</span><br><span class="line">ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);</span><br><span class="line">ClassVisitor visitor = new TraceClassAdapter(Opcodes.ASM5, classWriter);</span><br><span class="line">classReader.accept(visitor, 0);</span><br></pre></td></tr></table></figure>
+
+<p>以上处理完成class后没有获取classWriter的结果进行输出，这里只是读取所有的方法，为每个方法生成一个methodId</p>
+<p>读取完所有的方法后，接着执行saveIgnoreCollectedMethod和saveCollectedMethod</p>
+<h3 id="saveIgnoreCollectedMethod在做什么"><a href="#saveIgnoreCollectedMethod在做什么" class="headerlink" title="saveIgnoreCollectedMethod在做什么?"></a>saveIgnoreCollectedMethod在做什么?</h3><p>把先前CollectSrcTask、CollectJarTask中用ASM收集到的要忽略的、不进行插桩的方法输出保存到configuration.ignoreMethodMapFilePath指定的路径的文件中。<br>默认位置是在proguard的mapping.txt同目录下，文件名为ignoreMethodMapping.txt</p>
+<h3 id="saveCollectedMethod在做什么？"><a href="#saveCollectedMethod在做什么？" class="headerlink" title="saveCollectedMethod在做什么？"></a>saveCollectedMethod在做什么？</h3><p>把先前CollectSrcTask、CollectJarTask中用ASM收集到的要进行插桩的方法输出保存到configuration.methodMapFilePath指定的路径的文件中。<br>默认位置是在proguard的mapping.txt同目录下，文件名为methodMapping.txt</p>
+<h2 id="MethodTracer在做什么"><a href="#MethodTracer在做什么" class="headerlink" title="MethodTracer在做什么?"></a>MethodTracer在做什么?</h2><p>给项目中所有类（包括项目目录代码、第三方jar包）进行字节码插装。<br>插桩后的字节码输出保存到Configuration中traceClassOut指定的目录下，以供原始的Transform进行处理</p>
+<h2 id="如何向没有实现onWindowFocusChanged-boolean-hasFocus-方法的Activity实例中插入该方法？"><a href="#如何向没有实现onWindowFocusChanged-boolean-hasFocus-方法的Activity实例中插入该方法？" class="headerlink" title="如何向没有实现onWindowFocusChanged(boolean hasFocus)方法的Activity实例中插入该方法？"></a>如何向没有实现onWindowFocusChanged(boolean hasFocus)方法的Activity实例中插入该方法？</h2><p>具体在MethodTracer.TraceClassAdapter类中实现<br>TraceClassAdapter继承的是ClassVisitor</p>
+<p>在TraceClassAdapter的visitMethod(int access, String name, String desc, String signature, String[] exceptions) 方法中，通过检查方法名name和方法的描述符desc判断是否实现了一个类onWindowFocusChanged()方法，如果一个类实现了onWindowFocusChanged()，那么ASM扫描字节码就一定会走到visitMethod()</p>
+<p>当一个类所有的属性和方法都被扫描处理完成后，会调用TraceClassAdapter的visitEnd()，在其中判断如果当前类是Activity子类并且未实现onWindowFocusChanged()，就会调用insertWindowFocusChangeMethod()插入该方法</p>
+<h1 id="UIThreadMonitor"><a href="#UIThreadMonitor" class="headerlink" title="UIThreadMonitor"></a>UIThreadMonitor</h1><h2 id="TracePlugin的start-方法里出现的UIThreadMonitor是做什么的？"><a href="#TracePlugin的start-方法里出现的UIThreadMonitor是做什么的？" class="headerlink" title="TracePlugin的start()方法里出现的UIThreadMonitor是做什么的？"></a>TracePlugin的start()方法里出现的UIThreadMonitor是做什么的？</h2><ol>
+<li>对Handler的消息处理和Choreographer的INPUT、ANIMATION、TRAVERSAL几个动作做耗时计算</li>
+<li>提供Handler消息处理前后的回调、Choreographer的doFrame执行的回调给LooperObserver的dispatchBegin、dispatchEnd、doFrame方法，详细的耗时传递在各方法的参数中</li>
+</ol>
+<p>所有的Tracer都实现了LooperObserver接口，Tracer的子类有AnrTracer、FrameTracer、EvilMethodTracer、StartupTracer</p>
+<p>原理如下：</p>
+<p>TracePlugin.start()会依次调用UIThreadMonitor的init()和onStart()</p>
+<p>Plugin的start()都需要手动调用的，TracePlugin.start()会在自定义的Application的onCreate()中调用</p>
+<p>UIThreadMonitor.init()中主要做了两件事：</p>
+<ol>
+<li>反射获取Choreographer的mCallbackQueues，以及其中的INPUT、ANIMATION、TRAVERSAL对应CallbackQueue的addCallbackLocked方法的引用</li>
+<li>向LooperMonitor注册了一个LooperDispatchListener，将dispatchStart()和dispatchEnd()分发给UIThreadMonitor的dispatchBegin()和dispatchEnd()</li>
+</ol>
+<p>UIThreadMonitor.onStart()中主要是执行addFrameCallback(CALLBACK_INPUT,this,true)，方法内部通过反射相当于执行了Choreographer.mCallbackQueues[CALLBACK_ANIMATION].addCallbackLocked()，传递的callback是UIThreadMonitor自身，UIThreadMonitor实现了Runnable接口</p>
+<h2 id="为什么要给CALLBACK-INPUT加回调呢？为什么不直接调用Choreographer-postFrameCallback-FrameCallback-来添加回调？"><a href="#为什么要给CALLBACK-INPUT加回调呢？为什么不直接调用Choreographer-postFrameCallback-FrameCallback-来添加回调？" class="headerlink" title="为什么要给CALLBACK_INPUT加回调呢？为什么不直接调用Choreographer.postFrameCallback(FrameCallback)来添加回调？"></a>为什么要给CALLBACK_INPUT加回调呢？为什么不直接调用Choreographer.postFrameCallback(FrameCallback)来添加回调？</h2><p>首先Choreographer.postFrameCallback(FrameCallback)内部是调用了mCallbackQueues[CALLBACK_ANIMATION].addCallbackLocked()</p>
+<p>其次得看CALLBACK_INPUT的callback action执行了什么，也就是UIThreadMonitor.run()里做了什么？</p>
+<p>其实就是对INPUT、ANIMATION、TRAVERSAL分别进行了耗时统计，并把耗时存放在queueCost数组中，这些耗时统计的是一帧内的耗时</p>
+<h2 id="CALLBACK-TRAVERSAL的回调耗时应该在哪进行结束统计？"><a href="#CALLBACK-TRAVERSAL的回调耗时应该在哪进行结束统计？" class="headerlink" title="CALLBACK_TRAVERSAL的回调耗时应该在哪进行结束统计？"></a>CALLBACK_TRAVERSAL的回调耗时应该在哪进行结束统计？</h2><p>doFrameEnd()中对TRAVERSAL回调做了耗时结束的统（doQueueEnd(CALLBACK_TRAVERSAL)），doFrameEnd()又是在dispatchEnd()中调用的，dispatchEnd()在Looper处理完一个消息后会被调用</p>
+<h2 id="为什么dispatchEnd-可以算作是一帧的结束？即为什么dispatchEnd-可以调用doFrameEnd-？"><a href="#为什么dispatchEnd-可以算作是一帧的结束？即为什么dispatchEnd-可以调用doFrameEnd-？" class="headerlink" title="为什么dispatchEnd()可以算作是一帧的结束？即为什么dispatchEnd()可以调用doFrameEnd()？"></a>为什么dispatchEnd()可以算作是一帧的结束？即为什么dispatchEnd()可以调用doFrameEnd()？</h2><p>因为Choreographer.doFrame()也是用过Handler发送异步消息调用的，这一点可以在FrameDisplayEventReceiver的onVsync的最后几行代码确认。<br>而LooperMonitor对主线程Looper的消息处理的前后进行了拦截，在调用Choreographer.doFrame()之前，会先调用LooperMonitor.LooperDispatchListener的dispatchStart()，UIThreadMonitor.init()里向LooperMonitor注册了一个LooperDispatchListener，将LooperDispatchListener的dispatchStart()和dispatchEnd()回调分发给UIThreadMonitor的dispatchBegin()和dispatchEnd()。<br>也就是说在UIThreadMonitor.onStart()和run()中对Choreographer addFrameCallback() 的3个Runnable，都会在UIThreadMonitor的dispatchBegin()调用后和dispatchEnd()调用前这个时间段内调用，这个意思就是几个FrameCallack执行的时候，当前Looper处理的消息一定是Choreographer.doFrame()的消息，因为几个FrameCallack就是在Choreographer.doFrame()中执行的。<br>第一个FrameCallback中（即UIThreadMonitor的run方法）调用了doFrameBegin()，里面给isVsyncFrame设置了true，等到调用dispatchEnd()的时候，一定是这一帧结束了，所以可以调用doFrameEnd。</p>
+<h2 id="dispatchBegin-和dispatchEnd-中System-nanoTime-和SystemClock-currentThreadTimeMillis-有什么区别？"><a href="#dispatchBegin-和dispatchEnd-中System-nanoTime-和SystemClock-currentThreadTimeMillis-有什么区别？" class="headerlink" title="dispatchBegin()和dispatchEnd()中System.nanoTime()和SystemClock.currentThreadTimeMillis()有什么区别？"></a>dispatchBegin()和dispatchEnd()中System.nanoTime()和SystemClock.currentThreadTimeMillis()有什么区别？</h2><p>System.nanoTime()<br>单位：纳秒<br>android系统开机到当前的时间<br>系统设置修改时钟，不影响该时间。<br>重启android系统后该值会重置为0。</p>
+<p>1秒 = 1000毫秒； 1毫秒=1000微秒； 1微秒=1000纳秒<br>纳秒他是毫秒的百万分之一。远比毫秒的颗粒度要低。</p>
+<p>SystemClock.currentThreadTimeMillis()<br>当前线程处于running状态经过的时间，线程失去CPU时间片后不会计时</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/22817626">如何正确地统计函数执行时间</a></li>
+</ul>
+<h1 id="AppActiveMatrixDelegate"><a href="#AppActiveMatrixDelegate" class="headerlink" title="AppActiveMatrixDelegate"></a>AppActiveMatrixDelegate</h1><h2 id="为什么AppActiveMatrixDelegate是一个枚举，枚举项只有一个INSTANCE？"><a href="#为什么AppActiveMatrixDelegate是一个枚举，枚举项只有一个INSTANCE？" class="headerlink" title="为什么AppActiveMatrixDelegate是一个枚举，枚举项只有一个INSTANCE？"></a>为什么AppActiveMatrixDelegate是一个枚举，枚举项只有一个INSTANCE？</h2><p>通过枚举实现线程安全的单例模式，这样代码量最少，同时也解决了反序列化破坏单例唯一性的问题</p>
+<p>参考：<a href="https://juejin.im/post/5b285d236fb9a00e9b39fdd2">为什么我墙裂建议大家使用枚举来实现单例</a></p>
+<h2 id="init-做了什么？"><a href="#init-做了什么？" class="headerlink" title="init()做了什么？"></a>init()做了什么？</h2><p>init()是在Matrix对象的构造函数中调用的</p>
+<ol>
+<li>创建了一个默认的HandlerThread，获取其Looper用来创建一个Handler，以在子线程执行任务</li>
+<li>调用Application.registerComponentCallbacks()注册一个监听器</li>
+<li>调用Application.registerActivityLifecycleCallbacks()注册一个监听器</li>
+</ol>
+<h2 id="调用Application-registerActivityLifecycleCallbacks-注册一个监听器-是为了做什么？"><a href="#调用Application-registerActivityLifecycleCallbacks-注册一个监听器-是为了做什么？" class="headerlink" title="调用Application.registerActivityLifecycleCallbacks()注册一个监听器 是为了做什么？"></a>调用Application.registerActivityLifecycleCallbacks()注册一个监听器 是为了做什么？</h2><p>onActivityStarted()调用时<br>    1. 记录当前可见的Activity的类名赋值给visibleScene<br>    2. 执行onDispatchForeground(String visibleScene)通知向AppActiveMatrixDelegate注册的IAppForeground监听器应用进入前台了</p>
+<p>onActivityStopped()调用时<br>    1. 通过getTopActivityName() == null 判断当前进程没有activity在运行了<br>    2. 执行onDispatchBackground(String visibleScene)通知向AppActiveMatrixDelegate注册的IAppForeground监听器应用进入后台了</p>
+<h2 id="调用Application-registerComponentCallbacks-注册一个监听器-是为了做什么？"><a href="#调用Application-registerComponentCallbacks-注册一个监听器-是为了做什么？" class="headerlink" title="调用Application.registerComponentCallbacks()注册一个监听器 是为了做什么？"></a>调用Application.registerComponentCallbacks()注册一个监听器 是为了做什么？</h2><p>为了在ComponentCallbacks的onTrimMemory()监听到TRIM_MEMORY_UI_HIDDEN事件，作为应用进入后台的另外一个触发时机</p>
+<h2 id="ComponentCallbacks-onTrimMemory-是做什么的？TRIM-MEMORY-UI-HIDDEN是什么意思？"><a href="#ComponentCallbacks-onTrimMemory-是做什么的？TRIM-MEMORY-UI-HIDDEN是什么意思？" class="headerlink" title="ComponentCallbacks.onTrimMemory()是做什么的？TRIM_MEMORY_UI_HIDDEN是什么意思？"></a>ComponentCallbacks.onTrimMemory()是做什么的？TRIM_MEMORY_UI_HIDDEN是什么意思？</h2><p>onTrimMemory是Android在4.0之后加入的一个回调，任何实现了ComponentCallbacks2接口的类都可以重写实现这个回调方法</p>
+<p>onTrimMemory的主要作用就是指导应用程序在不同的情况下进行自身的内存释放，以避免被系统直接杀掉，提高应用程序的用户体验.</p>
+<p>系统提供onTrimMemory()回调的类有：Application/Activity/Fragement/Service/ContentProvider<br>这些类都实现了ComponentCallbacks2接口</p>
+<p>Android系统会根据不同等级的内存使用情况，调用这个函数，并传入对应的等级：</p>
+<p>TRIM_MEMORY_UI_HIDDEN<br>表示应用程序的所有UI界面被隐藏了，只有当我们程序中的所有UI组件全部不可见的时候才会触发。<br>即用户点击了Home键或者Back键导致应用的UI界面不可见．这时候应该释放一些资源．</p>
+<p>需要注意的是，onTrimMemory的TRIM_MEMORY_UI_HIDDEN 等级是在onStop方法之前调用的．</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://androidperformance.com/2015/07/20/Android-Performance-Memory-onTrimMemory/">Android 代码内存优化建议 - OnTrimMemory 优化</a></li>
+</ul>
+<h2 id="为什么要监听TRIM-MEMORY-UI-HIDDEN？不监听会有什么问题？不是已经在onActivityStopped-中判断过了吗？"><a href="#为什么要监听TRIM-MEMORY-UI-HIDDEN？不监听会有什么问题？不是已经在onActivityStopped-中判断过了吗？" class="headerlink" title="为什么要监听TRIM_MEMORY_UI_HIDDEN？不监听会有什么问题？不是已经在onActivityStopped()中判断过了吗？"></a>为什么要监听TRIM_MEMORY_UI_HIDDEN？不监听会有什么问题？不是已经在onActivityStopped()中判断过了吗？</h2><p>因为getTopActivityName() 是通过反射获取ActivityThread中的mActivities，如果系统升级或在定制的系统上，反射有可能失败，这样getTopActivityName()就会失效，需要通过另外一个机制来做备案。</p>
+<h2 id="创建的Handler是在做什么任务需要在子线程执行？"><a href="#创建的Handler是在做什么任务需要在子线程执行？" class="headerlink" title="创建的Handler是在做什么任务需要在子线程执行？"></a>创建的Handler是在做什么任务需要在子线程执行？</h2><p>在子线程中通知向AppActiveMatrixDelegate注册的IAppForeground监听器应用进入前台或后台了。</p>
+<h2 id="为什么要在子线程执行监听器的回调？"><a href="#为什么要在子线程执行监听器的回调？" class="headerlink" title="为什么要在子线程执行监听器的回调？"></a>为什么要在子线程执行监听器的回调？</h2><p>因为执行listener的回调前需要对监听器列表listeners进行synchronized同步锁定，避免通知时listeners被其他线程修改，在主线程加锁会拖慢主线程运行速度。</p>
+<h2 id="getTopActivityName-为什么要通过反射获取ActivityThread-mActivities，遍历获取第一个没有pause的ActivityClientRecord里的activity？直接在回调里记录最顶层的activity不行吗？"><a href="#getTopActivityName-为什么要通过反射获取ActivityThread-mActivities，遍历获取第一个没有pause的ActivityClientRecord里的activity？直接在回调里记录最顶层的activity不行吗？" class="headerlink" title="getTopActivityName()为什么要通过反射获取ActivityThread.mActivities，遍历获取第一个没有pause的ActivityClientRecord里的activity？直接在回调里记录最顶层的activity不行吗？"></a>getTopActivityName()为什么要通过反射获取ActivityThread.mActivities，遍历获取第一个没有pause的ActivityClientRecord里的activity？直接在回调里记录最顶层的activity不行吗？</h2><p>优点：获取android framework代码里的状态是最准确的，不会有偏差<br>缺点：反射会比一般的方法调用要耗时</p>
+<p>这里对精确度的要求应该更高。</p>
+<h1 id="AppMethodBeat的i-、o-应该在何处调用？"><a href="#AppMethodBeat的i-、o-应该在何处调用？" class="headerlink" title="AppMethodBeat的i()、o()应该在何处调用？"></a>AppMethodBeat的i()、o()应该在何处调用？</h1><p>在UIThreadMonitor的dispatchBegin()和dispatchEnd()中调用。</p>
+<p>这样监听了所有主线程的Looper处理消息时所有方法的调用。</p>
+<h1 id="AnrTracer"><a href="#AnrTracer" class="headerlink" title="AnrTracer"></a>AnrTracer</h1><h2 id="AnrTracer是如何检测ANR的？"><a href="#AnrTracer是如何检测ANR的？" class="headerlink" title="AnrTracer是如何检测ANR的？"></a>AnrTracer是如何检测ANR的？</h2><p>在Looper处理一个消息之前，延迟执行一个任务，如果 5s 内没有取消这个任务，则认为 ANR 发生；</p>
+<p>这时会在任务中主动取出当前记录的 buffer 数据进行独立分析上报，对这种 ANR 事件进行单独监控及定位。</p>
+<p>具体实现：</p>
+<p>在dispatchBegin()中创建了一个AnrHandleTask实例，通过anrHandler.postDelayed()延迟执行。</p>
+<p>其中anrHandler的Looper是MatrixHandlerThread.getDefaultHandlerThread()返回的HandlerThread的Looper，也就是说anrHandler里的所有任务和消息都会在子线程执行，不会导致主线程卡顿。</p>
+<h2 id="dispatchBegin-中anrHandler-postDelayed-为什么延迟时间要设置为Constants-DEFAULT-ANR-System-nanoTime-token-Constants-TIME-MILLIS-TO-NANO？而不是直接用Constants-DEFAULT-ANR作为延迟时间"><a href="#dispatchBegin-中anrHandler-postDelayed-为什么延迟时间要设置为Constants-DEFAULT-ANR-System-nanoTime-token-Constants-TIME-MILLIS-TO-NANO？而不是直接用Constants-DEFAULT-ANR作为延迟时间" class="headerlink" title="dispatchBegin()中anrHandler.postDelayed()为什么延迟时间要设置为Constants.DEFAULT_ANR-(System.nanoTime()-token)/Constants.TIME_MILLIS_TO_NANO？而不是直接用Constants.DEFAULT_ANR作为延迟时间?"></a>dispatchBegin()中anrHandler.postDelayed()为什么延迟时间要设置为Constants.DEFAULT_ANR-(System.nanoTime()-token)/Constants.TIME_MILLIS_TO_NANO？而不是直接用Constants.DEFAULT_ANR作为延迟时间?</h2><p>其中</p>
+<p>DEFAULT_ANR = 5* 1000</p>
+<p>TIME_MILLIS_TO_NANO = 1000000</p>
+<p>默认认为主线程Looper的Message处理超过5秒即为卡顿</p>
+<p>token是在UIThreadMonitor.dispatchBegin()通过System.nanoTime()赋值的，意思是主线程Looper开始处理Message前获取的一个时间戳</p>
+<p>UIThreadMonitor.dispatchBegin()一直到anrHandler.postDelayed()是有时间消耗的，虽然代码上没有多少代码，但为了准确性，要减去这个时间消耗，这个消耗的时长就是System.nanoTime()-token，单位是纳秒，除以Constants.TIME_MILLIS_TO_NANO把单位转换为毫秒</p>
+<h2 id="AnrHandleTask里做了什么？"><a href="#AnrHandleTask里做了什么？" class="headerlink" title="AnrHandleTask里做了什么？"></a>AnrHandleTask里做了什么？</h2><p>取出AppMethodBeat当前记录的 buffer 数据进行分析上报</p>
+<p>buffer里存放的都是long，存储了方法的id、进入方法的时间、退出方法的时间</p>
+<p>数据格式参见：</p>
+<p><a href="https://github.com/Tencent/matrix/wiki/Matrix-Android-TraceCanary">https://github.com/Tencent/matrix/wiki/Matrix-Android-TraceCanary</a></p>
+<p>编译期已经对全局的函数进行插桩，在运行期间每个函数的执行前后都会调用 MethodBeat.i/o 的方法，如果是在主线程中执行，则在函数的执行前后获取当前距离 MethodBeat 模块初始化的时间 offset（为了压缩数据，存进一个long类型变量中），并将当前执行的是 MethodBeat i或者o、mehtod id 及时间 offset，存放到一个 long 类型变量中，记录到一个预先初始化好的数组 long[] 中 index 的位置（预先分配记录数据的 buffer 长度为 100w，内存占用约 7.6M）。数据存储如下图：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210829231523.png"></p>
+<h2 id="怎么知道发生卡顿前的时间点是在哪？从哪条记录开始取？"><a href="#怎么知道发生卡顿前的时间点是在哪？从哪条记录开始取？" class="headerlink" title="怎么知道发生卡顿前的时间点是在哪？从哪条记录开始取？"></a>怎么知道发生卡顿前的时间点是在哪？从哪条记录开始取？</h2><p>dispatchBegin()的时候，也就是主线程Looper处理Message前，通过AppMethodBeat.maskIndex()创建了一个IndexRecord传递给了AnrHandleTask。</p>
+<p>AppMethodBeat.maskIndex()创建IndexRecord时，记录下了当前是从哪个方法开始执行的，即记录了buffer数组的索引。</p>
+<p>在AnrHandleTask.run()中执行AppMethodBeat.getInstance().copyData(beginRecord)时，copyData()内部会再创建一个IndexRecord并取得此时buffer的索引作为结束索引。</p>
+<p>copyData()就是在AppMethodBeat的sBuffer数组中取这两个索引之间的数据出来上报。</p>
+<h2 id="上报时怎么通过method-id找到对应调的是哪个类的哪个方法？"><a href="#上报时怎么通过method-id找到对应调的是哪个类的哪个方法？" class="headerlink" title="上报时怎么通过method id找到对应调的是哪个类的哪个方法？"></a>上报时怎么通过method id找到对应调的是哪个类的哪个方法？</h2><p>通过代理编译期间的任务 transformClassesWithDexTask，将全局 class 文件作为输入，利用 ASM 工具，高效地对所有 class 文件进行扫描及插桩。</p>
+<p>为了方便及高效记录函数执行过程，我们为每个插桩的函数分配一个独立 ID，在插桩过程中，记录插桩的函数签名及分配的 ID，在插桩完成后输出一份 mapping，作为数据上报后的解析支持。</p>
+<h2 id="AppMethodBeat-maskIndex-是做什么的？IndexRecord有什么作用？传给AnrHandleTask做什么？"><a href="#AppMethodBeat-maskIndex-是做什么的？IndexRecord有什么作用？传给AnrHandleTask做什么？" class="headerlink" title="AppMethodBeat.maskIndex()是做什么的？IndexRecord有什么作用？传给AnrHandleTask做什么？"></a>AppMethodBeat.maskIndex()是做什么的？IndexRecord有什么作用？传给AnrHandleTask做什么？</h2><p>AppMethodBeat中的sIndexRecordHead是一个链表，按照IndexRecord.index从小到大从左到右排列。</p>
+<p>AppMethodBeat.maskIndex(String source)里新建了一个IndexRecord结点，index值为sIndex-1，按index顺序插入链表。</p>
+<h1 id="EvilMethodTracer"><a href="#EvilMethodTracer" class="headerlink" title="EvilMethodTracer"></a>EvilMethodTracer</h1><h2 id="EvilMethodTracer做了什么？"><a href="#EvilMethodTracer做了什么？" class="headerlink" title="EvilMethodTracer做了什么？"></a>EvilMethodTracer做了什么？</h2><p>TraceConfig中配置的方法耗时阈值（默认是700毫秒）来判断某个message dispatch时间是否过长，超过阈值则把进程信息，CPU使用率，调用栈(包含具体方法耗时)，这帧input、animation、traversal耗时等信息上报</p>
+<h2 id="AnalyseTask做了什么？"><a href="#AnalyseTask做了什么？" class="headerlink" title="AnalyseTask做了什么？"></a>AnalyseTask做了什么？</h2><p>三步走：</p>
+<ol>
+<li> 获取要上报的方法调用信息，并做适当的裁剪，去除对分析没有帮助的冗余信息，减少上报体积</li>
+<li> 生成唯一标识方法调用栈的key，方便后台做聚合处理</li>
+<li> 上报信息</li>
+</ol>
+<h2 id="如何获取方法调用信息？如何进行裁剪？"><a href="#如何获取方法调用信息？如何进行裁剪？" class="headerlink" title="如何获取方法调用信息？如何进行裁剪？"></a>如何获取方法调用信息？如何进行裁剪？</h2><p>通过TraceDataUtils的structuredDataToStack()、trimStack()对long[] data做修剪，提取出方法的id、耗时、调用深度，并只保留最多30个方法的信息，会忽略调用深度过深的方法。</p>
+<h2 id="如何生成方法调用栈的key？"><a href="#如何生成方法调用栈的key？" class="headerlink" title="如何生成方法调用栈的key？"></a>如何生成方法调用栈的key？</h2><p>生成key是调用如下的方法</p>
+<p><code>TraceDatautils.getTreeKey(List&lt;MethodItem&gt; stack, long stackCost)</code></p>
+<p>stack是由TraceDataUtils的structuredDataToStack()、trimStack()得来的。</p>
+<p>stackCost是<code>TraceDataUtils.stackToString(List&lt;MethodItem&gt; stack)</code>返回得来的。</p>
+<p>stackToString()就是寻找stack里耗时最大的方法的耗时，这个方法是哪个方法呢，就是调用深度为0的方法。</p>
+<p>具体这个有什么用得看后面的getTreeKey()里面是怎么处理的。</p>
+<h3 id="getTreeKey-做了什么？"><a href="#getTreeKey-做了什么？" class="headerlink" title="getTreeKey()做了什么？"></a>getTreeKey()做了什么？</h3><p>第1步：</p>
+<p>从stack中过滤得到所有耗时大于stackCost * 0.3耗时的MethodItem，得到一个LinkedList<MethodItem>sortList</p>
+<p>第2步：</p>
+<p>排序sortList</p>
+<p>排序比较的基准是按照  方法的调用深度 * 方法耗时  从大到小的排列</p>
+<p>第3步：</p>
+<p>按序遍历sortList，取出sortList中所有元素的methodId拼接为字符串作为key</p>
+<h2 id="如何上报信息？"><a href="#如何上报信息？" class="headerlink" title="如何上报信息？"></a>如何上报信息？</h2><p>三步走：</p>
+<ol>
+<li> 通过Matrix.with().getPluginByClass(TracePlugin.class)获取TracePlugin实例</li>
+<li> 生成一个Issue对象，把上报信息都塞进去</li>
+<li> 调用TracePlugin.onDetectIssue(issue)</li>
+</ol>
+<h2 id="打印的logcat日志是什么样子？"><a href="#打印的logcat日志是什么样子？" class="headerlink" title="打印的logcat日志是什么样子？"></a>打印的logcat日志是什么样子？</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; maybe happens Jankiness!(870ms) &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span><br><span class="line">|* [Status]</span><br><span class="line">|*		Scene: com.xiaomi.hm.health.activity.MainTabActivity</span><br><span class="line">|*		Foreground: true</span><br><span class="line">|*		Priority: 10	Nice: -10</span><br><span class="line">|*		is64BitRuntime: true</span><br><span class="line">|*		CPU: 78.97%</span><br><span class="line">|* [doFrame]</span><br><span class="line">|*		inputCost:animationCost:traversalCost</span><br><span class="line">|*		216667:745313:2104688</span><br><span class="line">|*		StackKey: 171|</span><br><span class="line">|*		TraceStack:</span><br><span class="line">|*		[id count cost]</span><br><span class="line">|*		1048574 1 871</span><br><span class="line">|*		.138415 1 79</span><br><span class="line">|*		..169 1 53</span><br><span class="line">|*		...11645 1 53</span><br><span class="line">|*		....108755 1 53</span><br><span class="line">|*		.....205696 1 53</span><br><span class="line">|*		......205676 1 53</span><br><span class="line">|*		.......97487 1 53</span><br><span class="line">|*		........97795 1 53</span><br><span class="line">|*		.........97808 1 53</span><br><span class="line">|*		..........103756 1 53</span><br><span class="line">|*		...........103813 1 53</span><br><span class="line">|*		............106527 1 53</span><br><span class="line">|*		.............106533 1 53</span><br><span class="line">|*		.171 1 637</span><br><span class="line">|*		..255 1 109</span><br><span class="line">|*		...225 1 51</span><br><span class="line">|*		...11058 1 52</span><br><span class="line">|*		....11060 1 52</span><br><span class="line">|*		..117374 1 51</span><br><span class="line">|*		...117379 1 51</span><br><span class="line">|*		....117385 7 46</span><br><span class="line">|*		.....117417 1 46</span><br><span class="line">|*		......117424 1 46</span><br><span class="line">|*		.......307 1 46</span><br><span class="line">|*		........324 1 46</span><br><span class="line">|*		..25641 1 74</span><br><span class="line">|*		...95509 1 74</span><br><span class="line">|*		..208 1 52</span><br><span class="line">|*		.274 1 57</span><br></pre></td></tr></table></figure>
+
+<h1 id="StartupTracer"><a href="#StartupTracer" class="headerlink" title="StartupTracer"></a>StartupTracer</h1><h2 id="StartupTracer统计了什么？"><a href="#StartupTracer统计了什么？" class="headerlink" title="StartupTracer统计了什么？"></a>StartupTracer统计了什么？</h2><p>统计应用冷启动、热启动、首屏耗时、单个activity启动等阶段耗时</p>
+<h2 id="各耗时项是如何规定起止时间的？"><a href="#各耗时项是如何规定起止时间的？" class="headerlink" title="各耗时项是如何规定起止时间的？"></a>各耗时项是如何规定起止时间的？</h2><p>StartupTracer类注释：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210829231846.png"></p>
+<p>启动和首屏出现耗时的起点都是应用中的第一个方法开始执行的时间，通过字节码插桩已经可以拿到了。</p>
+<p>application创建结束的时间计算方法是：只要activity开始launch或者service开始create或者broadcastReceiver开始创建就算application创建结束。</p>
+<p>单个activity从启动到展示UI的耗时是从launch activity到onWindowFocusChanged这段时间，onWindowFocusChanged(true)表示activity已经获取到焦点，可以和用户进行交互。</p>
+<h2 id="Application创建的起止时间分别从哪里算起？在哪里进行拦截？"><a href="#Application创建的起止时间分别从哪里算起？在哪里进行拦截？" class="headerlink" title="Application创建的起止时间分别从哪里算起？在哪里进行拦截？"></a>Application创建的起止时间分别从哪里算起？在哪里进行拦截？</h2><p><strong>开始时间点：从app的第一个方法开始执行</strong></p>
+<p>具体表现为：</p>
+<p>在ActivityThreadHacker.hackSysHandlerCallback()保存了应用启动时间，并保存了当前调用到的方法的index：</p>
+<p>sApplicationCreateBeginTime=SystemClock.uptimeMillis();</p>
+<p>sApplicationCreateBeginMethodIndex=AppMethodBeat.getInstance().maskIndex(“ApplicationCreateBeginMethodIndex”);</p>
+<p>hackSysHandlerCallback()被调用的时机：</p>
+<p>AppMethodBeat.i() -&gt; AppMethodBeat.realExecute() -&gt; ActivityThreadHacker.hackSysHandlerCallback()</p>
+<p>其中AppMethodBeat.realExecute()会有状态控制只会被执行一次</p>
+<p><strong>结束时间点：只要有activity开始launch、或者service开始create、或者BroadcastReceiver开始创建</strong></p>
+<p>原理是拦截ActivityThread的Handler消息处理过程，启动Activity、Service、BroadcastReceiver都会经过这里</p>
+<p>具体实现：</p>
+<p>ActivityThreadHacker.hackSysHandlerCallback()中通过反射获取ActivityThread的sCurrentActivityThread静态变量，获取当前进程的ActivityThread实例，获取ActivityThread的mH成员变量，给这个Handler设置自定义的Handler.Callback类HackCallback；</p>
+<p>HackCallback中拦截Activity的启动、Service的create、BroadcastReceiver的创建</p>
+<p>其中Activity的启动流程Android 9及其以上发生了变化，需要单独处理，这里需要熟悉Activity的启动流程</p>
+<h2 id="热启动的起止时间分别从哪里算起？在哪里进行拦截？"><a href="#热启动的起止时间分别从哪里算起？在哪里进行拦截？" class="headerlink" title="热启动的起止时间分别从哪里算起？在哪里进行拦截？"></a>热启动的起止时间分别从哪里算起？在哪里进行拦截？</h2><p>第一个Activity的onCreate()调用算作热启动开始</p>
+<p>第一个Activity的onWindowFocusChanged()算作热启动结束</p>
+<h2 id="单个activity启动的起止时间分别从哪里算起？在哪里进行拦截？"><a href="#单个activity启动的起止时间分别从哪里算起？在哪里进行拦截？" class="headerlink" title="单个activity启动的起止时间分别从哪里算起？在哪里进行拦截？"></a>单个activity启动的起止时间分别从哪里算起？在哪里进行拦截？</h2><p>单个activity从启动到展示UI的耗时是从launch activity到onWindowFocusChanged这段时间，onWindowFocusChanged(true)表示activity已经获取到焦点，可以和用户进行交互。</p>
+<h1 id="TraceDataUtils"><a href="#TraceDataUtils" class="headerlink" title="TraceDataUtils"></a>TraceDataUtils</h1><h2 id="structuredDataToStack-做了什么？"><a href="#structuredDataToStack-做了什么？" class="headerlink" title="structuredDataToStack()做了什么？"></a>structuredDataToStack()做了什么？</h2><p>structuredDataToStack()方法参数是：</p>
+<p>long[] buffer, LinkedList<MethodItem> result, boolean isStrict, long endTime</p>
+<p>buffer数组中每个long，存储了三个信息：</p>
+<ol>
+<li> 是进入一个方法，还是退出一个方法</li>
+<li> 方法id</li>
+<li> 进入或退出的时间</li>
+</ol>
+<p>structuredDataToStack()做的主要是将buffer的方法记录转换为一个方法调用栈，存储在栈中，元素类型为MethodItem</p>
+<p>MethodItem相比buffer多存储了一个方法调用深度depth，并计算存储了方法调用耗时</p>
+<p>如果在a方法中连续调用b方法，会将b方法的调用信息合并为1个</p>
+<p>输入是long[] buffer，格式如：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210829232039.png"></p>
+<p>输出是LinkedList<MethodItem> result</p>
+<p>相当于把buffer中相邻的I和O替换为了MethodItem，这很像LeetCode上利用栈进行括号匹配的问题，具体算法如下：</p>
+<p>先碰到同一个方法的I和O就会先push()到栈中，也就是先push栈深度大的方法，栈用LinkedList实现，push方法实际就是addFirst()，result中越靠后的MethodItem代表的是方法栈深度越大的方法，同一深度的方法调用顺序在result中是反过来的。</p>
+<p>例如上图的方法id为4、5、6、7的方法，在result中的位置是，4、7、6、5</p>
+<p>然后调用了stackToTree(result,root)，把栈转为树，同时把同一深度的方法调用顺序变为原来正确的顺序。</p>
+<p>再调用treeToStack(root,result)，把树转换为栈，得到的方法调用顺序为正序的<code>LinkedList&lt;MethodItem&gt;</code>，result中越后面的MethodItem表示的调用深度越深的方法。</p>
+<p>例如上图的方法id为4、5、6、7的方法，在result中的最终位置是，4、5、6、7</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210829232058.png"></p>
+<h2 id="trimStack-做了什么？"><a href="#trimStack-做了什么？" class="headerlink" title="trimStack()做了什么？"></a>trimStack()做了什么？</h2><p>代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">trimStack</span><span class="params">(List&lt;MethodItem&gt; stack, <span class="keyword">int</span> targetCount, IStructuredDataFilter filter)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> &gt; targetCount) &#123;</span><br><span class="line">        stack.clear();</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> filterCount = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">int</span> curStackSize = stack.size();</span><br><span class="line">    <span class="keyword">while</span> (curStackSize &gt; targetCount) &#123;</span><br><span class="line">        ListIterator&lt;MethodItem&gt; iterator = stack.listIterator(stack.size());</span><br><span class="line">        <span class="keyword">while</span> (iterator.hasPrevious()) &#123;</span><br><span class="line">            MethodItem item = iterator.previous();</span><br><span class="line">            <span class="keyword">if</span> (filter.isFilter(item.durTime, filterCount)) &#123;</span><br><span class="line">                iterator.remove();</span><br><span class="line">                curStackSize--;</span><br><span class="line">                <span class="keyword">if</span> (curStackSize &lt;= targetCount) &#123;</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        curStackSize = stack.size();</span><br><span class="line">        filterCount++;</span><br><span class="line">        <span class="keyword">if</span> (filter.getFilterMaxCount() &lt; filterCount) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> size = stack.size();</span><br><span class="line">    <span class="keyword">if</span> (size &gt; targetCount) &#123;</span><br><span class="line">        filter.fallback(stack, size);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="方法的输入和输出是什么？"><a href="#方法的输入和输出是什么？" class="headerlink" title="方法的输入和输出是什么？"></a>方法的输入和输出是什么？</h2><p>输入输出都是<code>List&lt;MethodItem&gt; stack</code></p>
+<p>输入内容就是structuredDataToStack()的输出</p>
+<p>例如下图的方法id为4、5、6、7的方法，在stack中的位置是4、5、6、7</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210829232134.png"></p>
+<h3 id="targetCount是什么？"><a href="#targetCount是什么？" class="headerlink" title="targetCount是什么？"></a>targetCount是什么？</h3><p>targetCount指定的是期望的stack的上限大小，默认为Constants.TARGET_EVIL_METHOD_STACK，即30</p>
+<p>也就是说接下来要一直裁剪stack，一直到stack中不要保存超过targetCount个的方法信息（MethodItem）</p>
+<h3 id="为什么要逆向遍历stack？"><a href="#为什么要逆向遍历stack？" class="headerlink" title="为什么要逆向遍历stack？"></a>为什么要逆向遍历stack？</h3><p>因为stack的越后面，是调用深度越深的方法，深度越深的方法，耗时非常小的几率是很大的，第一步要先排除耗时特别小的方法，这些并不是卡顿的主要原因，删除这些方法信息可以减少数据上传量。</p>
+<h3 id="filter-isFilter-在做什么？"><a href="#filter-isFilter-在做什么？" class="headerlink" title="filter.isFilter()在做什么？"></a>filter.isFilter()在做什么？</h3><p>先通过filter.isFilter()过滤掉  执行耗时小于 5ms 的单个函数调用，因为这些函数对卡顿来说不是主要原因，删除这些方法信息可以减少数据上传量。</p>
+<p>isFilter()的实现为 during &lt; filterCount * 5</p>
+<h3 id="filterCount是干什么的？"><a href="#filterCount是干什么的？" class="headerlink" title="filterCount是干什么的？"></a>filterCount是干什么的？</h3><p>就是从整个stack过滤短耗时方法的次数，第一次过滤掉小于5毫秒耗时的方法，第二次过滤掉小于2<em>5毫秒耗时的方法，第三次是3</em>5毫秒，以此类推，直至达到filter.getFilterMaxCount()</p>
+<h3 id="过滤了一定次数后stack保存的方法信息数量还是大于targetCount时应该怎么办？"><a href="#过滤了一定次数后stack保存的方法信息数量还是大于targetCount时应该怎么办？" class="headerlink" title="过滤了一定次数后stack保存的方法信息数量还是大于targetCount时应该怎么办？"></a>过滤了一定次数后stack保存的方法信息数量还是大于targetCount时应该怎么办？</h3><p>调用filter.fallback()，代码实现如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fallback</span><span class="params">(List&lt;MethodItem&gt; stack, <span class="keyword">int</span> size)</span> </span>&#123;</span><br><span class="line">    Iterator iterator = stack.listIterator(Math.min(size, Constants.TARGET_EVIL_METHOD_STACK));</span><br><span class="line">    <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">        iterator.next();</span><br><span class="line">        iterator.remove();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>只会保留stack中前30个MethodItem</p>
+<h3 id="为什么可以舍弃stack后面的MethodItem呢？"><a href="#为什么可以舍弃stack后面的MethodItem呢？" class="headerlink" title="为什么可以舍弃stack后面的MethodItem呢？"></a>为什么可以舍弃stack后面的MethodItem呢？</h3><p>因为后面的都是调用深度更深的方法，前面的是调用深度更小的方法，其实已经囊括了调用深度更深的方法的耗时信息，只不过粒度更粗一些，但是应该足够定位到大多数的问题。</p>
+]]></content>
+      <categories>
+        <category>源码分析</category>
+      </categories>
+      <tags>
+        <tag>AMS</tag>
+        <tag>源码分析</tag>
+        <tag>卡顿检测</tag>
+        <tag>TraceCanary</tag>
+        <tag>Choreographer</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>图的连通</title>
     <url>/%E7%AE%97%E6%B3%95/%E5%9B%BE%E7%9A%84%E8%BF%9E%E9%80%9A/</url>
     <content><![CDATA[<h2 id="子图"><a href="#子图" class="headerlink" title="子图"></a>子图</h2><p>有两个图G=(V,E)和G’=(V’,E’)，V’是V的子集且E’是E的子集，称G’是G的子图。</p>
