@@ -1029,6 +1029,8 @@
 <li>解决回调地狱</li>
 </ul>
 <p>主要缺点是学习和理解成本过高。</p>
+<span id="more"></span>
+
 <h1 id="RxJava线程切换的原理"><a href="#RxJava线程切换的原理" class="headerlink" title="RxJava线程切换的原理"></a>RxJava线程切换的原理</h1><p>RxJava链式调用，采用的都是装饰者模式，对所有的操作符都是对Observable和Observer对象的装饰，达到实现额外效果的目的。</p>
 <p>线程切换有个两个方法，一个是subscribeOn，一个是observeOn。</p>
 <p>subscribeOn用于设置Observable开始执行时所在的线程。</p>
@@ -1088,11 +1090,10 @@
 </ol>
 ]]></content>
       <categories>
-        <category>源码分析</category>
+        <category>Java</category>
       </categories>
       <tags>
         <tag>RxJava</tag>
-        <tag>源码分析</tag>
       </tags>
   </entry>
   <entry>
@@ -6451,9 +6452,9 @@
         <category>源码分析</category>
       </categories>
       <tags>
-        <tag>源码分析</tag>
         <tag>ACRA</tag>
         <tag>崩溃收集</tag>
+        <tag>源码分析</tag>
       </tags>
   </entry>
   <entry>
@@ -6566,8 +6567,8 @@
         <category>源码分析</category>
       </categories>
       <tags>
-        <tag>源码分析</tag>
         <tag>数据库</tag>
+        <tag>源码分析</tag>
         <tag>LeakCanary</tag>
       </tags>
   </entry>
@@ -9364,8 +9365,8 @@
         <category>源码分析</category>
       </categories>
       <tags>
-        <tag>源码分析</tag>
         <tag>数据库</tag>
+        <tag>源码分析</tag>
         <tag>GreenDao</tag>
         <tag>LiveData</tag>
         <tag>Room</tag>
@@ -9872,8 +9873,8 @@
         <category>集合类</category>
       </categories>
       <tags>
-        <tag>源码分析</tag>
         <tag>哈希表</tag>
+        <tag>源码分析</tag>
         <tag>集合类</tag>
         <tag>HashMap</tag>
       </tags>

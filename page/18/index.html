@@ -217,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:40:09" itemprop="dateModified" datetime="2021-08-29T22:40:09+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:41:17" itemprop="dateModified" datetime="2021-08-29T22:41:17+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -354,7 +354,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:40:09" itemprop="dateModified" datetime="2021-08-29T22:40:09+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:41:17" itemprop="dateModified" datetime="2021-08-29T22:41:17+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -470,7 +470,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:40:09" itemprop="dateModified" datetime="2021-08-29T22:40:09+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:41:17" itemprop="dateModified" datetime="2021-08-29T22:41:17+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -591,7 +591,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:40:09" itemprop="dateModified" datetime="2021-08-29T22:40:09+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:41:17" itemprop="dateModified" datetime="2021-08-29T22:41:17+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -599,7 +599,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
                 </span>
             </span>
 
@@ -637,64 +637,14 @@
 <li>解决回调地狱</li>
 </ul>
 <p>主要缺点是学习和理解成本过高。</p>
-<h1 id="RxJava线程切换的原理"><a href="#RxJava线程切换的原理" class="headerlink" title="RxJava线程切换的原理"></a>RxJava线程切换的原理</h1><p>RxJava链式调用，采用的都是装饰者模式，对所有的操作符都是对Observable和Observer对象的装饰，达到实现额外效果的目的。</p>
-<p>线程切换有个两个方法，一个是subscribeOn，一个是observeOn。</p>
-<p>subscribeOn用于设置Observable开始执行时所在的线程。</p>
-<p>observeOn用于设置从该操作符调用处开始下游操作符所在的线程。</p>
-<p>subscribeOn调用时需要传递一个Scheduler调度器对象，Observable开始执行时的逻辑是在Observable的subscribe()方法里的，subscribeOn的实现原理是把Observable的subscribe()这个动作封装到一个Runnbale的run方法中，然后把这个Runnable给Scheduler调度器进行线程调度。底层用的线程池调度。</p>
-<p>Observable的subscribe()中会执行OnSubscribe对象的call方法，call方法里会执行创建操作符里的内容。</p>
-<p>observeOn是把下游Observer的onNext、onError等逻辑封装在一个Runnable任务里面，再由传入的Scheduler调度器创建一个Worker对象进行调度。</p>
-<h1 id="链式调用是怎么实现的？"><a href="#链式调用是怎么实现的？" class="headerlink" title="链式调用是怎么实现的？"></a>链式调用是怎么实现的？</h1><p>每个操作符都会创建一个新的Observable对象</p>
-<h1 id="RxJava-订阅执行的过程？"><a href="#RxJava-订阅执行的过程？" class="headerlink" title="RxJava 订阅执行的过程？"></a>RxJava 订阅执行的过程？</h1><p>所有的创建操作符，比如Observable的create、just、from，都会创建一个onSubscribe类封装开始的逻辑。</p>
-<p>在调用Observable的subscribe订阅的时候，会去执行Observable里的onSubscribe的call方法。</p>
-<p>call方法会执行创建操作符里的内容。</p>
-<p>创造操作符包括just、from、create、timer、range之类的。</p>
-<h1 id="使用案例"><a href="#使用案例" class="headerlink" title="使用案例"></a>使用案例</h1><ul>
-<li><a target="_blank" rel="noopener" href="http://blog.danlew.net/2015/06/22/loading-data-from-multiple-sources-with-rxjava/">三级缓存</a></li>
-<li><a target="_blank" rel="noopener" href="http://blog.csdn.net/lzyzsd/article/details/50120801">RxJava使用场景</a></li>
-<li><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/1071ba780e4f">检测多次点击</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/20489071">RxJava的应用——以点赞后登录重试为例</a></li>
-<li><a target="_blank" rel="noopener" href="http://blog.csdn.net/theone10211024/article/details/50435325">可能是东半球最全的RxJava使用场景小结</a></li>
-</ul>
-<h1 id="Cold-Observable、Hot-Observable"><a href="#Cold-Observable、Hot-Observable" class="headerlink" title="Cold Observable、Hot Observable"></a>Cold Observable、Hot Observable</h1><ol>
-<li>Cold Observable<br> 只有当有订阅者订阅的时候，它才开始发射数据。每个订阅者订阅的时候都独立的执行一遍数据流代码，如create、just、range、timer、from。</li>
-<li>Hot Observable<br> 不管有没有订阅者订阅，它创建后就可以开始发射数据。</li>
-</ol>
-<h2 id="publish操作符"><a href="#publish操作符" class="headerlink" title="publish操作符"></a>publish操作符</h2><p>使用 publish 操作函数可以把 Cold Observable 转化为 Hot Observable，返回一个ConnectableObservable，ConnectableObservable 如果不调用 connect 函数则不会触发数据流的执行。</p>
-<p>connect 函数返回的是一个 Subscription，如果调用这个 Subscription 的 unsubscribe 函数，可以停止把数据转发给 Observer，但是这些 Observer 并没有从 ConnectableObservable 上取消注册，只是停止接收数据了。再次调用 connect 来重新开始订阅，会创建一个新的订阅，如果源 Observable 为 Cold Observable 则数据流会重新执行一遍。</p>
-<h2 id="refCount操作符"><a href="#refCount操作符" class="headerlink" title="refCount操作符"></a>refCount操作符</h2><p>ConnectableObservable.refCount 返回一个特殊的 Observable， 这个 Observable 只要有订阅者就会继续发射数据。</p>
-<p>如果没有订阅者订阅到 refCount 返回的 Observable，则不会执行数据流的代码。如果所有的订阅者都取消订阅了，则数据流停止。重新订阅再回重新开始数据流。</p>
-<h2 id="share操作符"><a href="#share操作符" class="headerlink" title="share操作符"></a>share操作符</h2><p>先执行publish后执行refCount</p>
-<h2 id="replay操作符"><a href="#replay操作符" class="headerlink" title="replay操作符"></a>replay操作符</h2><p>和 ReplaySubject 类似，不论订阅者在何时订阅，都会收到所有已发射的数据。它有重载函数，可以指定缓存多少个已发射的数据。和 publish 一样也返回一个 ConnectableObservable。</p>
-<h1 id="Subject"><a href="#Subject" class="headerlink" title="Subject"></a>Subject</h1><p>同时充当了Observer和Observable的角色。因为它是一个Observer，它可以订阅一个或多个Observable（调用别的Observable的suscribe方法，参数传本Subject实例）；又因为它是一个Observable，它可以转发它收到的数据（先订阅到别的Observable，别的Observable发射数据会调用本Subject实例的onNext方法，然后本Subject实例再转发这个数据给订阅本Subject实例的Observer），也可以手动调用onNext()发射新的数据。</p>
-<p>由于一个Subject订阅一个Observable，它可以触发这个Observable开始发射数据（如果那个Observable是Cold Observable，只有当有订阅者订阅的时候， Cold Observable才开始发射数据）。因此有这样的效果，Subject可以把原来那个”冷”的Observable变成”热”的。就像广播电台一样，不会因为你关了收音机就停止广播，在收听的人就听到了，没在的人也无所谓。</p>
-<p>Subject 解决的需求就是不确定什么时候可以发出事件。</p>
-<p>假设我们有一些数据希望通过 RxJava 来发出，但我们并不确定这些数据什么时候到来、以及有多少数据。显然 just() 和 from() 不能满足需求，但我们又不想用 create() ，因为它会带来一些其他的问题。</p>
-<p>最好的办法就是有一个对象既是 Observable ，这样我们就可以去订阅它并进行一系列操作，它又是一个 Observer ，这样我们就可以向它发出数据以及结束事件了，这种组合就是现在被称作 Subject 的类。</p>
-<h2 id="Subject种类"><a href="#Subject种类" class="headerlink" title="Subject种类"></a>Subject种类</h2><h3 id="AsyncSubject"><a href="#AsyncSubject" class="headerlink" title="AsyncSubject"></a>AsyncSubject</h3><p>一个AsyncSubject只在原始Observable完成后，发射来自原始Observable的最后一个值。（如果原始Observable没有发射任何值，AsyncObject也不发射任何值）它会把这最后一个值发射给任何后续的观察者。</p>
-<p>然而，如果原始的Observable因为发生了错误而终止，AsyncSubject将不会发射任何数据，只是简单的向前传递这个错误通知。</p>
-<h3 id="BehaviorSubject"><a href="#BehaviorSubject" class="headerlink" title="BehaviorSubject"></a>BehaviorSubject</h3><p>当观察者订阅BehaviorSubject时，它开始发射原始Observable最近发射的数据（如果此时还没有收到任何数据，它会发射一个默认值），然后继续发射其它任何来自原始Observable的数据。</p>
-<p>然而，如果原始的Observable因为发生了一个错误而终止，BehaviorSubject将不会发射任何数据，只是简单的向前传递这个错误通知。</p>
-<p>BehaviorSubject 收到 onError/onCompleted 之后，保存的数据就会被丢弃了，后来的 Subscriber 只会收到 onError/onCompleted 了。</p>
-<h3 id="PublishSubject"><a href="#PublishSubject" class="headerlink" title="PublishSubject"></a>PublishSubject</h3><p>只会把在订阅发生的时间点之后来自原始Observable的数据发射给观察者。</p>
-<p>如果原始的Observable因为发生了一个错误而终止，PublishSubject将不会发射任何数据，只是简单的向前传递这个错误通知。</p>
-<p>需要注意的是，PublishSubject可能会一创建完成就立刻开始发射数据（除非你可以阻止它发生，它属于Hot Observable），因此这里有一个风险：在Subject被创建后到有观察者订阅它之前这个时间段内，一个或多个数据可能会丢失。如果要确保来自原始Observable的所有数据都被分发，你需要这样做：或者使用Create创建那个Observable以便手动给它引入”冷”Observable的行为（当所有观察者都已经订阅时才开始发射数据），或者改用ReplaySubject。</p>
-<p>参考<a target="_blank" rel="noopener" href="http://blog.csdn.net/PrototypeZ/article/details/51113828">RxJava 常见误区（一）：过度使用 Subject</a>  </p>
-<p>作用：当一个界面发生改变，通知另一个界面做出响应。</p>
-<p>参考资料：<a target="_blank" rel="noopener" href="http://blog.csdn.net/qq1026291832/article/details/51006746">RxJava：PublishSubject</a></p>
-<h3 id="ReplaySubject"><a href="#ReplaySubject" class="headerlink" title="ReplaySubject"></a>ReplaySubject</h3><p>发射所有来自原始Observable的数据给观察者，无论它们是何时订阅的。在重放缓存增长到一定大小的时候或过了一段时间后会丢弃旧的数据（原始Observable发射的）。</p>
-<p>假设你是一个电视内容发布商，你每周都会发布大量的内容。但是你的客户（ 观众 ）并不能一次性看完所有的内容，但他们也许想错过任何内容。所以智能电视和机顶盒自己就提供了一种缓存功能，它们会保存所有的内容，然后让用户按照自己的速度观看完所有的内容。</p>
-<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><ol>
-<li> Subjcet 不是线程安全的，不要从多个线程中调用它的onNext方法，这可能导致同时（非顺序）调用，给Subject的结果增加了不确定性。要避免此类问题，你可以将 Subject 转换为一个 SerializedSubject。</li>
-<li> Subject 使事件的发送变得不可预知。无论是Observable.create, Observable.from 还是 Observable.just , 这些 Cold Observable 都有一个显著的优点就是数据的来源可预知，我知道将会发送哪些数据，这些数据是什么类型。但是Subject就不一样，我如果创建一个Subject，那么代码任何地方只要能 Get 到这个引用，就可以随意使用它发射元素，滥用的后果导致代码越来越难以维护。</li>
-</ol>
-<p>使用Subject时要确保：</p>
-<ol>
-<li> 这是一个 Hot Observable ，你要有对应措施保证不会错过临界的事件。</li>
-<li> 有对应的线程安全措施。</li>
-<li> 确保事件的发送源在掌控中，事件的发送完全可预期。</li>
-</ol>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/Java/RxJava%E6%B5%85%E6%9E%90/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -744,7 +694,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:40:09" itemprop="dateModified" datetime="2021-08-29T22:40:09+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:41:17" itemprop="dateModified" datetime="2021-08-29T22:41:17+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -881,7 +831,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:40:09" itemprop="dateModified" datetime="2021-08-29T22:40:09+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:41:17" itemprop="dateModified" datetime="2021-08-29T22:41:17+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -977,7 +927,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:40:09" itemprop="dateModified" datetime="2021-08-29T22:40:09+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:41:17" itemprop="dateModified" datetime="2021-08-29T22:41:17+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
