@@ -651,14 +651,14 @@
 <p>那么基于这两点好处：声明式 UI、抛弃 xml 变成单一语言的写法，Compose 很明显是要比传统的 UI 写法要更好的。</p>
 <p>这个所谓的好，解释开的话就是：写界面更简单更快速，并且我们能写出更复杂的界面。</p>
 <h1 id="kotlin-android-extensions插件解决了什么问题？"><a href="#kotlin-android-extensions插件解决了什么问题？" class="headerlink" title="kotlin-android-extensions插件解决了什么问题？"></a>kotlin-android-extensions插件解决了什么问题？</h1><ol>
-<li> 直接通过布局的id就可以获得对应的控件对象（简直不要太爽）</li>
-<li> 提供了 @Parcelize 注解帮助开发者快速实现 Parcelize</li>
+<li> 直接通过布局的id就可以获得对应的控件对象。</li>
+<li> 提供了 @Parcelize 注解帮助开发者快速实现 Parcelable。</li>
 </ol>
 <p>这个插件优点就是用起来特别舒畅，直接用控件id就可以搞定了。</p>
 <h1 id="kotlin-android-extensions缺点"><a href="#kotlin-android-extensions缺点" class="headerlink" title="kotlin-android-extensions缺点?"></a>kotlin-android-extensions缺点?</h1><ol>
-<li> 不能提供可空信息，不同layout文件，id不一致，不能在编译时发现（但会提供警告），运行时容易崩溃</li>
-<li> 仅支持kotlin</li>
-<li> 污染全局命名空间</li>
+<li> 不能提供可空信息，不同layout文件，id不一致，不能在编译时发现（但会提供警告），运行时容易崩溃。</li>
+<li> 仅支持kotlin。</li>
+<li> 污染全局命名空间。</li>
 </ol>
 <h1 id="ViewBinding"><a href="#ViewBinding" class="headerlink" title="ViewBinding"></a>ViewBinding</h1><p>系统会为该模块中的每个 XML 布局文件生成一个绑定类。绑定类的实例包含对在相应布局中具有 ID 的所有视图的直接引用。</p>
 <p>在大多数情况下，视图绑定会替代 findViewById。</p>
