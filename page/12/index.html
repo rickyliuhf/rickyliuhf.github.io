@@ -186,108 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/" class="post-title-link" itemprop="url">Java集合类-ArrayDeque</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-05-14 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-14T20:00:00+08:00">2018-05-14</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-ArrayDeque/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="ArrayDeque特点"><a href="#ArrayDeque特点" class="headerlink" title="ArrayDeque特点"></a>ArrayDeque特点</h1><p>基于数组的双端队列。</p>
-<p>分别用两个索引指针指示头尾元素位置，循环访问数组元素，访问头尾元素时间复杂度为O(1)</p>
-<p>容量不够时扩容，容量增加一倍。</p>
-<p>也可以当栈使用。</p>
-<h1 id="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"><a href="#有了LinkedList实现双端队列，为什么还要用ArrayDeque？" class="headerlink" title="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"></a>有了LinkedList实现双端队列，为什么还要用ArrayDeque？</h1><p>数组在内存中是连续存储的，CPU访问内存数据具有空间局部性特点，数组对CPU缓存很友好，可以大大提升访问速度。</p>
-<p>链表每个节点存储位置是分散不连续的，CPU缓存命中率低，CPU访问主存次数增加，速度慢。</p>
-<p>所以需要栈和队列时，优先选择用ArrayDeque。</p>
-<h1 id="ArrayDeque缺点"><a href="#ArrayDeque缺点" class="headerlink" title="ArrayDeque缺点"></a>ArrayDeque缺点</h1><ol>
-<li> ArrayDeque较于链表的方式的缺点就是容量不够时需要扩容，耗费O(n)的时间</li>
-<li> 删除元素后不会缩容，所以不适合数据量变化大且长期处于少数据状态的情况，会浪费空间</li>
-</ol>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/6163166/why-is-arraydeque-better-than-linkedlist">Why is ArrayDeque better than LinkedList</a></li>
-<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/PG6NOMgXS6Slh0aXRv9W-g">死磕 java集合之ArrayDeque源码分析</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -319,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -429,7 +327,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -603,7 +501,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -723,7 +621,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -831,7 +729,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1037,7 +935,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1198,7 +1096,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1321,7 +1219,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1451,7 +1349,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1752,6 +1650,128 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/http2%E3%80%81quic/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E7%BD%91%E7%BB%9C/http2%E3%80%81quic/" class="post-title-link" itemprop="url">http2、quic</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-05 20:31:00" itemprop="dateCreated datePublished" datetime="2018-04-05T20:31:00+08:00">2018-04-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 18:34:24" itemprop="dateModified" datetime="2021-08-29T18:34:24+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/http2%E3%80%81quic/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/http2、quic/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="tcp队头阻塞是什么？"><a href="#tcp队头阻塞是什么？" class="headerlink" title="tcp队头阻塞是什么？"></a>tcp队头阻塞是什么？</h1><p>tcp是按字节有序传输的，如果发送方发送了一连串的报文，中间有个报文没有收到ACK确认，会一直等待超时然后重传报文，发送方的滑动窗口一直不能移动，导致不能发送更多的报文。</p>
+<p>这样http请求之间就不是独立的，会互相影响。</p>
+<h1 id="http队头阻塞是什么？"><a href="#http队头阻塞是什么？" class="headerlink" title="http队头阻塞是什么？"></a>http队头阻塞是什么？</h1><p>多个http请求只能顺序请求，因为http请求和响应没有编号，同时执行多个请求，不按顺序返回响应，客户端无法分辨是哪个响应对应哪个请求，这样如果前面的请求处理较慢，后面的请求都会被阻塞。</p>
+<h1 id="http2解决了什么？"><a href="#http2解决了什么？" class="headerlink" title="http2解决了什么？"></a>http2解决了什么？</h1><ol>
+<li> http报文分片</li>
+<li> http header压缩</li>
+<li> 支持服务端推送</li>
+<li> 基于TLS实现安全传输（与https相同）</li>
+</ol>
+<h2 id="报文分片"><a href="#报文分片" class="headerlink" title="报文分片"></a>报文分片</h2><p>http报文是纯文本的，http2报文是二进制字节流，对报文进行了分片并编号，相当于把tcp的报文分段编号实现搬到应用层。</p>
+<p>同一个tcp连接可以同时传输多个http报文分片，实现多路复用，解决http请求对头阻塞问题。</p>
+<h2 id="服务端推送"><a href="#服务端推送" class="headerlink" title="服务端推送"></a>服务端推送</h2><p>客户端请求一个html，服务端可以把相关的css、png等资源一同返回给客户端，减少客户端请求次数。</p>
+<h1 id="QUIC解决了什么？"><a href="#QUIC解决了什么？" class="headerlink" title="QUIC解决了什么？"></a>QUIC解决了什么？</h1><p>Quick UDP Internet Connection</p>
+<p>基于udp实现，在应用层实现传输可靠性，非常的自由灵活。</p>
+<p>主要改进：</p>
+<ol>
+<li> 快速握手</li>
+<li> 避免对头阻塞的多路复用</li>
+<li> 连接迁移</li>
+</ol>
+<h2 id="快速握手"><a href="#快速握手" class="headerlink" title="快速握手"></a>快速握手</h2><p>在HTTPS协议中，由于TCP和TLS都各需要自3次握手，导致连接建立过程较为复杂和耗时，降低了HTTPS的效率。</p>
+<p>QUIC选择UDP来作为其底层协议，就可以将连接建立和密钥协商的过程合二为一，简化操作流程，提高连接效率。</p>
+<p>在连接建立成功后， 客户端会缓存起来原始的连接信息等。 在接下来与相同的服务器建立连接的过程中， 客户端能够在不增加额外RTT的情况下建立一个加密的连接，数据要发送的数据可以在握手的包中捎带着发送过去，而不用等待服务器的回复，从而实现0RTT。</p>
+<p>所以，所谓QUIC的0RTT是指在建立连接之后，后续发送数据都不需要增加额外的RTT时间，最开始的握手还是需要1RTT的时间消耗的。</p>
+<h2 id="多路复用"><a href="#多路复用" class="headerlink" title="多路复用"></a>多路复用</h2><h3 id="为什么quic能解决队头阻塞？"><a href="#为什么quic能解决队头阻塞？" class="headerlink" title="为什么quic能解决队头阻塞？"></a>为什么quic能解决队头阻塞？</h3><ul>
+<li>http队头阻塞用http分片解决。</li>
+<li>tcp队头阻塞用udp协议代替，在应用层重新实现可靠传输机制，http请求之间是独立互不影响的。</li>
+</ul>
+<h3 id="为什么不修改tcp协议解决队头阻塞？"><a href="#为什么不修改tcp协议解决队头阻塞？" class="headerlink" title="为什么不修改tcp协议解决队头阻塞？"></a>为什么不修改tcp协议解决队头阻塞？</h3><ol>
+<li> tcp在操作系统层面实现，普及比较麻烦。</li>
+<li> 各种网络中间设备（如网关、防火墙、代理服务器）为了效率最优化，保持了约定俗成的潜规则，如某些防火墙只允许特定端口，中间代理会删除报头中不认识的选项字段</li>
+</ol>
+<h2 id="连接迁移"><a href="#连接迁移" class="headerlink" title="连接迁移"></a>连接迁移</h2><p>一个TCP连接由四元组确定：源ip、源端口号、目标ip、目标端口号。</p>
+<p>任何一个元素变化了，tcp就要重新建立连接，例如移动手机在移动网络和WiFi切换，重新建立连接会带来数据传输时延。</p>
+<p>而QUIC的连接不依赖于四元组，以一个随机ID作为标识，这样IP或端口发生变化，只要连接ID不变，还是认为是一个连接，应用层感知不到底层tcp连接的变化，这样把影响就降到最低。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
@@ -1823,7 +1843,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-count">174</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
