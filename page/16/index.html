@@ -186,6 +186,133 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E4%BC%AA%E5%85%B1%E4%BA%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E4%BC%AA%E5%85%B1%E4%BA%AB/" class="post-title-link" itemprop="url">Java并发-伪共享</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-20 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-20T20:00:00+08:00">2017-10-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E4%BC%AA%E5%85%B1%E4%BA%AB/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-伪共享/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="计算机结构"><a href="#计算机结构" class="headerlink" title="计算机结构"></a>计算机结构</h1><p>计算机可分为两种结构</p>
+<ol>
+<li> 冯诺依曼结构</li>
+<li> 哈佛结构</li>
+</ol>
+<p>冯诺依曼结构提出计算机由运算器、控制器、存储器、输入设备、输出设备5个部分组成。</p>
+<p>冯诺依曼结构特点是指令存储和数据存储合并在一起的存储结构，指令和数据统一编址，使用同一条总线传输，CPU读取指令和数据的操作是互斥的，同一时间只能做一件事，只能分时复用，无法并行，速度慢，CPU吞吐量低。</p>
+<p>哈佛结构特点是指令存储和数据存储分开的存储结构，指令和数据独立独立编址，使用两条独立的总线传输，CPU读取指令和数据操作可以并行，速度快，CPU吞吐量高。</p>
+<p>因为cpu速度快，而总线速度慢。冯诺依曼结构中，数据存储器和指令存储器使用同一总线，总线繁忙，cpu需要停下来等待总线读取数据。在哈佛结构中，数据存储器和指令存储器使用不同总线，减少了cpu停止工作等待数据读取的时间，因此提升了效率。</p>
+<p>冯诺依曼结构由于指令和数据共用总线，速度慢、效率低、吞吐量低，但因为指令存储区域和数据存储区域大小可以动态调整，存储器利用率高，适用场景更通用，所以也便宜。</p>
+<p>哈佛结构由于指令和数据分开存储，速度快、效率高、吞吐量大，但不能灵活调整存储区，适用比较做单一的功能，针对不同的功能要做单独的设计，成本也提高了。</p>
+<h1 id="冯诺依曼瓶颈"><a href="#冯诺依曼瓶颈" class="headerlink" title="冯诺依曼瓶颈"></a>冯诺依曼瓶颈</h1><p>指令和数据存储在一起，导致指令读取和数据处理不能同时进行，而CPU运算速度远远超过主存储器读写的速度，CPU就会浪费时间等待主存数据读写，CPU吞吐量低。</p>
+<p>解决瓶颈途径之一：</p>
+<p>CPU访问主存数据具有时间局部性和空间局部性特点，在CPU和主存储器之间增加缓存，缓存的命中率很高，大大减少访问主存的次数。</p>
+<p>同时CPU缓存采用哈佛结构，指令和数据分开存储，以提高存储量。</p>
+<p>数据访问的时间局部性：如果一项信息最近被访问，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
+<p>数据访问的空间局部性：将来马上要用到的信息，很可能与正在使用的信息，在空间存储位置上是临近的</p>
+<p>所以当访问主存中某一个数据的时候，把这个数据相邻的数据都放入缓存中，可以大大减少CPU访问主存消耗的时间。</p>
+<h1 id="CPU缓存和内存为什么要分块？"><a href="#CPU缓存和内存为什么要分块？" class="headerlink" title="CPU缓存和内存为什么要分块？"></a>CPU缓存和内存为什么要分块？</h1><p>CPU访问主存数据具有时间和空间局部性的特点。</p>
+<p>时间局部性：如果一个数据被访问了，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
+<p>空间局部性：访问内存上的一个数据，这个数据邻近位置的数据，最近也很大可能会被访问</p>
+<p>所以应该把该数据邻近的位置的数据都一起读入缓存中，这样可以减少CPU访问主存的次数，CPU直接访问缓存的速度是很快的，这样CPU的吞吐量就提高了。</p>
+<p>虚拟内存机制，也是建立了主存和外存之间的缓存关系，也是利用数据访问的局部性原理，把暂时不用的数据放到访问速度更慢的外存，需要频繁使用的数据按页交换到访问速度更快的主存中。这样内存中可以运行更多的进程。</p>
+<h1 id="缓存行"><a href="#缓存行" class="headerlink" title="缓存行"></a>缓存行</h1><p>为了便于CPU缓存和主存交换数据，CPU缓存和主存都被划分位长度相等的块，缓存块又称为缓存行，大小为2的次方，CPU缓存从主存读入数据一次读一整块，向主存更新数据，也是一次写入一整块。</p>
+<h1 id="伪共享"><a href="#伪共享" class="headerlink" title="伪共享"></a>伪共享</h1><p>多个CPU同时读写主存上某个连续区域的不同变量时，会各自把该该主存块拷贝一份放入自己的CPU缓存中，多个线程在访问缓存行内的不同变量时，由缓存一致性协议可知该缓存行会失效，多个CPU之间互相等待对方先把缓存行写入主存，自己再从主存读入最新的数据块，表现为缓存频繁未命中，CPU演变为直接与主存交互，CPU访问主存速度很慢，CPU吞吐量因此降低。</p>
+<h1 id="伪共享的解决：字节填充"><a href="#伪共享的解决：字节填充" class="headerlink" title="伪共享的解决：字节填充"></a>伪共享的解决：字节填充</h1><p>保证不同的CPU处理的数据位于不同的缓存行中，就不会引发缓存行的频繁失效。</p>
+<p>java里定义类的成员变量时，可以倾向于把不变的遍历放在一起（一组位置），易变的变量放在一起，使它们尽量不在同一个缓存行，这样每次对象的易变变量变化时，不会引起不变的属性所在缓存行失效，从而提高缓存命中率，避免频繁从主存读取数据，提高CPU吞吐量。</p>
+<p>Jdk6中可以通过添加填充变量进行字节填充来解决伪共享，示例如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;  <span class="comment">// 实际数据</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6; <span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>想象PaddingObject里本来只有一个value属性，现在有多个线程需要读写一个PaddingObject数组（修改数组每一项里的value），由于数组的存储空间在内存中是连续的，根据CPU访问数据的空间局部性特点，CPU在访问数组某个元素的时候，会把该元素所在的内存块整个拷贝到CPU缓存中，这个内存块包含了数组中一些相邻的元素，多个线程同时修改数组中相邻的一些元素时，这个缓存行会频繁失效，CPU缓存命中率低，如果数组的每一个元素位于不同的内存块，也就可以位于不同的缓存行，多线程就不会竞争同一个缓存行</p>
+<p>Jdk7中有的版本用上述方式无效，添加的无用变量会被优化去除，需要使用继承的方式组织优化，示例如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6;<span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span> <span class="keyword">extends</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;    <span class="comment">// 实际数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Jdk8开始提供了@sun.misc.Contended 注解进行字节填充，不用再手动声明无用的变量了，同时要开启 JVM 参数：-XX:-RestrictContended=false</p>
+<p>字节填充会增大目标对象的体积，是用空间换时间。</p>
+<h2 id="伪共享应用场景"><a href="#伪共享应用场景" class="headerlink" title="伪共享应用场景"></a>伪共享应用场景</h2><h3 id="数组优于链表"><a href="#数组优于链表" class="headerlink" title="数组优于链表"></a>数组优于链表</h3><p>从伪共享的角度，数据和链表的区别，不仅是结构上的区别，在缓存命中率上是完全不一样的，因为数组的存储空间连续，缓存命中率更高，链表的缓存命中率低，访问速度慢。</p>
+<h3 id="快速排序优于堆排序"><a href="#快速排序优于堆排序" class="headerlink" title="快速排序优于堆排序"></a>快速排序优于堆排序</h3><p>堆排序访问数据时，也不是访问连续内存空间的数据，所以堆排序和快速排序虽然都有相近的时间复杂度，但是常用的还是快速排序</p>
+<h3 id="二维数组横向遍历优于竖向遍历"><a href="#二维数组横向遍历优于竖向遍历" class="headerlink" title="二维数组横向遍历优于竖向遍历"></a>二维数组横向遍历优于竖向遍历</h3><p>横向遍历二维数组，比竖向遍历缓存命中率要高，因为数组在内存中的存储是每行每行的连续存储，先按行遍历再按列遍历，会访问内存空间连续的数据，先按列遍历再按行遍历访问的不是内存存储空间连续的数据，数据不在同一块，缓存的命中率低</p>
+<h3 id="二维数组维数短的写在外层更优"><a href="#二维数组维数短的写在外层更优" class="headerlink" title="二维数组维数短的写在外层更优"></a>二维数组维数短的写在外层更优</h3><p>二维数组，维数短的写在外层，缓存命中率更高，因为会减少跨缓存块访问数据，集中在一个缓存块上访问数据，如果长的一维写在外层，访问二维数组元素时，访问数据的内存地址跨度可能超过一个内存块长度，就要频繁的交换CPU缓存，缓存命中率低</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-Semaphore/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +344,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -313,7 +440,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -421,7 +548,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -537,7 +664,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -652,7 +779,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -823,7 +950,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -929,7 +1056,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1049,7 +1176,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1182,7 +1309,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1279,113 +1406,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20View%20Touch%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Android/Android%20View%20Touch%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91/" class="post-title-link" itemprop="url">Android View Touch事件分发</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-05-22 19:25:00" itemprop="dateCreated datePublished" datetime="2017-05-22T19:25:00+08:00">2017-05-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Android/Android%20View%20Touch%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android View Touch事件分发/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="事件是如何从屏幕点击最终到达-Activity-的？"><a href="#事件是如何从屏幕点击最终到达-Activity-的？" class="headerlink" title="事件是如何从屏幕点击最终到达 Activity 的？"></a>事件是如何从屏幕点击最终到达 Activity 的？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171545.png"></p>
-<h1 id="CANCEL-事件什么时候会触发？"><a href="#CANCEL-事件什么时候会触发？" class="headerlink" title="CANCEL 事件什么时候会触发？"></a>CANCEL 事件什么时候会触发？</h1><ol>
-<li> View 收到 ACTION_DOWN 事件以后，上一个事件还没有结束（可能因为 APP 的切换、ANR 等导致系统扔掉了后续的事件），这个时候会先执行一次 ACTION_CANCEL。</li>
-<li> 子 View 之前拦截了事件，但是后面父 View 重新拦截了事件，这个时候会给子 View 发送 ACTION_CANCEL 事件。</li>
-</ol>
-<h1 id="如何解决滑动冲突？"><a href="#如何解决滑动冲突？" class="headerlink" title="如何解决滑动冲突？"></a>如何解决滑动冲突？</h1><ul>
-<li>  通过重写父类的 onInterceptTouchEvent 来拦截滑动事件。</li>
-<li>  通过在子类中调用 parent.requestDisallowInterceptTouchEvent 来通知父类是否要拦截事件。</li>
-</ul>
-<h1 id="Touch事件分发流程"><a href="#Touch事件分发流程" class="headerlink" title="Touch事件分发流程"></a>Touch事件分发流程</h1><p>Activity -&gt; Window -&gt; DecorView -&gt; ViewGroup -&gt; View.dispatchTouchEvent()</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171640.png"></p>
-<p>注意点：</p>
-<ul>
-<li>如果在执行ACTION_DOWN时返回false，后面一系列的ACTION_MOVE、ACTION_UP事件都不会执行。</li>
-<li>如果在最上层的View的onTouchEvent在DOWN时间返回true，虽然ViewGroup的onInterceptTouchEvent（）对DOWN事件返回了false，但后续的事件（MOVE、UP）依然会传递给它的onInterceptTouchEvent()</li>
-<li>onInterceptTouchEvent（）一旦返回一次true，就再也不会被调用了。</li>
-<li>当dispatchTouchEvent（）事件分发时，只有前一个事件（如ACTION_DOWN）返回true，才会收到后一个事件（ACTION_MOVE和ACTION_UP）</li>
-<li>dispatchTouchEvent()、 onTouchEvent() 消费事件、终结事件传递（返回true）</li>
-<li>onInterceptTouchEvent 并不能消费事件，它相当于是一个分叉口起到分流导流的作用，对后续的ACTION_MOVE和ACTION_UP事件接收起到非常大的作用。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1457,7 +1477,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">173</span>
+          <span class="site-state-item-count">174</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

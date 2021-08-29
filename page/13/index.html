@@ -186,6 +186,156 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/https%E3%80%81TLS%E6%8F%A1%E6%89%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E7%BD%91%E7%BB%9C/https%E3%80%81TLS%E6%8F%A1%E6%89%8B/" class="post-title-link" itemprop="url">https、TLS握手</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-03 20:31:00" itemprop="dateCreated datePublished" datetime="2018-04-03T20:31:00+08:00">2018-04-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/https%E3%80%81TLS%E6%8F%A1%E6%89%8B/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/https、TLS握手/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="http传输数据存在哪些问题？"><a href="#http传输数据存在哪些问题？" class="headerlink" title="http传输数据存在哪些问题？"></a>http传输数据存在哪些问题？</h1><p>不使用SSL/TLS的HTTP通信，就是不加密的通信。所有信息明文传播，带来了三大风险。<br>（1） 窃听风险（eavesdropping）：第三方可以获知通信内容。<br>（2） 篡改风险（tampering）：第三方可以修改通信内容。<br>（3） 冒充风险（pretending）：第三方可以冒充他人身份参与通信。</p>
+<p>Charles抓包就是中间人拦截监听。</p>
+<h1 id="https新引入了什么？解决了什么问题？"><a href="#https新引入了什么？解决了什么问题？" class="headerlink" title="https新引入了什么？解决了什么问题？"></a>https新引入了什么？解决了什么问题？</h1><ol>
+<li> 数据加密传输，防止窃听</li>
+<li> 校验数据，防止篡改</li>
+<li> 使用数字证书验证身份，防止身份被冒充</li>
+</ol>
+<h1 id="https缺点是什么？"><a href="#https缺点是什么？" class="headerlink" title="https缺点是什么？"></a>https缺点是什么？</h1><ol>
+<li> TLS握手增加了建立连接的时间</li>
+<li> 每次加密解密数据需要占用额外的时间和CPU资源</li>
+</ol>
+<h1 id="https如何保证数据的完整性？"><a href="#https如何保证数据的完整性？" class="headerlink" title="https如何保证数据的完整性？"></a>https如何保证数据的完整性？</h1><p>http验证数据完整性存在的问题：</p>
+<p>http通信是不加密的，即使对报文做了哈希摘要，并放在报文中传输，http通信内容被拦截篡改后，一并把哈希摘要也改掉，客户端是没办法识别报文是否被篡改。</p>
+<p>https改进：</p>
+<p>对报文的哈希摘要进行加密，另一方接受到报文并重新计算报文的哈希摘要，再对比解密后的摘要，检查是否一致。</p>
+<p>对摘要的加密用对称加密，对称加密的秘钥用非对称加密方式加解密。</p>
+<h1 id="https加密过程是怎样的？"><a href="#https加密过程是怎样的？" class="headerlink" title="https加密过程是怎样的？"></a>https加密过程是怎样的？</h1><p>采用对称加密方式加密报文，对称加密的秘钥用非对称加密方式加密后传递给通信双方。</p>
+<p>因为：</p>
+<ol>
+<li> 对称加密速度快，但是通信双方都需要同一个密钥，密钥在传输过程中被窃取泄露后就不安全了</li>
+<li> 非对称加密速度慢，但私钥不公开，只传递公钥出去，可以保证安全性</li>
+</ol>
+<h1 id="https通信过程是怎样的？"><a href="#https通信过程是怎样的？" class="headerlink" title="https通信过程是怎样的？"></a>https通信过程是怎样的？</h1><ol>
+<li> 客户端发起SSL/TLS连接</li>
+<li> 客户端获取服务端数字证书，验证服务端身份</li>
+<li> 两端生成随机数，由服务端根据随机数，用私钥加密得到对称加密密钥</li>
+<li> http的请求和响应报文都用对称加密密钥加密后再传输</li>
+</ol>
+<h1 id="SSL-TLS握手过程是怎样的？"><a href="#SSL-TLS握手过程是怎样的？" class="headerlink" title="SSL/TLS握手过程是怎样的？"></a>SSL/TLS握手过程是怎样的？</h1><p>有四次握手</p>
+<ol>
+<li> 客户端请求建立SSL链接，并向服务端发送一个随机数–Client random和客户端支持的加密方法，比如RSA公钥加密，此时是明文传输。</li>
+<li> 服务端回复一种客户端支持的加密方法、一个随机数–Server random、授信的服务器证书和非对称加密的公钥。</li>
+<li> 客户端收到服务端的回复后利用服务端的公钥，加上新的随机数–Premaster secret 通过服务端下发的公钥及加密方法进行加密，发送给服务器。</li>
+<li> 服务端收到客户端的回复，利用已知的加解密方式进行解密，同时利用Client random、Server random和Premaster secret通过一定的算法生成HTTP链接数据传输的对称加密key – session key。</li>
+</ol>
+<p>此后的HTTP链接数据传输即通过对称加密方式进行加密传输。</p>
+<h2 id="为什么需要3个随机数作为对称加密的密钥？"><a href="#为什么需要3个随机数作为对称加密的密钥？" class="headerlink" title="为什么需要3个随机数作为对称加密的密钥？"></a>为什么需要3个随机数作为对称加密的密钥？</h2><p>不管是客户端还是服务器，都需要随机数，这样生成的密钥才不会每次都一样。由于SSL协议中证书是静态的，因此十分有必要引入一种随机因素来保证协商出来的密钥的随机性。</p>
+<p>对于RSA密钥交换算法来说，pre-master-key本身就是一个随机数，再加上hello消息中的随机，三个随机数通过一个密钥导出器最终导出一个对称密钥。</p>
+<p>pre master的存在，在于SSL协议不信任每个主机都能产生完全随机的随机数，如果随机数不随机，那么pre master secret就有可能被猜出来，那么仅适用pre master secret作为密钥就不合适了，因此必须引入新的随机因素，那么客户端和服务器加上pre master secret三个随机数一同生成的密钥就不容易被猜出了，一个伪随机可能完全不随机，可是是三个伪随机就十分接近随机了，每增加一个自由度，随机性增加的可不是一。</p>
+<h1 id="还有什么密钥交换算法？"><a href="#还有什么密钥交换算法？" class="headerlink" title="还有什么密钥交换算法？"></a>还有什么密钥交换算法？</h1><p>ECDHE ：“短暂 - 椭圆曲线 - 迪菲 - 赫尔曼”算法（ephemeral Elliptic Curve Diffie–Hellman）。</p>
+<p>RSA 是比较传统的密钥交换算法，它不具备前向安全的性质，因此现在很少服务器使用的。而 ECDHE 算法具有前向安全，所以被广泛使用。</p>
+<p>客户端和服务端双方在一个可以被窥探的信道下给双方建立起一个相同的密钥。</p>
+<p>发送公有的参数，保留私有的参数，双方经过计算可以得到一个一致的结果，一致的结果可以用作会话密钥，这个运算的逆运算复杂度很高，所以不会泄露。</p>
+<p><strong>为什么参数被窥探后还能够达到保密的效果?</strong></p>
+<p>Deffie-Hellman算法的有效性依赖于计算离散对数的难度。</p>
+<h1 id="https总共有多少次握手了？"><a href="#https总共有多少次握手了？" class="headerlink" title="https总共有多少次握手了？"></a>https总共有多少次握手了？</h1><p>SSL是在TCP之上，在HTTP之下。</p>
+<p>TCP先三次握手建立连接，然后SSL四次握手，最后进行HTTP通信。</p>
+<h1 id="https的身份认证是如何实现的？"><a href="#https的身份认证是如何实现的？" class="headerlink" title="https的身份认证是如何实现的？"></a>https的身份认证是如何实现的？</h1><p>通过数字证书验证通信方身份。</p>
+<h2 id="如何验证证书是否可信？"><a href="#如何验证证书是否可信？" class="headerlink" title="如何验证证书是否可信？"></a>如何验证证书是否可信？</h2><p>服务端证书都是向CA这类的权威机构申请的，CA颁发证书时会用根证书的私钥去给申请的证书的哈希摘要做加密作为申请的证书的签名。</p>
+<p>客户端收到服务端的证书后，查询证书的颁发者，一直寻找到根证书，然后用根证书里的公钥去解密其颁发的证书的签名，对比证书文件的哈希摘要是否一致，这样就验证了身份没有被篡改。</p>
+<h2 id="数字证书验证身份的过程是怎样的？"><a href="#数字证书验证身份的过程是怎样的？" class="headerlink" title="数字证书验证身份的过程是怎样的？"></a>数字证书验证身份的过程是怎样的？</h2><p>服务端向CA（数字证书认证机构）提交自己的公钥申请数字证书，CA颁发证书，并把服务端的公钥内嵌在颁发的证书中，再对整个证书计算哈希摘要，用一个私钥加密这个哈希摘要，确保了申请到的证书在传输过程中可以校验证书是否被篡改，校验是通过CA提供的根证书里的公钥解密服务端证书中的哈希摘要，再计算服务端证书文件的哈希摘要，对比两者是否一致，根证书一般已事先内嵌客户端。</p>
+<p>证书可以有信任链。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827203913.png"></p>
+<h1 id="https单向认证是什么？"><a href="#https单向认证是什么？" class="headerlink" title="https单向认证是什么？"></a>https单向认证是什么？</h1><ol>
+<li> 客户端发起请求，传送支持的TLS版本、摘要算法、随机数等信息</li>
+<li> 服务端返回确认的TLS版本、摘要算法，并再发送生成的随机数、服务端的证书</li>
+<li> 客户端验证证书是否可信，不可信则弹窗警告，可信则用随机数生成一个用于对称加密的密钥，用于接下来加密报文，用服务端证书的公钥加密发送给服务端</li>
+<li> 服务端接收到会话密钥，用私钥解密，得到会话密钥，返回ACK确认消息</li>
+</ol>
+<h1 id="https双向认证是什么？"><a href="#https双向认证是什么？" class="headerlink" title="https双向认证是什么？"></a>https双向认证是什么？</h1><p>单向认证是客户端验证服务端的证书来检验服务端身份是否合法。</p>
+<p>双向认证是服务端也要求验证客户端的证书来检验客户端的身份是否合法。服务端会在发送证书给客户端时，要求客户端也发送证书给服务端。</p>
+<p>双向认证使用场景：</p>
+<p>使用网上银行可能需要在电脑上插U盾之类的东西，就是生成客户端证书的。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/UDP%E4%B8%8ETCP%E5%8C%BA%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +367,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -322,7 +472,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -449,7 +599,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -566,7 +716,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -671,7 +821,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -771,7 +921,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -881,7 +1031,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -979,7 +1129,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1106,7 +1256,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1198,145 +1348,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/" class="post-title-link" itemprop="url">Java静态分派、动态分派</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-03-07 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-07T20:00:00+08:00">2018-03-07</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:03:14" itemprop="dateModified" datetime="2021-08-29T15:03:14+08:00">2021-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E9%9D%99%E6%80%81%E5%88%86%E6%B4%BE%E3%80%81%E5%8A%A8%E6%80%81%E5%88%86%E6%B4%BE/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java静态分派、动态分派/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>静态类型：变量被声明时的类型；例如，Animal a = new Dog(), 静态类型为Animal, 实际类型为Dog</p>
-<p>实际类型：变量所引用的对象的真实类型</p>
-<p>重载方法是静态分派，即编译时多态</p>
-<p>重写方法是动态分派，即运行时多态</p>
-<h1 id="单分派和多分派"><a href="#单分派和多分派" class="headerlink" title="单分派和多分派"></a>单分派和多分派</h1><p>方法的接收者：一个方法所属的对象</p>
-<p>宗量：方法的接收者和方法的参数，只有这两种宗量</p>
-<p>单分派：根据一个宗量进行对方法的选择</p>
-<p>多分派：根据多于一个的宗量对方法进行选择</p>
-<p>单分派和多分派取决于宗量,  方法调用者和方法参数都是宗量.</p>
-<p>静态分派的方法调用：首先确定调用者的静态类型是什么,然后根据要调用的方法参数的静态类型(声明类型)确定所有重载方法中要调用哪一个, 需要根据这两个宗量来编译, 所以是静态多分派(多个宗量确定).</p>
-<p>动态分派的方法调用：在运行期间,虚拟机会根据调用者的实际类型调用对应的方法, 只需根据这一个宗量就可以确定要调用的方法,所以是动态单分派(一个宗量)</p>
-<p>到目前为止，Java 语言还是一门 “静态多分派、动态单分派” 的语言，也就是说在执行静态分派时是根据多个宗量判断调用哪个方法的，因为在静态分派时要根据不同的静态类型和不同的方法描述符选择目标方法，在动态分派的时候，是根据单宗量选择目标方法的，因为在运行期，方法的描述符已经确定好，invokevirtual 字节码指令根据变量的实际类型选择目标方法。</p>
-<p>方法的描述符：方法参数类型+返回值类型</p>
-<h1 id="静态分派"><a href="#静态分派" class="headerlink" title="静态分派"></a>静态分派</h1> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">classStaticDispatch &#123; </span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Man</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Woman</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Humanguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,guy&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Manguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,man&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(Womanguy)</span> </span>&#123; </span><br><span class="line">        System.out.println(<span class="string">&quot;hello,woman&quot;</span>); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[]args)</span> </span>&#123; </span><br><span class="line">        Humanman=newMan(); </span><br><span class="line">        Humanwoman=newWoman(); </span><br><span class="line">        StaticDispatchdispatch=newStaticDispatch(); </span><br><span class="line">        dispatch.sayHello(man); </span><br><span class="line">        dispatch.sayHello(woman); </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<p>静态类型：是指对象 man 的 Human 类型， 静态类型本身是不会发送变化的，只有在使用时才会发送变化，静态类型在编译期间就可以确定一个变量的静态类型 </p>
-<p>实际类型：是指对象 man 的 Man 类型，实际类型在编译期间是不可确定的，只有在运行期才可确定 </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 实际类型变化 </span></span><br><span class="line">Human man = <span class="keyword">new</span> Man(); </span><br><span class="line">man = <span class="keyword">new</span> Woman(); </span><br><span class="line"> </span><br><span class="line"><span class="comment">// 静态类型变化 </span></span><br><span class="line">dispatch.sayHello((Man) man); </span><br><span class="line">dispatch.sayHello((Woman) man); </span><br></pre></td></tr></table></figure>
-
-<p>所以第一段代码中，方法接收者是 StaticDispatch 对象，虽然两个变量的实际类型不同，但是静态类型是相同的都是 Human，虚拟机（准确的说是编译器）在实现重载时是通过参数的静态类型而不是实际类型做出判定的，并且在编译阶段，变量的静态类型是可以确定的，所以编译器会根据变量的静态类型决定使用哪个重载方法。 </p>
-<p>所有依赖静态类型定位目标方法的分派动作称为静态分派，静态分派典型的应用就是方法的重载。静态分派发生在编译阶段，所以方法的静态分派动作是由编译器执行的。 </p>
-<h1 id="动态分派"><a href="#动态分派" class="headerlink" title="动态分派"></a>动态分派</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DynamicDispatch</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span></span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Man</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;hello, man&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Woman</span> <span class="keyword">extends</span> <span class="title">Human</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;hello, woman&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">		Human man = <span class="keyword">new</span> Man();</span><br><span class="line">		Human woman = <span class="keyword">new</span> Woman();</span><br><span class="line">		man.sayHello();</span><br><span class="line">		woman.sayHello();</span><br><span class="line">		man = <span class="keyword">new</span> Woman();</span><br><span class="line">		man.sayHello();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20200325235523.png"></p>
-<p>从上图中，我们可以看到 main() 方法的字节码指令执行过程：</p>
-<ul>
-<li>0 ~ 7 句是调用 Man 类的实例构造器创建一个 Man 类的对象，并将对象的引用压入到局部变量表的第 1 个 Slot 中</li>
-<li>8 ~ 15 句是调用 Woman 类的实例构造器创建一个 Woman 类的对象，并将对象的引用压入到局部变量表的第 2 个 Slot 中</li>
-<li>16 ~ 17 句是将第 1 个 Slot 中的变量（也就是 man）加载到局部变量表中，并调用 sayHello() 方法，关键的就是第 17 句指令 invokevirtual</li>
-</ul>
-<p>虽然第 17 句指令调用的常量池中的 Human.sayHello() 方法，但是最终执行的却是 Man.sayHello() 方法，这就要从 invokevirtual 指令的多态查找说起，invokevirtual 的查找过程如下所示：</p>
-<ul>
-<li>找到操作数栈顶的引用所指的对象的实际类型，记做 C</li>
-<li>在类型 C 中查找与常量中的描述符和简单名称相同的方法，如果找到则进行访问权限的判断，如果通过则返回这个方法的直接引用，查找结束；如果权限不通过，则返回 java.lang.IllegalAccessError 的异常</li>
-<li>如果在 C 中没有找到描述符和简单名称都符合的方法，则按照继承关系从下往上依次在 C 的父类中进行查找和验证过程</li>
-<li>如果最终还是没有找到该方法，则抛出 java.lang.AbstractMethodError 的异常</li>
-</ul>
-<p>在上述 invokespecial 查找方法的过程中，最重要的就是第一步，根据对象的引用确定对象的实际类型，这个方法重写的本质。如上所述，在运行期内，根据对象的实际类型确定方法执行版本的分派过程叫做动态分派。</p>
-<h1 id="如何理解Java是静态多分派、动态单分派？"><a href="#如何理解Java是静态多分派、动态单分派？" class="headerlink" title="如何理解Java是静态多分派、动态单分派？"></a>如何理解Java是静态多分派、动态单分派？</h1><p>编译时期确定方法有两点依据：</p>
-<ol>
-<li>调用方法的静态类型</li>
-<li>方法的参数</li>
-</ol>
-<p>所以说是静态多分派。</p>
-<p>运行时期再确定方法只有一点依据,就是调用方法的实际类型,所以说是动态单分派。</p>
-<p>所以最后实际的方法调用是编译和运行的结合,即调用方法的实际类型和参数(运行时期直接引用会根据调用方法的实际类型确定,编译时期调用方法的静态类型只不过是虚引用),按书上说法,在编译时期,方法名和参数就被确定了,运行时只需要确定调用者即可;所以方法选择上,编译时期缩小了范围,运行时期确定了具体的方法。</p>
-<p>对于静态分派（重载），肯定会依赖接收者的静态类型与参数的静态类型（参数肯定存在，同名无参的方法只会有一个，不存在分派）。</p>
-<p>对于动态分派（重写），虚拟机只会根据接收者的实际类型选择，而不会理睬参数的实际类型。</p>
-<h1 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h1><ul>
-<li>深入理解Java虚拟机（第2版）  第8章  虚拟机字节码执行引擎 8.3.2 分派</li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/58f876f2e8b8">虚拟机字节码执行引擎（读书笔记）</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/28462483/answer/398040520">如何理解java是一门静态多分派且动态单分派的语言？</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1408,7 +1419,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">173</span>
+          <span class="site-state-item-count">174</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
