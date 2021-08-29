@@ -186,6 +186,129 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/" class="post-title-link" itemprop="url">Java集合类-TreeMap、ConcurrentSkipListMap</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-08 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-08T20:00:00+08:00">2018-05-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-TreeMap、ConcurrentSkipListMap/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="TreeMap作用"><a href="#TreeMap作用" class="headerlink" title="TreeMap作用"></a>TreeMap作用</h1><ul>
+<li> 元素可以按key保持顺序。</li>
+<li> 因为有序，提供了很多范围查询的方法，非常方便。</li>
+</ul>
+<h1 id="TreeMap的实现"><a href="#TreeMap的实现" class="headerlink" title="TreeMap的实现"></a>TreeMap的实现</h1><p>TreeMap实现了NavigableMap接口，该接口又继承SortedMap接口，两个提供了很多范围查询的方法，非常方便。</p>
+<p>用红黑树实现，插入、删除、查询的平均时间复杂度都是log(n)。</p>
+<h1 id="TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap"><a href="#TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap" class="headerlink" title="TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap?"></a>TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap?</h1><ol>
+<li> 因为红黑树的结构调整可能涉及整个树的结点，这样并发下就要锁住很多结点，使用跳表会更局部一点，只锁住局部的几个结点，并发性能更高。</li>
+<li> 红黑树加锁实现起来比较复杂，跳表是链表加锁比较容易实现</li>
+</ol>
+<p>可以用过Collections.synchronizedSortedMap()保证线程安全，也可以改用ConcurrentSkipListMap并发性能更好。</p>
+<h1 id="TreeMap为什么用红黑树不用AVL树？"><a href="#TreeMap为什么用红黑树不用AVL树？" class="headerlink" title="TreeMap为什么用红黑树不用AVL树？"></a>TreeMap为什么用红黑树不用AVL树？</h1><p>跟HashMap中的问题一样。</p>
+<p>红黑树的3结点可以吸收变化，在多次使用中可以减少调整数据结构的次数，从而提升性能。</p>
+<h1 id="ConcurrentSkipListMap是什么？"><a href="#ConcurrentSkipListMap是什么？" class="headerlink" title="ConcurrentSkipListMap是什么？"></a>ConcurrentSkipListMap是什么？</h1><p>跳表：链表+多级索引（多层链表）。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825212310.png"></p>
+<ul>
+<li>给有序链表再增加若干层额外的指针索引，用空间换时间。</li>
+<li>每一层都是一个有序链表。</li>
+<li>实际效果类似于平衡二叉搜索树。</li>
+<li>插入、删除、查询的平均时间复杂度都是log(n)。</li>
+<li>支持按key排序所有元素，也支持快速查找。</li>
+</ul>
+<h1 id="跳表的数据结构存在什么问题？"><a href="#跳表的数据结构存在什么问题？" class="headerlink" title="跳表的数据结构存在什么问题？"></a>跳表的数据结构存在什么问题？</h1><p>按照理想的生成链表的方式，上面每一层链表的节点个数，是下面一层的节点个数的一半，这样查找过程就非常类似于一个二分查找，使得查找的时间复杂度可以降低到O(log n)。</p>
+<p>但是，这种方法在插入数据的时候有很大的问题。新插入一个节点之后，就会打乱上下相邻两层链表上节点个数严格的2:1的对应关系。如果要维持这种对应关系，就必须把新插入的节点后面的所有节点（也包括新插入的节点）重新进行调整，这会让时间复杂度重新蜕化成O(n)。删除数据也有同样的问题。</p>
+<p>skiplist为了避免这一问题，它不要求上下相邻两层链表之间的节点个数有严格的对应关系，而是为每个节点随机出一个层数(level)。比如，一个节点随机出的层数是3，那么就把它链入到第1层到第3层这三层链表中。</p>
+<h1 id="跳表与红黑树区别？"><a href="#跳表与红黑树区别？" class="headerlink" title="跳表与红黑树区别？"></a>跳表与红黑树区别？</h1><ol>
+<li> 红黑树为了保持平衡有可能会调整很多结点甚至整个树，而跳表只要修改相邻结点更加的局部，跳表调整次数少性能也就高，同时并发加锁时，锁住的结点更少，可以减少竞争</li>
+<li> 跳表的区间查询更高效，因为找到链表头结点顺序遍历就行了，红黑树需要中序遍历相对比较复杂</li>
+<li> 跳表占用空间更少，平衡树每个节点包含2个指针（分别指向左右子树），而skiplist每个节点包含的指针数目平均为1/(1-p)，具体取决于参数p的大小。如果像Redis里的实现一样，取p=1/4，那么平均每个节点包含1.33个指针，比平衡树更有优势。</li>
+</ol>
+<h1 id="ConcurrentSkipListMap存在什么问题？"><a href="#ConcurrentSkipListMap存在什么问题？" class="headerlink" title="ConcurrentSkipListMap存在什么问题？"></a>ConcurrentSkipListMap存在什么问题？</h1><p>size方法求得链表长度要遍历整个链表，并且没有加锁，多线程高并发下这个方法返回值并不准确，高并发下使用size的意义不大。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/yd2sOhmVtZeEkJ06cTE7qA"> 死磕 java集合之ConcurrentSkipListMap源码分析——发现个bug</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/1811782/when-should-i-use-concurrentskiplistmap">When should I use ConcurrentSkipListMap?</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20202931/answer/16086538">为啥 redis 使用跳表(skiplist)而不是使用 red-black？ - 于康的回答 - 知乎</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ConcurrentHashMap%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +340,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -347,7 +470,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -683,7 +806,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -805,7 +928,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -955,7 +1078,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1060,7 +1183,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1187,7 +1310,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1304,7 +1427,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1409,7 +1532,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1459,116 +1582,6 @@
 <p>另一种策略就是重传ACK序号后所有的报文，如果丢包严重，这种做法效率挺高，但如果丢包并不严重，这种做法会浪费很多流量。</p>
 <p>如果能知道没有收到的报文序号是哪些就很好办了，用SACK可以解决这个问题。</p>
 <p>例如发送方发了序号为1、2、3、4、5、6的报文，接收方收到了1、2、4、5、6，唯独为没有收到3（3可能卡在某个网络节点上），在接收到1后回应ACK 2，接收2后回应ACK 3，接收到4、5、6，也是回应ACK 3，此时发送方对3、4、5、6的定时器都会超时，然后都会重发3、4、5、6，但实际4、5、6已经接收到了，重发4、5、6其实是浪费带宽，也增加了整体传输时长。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/TCP%E6%8A%A5%E6%96%87%E7%BC%96%E5%8F%B7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%BD%91%E7%BB%9C/TCP%E6%8A%A5%E6%96%87%E7%BC%96%E5%8F%B7/" class="post-title-link" itemprop="url">TCP报文编号</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-03-10 19:31:00" itemprop="dateCreated datePublished" datetime="2018-03-10T19:31:00+08:00">2018-03-10</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:50:35" itemprop="dateModified" datetime="2021-08-29T22:50:35+08:00">2021-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/TCP%E6%8A%A5%E6%96%87%E7%BC%96%E5%8F%B7/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/TCP报文编号/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="TCP为什么要给报文编号？不编号会有什么问题？"><a href="#TCP为什么要给报文编号？不编号会有什么问题？" class="headerlink" title="TCP为什么要给报文编号？不编号会有什么问题？"></a>TCP为什么要给报文编号？不编号会有什么问题？</h1><p>保证报文的不重复、不丢失、不乱序。</p>
-<p>作为一个可靠的传输层协议，TCP 需要在不稳定的网络环境中构建一个可靠的传输层，网络的不确定性可能会导致数据包的缺失和顺序颠倒等问题，常见的问题可能包括：</p>
-<ul>
-<li>数据包被发送方多次发送造成数据的重复；</li>
-<li>数据包在传输的过程中被路由或者其他节点丢失；</li>
-<li>数据包到达接收方可能无法按照发送顺序；</li>
-</ul>
-<p>为了解决上述这些可能存在的问题，TCP 协议要求发送方在数据包中加入『序列号』字段，有了数据包对应的序列号，我们就可以：</p>
-<ul>
-<li>接收方可以通过序列号对重复的数据包进行去重；</li>
-<li>发送方会在对应数据包未被 ACK 时进行重复发送；</li>
-<li>接收方可以根据数据包的序列号对它们进行重新排序；</li>
-</ul>
-<p>序列号在 TCP 连接中有着非常重要的作用，初始序列号作为 TCP 连接的一部分也需要在三次握手期间进行初始化，由于 TCP 连接通信的双方都需要获得初始序列号，所以它们其实需要向对方发送 SYN 控制消息并携带自己期望的初始化序列号 SEQ，对方在收到 SYN 消息之后会通过 ACK 控制消息以及 SEQ+1 来进行确认。</p>
-<h1 id="为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？"><a href="#为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？" class="headerlink" title="为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？"></a>为什么ACK报文中确认序号一定要是已经接收到的连续报文的最大的序号？改为已经接收到的不连续的报文的最大序号会有什么问题？</h1><p>TCP把数据视为一个无结构但有序的字节流，序号建立在传输的字节流之上，而不建立在报文段之上。</p>
-<p>接收端给发送端的Ack确认只会确认最后一个连续的包，比如，发送端发了1,2,3,4,5一共五份数据，接收端收到了1，2，于是回ack 3，然后收到了4（注意此时3没收到），此时的TCP会怎么办？我们要知道，因为正如前面所说的，SeqNum和Ack是以字节数为单位，所以ack的时候，不能跳着确认，只能确认最大的连续收到的包，不然，发送端就以为之前的都收到了。</p>
-<p>因为TCP有窗口拥塞控制，窗口的拥塞是基于字节的，所以必须给字节编号，如果给数据包编号，拥塞窗口无法调节大小。</p>
-<h1 id="TCP三次握手中的初始序号是固定的吗？"><a href="#TCP三次握手中的初始序号是固定的吗？" class="headerlink" title="TCP三次握手中的初始序号是固定的吗？"></a>TCP三次握手中的初始序号是固定的吗？</h1><p>不是固定的，是动态增长+随机选取，可以避免相邻的TCP会话的序列号有重叠，否则并不知道报文是旧连接的还是新连接的</p>
-<p>如果初始序号是固定的，攻击者就可以很容易伪造TCP报文发起攻击，初始序号需要动态生成，提高攻击成本。</p>
-<p>源IP地址、源端口、目标IP地址、目标端口唯一确定一个TCP会话，允许刚释放的TCP端口重用，如果旧会话中的分组报文仍然在网络中，新会话建立后可能会收到旧会话产生的分组报文，如果序号是一直递增的，就可以分辨出报文是属于旧会话的还是新会话的。</p>
-<p>关于ISN的初始化。ISN是不能hard code的，不然会出问题的——比如：如果连接建好后始终用1来做ISN，如果client发了30个segment过去，但是网络断了，于是 client重连，又用了1做ISN，但是之前连接的那些包到了，于是就被当成了新连接的包，此时，client的Sequence Number 可能是3，而Server端认为client端的这个号是30了。全乱了。<a target="_blank" rel="noopener" href="http://tools.ietf.org/html/rfc793">RFC793</a>中说，ISN会和一个假的时钟绑在一起，这个时钟会在每4微秒对ISN做加一操作，直到超过2^32，又从0开始。这样，一个ISN的周期大约是4.55个小时。因为，我们假设我们的TCP Segment在网络上的存活时间不会超过Maximum Segment Lifetime（缩写为MSL – <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Maximum_Segment_Lifetime">Wikipedia语条</a>），所以，只要MSL的值小于4.55小时，那么，我们就不会重用到ISN。</p>
-<h1 id="报文编号和确认应答机制存在什么问题？"><a href="#报文编号和确认应答机制存在什么问题？" class="headerlink" title="报文编号和确认应答机制存在什么问题？"></a>报文编号和确认应答机制存在什么问题？</h1><p>队头阻塞。</p>
-<p>TCP数据包是有序传输，中间一个数据包丢失，会等待该数据包重传，造成后面的数据包的阻塞。</p>
 
       
     </div>
@@ -1655,7 +1668,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">178</span>
+          <span class="site-state-item-count">179</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1668,7 +1681,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">232</span>
+        <span class="site-state-item-count">233</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

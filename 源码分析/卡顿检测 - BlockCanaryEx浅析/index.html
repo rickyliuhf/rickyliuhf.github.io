@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="BlockCanaryEx检测主线程卡顿的原理是什么?给Looper设置自定义的Printer，Looper的loop()方法在处理一个消息的前后会调用Printer的println()方法，通过这个方法就可以计算主线程处理每一个消息的耗时。 这一原理与BlockCanary相同，不同的是两者采集的信息不同。 BlockCanaryEx与BlockCanary有什么区别？  BlockCanary">
+<meta property="og:type" content="article">
+<meta property="og:title" content="卡顿检测 - BlockCanaryEx浅析">
+<meta property="og:url" content="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanaryEx%E6%B5%85%E6%9E%90/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="BlockCanaryEx检测主线程卡顿的原理是什么?给Looper设置自定义的Printer，Looper的loop()方法在处理一个消息的前后会调用Printer的println()方法，通过这个方法就可以计算主线程处理每一个消息的耗时。 这一原理与BlockCanary相同，不同的是两者采集的信息不同。 BlockCanaryEx与BlockCanary有什么区别？  BlockCanary">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-08-16T12:55:00.000Z">
+<meta property="article:modified_time" content="2021-08-29T14:56:43.944Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="源码分析">
+<meta property="article:tag" content="BlockCanaryEx">
+<meta property="article:tag" content="卡顿检测">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanaryEx%E6%B5%85%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>卡顿检测 - BlockCanaryEx浅析 | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanaryEx%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          卡顿检测 - BlockCanaryEx浅析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-16 20:55:00" itemprop="dateCreated datePublished" datetime="2019-08-16T20:55:00+08:00">2019-08-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 22:56:43" itemprop="dateModified" datetime="2021-08-29T22:56:43+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanaryEx%E6%B5%85%E6%9E%90/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="源码分析/卡顿检测 - BlockCanaryEx浅析/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="BlockCanaryEx检测主线程卡顿的原理是什么"><a href="#BlockCanaryEx检测主线程卡顿的原理是什么" class="headerlink" title="BlockCanaryEx检测主线程卡顿的原理是什么?"></a>BlockCanaryEx检测主线程卡顿的原理是什么?</h1><p>给Looper设置自定义的Printer，Looper的loop()方法在处理一个消息的前后会调用Printer的println()方法，通过这个方法就可以计算主线程处理每一个消息的耗时。</p>
+<p>这一原理与BlockCanary相同，不同的是两者采集的信息不同。</p>
+<h1 id="BlockCanaryEx与BlockCanary有什么区别？"><a href="#BlockCanaryEx与BlockCanary有什么区别？" class="headerlink" title="BlockCanaryEx与BlockCanary有什么区别？"></a>BlockCanaryEx与BlockCanary有什么区别？</h1><ol>
+<li> BlockCanaryEx的运行时代码修改自BlockCanary，ui和大部分功能基本一致;</li>
+<li> BlockCanaryEx添加了方法采样，知道主线程中所有方法的执行时间和执行次数;</li>
+<li> 当应用卡顿时，BlockCanaryEx更关注app代码中，哪些方法耗时最多，重点记录和显示这些耗时方法；</li>
+<li> 添加了gc采样，当应用卡顿时，我们可以知道卡顿时是否发生了gc，以及gc的时间；</li>
+<li> 监控view性能，计算卡顿时，view的measure,layout,draw消耗的时间。</li>
+</ol>
+<p>BlockCanaryEx在编译期，通过字节码注入，将方法采样器注入到你的代码中</p>
+<h1 id="入口在哪？"><a href="#入口在哪？" class="headerlink" title="入口在哪？"></a>入口在哪？</h1><p>BlockCanaryEx.install() -&gt; BlockMonitor.install()</p>
+<p>BlockMonitor.install() 主要调用了</p>
+<ol>
+<li> BlockMonitor.ensureMonitorInstalled() -&gt; Looper.getMainLooper().setMessageLogging(LOOPER_MONITOR)</li>
+<li> connectServiceIfNot()</li>
+</ol>
+<h1 id="LooperMonitor里做了什么？"><a href="#LooperMonitor里做了什么？" class="headerlink" title="LooperMonitor里做了什么？"></a>LooperMonitor里做了什么？</h1><p>实现了Printer接口的println()方法</p>
+<p>在接收到Looper的第一个消息时，调用一次ViewPerformanceSampler.install()</p>
+<p>在api level为[20,25]之间（Android 4.4 到 Android7.1）hook掉android.os.Trace的traceBegin和traceEnd方法，替换为ViewPerformanceSampler的traceBegin和traceEnd方法</p>
+<h1 id="为什么要hook掉android-os-Trace的traceBegin和traceEnd方法？"><a href="#为什么要hook掉android-os-Trace的traceBegin和traceEnd方法？" class="headerlink" title="为什么要hook掉android.os.Trace的traceBegin和traceEnd方法？"></a>为什么要hook掉android.os.Trace的traceBegin和traceEnd方法？</h1><p>android framework里已经使用Trace的traceBegin和traceEnd方法在每一个关键处进行了打点记录，hook了这两个方法，就相当于给framework的每个关键动作的地方都做了耗时统计</p>
+<p>这一点去查看android framework源码查看Trace类里各个常量的使用位置就知道，例如TRACE_TAG_VIEW、TRACE_TAG_INPUT等</p>
+<p>例如：</p>
+<ol>
+<li> LayoutInflater.inflate()方法一开始会调用Trace.traceBegin(Trace.TRACE_TAG_VIEW, “inflate”)</li>
+<li> ViewRootImpl的performMeasure()中会调用Trace.traceBegin(Trace.TRACE_TAG_VIEW, “measure”);</li>
+</ol>
+<h1 id="如何hook掉android-os-Trace的traceBegin和traceEnd方法？"><a href="#如何hook掉android-os-Trace的traceBegin和traceEnd方法？" class="headerlink" title="如何hook掉android.os.Trace的traceBegin和traceEnd方法？"></a>如何hook掉android.os.Trace的traceBegin和traceEnd方法？</h1><p>热修复框架 AndFix 原理：</p>
+<p>Java层的每一个方法在虚拟机实现里面都对应着一个ArtMethod的结构体，只要把原方法的结构体内容替换成新的结构体的内容，在调用原方法的时候，真正执行的指令会是新方法的指令。</p>
+<p>BlockCanaryEx这里采用的是 native 替换方法结构体  的思路，源码使用的Epic的代码</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/tiann/epic">https://github.com/tiann/epic</a></p>
+<p>Epic 是一个在虚拟机层面、以 Java Method 为粒度的 运行时 AOP Hook 框架。简单来说，Epic 就是 ART 上的  <a target="_blank" rel="noopener" href="https://github.com/alibaba/dexposed">Dexposed</a>（支持 Android 4.0 ~ 10.0）。它可以拦截本进程内部几乎任意的 Java 方法调用，可用于实现 AOP 编程、运行时插桩、性能分析、安全审计等。</p>
+<p>具体分析见Epic源码分析专题页</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/03/20/dive-into-art-hello-world/">ART深度探索开篇：从Method Hook谈起</a></li>
+<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/11/23/dexposed-on-art/">我为Dexposed续一秒——论ART上运行时 Method AOP实现</a></li>
+</ul>
+<h1 id="在api-level为-20-25-之间（Android-4-4-到-Android7-1）进行了hook，为什么是这个版本区间？"><a href="#在api-level为-20-25-之间（Android-4-4-到-Android7-1）进行了hook，为什么是这个版本区间？" class="headerlink" title="在api level为[20,25]之间（Android 4.4 到 Android7.1）进行了hook，为什么是这个版本区间？"></a>在api level为[20,25]之间（Android 4.4 到 Android7.1）进行了hook，为什么是这个版本区间？</h1><p>因为ART是Android 4.4上才有的，支持到Android</p>
+<h1 id="ViewPerformanceSampler的traceBegin和traceEnd方法做了什么？"><a href="#ViewPerformanceSampler的traceBegin和traceEnd方法做了什么？" class="headerlink" title="ViewPerformanceSampler的traceBegin和traceEnd方法做了什么？"></a>ViewPerformanceSampler的traceBegin和traceEnd方法做了什么？</h1><p>traceBegin()记录了traceTag为TRACE_TAG_VIEW的Trace事件的名称和事件开始事件</p>
+<p>traceEnd()中根据Trace的事件名称记录一个事件type，再把事件开始时间和结束时间，一起存入一个新创建的ViewPerformanceInfo对象中，再把这个对象存入一个名为VIEW_PERFORMANCE_INFOS的List中</p>
+<h1 id="ViewPerformanceSampler的VIEW-PERFORMANCE-INFOS什么时候被使用？"><a href="#ViewPerformanceSampler的VIEW-PERFORMANCE-INFOS什么时候被使用？" class="headerlink" title="ViewPerformanceSampler的VIEW_PERFORMANCE_INFOS什么时候被使用？"></a>ViewPerformanceSampler的VIEW_PERFORMANCE_INFOS什么时候被使用？</h1><p>在LooperMonitor中检测到Looper处理完一个消息后，取出ViewPerformanceSampler的VIEW_PERFORMANCE_INFOS的一个副本，并清空VIEW_PERFORMANCE_INFOS，这个List<ViewPerformanceInfo>的副本就表示Looper处理一个消息期间View相关操作的耗时信息</p>
+<p>通过Config.isBlock()判断是否发生阻塞，发生阻塞则会将List<ViewPerformanceInfo>通过LooperMonitor.BlockListener的onBlockEvent()传播出去</p>
+<h1 id="BlockMonitor-install-中调用connectServiceIfNot-是在做什么？"><a href="#BlockMonitor-install-中调用connectServiceIfNot-是在做什么？" class="headerlink" title="BlockMonitor.install()中调用connectServiceIfNot()是在做什么？"></a>BlockMonitor.install()中调用connectServiceIfNot()是在做什么？</h1><p>通过bindService绑定BlockSamplerService，获取ISamplerService代理对象</p>
+<p>BlockSamplerService运行在单独的进程中</p>
+<h1 id="BlockSamplerService是干什么的？"><a href="#BlockSamplerService是干什么的？" class="headerlink" title="BlockSamplerService是干什么的？"></a>BlockSamplerService是干什么的？</h1><p>主要是提供ISamplerService对象，事情都在ISamplerService中处理</p>
+<h2 id="ISamplerService的方法在哪些地方调用？"><a href="#ISamplerService的方法在哪些地方调用？" class="headerlink" title="ISamplerService的方法在哪些地方调用？"></a>ISamplerService的方法在哪些地方调用？</h2><p>在BlockMonitor的BLOCK_LISTENER的方法中使用，BLOCK_LISTENER是LooperMonitor.BlockListener一个实例</p>
+<p>LooperMonitor.BlockListener的onStart()会在Looper处理一个消息前调用</p>
+<p>onStart()内部会调用ISamplerService的resetSampler()</p>
+<p>LooperMonitor.BlockListener的onBlockEvent()会在Looper处理一个消息后检测到发生了阻塞时调用</p>
+<p>onBlockEvent()中会调用ISamplerService的getCurrentCpuInfo(realStartTime,  realEndTime)和popGcInfoBetween(realStartTime, realEndTime)</p>
+<h2 id="ISamplerService的resetSampler-做了什么？"><a href="#ISamplerService的resetSampler-做了什么？" class="headerlink" title="ISamplerService的resetSampler()做了什么？"></a>ISamplerService的resetSampler()做了什么？</h2><p>三行代码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GcSampler.startIfNot(pid);</span><br><span class="line">GcSampler.clearGcInfoBefore(startTime);</span><br><span class="line">CpuSampler.getInstance().resetSampler(pid);</span><br></pre></td></tr></table></figure>
+
+<p>GcSampler.startIfNot(pid)启动了GcSamplerThread类型的线程，无限循环不停的在logcat中获取gc日志，每一行的日志对应一个GcInfo对象，该对象有两个属性</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GcInfo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> happenedTime;</span><br><span class="line">    <span class="keyword">private</span> String gcLog;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所有获取的gc日志存储在一个类型<code>List&lt;GcInfo&gt;</code>的GC_INFO_LIST列表中</p>
+<p>GcSampler.clearGcInfoBefore(startTime)清除了GC_INFO_LIST中时间小于startTime的记录</p>
+<p>CpuSampler.getInstance().resetSampler(pid)是清空已采集的CPU信息</p>
+<h2 id="ISamplerService的getCurrentCpuInfo-realStartTime-realEndTime-做了什么？"><a href="#ISamplerService的getCurrentCpuInfo-realStartTime-realEndTime-做了什么？" class="headerlink" title="ISamplerService的getCurrentCpuInfo(realStartTime, realEndTime)做了什么？"></a>ISamplerService的getCurrentCpuInfo(realStartTime, realEndTime)做了什么？</h2><p>调用了CpuSampler.getInstance().recordSample()，内部调用了doSample()，做的是：</p>
+<ol>
+<li> 读取/proc/stat 和 /proc/[pid]&gt;/stat 文件中的信息，拼接为一个String</li>
+<li> 把CPU信息String保存在一个LinkedHashMap类型的mCpuInfoEntries变量中，key为执行doSample()时的时间戳，容量满时删除最早插入的元素</li>
+</ol>
+<p>然后创建一个CpuInfo对象，cpuRate和isBusy属性，从mCpuInfoEntries中分析得到，CpuInfo对象  作为方法返回值</p>
+<h2 id="ISamplerService的popGcInfoBetween-realStartTime-realEndTime-做了什么"><a href="#ISamplerService的popGcInfoBetween-realStartTime-realEndTime-做了什么" class="headerlink" title="ISamplerService的popGcInfoBetween(realStartTime, realEndTime)做了什么?"></a>ISamplerService的popGcInfoBetween(realStartTime, realEndTime)做了什么?</h2><p>调用了GcSampler.popGcInfoBetween(startTime,endTime)</p>
+<p>从GcSampler的GC_INFO_LIST中获取startTime和endTime时间段内的GcInfo列表</p>
+<h2 id="为什么要单独开进程做这些事？"><a href="#为什么要单独开进程做这些事？" class="headerlink" title="为什么要单独开进程做这些事？"></a>为什么要单独开进程做这些事？</h2><p>读取Logcat可能是非常消耗内存的事情，单独开进程不消耗主进程的内存</p>
+<h1 id="检测到阻塞时会做什么？"><a href="#检测到阻塞时会做什么？" class="headerlink" title="检测到阻塞时会做什么？"></a>检测到阻塞时会做什么？</h1><p>会调用BlockMonitor.BLOCK_LISTENER的onBlockEvent()方法，内部逻辑主要为：</p>
+<ol>
+<li> 从sMethodInfoPool中取出List<MethodInfo></li>
+<li> 从ISamplerService.getCurrentCpuInfo()取出CpuInfo</li>
+<li> 从ISamplerService.popGcInfoBetween()取出List<GcInfo></li>
+<li> 将卡顿相关诊断信息封装为一个BlockInfo对象，发送给各个注册的BlockObserver</li>
+</ol>
+<h1 id="BlockMonitor的sMethodInfoPool里面存的是什么-是什么时候填充的？"><a href="#BlockMonitor的sMethodInfoPool里面存的是什么-是什么时候填充的？" class="headerlink" title="BlockMonitor的sMethodInfoPool里面存的是什么?是什么时候填充的？"></a>BlockMonitor的sMethodInfoPool里面存的是什么?是什么时候填充的？</h1><p>存的是MethodInfo</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MethodInfo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String cls;</span><br><span class="line">    <span class="keyword">private</span> String method;</span><br><span class="line">    <span class="keyword">private</span> String paramTypes;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> costRealTimeNano;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> costThreadTime;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>存储了一个方法名、方法所属类、方法参数、方法真实耗时、方法CPU耗时</p>
+<h1 id="BlockMonitor的sMethodInfoPool是什么时候填充的？"><a href="#BlockMonitor的sMethodInfoPool是什么时候填充的？" class="headerlink" title="BlockMonitor的sMethodInfoPool是什么时候填充的？"></a>BlockMonitor的sMethodInfoPool是什么时候填充的？</h1><p>在BlockMonitor.reportMethodProfile()对sMethodInfoPool进行了元素的添加</p>
+<h2 id="BlockMonitor-reportMethodProfile-在哪被调用的"><a href="#BlockMonitor-reportMethodProfile-在哪被调用的" class="headerlink" title="BlockMonitor.reportMethodProfile()在哪被调用的?"></a>BlockMonitor.reportMethodProfile()在哪被调用的?</h2><p>MethodSampler.onMethodExit()中调用了BlockMonitor.reportMethodProfile()</p>
+<h2 id="MethodSampler-onMethodExit-在哪被调用的？"><a href="#MethodSampler-onMethodExit-在哪被调用的？" class="headerlink" title="MethodSampler.onMethodExit()在哪被调用的？"></a>MethodSampler.onMethodExit()在哪被调用的？</h2><p>在编译时通过JavaAssist字节码插桩到项目的每一个方法的调用后会调用MethodSampler.onMethodExit()，具体实现在SamplerInjecter类的insertSamplerCode()方法</p>
+<h1 id="hook任意方法的原理是什么？"><a href="#hook任意方法的原理是什么？" class="headerlink" title="hook任意方法的原理是什么？"></a>hook任意方法的原理是什么？</h1><p>目前热修复框架主要有QQ空间补丁、HotFix、Tinker、Robust等。热修复框架按照原理大致可以分为三类：</p>
+<ol>
+<li> 基于 multidex机制 干预 ClassLoader 加载dex</li>
+<li> native 替换方法结构体</li>
+<li> instant-run 插桩方案</li>
+</ol>
+<p>热修复框架 AndFix 原理：</p>
+<p>Java层的每一个方法在虚拟机实现里面都对应着一个ArtMethod的结构体，只要把原方法的结构体内容替换成新的结构体的内容，在调用原方法的时候，真正执行的指令会是新方法的指令。</p>
+<p>BlockCanaryEx这里采用的是 native 替换方法结构体  的思路，源码使用的Epic的代码</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/tiann/epic">https://github.com/tiann/epic</a></p>
+<p>Epic 是一个在虚拟机层面、以 Java Method 为粒度的 运行时 AOP Hook 框架。简单来说，Epic 就是 ART 上的  <a target="_blank" rel="noopener" href="https://github.com/alibaba/dexposed">Dexposed</a>（支持 Android 4.0 ~ 10.0）。它可以拦截本进程内部几乎任意的 Java 方法调用，可用于实现 AOP 编程、运行时插桩、性能分析、安全审计等。</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/03/20/dive-into-art-hello-world/">ART深度探索开篇：从Method Hook谈起</a></li>
+<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/11/23/dexposed-on-art/">我为Dexposed续一秒——论ART上运行时 Method AOP实现</a></li>
+</ul>
+<h1 id="native层替换方法结构体来实现hook，这个原理是怎么知道的？"><a href="#native层替换方法结构体来实现hook，这个原理是怎么知道的？" class="headerlink" title="native层替换方法结构体来实现hook，这个原理是怎么知道的？"></a>native层替换方法结构体来实现hook，这个原理是怎么知道的？</h1><p>通过查看java.lang.reflect.Method的invoke()方法源码得知的</p>
+<p>Method.invoke()的函数定义如下：</p>
+<p>private native Object invoke(Object receiver, Object[] args, boolean accessible)</p>
+<p>最终会调用 jni 层art/runtime/reflection.cc 的 InvokeMethod方法，方法定义如下：</p>
+<p>object InvokeMethod(const ScopedObjectAccessAlreadyRunnable&amp; soa, jobject javaMethod,  jobject javaReceiver, jobject javaArgs, bool accessible)</p>
+<p>InvokeMethod 的第二个参数 javaMethod 就是Java层我们进行反射调用的那个Method对象，在jni层反映为一个jobject；InvokeMethod这个native方法首先通过 mirror::ArtMethod::FromReflectedMethod 获取了Java对象的在native层的 ArtMethod指针</p>
+<p>AndFix的实现里面，也正是使用这个 FromReflectedMethod 方法拿到Java层Method对应native层的ArtMethod指针，然后执行替换的。</p>
+<p>在native层替换的那个 ArtMethod 不是在 Java 层也有对应的东西？</p>
+<p>在Method的父类Executable有一个long类型的artMethod属性，实际上就是native层的指针表示。</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/03/20/dive-into-art-hello-world/">ART深度探索开篇：从Method Hook谈起</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanaryEx%E6%B5%85%E6%9E%90/" title="卡顿检测 - BlockCanaryEx浅析">http://rickyqliu.github.io/源码分析/卡顿检测 - BlockCanaryEx浅析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag"># 源码分析</a>
+              <a href="/tags/BlockCanaryEx/" rel="tag"># BlockCanaryEx</a>
+              <a href="/tags/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B/" rel="tag"># 卡顿检测</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanary%E6%B5%85%E6%9E%90/" rel="prev" title="卡顿检测 - BlockCanary浅析">
+      <i class="fa fa-chevron-left"></i> 卡顿检测 - BlockCanary浅析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/" rel="next" title="LeetCode.70.爬楼梯（简单）">
+      LeetCode.70.爬楼梯（简单） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#BlockCanaryEx%E6%A3%80%E6%B5%8B%E4%B8%BB%E7%BA%BF%E7%A8%8B%E5%8D%A1%E9%A1%BF%E7%9A%84%E5%8E%9F%E7%90%86%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.</span> <span class="nav-text">BlockCanaryEx检测主线程卡顿的原理是什么?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BlockCanaryEx%E4%B8%8EBlockCanary%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">BlockCanaryEx与BlockCanary有什么区别？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%A5%E5%8F%A3%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">入口在哪？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#LooperMonitor%E9%87%8C%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">LooperMonitor里做了什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81hook%E6%8E%89android-os-Trace%E7%9A%84traceBegin%E5%92%8CtraceEnd%E6%96%B9%E6%B3%95%EF%BC%9F"><span class="nav-number">5.</span> <span class="nav-text">为什么要hook掉android.os.Trace的traceBegin和traceEnd方法？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95hook%E6%8E%89android-os-Trace%E7%9A%84traceBegin%E5%92%8CtraceEnd%E6%96%B9%E6%B3%95%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">如何hook掉android.os.Trace的traceBegin和traceEnd方法？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%A8api-level%E4%B8%BA-20-25-%E4%B9%8B%E9%97%B4%EF%BC%88Android-4-4-%E5%88%B0-Android7-1%EF%BC%89%E8%BF%9B%E8%A1%8C%E4%BA%86hook%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E8%BF%99%E4%B8%AA%E7%89%88%E6%9C%AC%E5%8C%BA%E9%97%B4%EF%BC%9F"><span class="nav-number">7.</span> <span class="nav-text">在api level为[20,25]之间（Android 4.4 到 Android7.1）进行了hook，为什么是这个版本区间？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ViewPerformanceSampler%E7%9A%84traceBegin%E5%92%8CtraceEnd%E6%96%B9%E6%B3%95%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">8.</span> <span class="nav-text">ViewPerformanceSampler的traceBegin和traceEnd方法做了什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ViewPerformanceSampler%E7%9A%84VIEW-PERFORMANCE-INFOS%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%A2%AB%E4%BD%BF%E7%94%A8%EF%BC%9F"><span class="nav-number">9.</span> <span class="nav-text">ViewPerformanceSampler的VIEW_PERFORMANCE_INFOS什么时候被使用？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BlockMonitor-install-%E4%B8%AD%E8%B0%83%E7%94%A8connectServiceIfNot-%E6%98%AF%E5%9C%A8%E5%81%9A%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">10.</span> <span class="nav-text">BlockMonitor.install()中调用connectServiceIfNot()是在做什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BlockSamplerService%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F"><span class="nav-number">11.</span> <span class="nav-text">BlockSamplerService是干什么的？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ISamplerService%E7%9A%84%E6%96%B9%E6%B3%95%E5%9C%A8%E5%93%AA%E4%BA%9B%E5%9C%B0%E6%96%B9%E8%B0%83%E7%94%A8%EF%BC%9F"><span class="nav-number">11.1.</span> <span class="nav-text">ISamplerService的方法在哪些地方调用？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ISamplerService%E7%9A%84resetSampler-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">11.2.</span> <span class="nav-text">ISamplerService的resetSampler()做了什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ISamplerService%E7%9A%84getCurrentCpuInfo-realStartTime-realEndTime-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">11.3.</span> <span class="nav-text">ISamplerService的getCurrentCpuInfo(realStartTime, realEndTime)做了什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ISamplerService%E7%9A%84popGcInfoBetween-realStartTime-realEndTime-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">11.4.</span> <span class="nav-text">ISamplerService的popGcInfoBetween(realStartTime, realEndTime)做了什么?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%8D%95%E7%8B%AC%E5%BC%80%E8%BF%9B%E7%A8%8B%E5%81%9A%E8%BF%99%E4%BA%9B%E4%BA%8B%EF%BC%9F"><span class="nav-number">11.5.</span> <span class="nav-text">为什么要单独开进程做这些事？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A3%80%E6%B5%8B%E5%88%B0%E9%98%BB%E5%A1%9E%E6%97%B6%E4%BC%9A%E5%81%9A%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">12.</span> <span class="nav-text">检测到阻塞时会做什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BlockMonitor%E7%9A%84sMethodInfoPool%E9%87%8C%E9%9D%A2%E5%AD%98%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88-%E6%98%AF%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%A1%AB%E5%85%85%E7%9A%84%EF%BC%9F"><span class="nav-number">13.</span> <span class="nav-text">BlockMonitor的sMethodInfoPool里面存的是什么?是什么时候填充的？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BlockMonitor%E7%9A%84sMethodInfoPool%E6%98%AF%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%A1%AB%E5%85%85%E7%9A%84%EF%BC%9F"><span class="nav-number">14.</span> <span class="nav-text">BlockMonitor的sMethodInfoPool是什么时候填充的？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#BlockMonitor-reportMethodProfile-%E5%9C%A8%E5%93%AA%E8%A2%AB%E8%B0%83%E7%94%A8%E7%9A%84"><span class="nav-number">14.1.</span> <span class="nav-text">BlockMonitor.reportMethodProfile()在哪被调用的?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MethodSampler-onMethodExit-%E5%9C%A8%E5%93%AA%E8%A2%AB%E8%B0%83%E7%94%A8%E7%9A%84%EF%BC%9F"><span class="nav-number">14.2.</span> <span class="nav-text">MethodSampler.onMethodExit()在哪被调用的？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#hook%E4%BB%BB%E6%84%8F%E6%96%B9%E6%B3%95%E7%9A%84%E5%8E%9F%E7%90%86%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">15.</span> <span class="nav-text">hook任意方法的原理是什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#native%E5%B1%82%E6%9B%BF%E6%8D%A2%E6%96%B9%E6%B3%95%E7%BB%93%E6%9E%84%E4%BD%93%E6%9D%A5%E5%AE%9E%E7%8E%B0hook%EF%BC%8C%E8%BF%99%E4%B8%AA%E5%8E%9F%E7%90%86%E6%98%AF%E6%80%8E%E4%B9%88%E7%9F%A5%E9%81%93%E7%9A%84%EF%BC%9F"><span class="nav-number">16.</span> <span class="nav-text">native层替换方法结构体来实现hook，这个原理是怎么知道的？</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">Follow your heart</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">179</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">233</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu-blog.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanaryEx%E6%B5%85%E6%9E%90/";
+    this.page.identifier = "源码分析/卡顿检测 - BlockCanaryEx浅析/";
+    this.page.title = "卡顿检测 - BlockCanaryEx浅析";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu-blog.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
