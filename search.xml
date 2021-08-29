@@ -1088,12 +1088,22 @@
 <li> 有对应的线程安全措施。</li>
 <li> 确保事件的发送源在掌控中，事件的发送完全可预期。</li>
 </ol>
+<h1 id="Backpressure"><a href="#Backpressure" class="headerlink" title="Backpressure"></a>Backpressure</h1><p>Backpressure 是用来描述，生产者生产数据的速度比消费者消费数据的速度快的一种情况。如果没有处理这种情况，则会出现 MissingBackpressureException 。</p>
+<p>BackpressureMode 有如下几种策略：</p>
+<ul>
+<li>BUFFER（缓存）<br>  使用无限个数的内部缓存，一开始会创建一个 128 个元素的缓冲对象，然后动态的扩展直到 JVM 内存不足。</li>
+<li>LATEST（使用最新的）<br>  只发射最新生成的数据，之前的旧的数据被丢弃。类似于使用缓冲个数为 1 的缓存。<br>  cold Observable 通常可以使用这种策略。比如 Andorid 里面的电量变化、或者 最近的位置信息就可以使用这种策略。之前旧的数据已经为无效数据直接丢弃就好。</li>
+<li>DROP（直接丢弃）<br>  如果消费者无法处理数据，就把该数据丢弃了。</li>
+<li>ERROR / NONE<br>  默认的不指定任何策略，会出现 MissingBackpressureException</li>
+</ul>
 ]]></content>
       <categories>
         <category>Java</category>
       </categories>
       <tags>
         <tag>RxJava</tag>
+        <tag>Backpressure</tag>
+        <tag>Subject</tag>
       </tags>
   </entry>
   <entry>
