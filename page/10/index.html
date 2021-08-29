@@ -186,6 +186,105 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/" class="post-title-link" itemprop="url">LeetCode.70.爬楼梯（简单）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-31 00:03:00" itemprop="dateCreated datePublished" datetime="2019-10-31T00:03:00+08:00">2019-10-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode.70.%E7%88%AC%E6%A5%BC%E6%A2%AF%EF%BC%88%E7%AE%80%E5%8D%95%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode.70.爬楼梯（简单）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p> <a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/climbing-stairs/">LeetCode.70.爬楼梯（简单）</a></p>
+<p>假设你正在爬楼梯。需要 n 阶你才能到达楼顶。<br>每次你可以爬 1 或 2 个台阶。你有多少种不同的方法可以爬到楼顶呢？<br>注意：给定 n 是一个正整数。</p>
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>最优化问题，考虑用动态规划，看是否符合动态规划的条件。<br>一般从最终状态做倒推，拆解当前状态问题为上一个状态+有限的步骤。</p>
+<h3 id="倒推"><a href="#倒推" class="headerlink" title="倒推"></a>倒推</h3><p>爬到第n阶，最后一步一定是只有两种可能：</p>
+<ol>
+<li>先爬到第n-1个台阶，再爬1个台阶</li>
+<li>先爬到第n-2个台阶，再爬2个台阶</li>
+</ol>
+<p>把两种可能的方法数累加就是爬到第n阶第方法数。</p>
+<h3 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h3><p>爬到第1阶，只有1种爬法，即爬1个台阶。<br>爬到第2阶，可以从第0阶爬2个台阶，也可以从第1阶爬1个台阶，共2种爬法。</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">climbStairs</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">2</span>) <span class="keyword">return</span> <span class="number">2</span></span><br><span class="line">        <span class="keyword">var</span> pre1 = <span class="number">2</span></span><br><span class="line">        <span class="keyword">var</span> pre2 = <span class="number">1</span></span><br><span class="line">        <span class="keyword">var</span> cur = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">3.</span>.n) &#123;</span><br><span class="line">            cur = pre1 + pre2</span><br><span class="line">            pre2 = pre1</span><br><span class="line">            pre1 = cur</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cur</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/ASM%E5%AD%97%E8%8A%82%E7%A0%81%E6%8F%92%E6%A1%A9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +316,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -454,7 +553,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -566,7 +665,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -702,7 +801,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -957,7 +1056,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1072,7 +1171,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1187,7 +1286,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1367,7 +1466,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1518,7 +1617,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 16:23:54" itemprop="dateModified" datetime="2021-08-29T16:23:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1583,127 +1682,6 @@
 
 <h1 id="实现一个-copy-函数，传入两个-Array-参数，将一个-Array-中的元素复制到另外个-Array-中，要求-Array-参数的泛型分别支持协变和逆变。"><a href="#实现一个-copy-函数，传入两个-Array-参数，将一个-Array-中的元素复制到另外个-Array-中，要求-Array-参数的泛型分别支持协变和逆变。" class="headerlink" title="实现一个 copy 函数，传入两个 Array 参数，将一个 Array 中的元素复制到另外个 Array 中，要求 Array 参数的泛型分别支持协变和逆变。"></a>实现一个 copy 函数，传入两个 Array 参数，将一个 Array 中的元素复制到另外个 Array 中，要求 Array 参数的泛型分别支持协变和逆变。</h1><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="type">&lt;T&gt;</span> <span class="title">copy</span><span class="params">(from: <span class="type">Array</span>&lt;<span class="type">out</span> <span class="type">T</span>&gt;, to: <span class="type">Array</span>&lt;<span class="type">in</span> <span class="type">T</span>&gt;)</span></span> &#123;</span><br><span class="line">    assert(from.size == to.size)</span><br><span class="line">    <span class="keyword">for</span> (i <span class="keyword">in</span> from.indices) &#123;</span><br><span class="line">        to[i] = from[i]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Kotlin/Kotlin%E5%86%85%E8%81%94/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Kotlin/Kotlin%E5%86%85%E8%81%94/" class="post-title-link" itemprop="url">Kotlin 内联</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-12-05 21:15:00" itemprop="dateCreated datePublished" datetime="2018-12-05T21:15:00+08:00">2018-12-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 15:06:12" itemprop="dateModified" datetime="2021-08-29T15:06:12+08:00">2021-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Kotlin/" itemprop="url" rel="index"><span itemprop="name">Kotlin</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Kotlin/Kotlin%E5%86%85%E8%81%94/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Kotlin/Kotlin内联/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="inline、noinline、crossline区别？"><a href="#inline、noinline、crossline区别？" class="headerlink" title="inline、noinline、crossline区别？"></a>inline、noinline、crossline区别？</h1><p>inline：编译时把inline函数的代码拷贝到调用处</p>
-<p>noinline：修饰inline标记的函数的形参，不希望内联lambda</p>
-<p>crossline：inline函数中的lambda表达式不允许返回到外部函数，只能返回到lambda表达式</p>
-<h1 id="inline作用"><a href="#inline作用" class="headerlink" title="inline作用"></a>inline作用</h1><p>Java中没有函数的概念，Kotlin中的lambda表达式在Java中对应的是一个FunctionN的单个方法的接口类，创建一个lambda表达式相当于创建一个类。</p>
-<p>inline可以修饰函数，inline修饰的函数的形参中有lambda表达式，编译时不会创建对应的FunctionN类，而是直接把lambda表达式代码拷贝到调用处，这样</p>
-<ol>
-<li> 在循环等高频使用一个函数的场景下，内联lambda表达式避免了频繁创建对象，不仅节约了内存，也避免了频繁的垃圾回收，减少系统卡顿</li>
-<li> 减少了函数调用层级，函数调用栈少了一层，减少了性能损耗</li>
-</ol>
-<h1 id="inline会造成什么问题？"><a href="#inline会造成什么问题？" class="headerlink" title="inline会造成什么问题？"></a>inline会造成什么问题？</h1><ol>
-<li> 调用处的代码变多，所以不能内联代码量过大的函数，只适用于内联代码量小的函数</li>
-<li> 我们可以在inline函数形参的 lambda 表达式 中调用return直接返回外部函数，可能会导致inline函数之后的代码无法执行；需要使用return@label的语法，返回到lambda开始执行的位置</li>
-<li> 内联后的lambda表达式已经不是对象了，所以无法作为参数传递、存储在字段中、作为返回值return，需要加noinline解决</li>
-</ol>
-<h1 id="noinline作用"><a href="#noinline作用" class="headerlink" title="noinline作用"></a>noinline作用</h1><p>修饰inline函数的形参中的lambda表达式，表示禁止该lambda表达式内联</p>
-<h1 id="noinline禁止lambda表达式内联的意义是什么？"><a href="#noinline禁止lambda表达式内联的意义是什么？" class="headerlink" title="noinline禁止lambda表达式内联的意义是什么？"></a>noinline禁止lambda表达式内联的意义是什么？</h1><p>内联后的lambda表达式已经不是对象了，所以无法作为对象使用，也就是无法对其进行参数传递、存储在字段中、作为返回值return，需要加noinline解决</p>
-<h1 id="crossinline作用"><a href="#crossinline作用" class="headerlink" title="crossinline作用"></a>crossinline作用</h1><p>既想让内联函数形参中的 lambda 也被 inline，但是又不想让 lambda 对调用方的控制流程产生影响（lambda中return会影响），就用crossline</p>
-<p>crossinline依然是内联的</p>
-<p>直接在lambda表达式中返回外部函数的情况称为非局部返回。</p>
-<p>crossinline修饰的lambda禁止了非局部返回</p>
-<h1 id="crossinline为什么要禁止非局部返回？不禁止会有什么问题？"><a href="#crossinline为什么要禁止非局部返回？不禁止会有什么问题？" class="headerlink" title="crossinline为什么要禁止非局部返回？不禁止会有什么问题？"></a>crossinline为什么要禁止非局部返回？不禁止会有什么问题？</h1><p>内联函数形参中的lambda表达式可能会在另外一个调用栈中执行，例如：</p>
-<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> <span class="title">f</span><span class="params">(<span class="keyword">crossinline</span> body: () -&gt; <span class="type">Unit</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> f = <span class="keyword">object</span>: Runnable &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">run</span><span class="params">()</span></span> = body()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>正常情况下内联的lambda允许非局部返回，返回的是内联函数调用处的函数，但是不在一个调用栈中，非局部返回就无法做到这样的返回，所以必须禁止，用crossinline来禁止非局部返回，但仍然保持内联的特性，把lambda表达式的代码展开铺平。</p>
-<h1 id="内联类"><a href="#内联类" class="headerlink" title="内联类"></a>内联类</h1><ul>
-<li>内联函数，可以消除函数调用的开销。</li>
-<li>内联类，则是可以消除创建对象的开销。</li>
-</ul>
-<p>用途：</p>
-<ul>
-<li>严格的类型别名</li>
-<li>任何你想得到的包装类（wrapper）</li>
-</ul>
-<p>参考：<a target="_blank" rel="noopener" href="https://aisia.moe/2018/07/03/inline-class/">Kotlin 1.3 前瞻之 Inline Class</a></p>
 
       
     </div>
@@ -1790,7 +1768,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">174</span>
+          <span class="site-state-item-count">175</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1803,7 +1781,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">222</span>
+        <span class="site-state-item-count">223</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
