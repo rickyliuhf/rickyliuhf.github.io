@@ -6359,7 +6359,7 @@
       </tags>
   </entry>
   <entry>
-    <title>ACRA原理</title>
+    <title>崩溃收集 - ACRA原理</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ACRA%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h1 id="为什么要ACRA简介"><a href="#为什么要ACRA简介" class="headerlink" title="为什么要ACRA简介"></a>为什么要ACRA简介</h1><p>项目主页：<a href="https://github.com/ACRA/acra">https://github.com/ACRA/acra</a></p>
 <ol>
