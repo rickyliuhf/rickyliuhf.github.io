@@ -217,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -256,116 +256,14 @@
       
           <h1 id="BlockCanaryEx检测主线程卡顿的原理是什么"><a href="#BlockCanaryEx检测主线程卡顿的原理是什么" class="headerlink" title="BlockCanaryEx检测主线程卡顿的原理是什么?"></a>BlockCanaryEx检测主线程卡顿的原理是什么?</h1><p>给Looper设置自定义的Printer，Looper的loop()方法在处理一个消息的前后会调用Printer的println()方法，通过这个方法就可以计算主线程处理每一个消息的耗时。</p>
 <p>这一原理与BlockCanary相同，不同的是两者采集的信息不同。</p>
-<h1 id="BlockCanaryEx与BlockCanary有什么区别？"><a href="#BlockCanaryEx与BlockCanary有什么区别？" class="headerlink" title="BlockCanaryEx与BlockCanary有什么区别？"></a>BlockCanaryEx与BlockCanary有什么区别？</h1><ol>
-<li> BlockCanaryEx的运行时代码修改自BlockCanary，ui和大部分功能基本一致;</li>
-<li> BlockCanaryEx添加了方法采样，知道主线程中所有方法的执行时间和执行次数;</li>
-<li> 当应用卡顿时，BlockCanaryEx更关注app代码中，哪些方法耗时最多，重点记录和显示这些耗时方法；</li>
-<li> 添加了gc采样，当应用卡顿时，我们可以知道卡顿时是否发生了gc，以及gc的时间；</li>
-<li> 监控view性能，计算卡顿时，view的measure,layout,draw消耗的时间。</li>
-</ol>
-<p>BlockCanaryEx在编译期，通过字节码注入，将方法采样器注入到你的代码中</p>
-<h1 id="入口在哪？"><a href="#入口在哪？" class="headerlink" title="入口在哪？"></a>入口在哪？</h1><p>BlockCanaryEx.install() -&gt; BlockMonitor.install()</p>
-<p>BlockMonitor.install() 主要调用了</p>
-<ol>
-<li> BlockMonitor.ensureMonitorInstalled() -&gt; Looper.getMainLooper().setMessageLogging(LOOPER_MONITOR)</li>
-<li> connectServiceIfNot()</li>
-</ol>
-<h1 id="LooperMonitor里做了什么？"><a href="#LooperMonitor里做了什么？" class="headerlink" title="LooperMonitor里做了什么？"></a>LooperMonitor里做了什么？</h1><p>实现了Printer接口的println()方法</p>
-<p>在接收到Looper的第一个消息时，调用一次ViewPerformanceSampler.install()</p>
-<p>在api level为[20,25]之间（Android 4.4 到 Android7.1）hook掉android.os.Trace的traceBegin和traceEnd方法，替换为ViewPerformanceSampler的traceBegin和traceEnd方法</p>
-<h1 id="为什么要hook掉android-os-Trace的traceBegin和traceEnd方法？"><a href="#为什么要hook掉android-os-Trace的traceBegin和traceEnd方法？" class="headerlink" title="为什么要hook掉android.os.Trace的traceBegin和traceEnd方法？"></a>为什么要hook掉android.os.Trace的traceBegin和traceEnd方法？</h1><p>android framework里已经使用Trace的traceBegin和traceEnd方法在每一个关键处进行了打点记录，hook了这两个方法，就相当于给framework的每个关键动作的地方都做了耗时统计</p>
-<p>这一点去查看android framework源码查看Trace类里各个常量的使用位置就知道，例如TRACE_TAG_VIEW、TRACE_TAG_INPUT等</p>
-<p>例如：</p>
-<ol>
-<li> LayoutInflater.inflate()方法一开始会调用Trace.traceBegin(Trace.TRACE_TAG_VIEW, “inflate”)</li>
-<li> ViewRootImpl的performMeasure()中会调用Trace.traceBegin(Trace.TRACE_TAG_VIEW, “measure”);</li>
-</ol>
-<h1 id="如何hook掉android-os-Trace的traceBegin和traceEnd方法？"><a href="#如何hook掉android-os-Trace的traceBegin和traceEnd方法？" class="headerlink" title="如何hook掉android.os.Trace的traceBegin和traceEnd方法？"></a>如何hook掉android.os.Trace的traceBegin和traceEnd方法？</h1><p>热修复框架 AndFix 原理：</p>
-<p>Java层的每一个方法在虚拟机实现里面都对应着一个ArtMethod的结构体，只要把原方法的结构体内容替换成新的结构体的内容，在调用原方法的时候，真正执行的指令会是新方法的指令。</p>
-<p>BlockCanaryEx这里采用的是 native 替换方法结构体  的思路，源码使用的Epic的代码</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/tiann/epic">https://github.com/tiann/epic</a></p>
-<p>Epic 是一个在虚拟机层面、以 Java Method 为粒度的 运行时 AOP Hook 框架。简单来说，Epic 就是 ART 上的  <a target="_blank" rel="noopener" href="https://github.com/alibaba/dexposed">Dexposed</a>（支持 Android 4.0 ~ 10.0）。它可以拦截本进程内部几乎任意的 Java 方法调用，可用于实现 AOP 编程、运行时插桩、性能分析、安全审计等。</p>
-<p>具体分析见Epic源码分析专题页</p>
-<p>参考资料：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/03/20/dive-into-art-hello-world/">ART深度探索开篇：从Method Hook谈起</a></li>
-<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/11/23/dexposed-on-art/">我为Dexposed续一秒——论ART上运行时 Method AOP实现</a></li>
-</ul>
-<h1 id="在api-level为-20-25-之间（Android-4-4-到-Android7-1）进行了hook，为什么是这个版本区间？"><a href="#在api-level为-20-25-之间（Android-4-4-到-Android7-1）进行了hook，为什么是这个版本区间？" class="headerlink" title="在api level为[20,25]之间（Android 4.4 到 Android7.1）进行了hook，为什么是这个版本区间？"></a>在api level为[20,25]之间（Android 4.4 到 Android7.1）进行了hook，为什么是这个版本区间？</h1><p>因为ART是Android 4.4上才有的，支持到Android</p>
-<h1 id="ViewPerformanceSampler的traceBegin和traceEnd方法做了什么？"><a href="#ViewPerformanceSampler的traceBegin和traceEnd方法做了什么？" class="headerlink" title="ViewPerformanceSampler的traceBegin和traceEnd方法做了什么？"></a>ViewPerformanceSampler的traceBegin和traceEnd方法做了什么？</h1><p>traceBegin()记录了traceTag为TRACE_TAG_VIEW的Trace事件的名称和事件开始事件</p>
-<p>traceEnd()中根据Trace的事件名称记录一个事件type，再把事件开始时间和结束时间，一起存入一个新创建的ViewPerformanceInfo对象中，再把这个对象存入一个名为VIEW_PERFORMANCE_INFOS的List中</p>
-<h1 id="ViewPerformanceSampler的VIEW-PERFORMANCE-INFOS什么时候被使用？"><a href="#ViewPerformanceSampler的VIEW-PERFORMANCE-INFOS什么时候被使用？" class="headerlink" title="ViewPerformanceSampler的VIEW_PERFORMANCE_INFOS什么时候被使用？"></a>ViewPerformanceSampler的VIEW_PERFORMANCE_INFOS什么时候被使用？</h1><p>在LooperMonitor中检测到Looper处理完一个消息后，取出ViewPerformanceSampler的VIEW_PERFORMANCE_INFOS的一个副本，并清空VIEW_PERFORMANCE_INFOS，这个List<ViewPerformanceInfo>的副本就表示Looper处理一个消息期间View相关操作的耗时信息</p>
-<p>通过Config.isBlock()判断是否发生阻塞，发生阻塞则会将List<ViewPerformanceInfo>通过LooperMonitor.BlockListener的onBlockEvent()传播出去</p>
-<h1 id="BlockMonitor-install-中调用connectServiceIfNot-是在做什么？"><a href="#BlockMonitor-install-中调用connectServiceIfNot-是在做什么？" class="headerlink" title="BlockMonitor.install()中调用connectServiceIfNot()是在做什么？"></a>BlockMonitor.install()中调用connectServiceIfNot()是在做什么？</h1><p>通过bindService绑定BlockSamplerService，获取ISamplerService代理对象</p>
-<p>BlockSamplerService运行在单独的进程中</p>
-<h1 id="BlockSamplerService是干什么的？"><a href="#BlockSamplerService是干什么的？" class="headerlink" title="BlockSamplerService是干什么的？"></a>BlockSamplerService是干什么的？</h1><p>主要是提供ISamplerService对象，事情都在ISamplerService中处理</p>
-<h2 id="ISamplerService的方法在哪些地方调用？"><a href="#ISamplerService的方法在哪些地方调用？" class="headerlink" title="ISamplerService的方法在哪些地方调用？"></a>ISamplerService的方法在哪些地方调用？</h2><p>在BlockMonitor的BLOCK_LISTENER的方法中使用，BLOCK_LISTENER是LooperMonitor.BlockListener一个实例</p>
-<p>LooperMonitor.BlockListener的onStart()会在Looper处理一个消息前调用</p>
-<p>onStart()内部会调用ISamplerService的resetSampler()</p>
-<p>LooperMonitor.BlockListener的onBlockEvent()会在Looper处理一个消息后检测到发生了阻塞时调用</p>
-<p>onBlockEvent()中会调用ISamplerService的getCurrentCpuInfo(realStartTime,  realEndTime)和popGcInfoBetween(realStartTime, realEndTime)</p>
-<h2 id="ISamplerService的resetSampler-做了什么？"><a href="#ISamplerService的resetSampler-做了什么？" class="headerlink" title="ISamplerService的resetSampler()做了什么？"></a>ISamplerService的resetSampler()做了什么？</h2><p>三行代码:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GcSampler.startIfNot(pid);</span><br><span class="line">GcSampler.clearGcInfoBefore(startTime);</span><br><span class="line">CpuSampler.getInstance().resetSampler(pid);</span><br></pre></td></tr></table></figure>
-
-<p>GcSampler.startIfNot(pid)启动了GcSamplerThread类型的线程，无限循环不停的在logcat中获取gc日志，每一行的日志对应一个GcInfo对象，该对象有两个属性</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GcInfo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> happenedTime;</span><br><span class="line">    <span class="keyword">private</span> String gcLog;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>所有获取的gc日志存储在一个类型<code>List&lt;GcInfo&gt;</code>的GC_INFO_LIST列表中</p>
-<p>GcSampler.clearGcInfoBefore(startTime)清除了GC_INFO_LIST中时间小于startTime的记录</p>
-<p>CpuSampler.getInstance().resetSampler(pid)是清空已采集的CPU信息</p>
-<h2 id="ISamplerService的getCurrentCpuInfo-realStartTime-realEndTime-做了什么？"><a href="#ISamplerService的getCurrentCpuInfo-realStartTime-realEndTime-做了什么？" class="headerlink" title="ISamplerService的getCurrentCpuInfo(realStartTime, realEndTime)做了什么？"></a>ISamplerService的getCurrentCpuInfo(realStartTime, realEndTime)做了什么？</h2><p>调用了CpuSampler.getInstance().recordSample()，内部调用了doSample()，做的是：</p>
-<ol>
-<li> 读取/proc/stat 和 /proc/[pid]&gt;/stat 文件中的信息，拼接为一个String</li>
-<li> 把CPU信息String保存在一个LinkedHashMap类型的mCpuInfoEntries变量中，key为执行doSample()时的时间戳，容量满时删除最早插入的元素</li>
-</ol>
-<p>然后创建一个CpuInfo对象，cpuRate和isBusy属性，从mCpuInfoEntries中分析得到，CpuInfo对象  作为方法返回值</p>
-<h2 id="ISamplerService的popGcInfoBetween-realStartTime-realEndTime-做了什么"><a href="#ISamplerService的popGcInfoBetween-realStartTime-realEndTime-做了什么" class="headerlink" title="ISamplerService的popGcInfoBetween(realStartTime, realEndTime)做了什么?"></a>ISamplerService的popGcInfoBetween(realStartTime, realEndTime)做了什么?</h2><p>调用了GcSampler.popGcInfoBetween(startTime,endTime)</p>
-<p>从GcSampler的GC_INFO_LIST中获取startTime和endTime时间段内的GcInfo列表</p>
-<h2 id="为什么要单独开进程做这些事？"><a href="#为什么要单独开进程做这些事？" class="headerlink" title="为什么要单独开进程做这些事？"></a>为什么要单独开进程做这些事？</h2><p>读取Logcat可能是非常消耗内存的事情，单独开进程不消耗主进程的内存</p>
-<h1 id="检测到阻塞时会做什么？"><a href="#检测到阻塞时会做什么？" class="headerlink" title="检测到阻塞时会做什么？"></a>检测到阻塞时会做什么？</h1><p>会调用BlockMonitor.BLOCK_LISTENER的onBlockEvent()方法，内部逻辑主要为：</p>
-<ol>
-<li> 从sMethodInfoPool中取出List<MethodInfo></li>
-<li> 从ISamplerService.getCurrentCpuInfo()取出CpuInfo</li>
-<li> 从ISamplerService.popGcInfoBetween()取出List<GcInfo></li>
-<li> 将卡顿相关诊断信息封装为一个BlockInfo对象，发送给各个注册的BlockObserver</li>
-</ol>
-<h1 id="BlockMonitor的sMethodInfoPool里面存的是什么-是什么时候填充的？"><a href="#BlockMonitor的sMethodInfoPool里面存的是什么-是什么时候填充的？" class="headerlink" title="BlockMonitor的sMethodInfoPool里面存的是什么?是什么时候填充的？"></a>BlockMonitor的sMethodInfoPool里面存的是什么?是什么时候填充的？</h1><p>存的是MethodInfo</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MethodInfo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String cls;</span><br><span class="line">    <span class="keyword">private</span> String method;</span><br><span class="line">    <span class="keyword">private</span> String paramTypes;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> costRealTimeNano;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> costThreadTime;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>存储了一个方法名、方法所属类、方法参数、方法真实耗时、方法CPU耗时</p>
-<h1 id="BlockMonitor的sMethodInfoPool是什么时候填充的？"><a href="#BlockMonitor的sMethodInfoPool是什么时候填充的？" class="headerlink" title="BlockMonitor的sMethodInfoPool是什么时候填充的？"></a>BlockMonitor的sMethodInfoPool是什么时候填充的？</h1><p>在BlockMonitor.reportMethodProfile()对sMethodInfoPool进行了元素的添加</p>
-<h2 id="BlockMonitor-reportMethodProfile-在哪被调用的"><a href="#BlockMonitor-reportMethodProfile-在哪被调用的" class="headerlink" title="BlockMonitor.reportMethodProfile()在哪被调用的?"></a>BlockMonitor.reportMethodProfile()在哪被调用的?</h2><p>MethodSampler.onMethodExit()中调用了BlockMonitor.reportMethodProfile()</p>
-<h2 id="MethodSampler-onMethodExit-在哪被调用的？"><a href="#MethodSampler-onMethodExit-在哪被调用的？" class="headerlink" title="MethodSampler.onMethodExit()在哪被调用的？"></a>MethodSampler.onMethodExit()在哪被调用的？</h2><p>在编译时通过JavaAssist字节码插桩到项目的每一个方法的调用后会调用MethodSampler.onMethodExit()，具体实现在SamplerInjecter类的insertSamplerCode()方法</p>
-<h1 id="hook任意方法的原理是什么？"><a href="#hook任意方法的原理是什么？" class="headerlink" title="hook任意方法的原理是什么？"></a>hook任意方法的原理是什么？</h1><p>目前热修复框架主要有QQ空间补丁、HotFix、Tinker、Robust等。热修复框架按照原理大致可以分为三类：</p>
-<ol>
-<li> 基于 multidex机制 干预 ClassLoader 加载dex</li>
-<li> native 替换方法结构体</li>
-<li> instant-run 插桩方案</li>
-</ol>
-<p>热修复框架 AndFix 原理：</p>
-<p>Java层的每一个方法在虚拟机实现里面都对应着一个ArtMethod的结构体，只要把原方法的结构体内容替换成新的结构体的内容，在调用原方法的时候，真正执行的指令会是新方法的指令。</p>
-<p>BlockCanaryEx这里采用的是 native 替换方法结构体  的思路，源码使用的Epic的代码</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/tiann/epic">https://github.com/tiann/epic</a></p>
-<p>Epic 是一个在虚拟机层面、以 Java Method 为粒度的 运行时 AOP Hook 框架。简单来说，Epic 就是 ART 上的  <a target="_blank" rel="noopener" href="https://github.com/alibaba/dexposed">Dexposed</a>（支持 Android 4.0 ~ 10.0）。它可以拦截本进程内部几乎任意的 Java 方法调用，可用于实现 AOP 编程、运行时插桩、性能分析、安全审计等。</p>
-<p>参考资料：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/03/20/dive-into-art-hello-world/">ART深度探索开篇：从Method Hook谈起</a></li>
-<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/11/23/dexposed-on-art/">我为Dexposed续一秒——论ART上运行时 Method AOP实现</a></li>
-</ul>
-<h1 id="native层替换方法结构体来实现hook，这个原理是怎么知道的？"><a href="#native层替换方法结构体来实现hook，这个原理是怎么知道的？" class="headerlink" title="native层替换方法结构体来实现hook，这个原理是怎么知道的？"></a>native层替换方法结构体来实现hook，这个原理是怎么知道的？</h1><p>通过查看java.lang.reflect.Method的invoke()方法源码得知的</p>
-<p>Method.invoke()的函数定义如下：</p>
-<p>private native Object invoke(Object receiver, Object[] args, boolean accessible)</p>
-<p>最终会调用 jni 层art/runtime/reflection.cc 的 InvokeMethod方法，方法定义如下：</p>
-<p>object InvokeMethod(const ScopedObjectAccessAlreadyRunnable&amp; soa, jobject javaMethod,  jobject javaReceiver, jobject javaArgs, bool accessible)</p>
-<p>InvokeMethod 的第二个参数 javaMethod 就是Java层我们进行反射调用的那个Method对象，在jni层反映为一个jobject；InvokeMethod这个native方法首先通过 mirror::ArtMethod::FromReflectedMethod 获取了Java对象的在native层的 ArtMethod指针</p>
-<p>AndFix的实现里面，也正是使用这个 FromReflectedMethod 方法拿到Java层Method对应native层的ArtMethod指针，然后执行替换的。</p>
-<p>在native层替换的那个 ArtMethod 不是在 Java 层也有对应的东西？</p>
-<p>在Method的父类Executable有一个long类型的artMethod属性，实际上就是native层的指针表示。</p>
-<p>参考资料：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="http://weishu.me/2017/03/20/dive-into-art-hello-world/">ART深度探索开篇：从Method Hook谈起</a></li>
-</ul>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanaryEx%E6%B5%85%E6%9E%90/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -415,7 +313,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -549,7 +447,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -786,7 +684,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -898,7 +796,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1034,7 +932,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1289,7 +1187,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1404,7 +1302,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1519,7 +1417,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1699,7 +1597,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:57:36" itemprop="dateModified" datetime="2021-08-29T22:57:36+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:59:05" itemprop="dateModified" datetime="2021-08-29T22:59:05+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
