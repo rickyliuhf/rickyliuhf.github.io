@@ -20,18 +20,19 @@
     var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="自动装箱和自动拆箱是怎么回事？实际发生了什么？如下的Java代码： 12Integer a &#x3D; 10;int b &#x3D; a; 在Intellij idea里通过View - Show Bytecode查看字节码： 12345678910L0 LINENUMBER 3 L0 BIPUSH 10 INVOKESTATIC java&#x2F;lang&#x2F;Integer.valueOf (I)Ljava&#x2F;lang">
+  <meta name="description" content="为什么要有装箱和拆箱？有些情况下基本类型无法实现对应功能。 有哪些场景不得不使用包装类？  集合类只能使用包装类型，不允许使用基本类型，所以需要有包装类  由于基本类型没有null的状态，所以需要有包装类对象能够表示null  泛型只针对类，不能使用基本类型  反射也只能反射类，不能反射基本类型  包装类一旦创建，是值不可变的对象，不容易赋值出错">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java 自动装箱">
+<meta property="og:title" content="Java 自动装箱、自动拆箱">
 <meta property="og:url" content="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/index.html">
 <meta property="og:site_name" content="Ricky.L的随笔">
-<meta property="og:description" content="自动装箱和自动拆箱是怎么回事？实际发生了什么？如下的Java代码： 12Integer a &#x3D; 10;int b &#x3D; a; 在Intellij idea里通过View - Show Bytecode查看字节码： 12345678910L0 LINENUMBER 3 L0 BIPUSH 10 INVOKESTATIC java&#x2F;lang&#x2F;Integer.valueOf (I)Ljava&#x2F;lang">
+<meta property="og:description" content="为什么要有装箱和拆箱？有些情况下基本类型无法实现对应功能。 有哪些场景不得不使用包装类？  集合类只能使用包装类型，不允许使用基本类型，所以需要有包装类  由于基本类型没有null的状态，所以需要有包装类对象能够表示null  泛型只针对类，不能使用基本类型  反射也只能反射类，不能反射基本类型  包装类一旦创建，是值不可变的对象，不容易赋值出错">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2016-10-23T14:03:00.000Z">
-<meta property="article:modified_time" content="2021-08-29T14:41:17.416Z">
+<meta property="article:modified_time" content="2021-08-29T14:44:54.960Z">
 <meta property="article:author" content="Ricky.L">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="自动装箱">
+<meta property="article:tag" content="自动拆箱">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/">
@@ -47,7 +48,7 @@
   };
 </script>
 
-  <title>Java 自动装箱 | Ricky.L的随笔</title>
+  <title>Java 自动装箱、自动拆箱 | Ricky.L的随笔</title>
   
 
 
@@ -203,7 +204,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Java 自动装箱
+          Java 自动装箱、自动拆箱
         </h1>
 
         <div class="post-meta">
@@ -220,7 +221,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 22:41:17" itemprop="dateModified" datetime="2021-08-29T22:41:17+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:44:54" itemprop="dateModified" datetime="2021-08-29T22:44:54+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -257,8 +258,18 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <span id="more"></span>
-
+        <h1 id="为什么要有装箱和拆箱？"><a href="#为什么要有装箱和拆箱？" class="headerlink" title="为什么要有装箱和拆箱？"></a>为什么要有装箱和拆箱？</h1><p>有些情况下基本类型无法实现对应功能。</p>
+<h1 id="有哪些场景不得不使用包装类？"><a href="#有哪些场景不得不使用包装类？" class="headerlink" title="有哪些场景不得不使用包装类？"></a>有哪些场景不得不使用包装类？</h1><ol>
+<li> 集合类只能使用包装类型，不允许使用基本类型，所以需要有包装类</li>
+<li> 由于基本类型没有null的状态，所以需要有包装类对象能够表示null</li>
+<li> 泛型只针对类，不能使用基本类型</li>
+<li> 反射也只能反射类，不能反射基本类型</li>
+<li> 包装类一旦创建，是值不可变的对象，不容易赋值出错<span id="more"></span></li>
+</ol>
+<h1 id="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"><a href="#为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？" class="headerlink" title="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"></a>为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？</h1><p>这需要从Java虚拟机的角度解释性能问题，当执行一个方法中的算术运算时，虚拟机是基于栈帧中的操作数栈进行数据的读取和运算。</p>
+<p>如果参与运算的是基本数据类型，由于基本类型大小是固定的，一来本身占用空间小，二来基本类型的变量值可以直接存入局部变量表，直接从局部变量表中读取数据速度很快（跟访问对象的方式相比而言）；基本也不需要垃圾回收，局部变量表是位于栈帧中的，方法执行完毕，栈帧出栈，基本数据类型的变量都会自动释放内存。</p>
+<p>如果参与运算的是包装类对象，对象创建后是位于堆中，对象在局部变量表中存储的只是对象指针，指向其在堆中的位置，运算时先访问局部变量表，再访问堆中的对象内部的值，比直接访问局部变量表要多一次额外的访问；其次创建对象占用了额外的空间，因为对象比基本类型要多耗费额外的空间，如对象头等；再次对象创建后还需要垃圾回收，增加了垃圾回收的负担。</p>
+<p>基本类型在方法传参时是值的拷贝传递，对象类型在方法传参是引用传递。</p>
 <h1 id="自动装箱和自动拆箱是怎么回事？实际发生了什么？"><a href="#自动装箱和自动拆箱是怎么回事？实际发生了什么？" class="headerlink" title="自动装箱和自动拆箱是怎么回事？实际发生了什么？"></a>自动装箱和自动拆箱是怎么回事？实际发生了什么？</h1><p>如下的Java代码：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Integer a = 10;</span><br><span class="line">int b = a;</span><br></pre></td></tr></table></figure>
 <p>在Intellij idea里通过View - Show Bytecode查看字节码：</p>
@@ -270,17 +281,6 @@
 <p>当 <code>==</code>运算符的两个操作数都是 包装器类型的引用，则是比较指向的是否是同一个对象。</p>
 <p>而如果其中有一个操作数是表达式（即包含算术运算）则比较的是数值（即会触发自动拆箱的过程）调用equals进行比较（装箱）。</p>
 <p>ArrayList,HashMap等集合类 添加基础类型数据时，因为集合只能添加引用类型（装箱）。</p>
-<h1 id="自动装箱解决了什么问题？有哪些场景不得不使用包装类？"><a href="#自动装箱解决了什么问题？有哪些场景不得不使用包装类？" class="headerlink" title="自动装箱解决了什么问题？有哪些场景不得不使用包装类？"></a>自动装箱解决了什么问题？有哪些场景不得不使用包装类？</h1><ol>
-<li> 集合类只能使用包装类型，不允许使用基本类型，所以需要有包装类</li>
-<li> 由于基本类型没有null的状态，所以需要有包装类对象能够表示null</li>
-<li> 泛型只针对类，不能使用基本类型</li>
-<li> 反射也只能反射类，不能反射基本类型</li>
-<li> 包装类一旦创建，是值不可变的对象，不容易赋值出错</li>
-</ol>
-<h1 id="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"><a href="#为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？" class="headerlink" title="为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？"></a>为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？</h1><p>这需要从Java虚拟机的角度解释性能问题，当执行一个方法中的算术运算时，虚拟机是基于栈帧中的操作数栈进行数据的读取和运算。</p>
-<p>如果参与运算的是基本数据类型，由于基本类型大小是固定的，一来本身占用空间小，二来基本类型的变量值可以直接存入局部变量表，直接从局部变量表中读取数据速度很快（跟访问对象的方式相比而言）；基本也不需要垃圾回收，局部变量表是位于栈帧中的，方法执行完毕，栈帧出栈，基本数据类型的变量都会自动释放内存。</p>
-<p>如果参与运算的是包装类对象，对象创建后是位于堆中，对象在局部变量表中存储的只是对象指针，指向其在堆中的位置，运算时先访问局部变量表，再访问堆中的对象内部的值，比直接访问局部变量表要多一次额外的访问；其次创建对象占用了额外的空间，因为对象比基本类型要多耗费额外的空间，如对象头等；再次对象创建后还需要垃圾回收，增加了垃圾回收的负担。</p>
-<p>基本类型在方法传参时是值的拷贝传递，对象类型在方法传参是引用传递。</p>
 <h1 id="Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？"><a href="#Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？" class="headerlink" title="Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？"></a>Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？</h1><p>Kotlin只是在语法层面屏蔽了内部的实现细节，在编译时，还是会把Kotlin的基本数据类型对应的对象类型还是换转为Java基本数据类型，这可以通过反编译Kotlin为Java后看出，这样Kotlin更加彻底面向对象，更加的函数式</p>
 <h1 id="Kotiln中整数数组为什么不直接使用-Array-而是-IntArray-？"><a href="#Kotiln中整数数组为什么不直接使用-Array-而是-IntArray-？" class="headerlink" title="Kotiln中整数数组为什么不直接使用 Array 而是 IntArray ？"></a>Kotiln中整数数组为什么不直接使用 Array<Int> 而是 IntArray ？</h1><p>IntArray最终会编译成int[]。</p>
 <p>Array<Int>最终会编译成Integer[]。</p>
@@ -306,7 +306,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/" title="Java 自动装箱">http://rickyqliu.github.io/Java/Java 自动装箱、Integer缓存/</a>
+    <a href="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/" title="Java 自动装箱、自动拆箱">http://rickyqliu.github.io/Java/Java 自动装箱、Integer缓存/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -319,6 +319,7 @@
           <div class="post-tags">
               <a href="/tags/Java/" rel="tag"># Java</a>
               <a href="/tags/%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1/" rel="tag"># 自动装箱</a>
+              <a href="/tags/%E8%87%AA%E5%8A%A8%E6%8B%86%E7%AE%B1/" rel="tag"># 自动拆箱</a>
           </div>
 
         
@@ -399,7 +400,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E5%92%8C%E8%87%AA%E5%8A%A8%E6%8B%86%E7%AE%B1%E6%98%AF%E6%80%8E%E4%B9%88%E5%9B%9E%E4%BA%8B%EF%BC%9F%E5%AE%9E%E9%99%85%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">自动装箱和自动拆箱是怎么回事？实际发生了什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%A6%E5%8F%91%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E5%92%8C%E8%87%AA%E5%8A%A8%E6%8B%86%E7%AE%B1%E7%9A%84%E5%9C%BA%E6%99%AF%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">触发自动装箱和自动拆箱的场景有哪些？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F%E6%9C%89%E5%93%AA%E4%BA%9B%E5%9C%BA%E6%99%AF%E4%B8%8D%E5%BE%97%E4%B8%8D%E4%BD%BF%E7%94%A8%E5%8C%85%E8%A3%85%E7%B1%BB%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">自动装箱解决了什么问题？有哪些场景不得不使用包装类？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88Java%E8%BF%98%E8%A6%81%E5%AE%9A%E4%B9%89%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%EF%BC%8C%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8%E5%8C%85%E8%A3%85%E7%B1%BB%E5%AE%8C%E5%85%A8%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%B8%8D%E5%B0%B1%E8%A1%8C%E4%BA%86%E5%90%97%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kotlin%E5%B7%B2%E7%BB%8F%E5%BA%9F%E5%BC%83%E4%BA%86%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%EF%BC%8C%E5%B7%B2%E7%BB%8F%E5%85%A8%E6%98%AF%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%BA%86%EF%BC%8CKotlin%E8%BF%99%E6%A0%B7%E5%81%9A%E6%B2%A1%E6%9C%89%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E5%90%97%EF%BC%9F"><span class="nav-number">5.</span> <span class="nav-text">Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kotiln%E4%B8%AD%E6%95%B4%E6%95%B0%E6%95%B0%E7%BB%84%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8-Array-%E8%80%8C%E6%98%AF-IntArray-%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">Kotiln中整数数组为什么不直接使用 Array 而是 IntArray ？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E5%92%8C%E6%8B%86%E7%AE%B1%E4%BC%9A%E4%BA%A7%E7%94%9F%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">7.</span> <span class="nav-text">自动装箱和拆箱会产生什么问题？</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%9C%89%E8%A3%85%E7%AE%B1%E5%92%8C%E6%8B%86%E7%AE%B1%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">为什么要有装箱和拆箱？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%89%E5%93%AA%E4%BA%9B%E5%9C%BA%E6%99%AF%E4%B8%8D%E5%BE%97%E4%B8%8D%E4%BD%BF%E7%94%A8%E5%8C%85%E8%A3%85%E7%B1%BB%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">有哪些场景不得不使用包装类？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88Java%E8%BF%98%E8%A6%81%E5%AE%9A%E4%B9%89%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%EF%BC%8C%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8%E5%8C%85%E8%A3%85%E7%B1%BB%E5%AE%8C%E5%85%A8%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%B8%8D%E5%B0%B1%E8%A1%8C%E4%BA%86%E5%90%97%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">为什么Java还要定义基本数据类型，直接使用包装类完全面向对象不就行了吗？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E5%92%8C%E8%87%AA%E5%8A%A8%E6%8B%86%E7%AE%B1%E6%98%AF%E6%80%8E%E4%B9%88%E5%9B%9E%E4%BA%8B%EF%BC%9F%E5%AE%9E%E9%99%85%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">自动装箱和自动拆箱是怎么回事？实际发生了什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%A6%E5%8F%91%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E5%92%8C%E8%87%AA%E5%8A%A8%E6%8B%86%E7%AE%B1%E7%9A%84%E5%9C%BA%E6%99%AF%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="nav-number">5.</span> <span class="nav-text">触发自动装箱和自动拆箱的场景有哪些？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kotlin%E5%B7%B2%E7%BB%8F%E5%BA%9F%E5%BC%83%E4%BA%86%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%EF%BC%8C%E5%B7%B2%E7%BB%8F%E5%85%A8%E6%98%AF%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%BA%86%EF%BC%8CKotlin%E8%BF%99%E6%A0%B7%E5%81%9A%E6%B2%A1%E6%9C%89%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E5%90%97%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">Kotlin已经废弃了基本数据类型，已经全是面向对象了，Kotlin这样做没有性能问题吗？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kotiln%E4%B8%AD%E6%95%B4%E6%95%B0%E6%95%B0%E7%BB%84%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8-Array-%E8%80%8C%E6%98%AF-IntArray-%EF%BC%9F"><span class="nav-number">7.</span> <span class="nav-text">Kotiln中整数数组为什么不直接使用 Array 而是 IntArray ？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E5%92%8C%E6%8B%86%E7%AE%B1%E4%BC%9A%E4%BA%A7%E7%94%9F%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">8.</span> <span class="nav-text">自动装箱和拆箱会产生什么问题？</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -428,7 +429,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">227</span>
+        <span class="site-state-item-count">228</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -547,7 +548,7 @@
   var disqus_config = function() {
     this.page.url = "http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/";
     this.page.identifier = "Java/Java 自动装箱、Integer缓存/";
-    this.page.title = "Java 自动装箱";
+    this.page.title = "Java 自动装箱、自动拆箱";
     };
   NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
     if (window.DISQUS) {
