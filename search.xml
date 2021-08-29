@@ -1060,13 +1060,13 @@
   <entry>
     <title>Kotlin为何废弃checked异常？</title>
     <url>/Kotlin/Kotlin%E4%B8%BA%E4%BD%95%E5%BA%9F%E5%BC%83checked%E5%BC%82%E5%B8%B8%EF%BC%9F/</url>
-    <content><![CDATA[<h1 id="kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？"><a href="#kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？" class="headerlink" title="kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？"></a>kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？</h1><p>Kotlin 也在官网给出了一些解释，大概的意思是Checked Exception 在项目小的时候确实能够提升效率和代码质量，但是在大型项目中却会降低代码质量。</p>
+    <content><![CDATA[<h1 id="kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？"><a href="#kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？" class="headerlink" title="kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？"></a>kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？</h1><p>Kotlin 在官网给出了一些解释，大概的意思是Checked Exception 在项目小的时候确实能够提升效率和代码质量，但是在大型项目中却会降低代码质量。</p>
 <p>关于CE，Anders Hejlsberg认为它带来了两个问题版本问题和扩展问题。</p>
-<p>所谓的版本问题是什么意思呢？Anders Hejlsberg举了一个例子：</p>
+<h2 id="所谓的版本问题是什么意思呢？"><a href="#所谓的版本问题是什么意思呢？" class="headerlink" title="所谓的版本问题是什么意思呢？"></a>所谓的版本问题是什么意思呢？</h2><p>Anders Hejlsberg举了一个例子：</p>
 <p>假设有一个方法foo，它声明了抛出异常A、B和C，在下一个版本设计的时候，foo增加了一个新的特性，可能会抛出异常D。对于设计者来说，很明显这是一个大的改变，几乎可以确定的是，客户程序员不会去处理这个异常。为了避免出现问题，设计者不得不声明一个新的方法foo2，抛出一个新的异常。然后，客户程序员可以将针对foo的逻辑处理切换到foo2。</p>
-<p>而所谓的扩展问题又是什么意思呢？这更好理解，以下来自Anders Hejlsberg的原话翻译并整理：</p>
+<h2 id="所谓的扩展问题又是什么意思呢？"><a href="#所谓的扩展问题又是什么意思呢？" class="headerlink" title="所谓的扩展问题又是什么意思呢？"></a>所谓的扩展问题又是什么意思呢？</h2><p>以下来自Anders Hejlsberg的原话翻译并整理：</p>
 <p>如果你在设计一个很小的系统，声明一个方法抛出一个异常，这很棒。可是，如果你尝试构建一个大的系统，其中包含了四、五个小系统的时候，问题来了。假设每个子系统可能抛出四到五个异常，而每上升一个系统，就犹如爬阶梯，异常数量会指数倍增加，最终你可能处理的异常将达到40个甚至80个。很显然，这是一个很糟糕的设计！</p>
-<p>综上，异常其实是发生在实现阶段，而不是定义阶段，既要在明确实现阶段的异常又要有灵活的实现是相悖的。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>综上，异常其实是发生在实现阶段，而不是定义阶段，既要在明确实现阶段的异常又要有灵活的实现是相悖的。</p>
 <p>所以 Kotlin 选择抛弃 Checked Exception，靠工程师来处理，这的确增加了 Kotlin 编写的难度，但也对大型项目更加友好，并且可以增加开发速度。</p>
 <h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
 <li><a href="https://www.kotlincn.net/docs/reference/exceptions.html">https://www.kotlincn.net/docs/reference/exceptions.html</a></li>
