@@ -186,6 +186,122 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Java/Java%20Integer%E7%BC%93%E5%AD%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Java/Java%20Integer%E7%BC%93%E5%AD%98/" class="post-title-link" itemprop="url">Java Integer缓存</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-10-25 20:25:00" itemprop="dateCreated datePublished" datetime="2016-10-25T20:25:00+08:00">2016-10-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-29 22:09:01" itemprop="dateModified" datetime="2021-08-29T22:09:01+08:00">2021-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Java/Java%20Integer%E7%BC%93%E5%AD%98/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Java/Java Integer缓存/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h1 id="Integer的缓存机制是怎么回事？"><a href="#Integer的缓存机制是怎么回事？" class="headerlink" title="Integer的缓存机制是怎么回事？"></a>Integer的缓存机制是怎么回事？</h1><p>学会看字节码就知道自动装箱拆箱实际调用的是什么。</p>
+<p>Intellij idea里通过View - Show Bytecode</p>
+<p>以Integer为例</p>
+<p>Integer a = 3;</p>
+<p>字节码指令为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ICONST_3</span><br><span class="line">INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;</span><br><span class="line">ASTORE 3</span><br></pre></td></tr></table></figure>
+
+<p>看到调用的是Integer.valueOf()方法</p>
+<p>Integer.valueOf()内部会用到IntegerCache，默认-128到127的Integer对象都会被缓存，通过valueOf()返回这个范围内的Integer对象都是同一个</p>
+<h1 id="两个值相等的Integer对象，-比较，是否相等？"><a href="#两个值相等的Integer对象，-比较，是否相等？" class="headerlink" title="两个值相等的Integer对象，==比较，是否相等？"></a>两个值相等的Integer对象，==比较，是否相等？</h1><p>要看Integer对象是如何从创建出来的。</p>
+<p>如果Integer是new出来的，==比较对象的内存地址，肯定不相等。</p>
+<p>如果Integer是通过Integer.valueOf()创建出来的，如果值是[-128,127]之间的数，会用缓存的Integer对象，即是同一个Integer对象。</p>
+<p>其中自动装修也会调用Integer.valueOf()方法生成Integer对象，触发自动装箱的代码如 Integer a = 3。</p>
+<h1 id="其他基本类型的包装类是否跟Integer一样都有Cache？"><a href="#其他基本类型的包装类是否跟Integer一样都有Cache？" class="headerlink" title="其他基本类型的包装类是否跟Integer一样都有Cache？"></a>其他基本类型的包装类是否跟Integer一样都有Cache？</h1><p>Java的基本类型有八种：</p>
+<ol>
+<li> 字符类型：char</li>
+<li> 布尔类型：boolean</li>
+<li>数值类型：<ol>
+<li> 整数类型：byte、short、int、long</li>
+<li> 浮点数类型：float、double</li>
+</ol>
+</li>
+</ol>
+<p>整数类型Byte、Short、Integer、Long都有Cache机制，缓存的数值范围都是[-128,127]。</p>
+<p>字符类型Character有Cache机制，缓存范围[0,127]的ASCII字符。</p>
+<p>布尔类型Boolean有Cache机制，定了两个TRUE和FALSE的常量，通过Boolean.valueOf(boolean b)返回的都是这两个常量的其中之一。</p>
+<p>浮点数类型没有Cache机制，valueOf方法都是直接new一个Float或Double对象；某个范围内整数数值是有限个的，所以缓存有意义，命中率也高，而浮点数某个范围内的数值个数是无穷多个，即使做缓存，缓存命中率低，没有起到缓存的作用，反而占用了存储空间，故而浮点数不需要缓存。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Java/Java%20%E8%87%AA%E5%8A%A8%E8%A3%85%E7%AE%B1%E3%80%81Integer%E7%BC%93%E5%AD%98/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +333,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 19:51:59" itemprop="dateModified" datetime="2021-08-29T19:51:59+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:09:01" itemprop="dateModified" datetime="2021-08-29T22:09:01+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -338,7 +454,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 19:51:59" itemprop="dateModified" datetime="2021-08-29T19:51:59+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:09:01" itemprop="dateModified" datetime="2021-08-29T22:09:01+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -475,7 +591,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 19:51:59" itemprop="dateModified" datetime="2021-08-29T19:51:59+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:09:00" itemprop="dateModified" datetime="2021-08-29T22:09:00+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -571,7 +687,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 19:51:59" itemprop="dateModified" datetime="2021-08-29T19:51:59+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-29 22:09:00" itemprop="dateModified" datetime="2021-08-29T22:09:00+08:00">2021-08-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -702,20 +818,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">174</span>
+          <span class="site-state-item-count">175</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">223</span>
+        <span class="site-state-item-count">225</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
