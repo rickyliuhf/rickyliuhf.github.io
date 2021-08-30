@@ -724,82 +724,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Gradle之Transform</title>
-    <url>/Gradle/Gradle%E4%B9%8BTransform/</url>
-    <content><![CDATA[<h1 id="AOP两种方式实现"><a href="#AOP两种方式实现" class="headerlink" title="AOP两种方式实现"></a>AOP两种方式实现</h1><ol>
-<li> 通过gradle提供的transform api</li>
-<li> 通过Java Instrument机制hook dx.jar，拦截gradle编译把class转为dex的过程</li>
-</ol>
-<p>参考</p>
-<ul>
-<li><a href="https://www.jianshu.com/p/c202853059b4">Android AOP之字节码插桩</a></li>
-</ul>
-<h1 id="Transform-API-有什么用？"><a href="#Transform-API-有什么用？" class="headerlink" title="Transform API 有什么用？"></a>Transform API 有什么用？</h1><p>transform拦截jar转为dex的过程。</p>
-<p>jar转为dex时先经过transform处理。</p>
-<p>jar -&gt; transform -&gt; dex</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825195255.png"></p>
-<h1 id="Transform-API如何使用？"><a href="#Transform-API如何使用？" class="headerlink" title="Transform API如何使用？"></a>Transform API如何使用？</h1><p>参考</p>
-<ul>
-<li><a href="https://juejin.im/post/6844903831646502920">Android Transform + ASM 初探</a></li>
-</ul>
-<p>不管你修不修改输入，都必须要把类复制到指定的transform输出位置。</p>
-<p>步骤：</p>
-<ul>
-<li>com.android.build.api.transform.Transform是android gradle plugin里的类，引用Transform需要先引入agp的依赖。<br>implementation(“com.android.tools.build:gradle:xxx”)</li>
-<li>实现一个自定义的类继承Transform，然后将其注册到agp中即可。</li>
-<li>注册到agp，先要获得android的扩展，通过project.extensions.findByType(BaseExtension::class.java)<br>来获取。</li>
-<li>再调用BaseExtension中的registerTransform()添加自定义的Transform。</li>
-</ul>
-<p>一个通过自定义插件添加自定义Transform的示例代码：</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HelloPlugin</span> : <span class="type">Plugin</span>&lt;<span class="type">Project</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">apply</span><span class="params">(project: <span class="type">Project</span>)</span></span> &#123;</span><br><span class="line">        project.extensions.findByType(BaseExtension::<span class="keyword">class</span>.java)</span><br><span class="line">            ?.registerTransform(MyTransform())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyTransform</span> : <span class="type">Transform</span></span>() &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">getName</span><span class="params">()</span></span>: String &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;MyTransform&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">getInputTypes</span><span class="params">()</span></span>: MutableSet&lt;QualifiedContent.ContentType&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> TransformManager.CONTENT_CLASS</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">getScopes</span><span class="params">()</span></span>: MutableSet&lt;<span class="keyword">in</span> QualifiedContent.Scope&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> TransformManager.SCOPE_FULL_PROJECT</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">isIncremental</span><span class="params">()</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">transform</span><span class="params">(transformInvocation: <span class="type">TransformInvocation</span>?)</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.transform(transformInvocation)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="Transform类中各方法的作用"><a href="#Transform类中各方法的作用" class="headerlink" title="Transform类中各方法的作用"></a>Transform类中各方法的作用</h1><h2 id="getName-String"><a href="#getName-String" class="headerlink" title="getName(): String"></a><code>getName(): String</code></h2><p>本Transform的名称</p>
-<h2 id="getInputTypes-Set-lt-ContentType-gt"><a href="#getInputTypes-Set-lt-ContentType-gt" class="headerlink" title="getInputTypes(): Set&lt;ContentType&gt;"></a><code>getInputTypes(): Set&lt;ContentType&gt;</code></h2><ul>
-<li>处理的输入类型</li>
-<li>分为class文件或者java资源</li>
-<li>class文件来自于jar或者文件夹</li>
-<li>资源就是标准的java资源，默认约定位于src/main/resources目录下</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">DefaultContentType</span> <span class="keyword">implements</span> <span class="title">ContentType</span> </span>&#123;</span><br><span class="line">      <span class="comment">/**</span></span><br><span class="line"><span class="comment">       * The content is compiled Java code. This can be in a Jar file or in a folder. If</span></span><br><span class="line"><span class="comment">       * in a folder, it is expected to in sub-folders matching package names.</span></span><br><span class="line"><span class="comment">       */</span></span><br><span class="line">      CLASSES(<span class="number">0x01</span>),</span><br><span class="line"></span><br><span class="line">      <span class="comment">/**</span></span><br><span class="line"><span class="comment">       * The content is standard Java resources.</span></span><br><span class="line"><span class="comment">       */</span></span><br><span class="line">      RESOURCES(<span class="number">0x02</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="getScopes-Set-lt-super-Scope-gt"><a href="#getScopes-Set-lt-super-Scope-gt" class="headerlink" title="getScopes(): Set&lt;? super Scope&gt;"></a><code>getScopes(): Set&lt;? super Scope&gt;</code></h2><p>输入文件所属的范围。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">Scope</span> <span class="keyword">implements</span> <span class="title">ScopeType</span> </span>&#123;</span><br><span class="line">    <span class="comment">/** Only the project content */</span></span><br><span class="line">    PROJECT(<span class="number">0x01</span>), <span class="comment">//只是当前工程的代码</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Only the project&#x27;s local dependencies (local jars) */</span></span><br><span class="line">    PROJECT_LOCAL_DEPS(<span class="number">0x02</span>), <span class="comment">// 工程的本地jar</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Only the sub-projects. */</span></span><br><span class="line">    SUB_PROJECTS(<span class="number">0x04</span>),  <span class="comment">// 只包含子工工程</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Only the sub-projects&#x27;s local dependencies (local jars). */</span></span><br><span class="line">    SUB_PROJECTS_LOCAL_DEPS(<span class="number">0x08</span>),</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Only the external libraries */</span></span><br><span class="line">    EXTERNAL_LIBRARIES(<span class="number">0x10</span>),</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Code that is being tested by the current variant, including dependencies */</span></span><br><span class="line">    TESTED_CODE(<span class="number">0x20</span>),</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Local or remote dependencies that are provided-only */</span></span><br><span class="line">    PROVIDED_ONLY(<span class="number">0x40</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>TransformManager预定了一些SCOPE。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Set&lt;ScopeType&gt; SCOPE_FULL_PROJECT =</span><br><span class="line">            ImmutableSet.of(Scope.PROJECT, Scope.SUB_PROJECTS, Scope.EXTERNAL_LIBRARIES);</span><br></pre></td></tr></table></figure>
-
-<h2 id="isIncremental-Boolean"><a href="#isIncremental-Boolean" class="headerlink" title="isIncremental(): Boolean"></a><code>isIncremental(): Boolean</code></h2><p>是否是增量编译。</p>
-<h2 id="transform-TransformInvocation"><a href="#transform-TransformInvocation" class="headerlink" title="transform(TransformInvocation)"></a>transform(TransformInvocation)</h2><p>input的内容将会打包成一个TransformInvocation对象，交给方法体处理。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TransformInvocation</span> </span>&#123;</span><br><span class="line">    <span class="function">Context <span class="title">getContext</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">Collection&lt;TransformInput&gt; <span class="title">getInputs</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">Collection&lt;TransformInput&gt; <span class="title">getReferencedInputs</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">Collection&lt;SecondaryInput&gt; <span class="title">getSecondaryInputs</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">TransformOutputProvider <span class="title">getOutputProvider</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isIncremental</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="transform方法中如何处理TransformInput的JarInput和DirectoryInput？"><a href="#transform方法中如何处理TransformInput的JarInput和DirectoryInput？" class="headerlink" title="transform方法中如何处理TransformInput的JarInput和DirectoryInput？"></a>transform方法中如何处理TransformInput的JarInput和DirectoryInput？</h2><p>DirectoryInput 进行ASM插桩（参考<a href="https://github.com/lijiankun24/Koala/blob/master/buildSrc/src/main/groovy/com/lijiankun24/koala/plugin/PreClass.groovy">koala - PreClass.groovy</a>）：</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">handleDirectoryInput</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    directoryInput: <span class="type">DirectoryInput</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">    outputProvider: <span class="type">TransformOutputProvider</span></span></span></span><br><span class="line"><span class="params"><span class="function">)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (directoryInput.file.isDirectory) &#123;</span><br><span class="line">        directoryInput.file.walkTopDown().forEach &#123; file -&gt;</span><br><span class="line">            <span class="keyword">val</span> name = file.name</span><br><span class="line">            <span class="keyword">if</span> (name.endsWith(<span class="string">&quot;.class&quot;</span>) &amp;&amp; name != <span class="string">&quot;R.class&quot;</span></span><br><span class="line">                &amp;&amp; !name.startsWith(<span class="string">&quot;R\$&quot;</span>) &amp;&amp; name != <span class="string">&quot;BuildConfig.class&quot;</span></span><br><span class="line">            ) &#123;</span><br><span class="line">                <span class="keyword">val</span> reader = ClassReader(file.readBytes())</span><br><span class="line">                <span class="keyword">val</span> writer = ClassWriter(reader, ClassWriter.COMPUTE_MAXS)</span><br><span class="line">                <span class="keyword">val</span> visitor = MyClassVisitor(writer)</span><br><span class="line">                reader.accept(visitor, ClassReader.EXPAND_FRAMES)</span><br><span class="line">                <span class="keyword">val</span> code = writer.toByteArray()</span><br><span class="line">                <span class="keyword">val</span> classPath = file.parentFile.absolutePath + File.separator + name</span><br><span class="line">                <span class="keyword">val</span> fos = FileOutputStream(classPath)</span><br><span class="line">                fos.write(code)</span><br><span class="line">                fos.close()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 处理完输入文件之后，要把输出给下一个任务</span></span><br><span class="line">    <span class="keyword">val</span> dest = outputProvider.getContentLocation(</span><br><span class="line">        directoryInput.name,</span><br><span class="line">        directoryInput.contentTypes, directoryInput.scopes,</span><br><span class="line">        Format.DIRECTORY</span><br><span class="line">    )</span><br><span class="line">    FileUtils.copyDirectory(directoryInput.file, dest)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>JarInput 不处理（参考<a href="https://github.com/lijiankun24/Koala/blob/master/buildSrc/src/main/groovy/com/lijiankun24/koala/plugin/PreClass.groovy">koala - PreClass.groovy</a>）：</p>
-<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">input.jarInputs.each &#123; JarInput jarInput -&gt;</span><br><span class="line">    <span class="keyword">def</span> jarName = jarInput.name</span><br><span class="line">    <span class="keyword">def</span> md5Name = DigestUtils.md5Hex(jarInput.file.getAbsolutePath())</span><br><span class="line">    <span class="keyword">if</span> (jarName.endsWith(<span class="string">&quot;.jar&quot;</span>)) &#123;</span><br><span class="line">        jarName = jarName.substring(<span class="number">0</span>, jarName.length() - <span class="number">4</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> dest = transformInvocation.outputProvider.getContentLocation(jarName + md5Name,</span><br><span class="line">            jarInput.contentTypes, jarInput.scopes, Format.JAR)</span><br><span class="line"></span><br><span class="line">    FileUtils.copyFile(jarInput.file, dest)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-
-<p>JarInput 处理ASM：<br>参考:</p>
-<ul>
-<li><a href="https://github.com/chenenyu/Router/blob/master/gradle-plugin/src/main/groovy/com/chenenyu/router/RouterTransform.groovy">Router - RouterTransform.groovy</a></li>
-<li><a href="https://github.com/chenenyu/Router/blob/master/gradle-plugin/src/main/groovy/com/chenenyu/router/Scanner.groovy">Router - Scanner.groovy</a><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">handleJarInput</span><span class="params">(jarInput: <span class="type">JarInput</span>, outputProvider: <span class="type">TransformOutputProvider</span>)</span></span> &#123;</span><br><span class="line">    <span class="comment">//重名名输出文件,因为可能同名,会覆盖</span></span><br><span class="line">    <span class="keyword">var</span> jarName = jarInput.name</span><br><span class="line">    <span class="keyword">val</span> md5Name = DigestUtils.md5Hex(jarInput.file.absolutePath)</span><br><span class="line">    <span class="keyword">if</span> (jarName.endsWith(<span class="string">&quot;.jar&quot;</span>)) &#123;</span><br><span class="line">        jarName = jarName.substring(<span class="number">0</span>, jarName.length - <span class="number">4</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// &gt;&gt;&gt;&gt; 处理输入的jar文件中的class，输出到一个临时的jar文件</span></span><br><span class="line">    <span class="keyword">val</span> jarFile = JarFile(jarInput.file)</span><br><span class="line">    <span class="keyword">val</span> enumeration = jarFile.entries()</span><br><span class="line">    <span class="keyword">val</span> tmpFile = File(jarInput.file.parent + File.separator + <span class="string">&quot;classes_temp.jar&quot;</span>)</span><br><span class="line">    <span class="comment">// 避免上次的缓存被重复插入</span></span><br><span class="line">    <span class="keyword">if</span> (tmpFile.exists()) &#123;</span><br><span class="line">        tmpFile.delete()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">val</span> jarOutputStream = JarOutputStream(FileOutputStream(tmpFile))</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 用于保存</span></span><br><span class="line">    <span class="keyword">while</span> (enumeration.hasMoreElements()) &#123;</span><br><span class="line">        <span class="keyword">val</span> jarEntry = enumeration?.nextElement() ?: <span class="keyword">continue</span></span><br><span class="line">        <span class="keyword">val</span> entryName = jarEntry.name</span><br><span class="line">        <span class="keyword">val</span> zipEntry = ZipEntry(entryName)</span><br><span class="line">        <span class="keyword">val</span> inputStream = jarFile.getInputStream(jarEntry)</span><br><span class="line">        <span class="comment">// 插桩class</span></span><br><span class="line">        <span class="keyword">if</span> (entryName.endsWith(<span class="string">&quot;.class&quot;</span>) &amp;&amp; !entryName.startsWith(<span class="string">&quot;R\$&quot;</span>)</span><br><span class="line">            &amp;&amp; <span class="string">&quot;R.class&quot;</span> != entryName &amp;&amp; <span class="string">&quot;BuildConfig.class&quot;</span> != entryName</span><br><span class="line">        ) &#123;</span><br><span class="line">            <span class="comment">//class文件处理</span></span><br><span class="line">            println(<span class="string">&quot;----------- deal with jar class file &lt;&#x27; + <span class="variable">$entryName</span> + &#x27;&gt; -----------&quot;</span>)</span><br><span class="line">            jarOutputStream.putNextEntry(zipEntry)</span><br><span class="line">            <span class="keyword">val</span> classReader = ClassReader(inputStream)</span><br><span class="line">            <span class="keyword">val</span> classWriter = ClassWriter(classReader, ClassWriter.COMPUTE_MAXS)</span><br><span class="line">            <span class="keyword">val</span> cv = MyClassVisitor(classWriter)</span><br><span class="line">            classReader.accept(cv, ClassReader.EXPAND_FRAMES)</span><br><span class="line">            <span class="keyword">val</span> code = classWriter.toByteArray()</span><br><span class="line">            jarOutputStream.write(code)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            jarOutputStream.putNextEntry(zipEntry)</span><br><span class="line">            jarOutputStream.write(inputStream.readBytes())</span><br><span class="line">        &#125;</span><br><span class="line">        jarOutputStream.closeEntry()</span><br><span class="line">    &#125;</span><br><span class="line">    jarOutputStream.close()</span><br><span class="line">    jarFile.close()</span><br><span class="line">    <span class="comment">// &lt;&lt;&lt;&lt; 处理输入的jar文件中的class，输出到一个临时的jar文件</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// &gt;&gt;&gt;&gt; 处理过class的临时jar文件输出到目标位置</span></span><br><span class="line">    <span class="keyword">val</span> dest = outputProvider.getContentLocation(</span><br><span class="line">        jarName + md5Name,</span><br><span class="line">        jarInput.contentTypes, jarInput.scopes, Format.JAR</span><br><span class="line">    )</span><br><span class="line">    FileUtils.copyFile(tmpFile, dest)</span><br><span class="line">    tmpFile.delete()</span><br><span class="line">    <span class="comment">// &lt;&lt;&lt;&lt; 处理过class的临时jar文件输出到目标位置</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h1 id="Java-Agent和Instrument机制是什么？有什么用？大概如何使用？"><a href="#Java-Agent和Instrument机制是什么？有什么用？大概如何使用？" class="headerlink" title="Java Agent和Instrument机制是什么？有什么用？大概如何使用？"></a>Java Agent和Instrument机制是什么？有什么用？大概如何使用？</h1><p>JavaAgent使用指南</p>
-<p><a href="https://www.cnblogs.com/rickiyang/p/11368932.html">https://www.cnblogs.com/rickiyang/p/11368932.html</a></p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a href="https://juejin.im/post/6844903780916396039">【Android】函数插桩（Gradle + ASM）</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Gradle</category>
-      </categories>
-      <tags>
-        <tag>Gradle</tag>
-        <tag>Transform</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Java Integer缓存</title>
     <url>/Java/Java%20Integer%E7%BC%93%E5%AD%98/</url>
     <content><![CDATA[<h1 id="Integer的缓存机制是怎么回事？"><a href="#Integer的缓存机制是怎么回事？" class="headerlink" title="Integer的缓存机制是怎么回事？"></a>Integer的缓存机制是怎么回事？</h1><p>学会看字节码就知道自动装箱拆箱实际调用的是什么。</p>
@@ -5631,63 +5555,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Java并发-伪共享</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E4%BC%AA%E5%85%B1%E4%BA%AB/</url>
-    <content><![CDATA[<h1 id="计算机结构"><a href="#计算机结构" class="headerlink" title="计算机结构"></a>计算机结构</h1><p>计算机可分为两种结构</p>
-<ol>
-<li> 冯诺依曼结构</li>
-<li> 哈佛结构</li>
-</ol>
-<p>冯诺依曼结构提出计算机由运算器、控制器、存储器、输入设备、输出设备5个部分组成。</p>
-<p>冯诺依曼结构特点是指令存储和数据存储合并在一起的存储结构，指令和数据统一编址，使用同一条总线传输，CPU读取指令和数据的操作是互斥的，同一时间只能做一件事，只能分时复用，无法并行，速度慢，CPU吞吐量低。</p>
-<p>哈佛结构特点是指令存储和数据存储分开的存储结构，指令和数据独立独立编址，使用两条独立的总线传输，CPU读取指令和数据操作可以并行，速度快，CPU吞吐量高。</p>
-<p>因为cpu速度快，而总线速度慢。冯诺依曼结构中，数据存储器和指令存储器使用同一总线，总线繁忙，cpu需要停下来等待总线读取数据。在哈佛结构中，数据存储器和指令存储器使用不同总线，减少了cpu停止工作等待数据读取的时间，因此提升了效率。</p>
-<p>冯诺依曼结构由于指令和数据共用总线，速度慢、效率低、吞吐量低，但因为指令存储区域和数据存储区域大小可以动态调整，存储器利用率高，适用场景更通用，所以也便宜。</p>
-<p>哈佛结构由于指令和数据分开存储，速度快、效率高、吞吐量大，但不能灵活调整存储区，适用比较做单一的功能，针对不同的功能要做单独的设计，成本也提高了。</p>
-<h1 id="冯诺依曼瓶颈"><a href="#冯诺依曼瓶颈" class="headerlink" title="冯诺依曼瓶颈"></a>冯诺依曼瓶颈</h1><p>指令和数据存储在一起，导致指令读取和数据处理不能同时进行，而CPU运算速度远远超过主存储器读写的速度，CPU就会浪费时间等待主存数据读写，CPU吞吐量低。</p>
-<p>解决瓶颈途径之一：</p>
-<p>CPU访问主存数据具有时间局部性和空间局部性特点，在CPU和主存储器之间增加缓存，缓存的命中率很高，大大减少访问主存的次数。</p>
-<p>同时CPU缓存采用哈佛结构，指令和数据分开存储，以提高存储量。</p>
-<p>数据访问的时间局部性：如果一项信息最近被访问，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
-<p>数据访问的空间局部性：将来马上要用到的信息，很可能与正在使用的信息，在空间存储位置上是临近的</p>
-<p>所以当访问主存中某一个数据的时候，把这个数据相邻的数据都放入缓存中，可以大大减少CPU访问主存消耗的时间。</p>
-<h1 id="CPU缓存和内存为什么要分块？"><a href="#CPU缓存和内存为什么要分块？" class="headerlink" title="CPU缓存和内存为什么要分块？"></a>CPU缓存和内存为什么要分块？</h1><p>CPU访问主存数据具有时间和空间局部性的特点。</p>
-<p>时间局部性：如果一个数据被访问了，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
-<p>空间局部性：访问内存上的一个数据，这个数据邻近位置的数据，最近也很大可能会被访问</p>
-<p>所以应该把该数据邻近的位置的数据都一起读入缓存中，这样可以减少CPU访问主存的次数，CPU直接访问缓存的速度是很快的，这样CPU的吞吐量就提高了。</p>
-<p>虚拟内存机制，也是建立了主存和外存之间的缓存关系，也是利用数据访问的局部性原理，把暂时不用的数据放到访问速度更慢的外存，需要频繁使用的数据按页交换到访问速度更快的主存中。这样内存中可以运行更多的进程。</p>
-<h1 id="缓存行"><a href="#缓存行" class="headerlink" title="缓存行"></a>缓存行</h1><p>为了便于CPU缓存和主存交换数据，CPU缓存和主存都被划分位长度相等的块，缓存块又称为缓存行，大小为2的次方，CPU缓存从主存读入数据一次读一整块，向主存更新数据，也是一次写入一整块。</p>
-<h1 id="伪共享"><a href="#伪共享" class="headerlink" title="伪共享"></a>伪共享</h1><p>多个CPU同时读写主存上某个连续区域的不同变量时，会各自把该该主存块拷贝一份放入自己的CPU缓存中，多个线程在访问缓存行内的不同变量时，由缓存一致性协议可知该缓存行会失效，多个CPU之间互相等待对方先把缓存行写入主存，自己再从主存读入最新的数据块，表现为缓存频繁未命中，CPU演变为直接与主存交互，CPU访问主存速度很慢，CPU吞吐量因此降低。</p>
-<h1 id="伪共享的解决：字节填充"><a href="#伪共享的解决：字节填充" class="headerlink" title="伪共享的解决：字节填充"></a>伪共享的解决：字节填充</h1><p>保证不同的CPU处理的数据位于不同的缓存行中，就不会引发缓存行的频繁失效。</p>
-<p>java里定义类的成员变量时，可以倾向于把不变的遍历放在一起（一组位置），易变的变量放在一起，使它们尽量不在同一个缓存行，这样每次对象的易变变量变化时，不会引起不变的属性所在缓存行失效，从而提高缓存命中率，避免频繁从主存读取数据，提高CPU吞吐量。</p>
-<p>Jdk6中可以通过添加填充变量进行字节填充来解决伪共享，示例如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;  <span class="comment">// 实际数据</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6; <span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>想象PaddingObject里本来只有一个value属性，现在有多个线程需要读写一个PaddingObject数组（修改数组每一项里的value），由于数组的存储空间在内存中是连续的，根据CPU访问数据的空间局部性特点，CPU在访问数组某个元素的时候，会把该元素所在的内存块整个拷贝到CPU缓存中，这个内存块包含了数组中一些相邻的元素，多个线程同时修改数组中相邻的一些元素时，这个缓存行会频繁失效，CPU缓存命中率低，如果数组的每一个元素位于不同的内存块，也就可以位于不同的缓存行，多线程就不会竞争同一个缓存行</p>
-<p>Jdk7中有的版本用上述方式无效，添加的无用变量会被优化去除，需要使用继承的方式组织优化，示例如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6;<span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span> <span class="keyword">extends</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;    <span class="comment">// 实际数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Jdk8开始提供了@sun.misc.Contended 注解进行字节填充，不用再手动声明无用的变量了，同时要开启 JVM 参数：-XX:-RestrictContended=false</p>
-<p>字节填充会增大目标对象的体积，是用空间换时间。</p>
-<h2 id="伪共享应用场景"><a href="#伪共享应用场景" class="headerlink" title="伪共享应用场景"></a>伪共享应用场景</h2><h3 id="数组优于链表"><a href="#数组优于链表" class="headerlink" title="数组优于链表"></a>数组优于链表</h3><p>从伪共享的角度，数据和链表的区别，不仅是结构上的区别，在缓存命中率上是完全不一样的，因为数组的存储空间连续，缓存命中率更高，链表的缓存命中率低，访问速度慢。</p>
-<h3 id="快速排序优于堆排序"><a href="#快速排序优于堆排序" class="headerlink" title="快速排序优于堆排序"></a>快速排序优于堆排序</h3><p>堆排序访问数据时，也不是访问连续内存空间的数据，所以堆排序和快速排序虽然都有相近的时间复杂度，但是常用的还是快速排序</p>
-<h3 id="二维数组横向遍历优于竖向遍历"><a href="#二维数组横向遍历优于竖向遍历" class="headerlink" title="二维数组横向遍历优于竖向遍历"></a>二维数组横向遍历优于竖向遍历</h3><p>横向遍历二维数组，比竖向遍历缓存命中率要高，因为数组在内存中的存储是每行每行的连续存储，先按行遍历再按列遍历，会访问内存空间连续的数据，先按列遍历再按行遍历访问的不是内存存储空间连续的数据，数据不在同一块，缓存的命中率低</p>
-<h3 id="二维数组维数短的写在外层更优"><a href="#二维数组维数短的写在外层更优" class="headerlink" title="二维数组维数短的写在外层更优"></a>二维数组维数短的写在外层更优</h3><p>二维数组，维数短的写在外层，缓存命中率更高，因为会减少跨缓存块访问数据，集中在一个缓存块上访问数据，如果长的一维写在外层，访问二维数组元素时，访问数据的内存地址跨度可能超过一个内存块长度，就要频繁的交换CPU缓存，缓存命中率低</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>伪共享</tag>
-        <tag>False Sharing</tag>
-        <tag>虚拟内存</tag>
-        <tag>冯诺依曼瓶颈</tag>
-        <tag>字节填充</tag>
-        <tag>计算机结构</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Java并发-线程池</title>
     <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/</url>
     <content><![CDATA[<h1 id="为什么要使用线程池？"><a href="#为什么要使用线程池？" class="headerlink" title="为什么要使用线程池？"></a>为什么要使用线程池？</h1><ol>
@@ -5765,6 +5632,63 @@
         <tag>并发</tag>
         <tag>线程池</tag>
         <tag>ForkJoinPool</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-伪共享</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E4%BC%AA%E5%85%B1%E4%BA%AB/</url>
+    <content><![CDATA[<h1 id="计算机结构"><a href="#计算机结构" class="headerlink" title="计算机结构"></a>计算机结构</h1><p>计算机可分为两种结构</p>
+<ol>
+<li> 冯诺依曼结构</li>
+<li> 哈佛结构</li>
+</ol>
+<p>冯诺依曼结构提出计算机由运算器、控制器、存储器、输入设备、输出设备5个部分组成。</p>
+<p>冯诺依曼结构特点是指令存储和数据存储合并在一起的存储结构，指令和数据统一编址，使用同一条总线传输，CPU读取指令和数据的操作是互斥的，同一时间只能做一件事，只能分时复用，无法并行，速度慢，CPU吞吐量低。</p>
+<p>哈佛结构特点是指令存储和数据存储分开的存储结构，指令和数据独立独立编址，使用两条独立的总线传输，CPU读取指令和数据操作可以并行，速度快，CPU吞吐量高。</p>
+<p>因为cpu速度快，而总线速度慢。冯诺依曼结构中，数据存储器和指令存储器使用同一总线，总线繁忙，cpu需要停下来等待总线读取数据。在哈佛结构中，数据存储器和指令存储器使用不同总线，减少了cpu停止工作等待数据读取的时间，因此提升了效率。</p>
+<p>冯诺依曼结构由于指令和数据共用总线，速度慢、效率低、吞吐量低，但因为指令存储区域和数据存储区域大小可以动态调整，存储器利用率高，适用场景更通用，所以也便宜。</p>
+<p>哈佛结构由于指令和数据分开存储，速度快、效率高、吞吐量大，但不能灵活调整存储区，适用比较做单一的功能，针对不同的功能要做单独的设计，成本也提高了。</p>
+<h1 id="冯诺依曼瓶颈"><a href="#冯诺依曼瓶颈" class="headerlink" title="冯诺依曼瓶颈"></a>冯诺依曼瓶颈</h1><p>指令和数据存储在一起，导致指令读取和数据处理不能同时进行，而CPU运算速度远远超过主存储器读写的速度，CPU就会浪费时间等待主存数据读写，CPU吞吐量低。</p>
+<p>解决瓶颈途径之一：</p>
+<p>CPU访问主存数据具有时间局部性和空间局部性特点，在CPU和主存储器之间增加缓存，缓存的命中率很高，大大减少访问主存的次数。</p>
+<p>同时CPU缓存采用哈佛结构，指令和数据分开存储，以提高存储量。</p>
+<p>数据访问的时间局部性：如果一项信息最近被访问，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
+<p>数据访问的空间局部性：将来马上要用到的信息，很可能与正在使用的信息，在空间存储位置上是临近的</p>
+<p>所以当访问主存中某一个数据的时候，把这个数据相邻的数据都放入缓存中，可以大大减少CPU访问主存消耗的时间。</p>
+<h1 id="CPU缓存和内存为什么要分块？"><a href="#CPU缓存和内存为什么要分块？" class="headerlink" title="CPU缓存和内存为什么要分块？"></a>CPU缓存和内存为什么要分块？</h1><p>CPU访问主存数据具有时间和空间局部性的特点。</p>
+<p>时间局部性：如果一个数据被访问了，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
+<p>空间局部性：访问内存上的一个数据，这个数据邻近位置的数据，最近也很大可能会被访问</p>
+<p>所以应该把该数据邻近的位置的数据都一起读入缓存中，这样可以减少CPU访问主存的次数，CPU直接访问缓存的速度是很快的，这样CPU的吞吐量就提高了。</p>
+<p>虚拟内存机制，也是建立了主存和外存之间的缓存关系，也是利用数据访问的局部性原理，把暂时不用的数据放到访问速度更慢的外存，需要频繁使用的数据按页交换到访问速度更快的主存中。这样内存中可以运行更多的进程。</p>
+<h1 id="缓存行"><a href="#缓存行" class="headerlink" title="缓存行"></a>缓存行</h1><p>为了便于CPU缓存和主存交换数据，CPU缓存和主存都被划分位长度相等的块，缓存块又称为缓存行，大小为2的次方，CPU缓存从主存读入数据一次读一整块，向主存更新数据，也是一次写入一整块。</p>
+<h1 id="伪共享"><a href="#伪共享" class="headerlink" title="伪共享"></a>伪共享</h1><p>多个CPU同时读写主存上某个连续区域的不同变量时，会各自把该该主存块拷贝一份放入自己的CPU缓存中，多个线程在访问缓存行内的不同变量时，由缓存一致性协议可知该缓存行会失效，多个CPU之间互相等待对方先把缓存行写入主存，自己再从主存读入最新的数据块，表现为缓存频繁未命中，CPU演变为直接与主存交互，CPU访问主存速度很慢，CPU吞吐量因此降低。</p>
+<h1 id="伪共享的解决：字节填充"><a href="#伪共享的解决：字节填充" class="headerlink" title="伪共享的解决：字节填充"></a>伪共享的解决：字节填充</h1><p>保证不同的CPU处理的数据位于不同的缓存行中，就不会引发缓存行的频繁失效。</p>
+<p>java里定义类的成员变量时，可以倾向于把不变的遍历放在一起（一组位置），易变的变量放在一起，使它们尽量不在同一个缓存行，这样每次对象的易变变量变化时，不会引起不变的属性所在缓存行失效，从而提高缓存命中率，避免频繁从主存读取数据，提高CPU吞吐量。</p>
+<p>Jdk6中可以通过添加填充变量进行字节填充来解决伪共享，示例如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;  <span class="comment">// 实际数据</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6; <span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>想象PaddingObject里本来只有一个value属性，现在有多个线程需要读写一个PaddingObject数组（修改数组每一项里的value），由于数组的存储空间在内存中是连续的，根据CPU访问数据的空间局部性特点，CPU在访问数组某个元素的时候，会把该元素所在的内存块整个拷贝到CPU缓存中，这个内存块包含了数组中一些相邻的元素，多个线程同时修改数组中相邻的一些元素时，这个缓存行会频繁失效，CPU缓存命中率低，如果数组的每一个元素位于不同的内存块，也就可以位于不同的缓存行，多线程就不会竞争同一个缓存行</p>
+<p>Jdk7中有的版本用上述方式无效，添加的无用变量会被优化去除，需要使用继承的方式组织优化，示例如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6;<span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span> <span class="keyword">extends</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;    <span class="comment">// 实际数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Jdk8开始提供了@sun.misc.Contended 注解进行字节填充，不用再手动声明无用的变量了，同时要开启 JVM 参数：-XX:-RestrictContended=false</p>
+<p>字节填充会增大目标对象的体积，是用空间换时间。</p>
+<h2 id="伪共享应用场景"><a href="#伪共享应用场景" class="headerlink" title="伪共享应用场景"></a>伪共享应用场景</h2><h3 id="数组优于链表"><a href="#数组优于链表" class="headerlink" title="数组优于链表"></a>数组优于链表</h3><p>从伪共享的角度，数据和链表的区别，不仅是结构上的区别，在缓存命中率上是完全不一样的，因为数组的存储空间连续，缓存命中率更高，链表的缓存命中率低，访问速度慢。</p>
+<h3 id="快速排序优于堆排序"><a href="#快速排序优于堆排序" class="headerlink" title="快速排序优于堆排序"></a>快速排序优于堆排序</h3><p>堆排序访问数据时，也不是访问连续内存空间的数据，所以堆排序和快速排序虽然都有相近的时间复杂度，但是常用的还是快速排序</p>
+<h3 id="二维数组横向遍历优于竖向遍历"><a href="#二维数组横向遍历优于竖向遍历" class="headerlink" title="二维数组横向遍历优于竖向遍历"></a>二维数组横向遍历优于竖向遍历</h3><p>横向遍历二维数组，比竖向遍历缓存命中率要高，因为数组在内存中的存储是每行每行的连续存储，先按行遍历再按列遍历，会访问内存空间连续的数据，先按列遍历再按行遍历访问的不是内存存储空间连续的数据，数据不在同一块，缓存的命中率低</p>
+<h3 id="二维数组维数短的写在外层更优"><a href="#二维数组维数短的写在外层更优" class="headerlink" title="二维数组维数短的写在外层更优"></a>二维数组维数短的写在外层更优</h3><p>二维数组，维数短的写在外层，缓存命中率更高，因为会减少跨缓存块访问数据，集中在一个缓存块上访问数据，如果长的一维写在外层，访问二维数组元素时，访问数据的内存地址跨度可能超过一个内存块长度，就要频繁的交换CPU缓存，缓存命中率低</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>伪共享</tag>
+        <tag>False Sharing</tag>
+        <tag>虚拟内存</tag>
+        <tag>冯诺依曼瓶颈</tag>
+        <tag>字节填充</tag>
+        <tag>计算机结构</tag>
       </tags>
   </entry>
   <entry>
@@ -7975,11 +7899,11 @@
         <category>虚拟机</category>
       </categories>
       <tags>
-        <tag>Gradle</tag>
         <tag>虚拟机</tag>
         <tag>ASM</tag>
         <tag>字节码</tag>
         <tag>插桩</tag>
+        <tag>Gradle</tag>
       </tags>
   </entry>
   <entry>
