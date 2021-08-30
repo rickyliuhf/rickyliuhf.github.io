@@ -6371,7 +6371,7 @@
   <entry>
     <title>崩溃收集 - ACRA原理</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ACRA%E5%8E%9F%E7%90%86/</url>
-    <content><![CDATA[<h1 id="为什么要ACRA简介"><a href="#为什么要ACRA简介" class="headerlink" title="为什么要ACRA简介"></a>为什么要ACRA简介</h1><p>项目主页：<a href="https://github.com/ACRA/acra">https://github.com/ACRA/acra</a></p>
+    <content><![CDATA[<h1 id="为什么选择ACRA做崩溃收集？"><a href="#为什么选择ACRA做崩溃收集？" class="headerlink" title="为什么选择ACRA做崩溃收集？"></a>为什么选择ACRA做崩溃收集？</h1><p>项目主页：<a href="https://github.com/ACRA/acra">https://github.com/ACRA/acra</a></p>
 <ol>
 <li> ACRA历史悠久，github显示最早的4.2.3的版本是2011年7月2日。</li>
 <li> Issues里不停的有人报问题，也在不停的发新的release，项目处于积极的持续维护的状态。</li>
