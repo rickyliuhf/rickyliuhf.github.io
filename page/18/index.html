@@ -186,6 +186,185 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E9%94%81%E6%9C%BA%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E9%94%81%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">SQLite锁机制</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-03-17 20:56:00" itemprop="dateCreated datePublished" datetime="2017-03-17T20:56:00+08:00">2017-03-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E9%94%81%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="数据库/SQLite锁机制/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h1 id="SQLite锁的粒度到哪里？"><a href="#SQLite锁的粒度到哪里？" class="headerlink" title="SQLite锁的粒度到哪里？"></a>SQLite锁的粒度到哪里？</h1><p>SQLite锁的是整个数据库文件，不支持页锁、表锁和行锁，粒度较粗。</p>
+<p>当一个连接要写数据库文件时，所有其他的连接都会阻塞，直到写数据的连接事务结束。</p>
+<p>SQLite 3.7.0 新增 Write-Ahead Log 机制改变了事务行为，读写可以并发。</p>
+<h1 id="为什么SQLite不支持表锁和行锁呢？"><a href="#为什么SQLite不支持表锁和行锁呢？" class="headerlink" title="为什么SQLite不支持表锁和行锁呢？"></a>为什么SQLite不支持表锁和行锁呢？</h1><p>支持高度的写并发会带来很大的复杂性，这将使SQLite的简单性无法保持。</p>
+<p>同时复杂性增大会增加运行设备电量的损害，对于手机这类这种电量敏感的设备比较重要。</p>
+<h1 id="SQLite锁机制是怎样的？"><a href="#SQLite锁机制是怎样的？" class="headerlink" title="SQLite锁机制是怎样的？"></a>SQLite锁机制是怎样的？</h1><p>有多个数据库连接同时访问同一个数据库，就产生了资源竞争，需要锁机制保证资源竞争的正确性</p>
+<p>数据库操作无非就是读和写，按道理普通的读写锁就可以实现，但高并发下读写锁仍然有优化的空间，为了提高整体的吞吐量，SQLite使用了锁逐步提升的机制</p>
+<p>SQLite共有5种锁状态：</p>
+<ol>
+<li> 无锁（unlocked）</li>
+<li> 共享（shared）</li>
+<li> 预留（reserved）</li>
+<li> 未决（pending）</li>
+<li> 排它（exclusive）</li>
+</ol>
+<p>每个数据库连接同一时刻只能处于其中一个状态</p>
+<p>无锁：</p>
+<ol>
+<li> 即使事务已经开始，在没有读写数据库前，都是无锁状态</li>
+</ol>
+<p>共享：</p>
+<ol>
+<li> 读数据库必须获得共享锁</li>
+<li> 多个数据库连接可以同时获得共享锁，即允许多个连接同时读数据库</li>
+<li> 写数据库前必须要释放所有的共享锁</li>
+</ol>
+<p>预留：</p>
+<ol>
+<li> 写数据需要先获取到预留锁</li>
+<li> 持有预留锁后就可以立即把数据写入缓存中，而不用竞争数据库文件，把可以不占用的数据库文件可以完成的事情提前完成，这样最大程度的减少独占数据库文件的时间</li>
+<li> 预留锁可以与共享锁共存</li>
+<li> 预留锁不影响其他已经持有共享锁的连接继续读数据库</li>
+<li> 预留锁不阻止其他连接获得新的共享锁，因为并不确定是否要立即写入数据库文件，可能之后还要修改数据库内容，提交事务的时候才知道后面不会再修改数据库了</li>
+<li> 一个数据库同时只能有一个预留锁存在</li>
+</ol>
+<p>未决：</p>
+<ol>
+<li> 当连接提交事务时，就要把缓存里的数据往数据库文件中写入，以保证事务的持久性</li>
+<li> 对数据库文件写数据前，需要保证没有连接再持有共享锁</li>
+<li> 但此时可能还有其他连接持有共享锁，需要等待这些连接释放共享锁后，才能写数据</li>
+<li> 同时要阻止新的连接获取共享锁，否则写数据一直得不到执行</li>
+<li> 所以从预留锁要转变为未决锁，来阻止新的连接获取共享锁</li>
+</ol>
+<p>排它：</p>
+<ol>
+<li> 所有共享锁释放后，未决锁提升为排他锁</li>
+<li> 排它锁和未决锁一样，会阻止新的连接获取共享锁，阻止读数据</li>
+<li> 获得排它锁后，就可以把缓存中的数据写入数据库文件</li>
+</ol>
+<p>参考资料：</p>
+<p>《SQLite权威指南（第2版）》116页  第4章 SQLite中的高级SQL - 数据库锁</p>
+<h1 id="SQLite锁为什么搞这么多状态？"><a href="#SQLite锁为什么搞这么多状态？" class="headerlink" title="SQLite锁为什么搞这么多状态？"></a>SQLite锁为什么搞这么多状态？</h1><ul>
+<li>由于写数据时是排他的，其他连接无法读数据库，所以要尽可能的减少写数据时的耗时，才能提高系统整体的吞吐量。</li>
+<li>所以写数据时先获取预留锁，把可以在不占用数据库文件的事情提前做好。</li>
+<li>那些需要占用数据库文件才能做的事情留到获取到排他锁时再做。<ul>
+<li>获取排它锁前需要保证没有连接再获取共享锁。</li>
+<li>所以先从预留锁提升到未决锁，用来阻止新的共享锁的获取。</li>
+<li>等待已经获取的共享锁的连接执行完后释放了所有的共享锁，最后获取到排它锁写数据库文件。</li>
+</ul>
+</li>
+</ul>
+<h1 id="锁的状态转移过程是怎样的？"><a href="#锁的状态转移过程是怎样的？" class="headerlink" title="锁的状态转移过程是怎样的？"></a>锁的状态转移过程是怎样的？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828091837.png"></p>
+<h1 id="为什么事务的开始都要先获取未决锁，再获取共享锁？"><a href="#为什么事务的开始都要先获取未决锁，再获取共享锁？" class="headerlink" title="为什么事务的开始都要先获取未决锁，再获取共享锁？"></a>为什么事务的开始都要先获取未决锁，再获取共享锁？</h1><p>因为如果已经获得了未决锁，说明要占用数据库文件进行写操作，就不允许读了，而读数据库需要获得共享锁，这里就阻止别的连接获取共享锁。</p>
+<h1 id="有了预留锁，为什么还需要一个未决锁？未决锁存在的作用是什么？没有未决锁会发生什么？"><a href="#有了预留锁，为什么还需要一个未决锁？未决锁存在的作用是什么？没有未决锁会发生什么？" class="headerlink" title="有了预留锁，为什么还需要一个未决锁？未决锁存在的作用是什么？没有未决锁会发生什么？"></a>有了预留锁，为什么还需要一个未决锁？未决锁存在的作用是什么？没有未决锁会发生什么？</h1><p>获得预留锁时，读写可以并发执行，但是真正写数据库需要阻止共享锁获取。</p>
+<p>这样做可以提升系统整体的吞吐量。</p>
+<h1 id="SQLite锁机制需要注意什么？"><a href="#SQLite锁机制需要注意什么？" class="headerlink" title="SQLite锁机制需要注意什么？"></a>SQLite锁机制需要注意什么？</h1><p>注意死锁的发生</p>
+<h1 id="SQLite什么情况下会发生死锁？"><a href="#SQLite什么情况下会发生死锁？" class="headerlink" title="SQLite什么情况下会发生死锁？"></a>SQLite什么情况下会发生死锁？</h1><p>SQLite发生死锁时会抛出database is locked的异常信息。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828091949.png"></p>
+<p>参考《SQL权威指南（第2版）》117页 SQLite中的高级SQL - 死锁</p>
+<h1 id="如何避免死锁？"><a href="#如何避免死锁？" class="headerlink" title="如何避免死锁？"></a>如何避免死锁？</h1><p>用正确的事务类型来开启事务</p>
+<p>存在并发写数据，就开启immediate或exclusive事务，提供了同步机制</p>
+<p>SQLite有三种不同的事务类型：</p>
+<ol>
+<li> DEFERRED（推迟）</li>
+<li> MMEDIATE（立即）</li>
+<li> EXCLUSIVE（排它）</li>
+</ol>
+<p>事务类型在BEGIN命令中指定。</p>
+<p>一个deferred事务不获取任何锁，直到它需要锁的时候。而且BEGIN语句本身也不会做什么事情——它开始于UNLOCK状态；默认情况下是这样的。如果仅仅用BEGIN开始一个事务，那么事务就是DEFERRED的，同时它不会获取任何锁，当对数据库进行第一次读操作时，它会获取SHARED LOCK；同样，当进行第一次写操作时，它会获取RESERVED LOCK。</p>
+<p>由BEGIN开始的Immediate事务会试着获取RESERVED LOCK。如果成功，BEGIN IMMEDIATE保证没有别的连接可以写数据库。但是，别的连接可以对数据库进行读操作，但是RESERVED LOCK会阻止其它的连接BEGIN IMMEDIATE或者BEGIN EXCLUSIVE命令，SQLite会返回SQLITE_BUSY错误。这时你就可以对数据库进行修改操作，但是你不能提交，当你COMMIT时，会返回SQLITE_BUSY错误，这意味着还有其它的读事务没有完成，得等它们执行完后才能提交事务。</p>
+<p>Exclusive事务会试着获取对数据库的EXCLUSIVE锁。这与IMMEDIATE类似，但是一旦成功，EXCLUSIVE事务保证没有其它的连接，所以就可对数据库进行读写操作了。 上面那个例子的问题在于两个连接最终都想写数据库，但是他们都没有放弃各自原来的锁，最终，shared 锁导致了问题的出现。如果两个连接都以BEGIN IMMEDIATE开始事务，那么死锁就不会发生。在这种情况下，在同一时刻只能有一个连接进入BEGIN IMMEDIATE，其它的连接就得等待。BEGIN IMMEDIATE和BEGIN EXCLUSIVE通常被写事务使用。就像同步机制一样，它防止了死锁的产生。 基本的准则是：如果你在使用的数据库没有其它的连接，用BEGIN就足够了。但是，如果你使用的数据库在其它的连接也要对数据库进行写操作，就得使用BEGIN IMMEDIATE或BEGIN EXCLUSIVE开始你的事务。</p>
+<h1 id="Android中对SQLite开启的哪一种事务类型？"><a href="#Android中对SQLite开启的哪一种事务类型？" class="headerlink" title="Android中对SQLite开启的哪一种事务类型？"></a>Android中对SQLite开启的哪一种事务类型？</h1><p>SQLiteDatabase开启事务有两个方法：</p>
+<ol>
+<li> beginTransaction()开启exclusive事务类型</li>
+<li> beginTransactionNonExclusive()开启immediate事务类型</li>
+</ol>
+<h1 id="锁的状态存储在哪里？"><a href="#锁的状态存储在哪里？" class="headerlink" title="锁的状态存储在哪里？"></a>锁的状态存储在哪里？</h1><p>数据库文件是独立于进程的，多个进程可以访问同一个文件，所以数据库锁是存在数据库文件中的。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828092032.png"></p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828092040.png"></p>
+<p>参考《SQL权威指南（第2版）》159页  第5章 SQLite设计与概念 - 写事务</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E5%B9%B6%E5%8F%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +396,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -343,7 +522,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -521,7 +700,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -616,7 +795,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -753,7 +932,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -848,7 +1027,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -949,7 +1128,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1052,7 +1231,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1189,7 +1368,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
+                <time title="修改时间：2021-08-30 13:34:50" itemprop="dateModified" datetime="2021-08-30T13:34:50+08:00">2021-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1250,105 +1429,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Task/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Android/Android%20Task/" class="post-title-link" itemprop="url">Android Task</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-04-03 20:31:00" itemprop="dateCreated datePublished" datetime="2015-04-03T20:31:00+08:00">2015-04-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-29 23:24:24" itemprop="dateModified" datetime="2021-08-29T23:24:24+08:00">2021-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Android/Android%20Task/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android Task/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在日常开发过程中，只要涉及到activity，那么对task相关的东西总会或多或少的接触到，不过对task相关的一些配置的作用理解的还不是很透彻，官方文档在细节上说的也不够清楚，要透彻理解还是得自己写demo实践检验，所以便有了这篇总结。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/Android/Android%20Task/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/17/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><span class="page-number current">18</span>
+    <a class="extend prev" rel="prev" href="/page/17/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><span class="page-number current">18</span><a class="page-number" href="/page/19/">19</a><a class="extend next" rel="next" href="/page/19/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1416,20 +1500,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">180</span>
+          <span class="site-state-item-count">181</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">235</span>
+        <span class="site-state-item-count">237</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
