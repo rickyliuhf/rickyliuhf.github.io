@@ -9030,6 +9030,30 @@
       </tags>
   </entry>
   <entry>
+    <title>算法可以考察出候选人的哪些特质？</title>
+    <url>/%E9%9A%8F%E6%83%B3/%E7%AE%97%E6%B3%95%E5%8F%AF%E4%BB%A5%E8%80%83%E5%AF%9F%E5%87%BA%E5%80%99%E9%80%89%E4%BA%BA%E7%9A%84%E5%93%AA%E4%BA%9B%E7%89%B9%E8%B4%A8%EF%BC%9F/</url>
+    <content><![CDATA[<h1 id="算法题可以考察出什么特质？"><a href="#算法题可以考察出什么特质？" class="headerlink" title="算法题可以考察出什么特质？"></a>算法题可以考察出什么特质？</h1><ul>
+<li>是否有足够的基本功训练，愿意下笨功夫。</li>
+<li>是否能够找到事物的底层逻辑，进行抽象建模，把大问题拆解为一个个可执行的小步骤。</li>
+<li>是否能够简洁有力的说出解题思路和具体实现过程，表达好自己的观点。</li>
+<li>是否能够对不明确的问题细节发出有效的提问，明确问题没有理解偏差后再动手。</li>
+<li>编码是否熟练，是否了解所用语法、数据结构、库函数的特点。</li>
+<li>编码是否规范，变量和方法命名是否可读，代码排版是否整洁。</li>
+<li>是否考虑到极端边界情况，并能有效的分类归纳，简化处理。</li>
+<li>出错之后能否快速调试出问题所在并修正，对于不会的问题，是否能够求助沟通，沟通方式是否得体。</li>
+<li>能否分析出时间空间复杂度，能否给出最优解，注重性能。</li>
+<li>对于扩展的问题，能否深入思考，能否综合运用。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>随想</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>面试</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Android集合类-ArrayMap原理</title>
     <url>/%E9%9B%86%E5%90%88%E7%B1%BB/Android%E9%9B%86%E5%90%88%E7%B1%BB-ArrayMap%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h1 id="ArrayMap、SparseArray、HashMap的区别？"><a href="#ArrayMap、SparseArray、HashMap的区别？" class="headerlink" title="ArrayMap、SparseArray、HashMap的区别？"></a>ArrayMap、SparseArray、HashMap的区别？</h1><ul>
