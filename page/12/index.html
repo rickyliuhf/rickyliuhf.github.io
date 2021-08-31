@@ -186,6 +186,115 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/" class="post-title-link" itemprop="url">Android Activity启动流程</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-07-23 21:13:00" itemprop="dateCreated datePublished" datetime="2018-07-23T21:13:00+08:00">2018-07-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/Android%20Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android Activity启动流程/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h1 id="Activity的启动流程是怎样的？"><a href="#Activity的启动流程是怎样的？" class="headerlink" title="Activity的启动流程是怎样的？"></a>Activity的启动流程是怎样的？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828194324.png"></p>
+<h1 id="为什么Activity生命周期函数是运行在UI线程的"><a href="#为什么Activity生命周期函数是运行在UI线程的" class="headerlink" title="为什么Activity生命周期函数是运行在UI线程的?"></a>为什么Activity生命周期函数是运行在UI线程的?</h1><p>因为ActivityManagerService通过Binder通信给App进程的IApplicationThread这个Binder对象发送Activity生命周期的事件，而IApplicationThread是执行在Binder线程池中的，Activity生命周期函数需要执行在主线程，所以需要通过App进程的Handler转发一下，以执行在App进程的主线程。</p>
+<h1 id="ApplicationThread的作用是什么？"><a href="#ApplicationThread的作用是什么？" class="headerlink" title="ApplicationThread的作用是什么？"></a>ApplicationThread的作用是什么？</h1><p>ApplicationThread是ActivityThread的内部类，继承ApplicationThreadNative,也是一个Binder对象。在此处它是作为IApplicationThread对象的server端等待client端的请求然后进行处理，最大的client就是AMS。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationThread</span> <span class="keyword">extends</span> <span class="title">ApplicationThreadNative</span> </span>&#123;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">    schedulePauseActivity()</span><br><span class="line">    scheduleStopActivity()</span><br><span class="line">    scheduleResumeActivity()</span><br><span class="line">    scheduleSendResult()</span><br><span class="line">    scheduleLaunchActivity()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看出来它继承了ApplicationThreadNative的,并且它内部有非常多的scheduleXXX的方法，这些 schedulexxx的方法会进一步的通过往外发送消息给ActivityThread的mH这个消息队列来做处理。</p>
+<h1 id="两个Activity相互跳转的生命周期？"><a href="#两个Activity相互跳转的生命周期？" class="headerlink" title="两个Activity相互跳转的生命周期？"></a>两个Activity相互跳转的生命周期？</h1><p>A Activity跳转到B Activity</p>
+<p>A.onPause() -&gt; B.onCreate() -&gt; B.onStart() -&gt; B.onResume() -&gt; A.onStop()</p>
+<p>B Activity返回到A Activity</p>
+<p>B.onPause() -&gt; A.onStart() -&gt; A.onResume() -&gt; B.onStop() -&gt; B.onDestroy()</p>
+<p>一言以蔽之：</p>
+<ol>
+<li> 旧页面的onPause调用过后，才会调用新页面的onCreate</li>
+<li> 要进入的页面的onResume调用后，才会调用之前页面的onStop</li>
+</ol>
+<h1 id="什么情况下Activity会重建？"><a href="#什么情况下Activity会重建？" class="headerlink" title="什么情况下Activity会重建？"></a>什么情况下Activity会重建？</h1><p>用户期望 Activity 的界面状态在整个配置变更（例如旋转或切换到多窗口模式）期间保持不变。但是，默认情况下，系统会在发生此类配置更改时销毁 Activity，从而清除存储在 Activity 实例中的任何界面状态。同样，如果用户暂时从您的应用切换到其他应用，并在稍后返回您的应用，他们也希望界面状态保持不变。但是，当用户离开应用且您的 Activity 停止时，系统可能会销毁该应用的进程。</p>
+<h1 id="Activity重建的时候怎么保存和恢复参数？"><a href="#Activity重建的时候怎么保存和恢复参数？" class="headerlink" title="Activity重建的时候怎么保存和恢复参数？"></a>Activity重建的时候怎么保存和恢复参数？</h1><ol>
+<li> onSaveInstance、onRestoreInstance方法，把对象序列化传递到Bundle对象中</li>
+<li> 单例存储。</li>
+<li> 数据持久化，重建后再读取。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Zygote/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +326,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -312,7 +421,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -450,7 +559,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -581,7 +690,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -706,7 +815,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -824,7 +933,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -926,7 +1035,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1036,7 +1145,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1210,7 +1319,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
+                <time title="修改时间：2021-08-31 12:17:05" itemprop="dateModified" datetime="2021-08-31T12:17:05+08:00">2021-08-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1280,114 +1389,6 @@
 <li><a target="_blank" rel="noopener" href="https://juejin.im/post/5c66c47851882562e5443491">ArrayList的扩容机制</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/questionTerminal/2a42d992a5d74435b625415ce511bb69">ArrayList和LinkedList有什么区别？</a></li>
 </ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-LinkedHashMap/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-LinkedHashMap/" class="post-title-link" itemprop="url">Java集合类-LinkedHashMap</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-05-11 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-11T20:00:00+08:00">2018-05-11</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-31 12:16:10" itemprop="dateModified" datetime="2021-08-31T12:16:10+08:00">2021-08-31</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-LinkedHashMap/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-LinkedHashMap/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="LinkedHashMap特点"><a href="#LinkedHashMap特点" class="headerlink" title="LinkedHashMap特点"></a>LinkedHashMap特点</h1><p>作用：记录HashMap插入元素的顺序或访问元素的顺序</p>
-<p>原理：双向链表和哈希表的结合</p>
-<p>使用场景：适用于实现缓存，用空间换时间，如LRU</p>
-<p>继承HashMap，大部分操作和HashMap实现一致</p>
-<h1 id="元素的顺序在访问时是怎样体现的？"><a href="#元素的顺序在访问时是怎样体现的？" class="headerlink" title="元素的顺序在访问时是怎样体现的？"></a>元素的顺序在访问时是怎样体现的？</h1><p>构造函数可以指定accessOrder：</p>
-<ul>
-<li>true表示记录元素访问顺序。</li>
-<li>false表示记录元素插入的顺序，默认为false。</li>
-</ul>
-<p>创建一个记录元素访问顺序的LinkedHashMap：<br><code>new LinkedHashMap(16, 0.75f, true)</code></p>
-<ul>
-<li>记录元素插入顺序时，通过迭代器遍历时，先插入的元素会先访问到。</li>
-<li>记录元素访问顺序时，刚访问过的元素会调整到链表末尾，通过迭代器遍历时，先遍历到的是最久没有被访问过的元素。</li>
-</ul>
-<h1 id="为什么最新插入和最后访问的要放在末尾？"><a href="#为什么最新插入和最后访问的要放在末尾？" class="headerlink" title="为什么最新插入和最后访问的要放在末尾？"></a>为什么最新插入和最后访问的要放在末尾？</h1><p>插入新元素默认就是在链表尾部插入，是符合常规逻辑的，最新访问的放在末尾也就是统一这个规则了。</p>
-<h1 id="LinkedHashMap实现原理？"><a href="#LinkedHashMap实现原理？" class="headerlink" title="LinkedHashMap实现原理？"></a>LinkedHashMap实现原理？</h1><p>双向链表的结点类继承HashMap桶中链表的结点类，增加了前后指针，实际效果如下：</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825215429.png"></p>
-<h1 id="LinkedHashMap有什么应用？"><a href="#LinkedHashMap有什么应用？" class="headerlink" title="LinkedHashMap有什么应用？"></a>LinkedHashMap有什么应用？</h1><p>LRU缓存。</p>
-<p>用LinkedHashMap手撕 <a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/lru-cache/">LeetCode.146. LRU 缓存机制（难度：中等）</a></p>
-<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LRUCache</span></span>(<span class="keyword">private</span> <span class="keyword">val</span> capacity: <span class="built_in">Int</span>) &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> map = LinkedHashMap&lt;<span class="built_in">Int</span>, <span class="built_in">Int</span>&gt;(<span class="number">16</span>, <span class="number">0.75f</span>, <span class="literal">true</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">get</span><span class="params">(key: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> map[key] ?: -<span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">put</span><span class="params">(key: <span class="type">Int</span>, value: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (map.size == capacity &amp;&amp; !map.containsKey(key)) &#123;</span><br><span class="line">            <span class="keyword">val</span> oldest = map.iterator().next()</span><br><span class="line">            map.remove(oldest.key)</span><br><span class="line">        &#125;</span><br><span class="line">        map[key] = value</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 
       
     </div>
@@ -1474,7 +1475,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">181</span>
+          <span class="site-state-item-count">182</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1487,7 +1488,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-count">237</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
