@@ -7252,6 +7252,110 @@
       </tags>
   </entry>
   <entry>
+    <title>Android - 如何设计一个插件化框架？</title>
+    <url>/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Android%20-%20%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E6%8F%92%E4%BB%B6%E5%8C%96%E6%A1%86%E6%9E%B6/</url>
+    <content><![CDATA[<h1 id="什么是插件化？"><a href="#什么是插件化？" class="headerlink" title="什么是插件化？"></a>什么是插件化？</h1><p>对现有的程序添加额外的功能组件，只需要遵循一定的协议，插件可以随时更新、卸载，使我们的程序更加灵活。</p>
+<h1 id="为什么要插件化？有什么用？"><a href="#为什么要插件化？有什么用？" class="headerlink" title="为什么要插件化？有什么用？"></a>为什么要插件化？有什么用？</h1><ol>
+<li> 快速发布功能、修复bug，减少升级成本</li>
+<li> 减少APK体积   </li>
+<li> 解耦独立模块<span id="more"></span></li>
+</ol>
+<h1 id="实现插件化从哪几个方面着手？"><a href="#实现插件化从哪几个方面着手？" class="headerlink" title="实现插件化从哪几个方面着手？"></a>实现插件化从哪几个方面着手？</h1><ol>
+<li> 如何加载插件Apk里的类</li>
+<li> 如何加载插件Apk里的资源</li>
+<li> 如何管理插件里四大组件的生命周期</li>
+</ol>
+<h1 id="如何加载插件Apk的类？"><a href="#如何加载插件Apk的类？" class="headerlink" title="如何加载插件Apk的类？"></a>如何加载插件Apk的类？</h1><h2 id="正常的类加载过程是怎样的？"><a href="#正常的类加载过程是怎样的？" class="headerlink" title="正常的类加载过程是怎样的？"></a>正常的类加载过程是怎样的？</h2><p>Java和Android加载一个类基本流程是一样的，是通过ClassLoader的loadClass()方法来加载类。</p>
+<p>loadClass()会先查看类有没有加载并缓存过，有缓存直接取；类没有加载过，用父ClassLoader去加载类，父ClassLoader也没有加载到，就用当前ClassLoader的findClass()方法去加载，findClass()方法根据指定的路径调用defineClass()方法把二进制转换为Class类并返回。</p>
+<h2 id="类所在的路径是怎么告诉ClassLoader的呢？"><a href="#类所在的路径是怎么告诉ClassLoader的呢？" class="headerlink" title="类所在的路径是怎么告诉ClassLoader的呢？"></a>类所在的路径是怎么告诉ClassLoader的呢？</h2><p>Android的类文件是放在dex文件中，dex文件打包在apk文件里。</p>
+<p>Android的类加载器主要是DexClassLoader和PathClassLoader，这两个加载器没什么区别，只是构造函数参数不一样，父类都是BaseDexClassLoader，构造函数可以传dex文件的路径，多个dex文件路径用分号分割，也可以传包含了dex文件的apk文件路径。</p>
+<h2 id="如何加载插件Apk里的类？"><a href="#如何加载插件Apk里的类？" class="headerlink" title="如何加载插件Apk里的类？"></a>如何加载插件Apk里的类？</h2><p>就是直接创建一个DexClassLoader，把插件Apk路径传给DexClassLoader，再调用ClassLoader的loadClass()方法就可以加载插件Apk里的类。</p>
+<h2 id="宿主和插件的类如何互相访问？"><a href="#宿主和插件的类如何互相访问？" class="headerlink" title="宿主和插件的类如何互相访问？"></a>宿主和插件的类如何互相访问？</h2><h3 id="插件访问宿主的类"><a href="#插件访问宿主的类" class="headerlink" title="插件访问宿主的类"></a>插件访问宿主的类</h3><p>把宿主的ClassLoader作为插件ClassLoader的父ClassLoader，在插件中访问宿主的类时，ClassLoader的双亲委派机制会先去父ClassLoader里查找类。</p>
+<h3 id="宿主访问插件的类"><a href="#宿主访问插件的类" class="headerlink" title="宿主访问插件的类"></a>宿主访问插件的类</h3><ol>
+<li>插件有自己的ClassLoader，宿主先获取插件的ClassLoader来加载插件的类，然后通过反射调用插件的类的方法。这是多ClassLoader模式。</li>
+<li> 插件把自己的ClassLoader与宿主的Classloader合并，DexClassLoader里有个数组保存所有dex文件的路径，通过反射可以修改这个数组向里面添加元素。宿主可以直接访问插件的类，不需要通过反射。这叫单ClassLoader模式。热修复有一种方式就是把补丁的dex路径插入到DexClassLoader里dex数组的第一个位置，让APP加载类的时候优先加载补丁中的类。</li>
+</ol>
+<p>VirtualApk默认是合并宿主和插件的ClassLoader的。</p>
+<h3 id="使用单ClassLoader模式好处？"><a href="#使用单ClassLoader模式好处？" class="headerlink" title="使用单ClassLoader模式好处？"></a>使用单ClassLoader模式好处？</h3><p>如果宿主访问插件比较频繁，用单ClassLoader性能会更高一点，因为多ClassLoader时，要通过反射调用插件的类，性能会比较低。</p>
+<h4 id="单ClassLoader的问题"><a href="#单ClassLoader的问题" class="headerlink" title="单ClassLoader的问题"></a>单ClassLoader的问题</h4><p>宿主和插件引用同一个第三方库，都编译打包到apk，在同一个ClassLoader里类就重复了，所以插件项目编译时需要通过配置指定宿主项目，如果插件中依赖的库宿主里也有的话，会自动去掉插件的依赖库。对于资源的共享也是一样的去重处理。</p>
+<h3 id="多ClassLoader模式存在的意义是什么？"><a href="#多ClassLoader模式存在的意义是什么？" class="headerlink" title="多ClassLoader模式存在的意义是什么？"></a>多ClassLoader模式存在的意义是什么？</h3><p>为了方便的卸载插件的类，节约内存。</p>
+<p>因为ClassLoader要被垃圾回收的前提是，这个ClassLoader下所有类都不再使用了，才可以被安全的回收。</p>
+<p>如果是单ClassLoader，宿主里的类肯定会一直用到的，所以不会被回收。</p>
+<p>但是如果是多ClassLoader，可以确保在插件的类不被调用后，卸载掉这个插件，这样插件的ClassLoader也没有地方使用了，就可以垃圾回收，ClassLoader加载的类也可以被垃圾回收了，节约内存。</p>
+<h1 id="如何加载插件Apk里的资源？"><a href="#如何加载插件Apk里的资源？" class="headerlink" title="如何加载插件Apk里的资源？"></a>如何加载插件Apk里的资源？</h1><p>Android里资源是通过Resources和AssetManager两个类获取的。</p>
+<p>既然要获取资源肯定要知道资源的位置在哪，肯定得有个添加资源文件路径的地方。</p>
+<p>所以得梳理一下Resources和AssetManager是从哪找资源的。</p>
+<h2 id="Resources和AssetManager是加载资源的流程"><a href="#Resources和AssetManager是加载资源的流程" class="headerlink" title="Resources和AssetManager是加载资源的流程"></a>Resources和AssetManager是加载资源的流程</h2><p>Resources类通过资源id去查找文件资源时，会先在resources.arsc里找到资源id对应的资源文件名，再委托给AssetManager去打开文件。</p>
+<p>所以Resources中持有一个AssetManager的实例对象，可以通过Resources的构造函数传入。</p>
+<p>通过Context获取AssetManager，最终也是获取的Resources对象里的AssetManager对象。</p>
+<h2 id="加载插件里资源的思路"><a href="#加载插件里资源的思路" class="headerlink" title="加载插件里资源的思路"></a>加载插件里资源的思路</h2><p>AssetManager里有一个addAssetPath()的方法是可以添加资源文件路径的。</p>
+<p>所以想加载插件里的资源，就是创建一个新的AssetManager，通过addAssetPath()方法添加插件apk的路径，再创建一个新的Resources对象包含这个AssetManager，就可以通过这个Resources对象获取插件资源了。</p>
+<h2 id="如何让插件里的代码调用到自定义的Resources对象？"><a href="#如何让插件里的代码调用到自定义的Resources对象？" class="headerlink" title="如何让插件里的代码调用到自定义的Resources对象？"></a>如何让插件里的代码调用到自定义的Resources对象？</h2><p>接下来的问题是，单独创建一个插件的Resources还发挥不了作用，因为插件的代码里访问资源都是通过Context的getResources()方法来获取的，如果Context是宿主的Context，那么获取资源都是在宿主应用的资源路径下寻找的。</p>
+<p>除非把插件的资源路径合并到宿主的Resources对象中，否则就得想办法让插件代码里所有Context对象的getResources()方法返回插件的Resources对象。</p>
+<p>那么就要寻找所有Context存在的地方。</p>
+<h2 id="Context都是怎么获取的？"><a href="#Context都是怎么获取的？" class="headerlink" title="Context都是怎么获取的？"></a>Context都是怎么获取的？</h2><p>首先想到Application是Context的子类，有调用Context.getResources()方法的可能性。</p>
+<p>其次四大组件中是可以获取到Context的，其中：</p>
+<ol>
+<li> Activity和Service是Context的子类</li>
+<li> BroadcaseReceiver不是Context子类，但是onReceive()方法中有Context参数</li>
+<li> ContentProvider不是Context子类，但是在attachInfo()方法可以传Context过来，在ContentProvider中通过getContext()方法获取context对象</li>
+</ol>
+<p>只要想办法让这些地方的Context的getResources()方法返回插件的Resources对象就行了。</p>
+<p>这就要搞清楚Context内部逻辑，看怎么样可以最方便的实现我们的目的。</p>
+<h2 id="Context的继承关系"><a href="#Context的继承关系" class="headerlink" title="Context的继承关系"></a>Context的继承关系</h2><p>Context只是一个接口，ContextImpl是具体的功能实现类，ContextWrapper是一个装饰器，创建一个ContextWrapper时会要求传一个baseContext，这个baseContext一般情况都是ContextImpl对象。</p>
+<h3 id="为什么要搞一个ContextWrapper出来装饰一下Context？"><a href="#为什么要搞一个ContextWrapper出来装饰一下Context？" class="headerlink" title="为什么要搞一个ContextWrapper出来装饰一下Context？"></a>为什么要搞一个ContextWrapper出来装饰一下Context？</h3><p>因为可以方便添加功能和限制功能，比如BroadcaseReceiver的onReceive()方法有个参数是context，这个context对象是ReceiverRestrictedContext的实例，限制在广播接收器里禁止bindService。</p>
+<h2 id="Application和Service的getResources-方法处理"><a href="#Application和Service的getResources-方法处理" class="headerlink" title="Application和Service的getResources()方法处理"></a>Application和Service的getResources()方法处理</h2><p>Application和Service都是直接继承ContextWrapper，它两都有attach方法，attach中可以传Context过来作为ContextWrapper的baseContext。</p>
+<p>在这里，我们可以让插件自定义的一个Context，让插件自定义的Context中的getResources()方法返回插件的Resources。</p>
+<p>然后在插件的Application和Service对象创建后，调用attach方法时把插件的Context传过来。</p>
+<h2 id="ContentProvider的context替换"><a href="#ContentProvider的context替换" class="headerlink" title="ContentProvider的context替换"></a>ContentProvider的context替换</h2><p>ContentProvider的context也是通过一个attachInfo方法传递过来的，在创建ContentProvider后调用attachInfo时，传入插件的Context即可。</p>
+<h2 id="Activity的getResources-方法处理"><a href="#Activity的getResources-方法处理" class="headerlink" title="Activity的getResources()方法处理"></a>Activity的getResources()方法处理</h2><p>Activity继承的是ContextThemeWrapper，ContextThemeWrapper中有个mResources属性，Activity的getResources()方法获取的就是这个Resources对象，所以需要通过反射替换它，可以在插件的Activity类被创建后进行替换。</p>
+<h3 id="ContextThemeWrapper作用？"><a href="#ContextThemeWrapper作用？" class="headerlink" title="ContextThemeWrapper作用？"></a>ContextThemeWrapper作用？</h3><p>ContextThemeWrapper继承ContextWrapper，增加了主题样式覆盖的功能。</p>
+<p>ContextThemeWrapper构造函数可以传一个主题样式id过来，用style中的各个属性，覆盖原有Context中的属性。</p>
+<h3 id="Activity在AndroidManifest中设置的主题是什么时候被设置的？"><a href="#Activity在AndroidManifest中设置的主题是什么时候被设置的？" class="headerlink" title="Activity在AndroidManifest中设置的主题是什么时候被设置的？"></a>Activity在AndroidManifest中设置的主题是什么时候被设置的？</h3><p>在ActivityThread中performLaunchActivity启动activity的时候，在创建activity实例后，调用完activity.attach()后，就会设置activity主题，AndroidManifest里activity的主题，是提前解析好的存储在一个ActivityInfo对象里的。</p>
+<h2 id="BroadcaseReceiver的onReceive-的context参数处理"><a href="#BroadcaseReceiver的onReceive-的context参数处理" class="headerlink" title="BroadcaseReceiver的onReceive()的context参数处理"></a>BroadcaseReceiver的onReceive()的context参数处理</h2><p>插件的BroadcaseReceiver不管是静态的还是动态的，都会注册到宿主Context的动态广播，所以插件里的广播接收器收到的Context是宿主的Context，还没办法注入插件的Context，这一点要注意。</p>
+<p>如果在这里需要插件的Context，可以通过引用公共库，通过单例对象获取。</p>
+<h3 id="BroadcaseReceiver-onReceive-的调用逻辑"><a href="#BroadcaseReceiver-onReceive-的调用逻辑" class="headerlink" title="BroadcaseReceiver.onReceive()的调用逻辑"></a>BroadcaseReceiver.onReceive()的调用逻辑</h3><ul>
+<li>ApplicationThread.scheduleReceiver() -&gt; ActivityThread.sendMessage(H.RECEIVER,r) -&gt; ActivityThread.handleReceiver() -&gt; BroadcaseReceiver.onReceive()</li>
+<li>ReceiverDispatcher.performReceive() -&gt; mActivityThread.post(args.getRunnable()) -&gt; receiver.onReceive(mContext,intent)</li>
+</ul>
+<h2 id="宿主和插件怎么互相访问资源？"><a href="#宿主和插件怎么互相访问资源？" class="headerlink" title="宿主和插件怎么互相访问资源？"></a>宿主和插件怎么互相访问资源？</h2><p>把插件和宿主的资源进行合并。</p>
+<h2 id="插件和宿主的资源如何合并？"><a href="#插件和宿主的资源如何合并？" class="headerlink" title="插件和宿主的资源如何合并？"></a>插件和宿主的资源如何合并？</h2><p>把宿主和所有插件的apk路径都添加到一个Resources对象里去。</p>
+<h2 id="怎么让合并的Resources对象在宿主和插件中在宿主中生效？"><a href="#怎么让合并的Resources对象在宿主和插件中在宿主中生效？" class="headerlink" title="怎么让合并的Resources对象在宿主和插件中在宿主中生效？"></a>怎么让合并的Resources对象在宿主和插件中在宿主中生效？</h2><p>插件的Application和四大组件的对象创建都是自己可控的，都是可以在创建对象后传入插件的Context来生效，对Activity是反射替换父类的mResources属性来生效。</p>
+<p>但在宿主中就没法这么做了，因为宿主的四大组件创建流程宿主自己是不可控的，所以得手动替换所有存储Resources的地方。</p>
+<p>不同的Android版本Resources存储的地方不一样，所以要针对每个版本适配，需要梳理一下每个Android版本Resources对象获取和创建的过程。</p>
+<p>对Context的getResources()方法的调用一般都会转发给baseContext，baseContext基本都是ContextImpl，ContextImpl的Resources通过LoadedApk和ResourcesManager获取的，这两个都是单例，对Resources有缓存，把缓存的地方替换掉，之后再创建Activity和Service</p>
+<p>ContentProvider和BroadcaseReceiver里的context对象都是application对象，所以把application对象里的Resources也得替换。</p>
+<h2 id="资源合并会有什么问题？"><a href="#资源合并会有什么问题？" class="headerlink" title="资源合并会有什么问题？"></a>资源合并会有什么问题？</h2><p>因为资源是独立编译的，所以资源id会重复。</p>
+<h2 id="宿主和插件的资源id冲突怎么解决？"><a href="#宿主和插件的资源id冲突怎么解决？" class="headerlink" title="宿主和插件的资源id冲突怎么解决？"></a>宿主和插件的资源id冲突怎么解决？</h2><p>资源id格式分为package id、资源类型、具体资源id，package id所有普通应用默认值都是一样的，所以想办法修改package id就行了。</p>
+<p>APP编译会产生一个resources.arsc文件，存储了资源id到资源路径的映射，可以自定义一个gradle transform，在资源编译完成后，修改resources.arsc重新编排id，重新生成R文件，插件项目编译时会要求配置一个package id，就是用来重新编排资源id的。</p>
+<h1 id="如何启动插件里的Activity？"><a href="#如何启动插件里的Activity？" class="headerlink" title="如何启动插件里的Activity？"></a>如何启动插件里的Activity？</h1><p>先在宿主的AndroidManifest里预埋各种launchMode的占坑activity标签。</p>
+<p>然后需要拦截宿主启动Activity的过程，Context的startActivity方法在APP这边最终会统一调用到Instrumentation的execStartActivity方法，通过发射和动态代理拦截这个方法，把Intent中要启动的插件的Activity类和插件包名存入Intent的参数中，把Intent中要启动的类修改为占坑的类，这样可以绕过ActivityManagerService对Activity是否存在于AndroidManifest的校验。</p>
+<p>ActivityManagerService校验过后，会向APP进程发送创建Activity对象的请求，会调用Instrumentation的newActivity方法，这个时候从Intent参数中取出插件的类名，调用原来的Instrumentation的newActivity方法，传递插件的ClassLoader和插件的Activity类名。</p>
+<h2 id="Activity的后续生命周期如何响应？"><a href="#Activity的后续生命周期如何响应？" class="headerlink" title="Activity的后续生命周期如何响应？"></a>Activity的后续生命周期如何响应？</h2><p>ActivityManagerService会在Activity启动时创建一个Token对象来标识Activity，不会用Activity类名来标识，后续ActivityManagerService对Activity的生命周期通知都是用Token来自动管理，开发者无需手动管理。</p>
+<h1 id="如何启动插件的Service？"><a href="#如何启动插件的Service？" class="headerlink" title="如何启动插件的Service？"></a>如何启动插件的Service？</h1><ul>
+<li>在AndroidManifest中预埋StubService。</li>
+<li>hook系统ActivityThread中的ActivityManagerProxy对象的startService方法。</li>
+<li>startService()时把要启动的Service替换为预埋的StubService，插件的Service信息存入Intent。</li>
+<li>在StubService中读取插件Service信息，创建插件的Service，并手动调用生命周期方法。</li>
+</ul>
+<h1 id="如何启动插件的BroadcaseReceiver？"><a href="#如何启动插件的BroadcaseReceiver？" class="headerlink" title="如何启动插件的BroadcaseReceiver？"></a>如何启动插件的BroadcaseReceiver？</h1><p>解析插件的AndroidManifest，将静态注册的广播转为动态的。</p>
+<h1 id="如何启动插件的Content-Provider？"><a href="#如何启动插件的Content-Provider？" class="headerlink" title="如何启动插件的Content Provider？"></a>如何启动插件的Content Provider？</h1><p>类似于Service的处理。</p>
+<p>在宿主AndroidManifest中添加占坑的ContentProvider。</p>
+<p>对插件ContentProvider的所有调用都会转发给占坑的ContentProvider。</p>
+]]></content>
+      <categories>
+        <category>系统设计</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>Context</tag>
+        <tag>插件化</tag>
+        <tag>系统设计</tag>
+        <tag>ClassLoader</tag>
+        <tag>Resources</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>设计一个崩溃收集SDK应该考虑哪些因素？</title>
     <url>/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E5%B4%A9%E6%BA%83%E6%94%B6%E9%9B%86SDK%E5%BA%94%E8%AF%A5%E8%80%83%E8%99%91%E5%93%AA%E4%BA%9B%E5%9B%A0%E7%B4%A0%EF%BC%9F/</url>
     <content><![CDATA[<h1 id="设计一个崩溃收集SDK应该考虑哪些因素？"><a href="#设计一个崩溃收集SDK应该考虑哪些因素？" class="headerlink" title="设计一个崩溃收集SDK应该考虑哪些因素？"></a>设计一个崩溃收集SDK应该考虑哪些因素？</h1><h2 id="包体积"><a href="#包体积" class="headerlink" title="包体积"></a>包体积</h2><p>核心框架保持尽可能精简，不依赖任何第三方库，保证增大集成SDK的App的体积。</p>
@@ -8562,9 +8666,9 @@
         <category>虚拟机</category>
       </categories>
       <tags>
+        <tag>ClassLoader</tag>
         <tag>虚拟机</tag>
         <tag>类加载器</tag>
-        <tag>ClassLoader</tag>
         <tag>双亲委派</tag>
         <tag>ContextClassLoader</tag>
       </tags>
