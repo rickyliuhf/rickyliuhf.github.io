@@ -186,6 +186,192 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-volatile/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-volatile/" class="post-title-link" itemprop="url">Java并发-volatile</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-22 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-22T20:00:00+08:00">2017-10-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-volatile/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-volatile/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="volatile综述"><a href="#volatile综述" class="headerlink" title="volatile综述"></a>volatile综述</h1><p>volatile主要保证两点</p>
+<ol>
+<li> 变量的值在多线程之间是可见的</li>
+<li> 阻止指令重排序，间接的保证变量值的可见性</li>
+</ol>
+<p>但不保证原子性，所以开销比synchronized加锁要小</p>
+<p>可见性的解释涉及到java内存模型，每个线程都有自己的私有内存，对应堆中的虚拟机栈中，当多个线程访问主存上同一个变量时，会拷贝变量到各自私有线程中，线程对变量做出修改都是在私有内存中的修改，线程并不知道各自的修改值，也就是所谓的不可见。</p>
+<p>用volatile修饰变量后，对变量的修改会立刻刷新到主存，读volatile变量也会从主存去读取，保证可见性，但这让缓存失效，牺牲了一定的访问速度。</p>
+<p>指令重排序有好几个层面的，有CPU层面和编译器层面的。</p>
+<p>为什么要进行指令重排序呢？是为了提高CPU利用率。</p>
+<p>CPU层面的指令重排序是因为防止CPU指令流水线的停顿，指令流水线是做什么的呢？一条指令可以分为多个执行步骤，每个执行步骤可以由多个功能单元的硬件来执行，这样就不用串行的执行指令了，可以让多个功能单元并行的执行指令的不同的步骤，多个指令的执行速度一下提升好几倍。但是如果指令之间存在数据依赖，流水线就只能停顿等待，但是如果把没有依赖的指令重排序一下，就不用停顿等待了，这样CPU利用率就提高了。</p>
+<p>编译器的重排序要达到的目的也是提高CPU利用率。</p>
+<p>检查编译器有没有做重排序，可以开两个线程做验证，给两个变量a1、a2赋初始值0，线程1执行两条语句，先给a1赋值1，然后打印a2，线程2也执行两条语句，先给a2赋值1，然后打印a1，正常执行结果是打印1和1，执行很多次过后会发现有一次打印出来的两个结果是10、01甚至00，打印语句被重排序到前面去先执行了。</p>
+<p>既然指令重排序这么好，为什么还要阻止呢？</p>
+<p>因为指令重排序虽然不会影响单线程的代码语义，但是在多线程下会影响程序运行的正确性，有时候需要手动阻止。这个可以写代码验证的。</p>
+<p>volatile阻止指令重排序具体是通过内存屏障来实现的。</p>
+<p>内存屏障分为读屏障和写屏障，读屏障将内存数据拷贝到缓存，写屏障将缓存数据刷新到内存。</p>
+<p>volatile写操作之前插入StoreStore屏障，之后插入StoreLoad屏障</p>
+<p>volatile写操作volatile读操作之后插入LoadLoad屏障和LoadStore屏障</p>
+<p>内存屏障有两个作用：</p>
+<ol>
+<li> 阻止内存屏障两侧的指令重排序</li>
+<li> 强制把缓存数据回写到主内存，对所有线程可见</li>
+</ol>
+<p>但也不能总是用volatile来保证有序性，那样太麻烦了。所有Java内存模型规定了一个happens-before原则，保证前一个操作的结果对后续操作是可见的，来帮助开发者辅助判断代码是否有线程安全的问题。</p>
+<p>比如</p>
+<ol>
+<li> 一个线程内必须保持语义的串行，按照代码顺序执行</li>
+<li> 解锁操作要发生在对这个锁的加锁操作之前</li>
+<li> 线程start()方法先于线程的每个动作</li>
+</ol>
+<p>在多线程中需要修改和读取的变量，不需要保证原子性的，但要保证可见性的，就要用volatile修饰</p>
+<p>一个典型的使用场景是双重检查锁定的单例模式，对单例对象加volatile修饰，以防止new对象的时候发生指令重排序，进而导致得到了一个对象的引用但是对象还没有初始化。</p>
+<h1 id="volatile解决了什么问题？"><a href="#volatile解决了什么问题？" class="headerlink" title="volatile解决了什么问题？"></a>volatile解决了什么问题？</h1><ol>
+<li> 保证变量的可见性，多线程可读取到变量最新修改值</li>
+<li> 保证变量的有序性，阻止指令重排序</li>
+</ol>
+<h1 id="可见性是什么意思？"><a href="#可见性是什么意思？" class="headerlink" title="可见性是什么意思？"></a>可见性是什么意思？</h1><p>首先要介绍Java内存模型，Java的数据都存储在主存中，每个线程读写主存的数据时，都会把数据拷贝到线程自己的工作内存中再进行读写，工作内存可以理解为线程自己的缓存，多个线程对同一个数据修改时，修改的都是线程自己工作内存的数据拷贝，多个线程的工作内存之间是非共享的，对数据做出修改后互相不可见。</p>
+<h1 id="volatile是如何保证可见性的？"><a href="#volatile是如何保证可见性的？" class="headerlink" title="volatile是如何保证可见性的？"></a>volatile是如何保证可见性的？</h1><p>多线程读写主存中存储的某个volatile变量时，会把这个变量所在的内存块都复制到线程的工作内存，当某个线程修改了工作内存中的volatile变量，会立即将新数据写入共享内存，其他线程的工作内存中这一缓存块会被标记失效，被要求重新从共享内存读取数据，保证读取到的是最新的值。</p>
+<p>可以参考缓存一致性协议来理解。</p>
+<h1 id="为什么要有指令重排序，指令重排序有什么好处？"><a href="#为什么要有指令重排序，指令重排序有什么好处？" class="headerlink" title="为什么要有指令重排序，指令重排序有什么好处？"></a>为什么要有指令重排序，指令重排序有什么好处？</h1><p>减少CPU空等，提高CPU整体的吞吐量。</p>
+<p>编译器层面有编译器对指令顺序的优化。</p>
+<p>CPU层面有指令流水线对指令执行的优化。</p>
+<h1 id="虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？"><a href="#虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？" class="headerlink" title="虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？"></a>虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？</h1><p>通过内存屏障来实现。</p>
+<p>内存屏障之前所有的写操作都要回写到主存，内存屏障之后的所有读操作都能获取内存屏障之前的所有写操作的最新结果，这样就保证了可见性。</p>
+<p>因此也就禁止把内存屏障之后的指令重排序到内存屏障之前。</p>
+<p>先简单了解两个指令：</p>
+<ul>
+<li>Store：将处理器缓存的数据刷新到内存中。</li>
+<li>Load：将内存存储的数据拷贝到处理器的缓存中。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><strong>屏障类型</strong></th>
+<th><strong>指令示例</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LoadLoad  Barriers</td>
+<td>Load1;LoadLoad;Load2</td>
+<td>该屏障确保Load1数据的装载先于Load2及其后所有装载指令的的操作</td>
+</tr>
+<tr>
+<td>StoreStore  Barriers</td>
+<td>Store1;StoreStore;Store2</td>
+<td>该屏障确保Store1立刻刷新数据到内存(使其对其他处理器可见)的操作先于Store2及其后所有存储指令的操作</td>
+</tr>
+<tr>
+<td>LoadStore  Barriers</td>
+<td>Load1;LoadStore;Store2</td>
+<td>确保Load1的数据装载先于Store2及其后所有的存储指令刷新数据到内存的操作</td>
+</tr>
+<tr>
+<td>StoreLoad  Barriers</td>
+<td>Store1;StoreLoad;Load2</td>
+<td>该屏障确保Store1立刻刷新数据到内存的操作先于Load2及其后所有装载装载指令的操作。它会使该屏障之前的所有内存访问指令(存储指令和访问指令)完成之后,才执行该屏障之后的内存访问指令</td>
+</tr>
+</tbody></table>
+<h1 id="volatile为什么不能保证原子性？"><a href="#volatile为什么不能保证原子性？" class="headerlink" title="volatile为什么不能保证原子性？"></a>volatile为什么不能保证原子性？</h1><p>因为一个volatile变量的操作，比如i++，本身多个字节码指令，并且每条指令也不一定是原子化的，所以volatile变量的操作也不可能是原子化的。</p>
+<p>这个可以用程序验证，volatile变量初始值为0，两个线程分别对其自增一万次，最后变量的值是小于两万的。</p>
+<p>可以从字节码指令看出来</p>
+<p>如下的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileDemo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> value = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">increament</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        value++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后value++的字节码指令如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GETFIELD VolatileDemo.value : I</span><br><span class="line">ICONST_1</span><br><span class="line">IADD</span><br><span class="line">PUTFIELD VolatileDemo.value : I</span><br></pre></td></tr></table></figure>
+<p>GETFIELD指令是获取对象的字段值，将值压入栈顶<br>ICONST_1指令是int型常量1入栈，因为要加1，所以就入栈1<br>IADD指令是弹出栈顶的两个数字进行相加，相加的和再压入栈<br>PUTFIELD指令是给对象的变量赋值栈顶的值</p>
+<p>volatile可以保证GETFIELD时可以读取到value的最新值，但是iconst_1和add时，其他线程可能已经把value值也改变了，最后PUTFIELD是过期的值，所以多线程调用increament时，最终的值会变小。</p>
+<p>一个volatile变量自增操作有4个指令，一条字节码指令也不一定是原子的，可能还会转换为若干条本地机器码指令，所以volatile不能保证原子性。</p>
+<p>需要通过synchronized或java.util.concurrent包下的锁或原子类来保证原子性。</p>
+<h1 id="volatile使用案例"><a href="#volatile使用案例" class="headerlink" title="volatile使用案例"></a>volatile使用案例</h1><ol>
+<li>volatile可以使得long和double的赋值是原子的</li>
+<li>多线程需要实时读取的值，例如：<br> a. AtomicInteger里的value都是volatile的<br> b. AQS里的state变量也是volatile</li>
+<li>CopyOnWriteArrayList里的数组也是volatile的，保证数组拷贝过后，对其他读线程立即可见</li>
+<li>阻止if或while中条件变量的重排序，防止出现不符合预期的结果。if或while语句内部的变量，跟条件变量的赋值，如果在同一个方法中执行，因为没有依赖关系，可能会发生重排序。比如方法a里会读取先通过if判断flag变量是否为true，为true就打印变量c的值，然后在方法b中，先对c赋值，再对flag赋值true，b方法中两个语句可能会重排序的，在多线程执行的时候，就会导致flag先为true，但是c还没赋值，另外一个线程已经执行方法a了，</li>
+<li>双重检查锁定的单例</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +403,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -364,7 +550,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -491,7 +677,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -587,7 +773,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -695,7 +881,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -811,7 +997,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -926,7 +1112,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1097,7 +1283,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1203,7 +1389,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1273,139 +1459,6 @@
 <li> 当关键帧超过两个时，需要先找到当前动画进度是落于哪两个关键帧之间，然后将这个进度值先映射到这两个关键帧之间的取值，接着就可以将这两个关键帧看成是第一帧和最后一帧，那么就可以按照只有两个关键帧的情况下的映射规则来进行计算了。</li>
 <li> 而进度值映射到两个关键帧之间的取值，这就需要知道每个关键帧在整个关键帧组中的位置信息，或者说权重。而这个位置信息是在创建每个关键帧时就传进来的。onInt() 的规则是所有关键帧按等比例来分配权重，比如有三个关键帧，第一帧是 0，那么第二帧就是 0.5， 最后一帧 1。</li>
 </ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Handler%E6%9C%BA%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Android/Android%20Handler%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Android Handler机制</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-12 21:32:00" itemprop="dateCreated datePublished" datetime="2017-07-12T21:32:00+08:00">2017-07-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Android/Android%20Handler%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android Handler机制/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <span id="more"></span>
-
-<h1 id="Handler消息机制是怎样的过程？"><a href="#Handler消息机制是怎样的过程？" class="headerlink" title="Handler消息机制是怎样的过程？"></a>Handler消息机制是怎样的过程？</h1><p>Looper.loop()流程：</p>
-<ol>
-<li> 通过MessageQueue.next() 取Message，没有消息就阻塞当前线程。</li>
-<li> 拿到Message返回给Looper.loop的调用处，调用Message绑定的Handler的dispatchMessage处理消息。</li>
-<li> 处理结束又回到第1步，无限循环。</li>
-</ol>
-<p>每个线程都有各自的Looper，每个Looper有一个MessageQueue。</p>
-<p>消息是链表，按时间when排序。</p>
-<h1 id="等待新消息阻塞线程和有新消息产生恢复线程的过程是怎样的？"><a href="#等待新消息阻塞线程和有新消息产生恢复线程的过程是怎样的？" class="headerlink" title="等待新消息阻塞线程和有新消息产生恢复线程的过程是怎样的？"></a>等待新消息阻塞线程和有新消息产生恢复线程的过程是怎样的？</h1><p>调用 MessageQueue.next() 方法的时候会调用 Native 层的 nativePollOnce() 方法进行精准时间的阻塞。在 Native 层，将进入 pullInner() 方法，使用 epoll_wait 阻塞等待以读取管道的通知。如果没有从 Native 层得到消息，那么这个方法就不会返回。此时主线程会释放 CPU 资源进入休眠状态。</p>
-<p>当我们加入消息的时候，会调用 MessageQueue.enqueueMessage() 方法，添加完 Message 后，如果消息队列被阻塞，则会调用 Native 层的 nativeWake() 方法去唤醒。它通过向管道中写入一个消息，结束上述阻塞，触发上面提到的 nativePollOnce() 方法返回，好让加入的 Message 得到分发处理。</p>
-<h1 id="Looper-loop-里面有死循环，为什么没有阻塞主线程？"><a href="#Looper-loop-里面有死循环，为什么没有阻塞主线程？" class="headerlink" title="Looper.loop()里面有死循环，为什么没有阻塞主线程？"></a>Looper.loop()里面有死循环，为什么没有阻塞主线程？</h1><p>loop()里会从消息队列取消息，取不到消息就阻塞当前线程，释放CPU给其他线程使用，有消息时会唤醒阻塞等待的线程。</p>
-<h1 id="IdleHandler是干什么的？"><a href="#IdleHandler是干什么的？" class="headerlink" title="IdleHandler是干什么的？"></a>IdleHandler是干什么的？</h1><p>IdleHandler只有一个方法boolean queueIdle()。</p>
-<p>此方法在MessageQueue.next()中调用，MessageQueue.next()又在Looper.loop()中调用。</p>
-<p>queueIdle()调用时机：</p>
-<p>当前消息队列没有可以处理的消息，进入空闲状态，在阻塞等待新的消息前（nativePollOnce方法会阻塞等待新消息），先调用IdleHandler的queueIdle()。</p>
-<p>返回true表示下一轮处理完消息后还会回调。</p>
-<p>返回false表示这是单次回调，这次回调后不会再回调了。</p>
-<p>有新消息时系统会调用MessageQueue的enqueueMessage()，enqueueMessage()调用nativeWake()，唤醒线程。</p>
-<p>可以向MessageQueue添加多个IdleHandler。</p>
-<h1 id="IdleHandler有什么应用场景？"><a href="#IdleHandler有什么应用场景？" class="headerlink" title="IdleHandler有什么应用场景？"></a>IdleHandler有什么应用场景？</h1><p>可以作为View绘制完成的回调，做启动时间优化。</p>
-<p>Activity的onCreate，onStart，onResume中耗时较短但非必要的代码可以放到IdleHandler中执行，减少启动时间。</p>
-<p>Activity的onResume是在绘制View之前发生的。</p>
-<p>因为在ActivityThread的handleResumeActivity()中，调用performResumeActivity()对应Activity的onResume()，然后调用wm.addView(decor,l)对应绘制。</p>
-<h1 id="postDelayed-Runnable-r-long-delayMillis-是如何实现的？"><a href="#postDelayed-Runnable-r-long-delayMillis-是如何实现的？" class="headerlink" title="postDelayed(Runnable r, long delayMillis)是如何实现的？"></a>postDelayed(Runnable r, long delayMillis)是如何实现的？</h1><p>首先从消息池获取一个Message对象，将Runnable对象放入Message的callback属性中；</p>
-<p>再通过当前时间和延迟时间计算Runnable执行的时间，调用MessageQueue的enqueueMessage()把消息插入消息链表，执行时间会存入Message对象的when属性中，消息链表是按Message的执行时间升序排序的，插入也会插入到符合顺序的位置。</p>
-<h1 id="sendMessage-Message-msg-和post-Runnable-r-有什么区别？"><a href="#sendMessage-Message-msg-和post-Runnable-r-有什么区别？" class="headerlink" title="sendMessage(Message msg)和post(Runnable r)有什么区别？"></a>sendMessage(Message msg)和post(Runnable r)有什么区别？</h1><p>post()会将Runnable放入一个Message对象的callback属性中，还是会转换为Message，本质上没有区别，只不过post要写的参数更少，使用更方便。</p>
-<h1 id="使用Handler有什么要注意的？"><a href="#使用Handler有什么要注意的？" class="headerlink" title="使用Handler有什么要注意的？"></a>使用Handler有什么要注意的？</h1><p>要避免内存泄露，自定义Handler要定义静态内部类，并且用弱引用引用外部对象，避免外部对象在消息池中一直被引用而不能垃圾回收进而导致内存泄露。</p>
-<h1 id="quit和quitSafely的区别？"><a href="#quit和quitSafely的区别？" class="headerlink" title="quit和quitSafely的区别？"></a>quit和quitSafely的区别？</h1><p>quit() 和 quitSafely() 的本质就是让消息队列的 next() 返回 null，以此来退出Looper.loop()。</p>
-<p>quit() 调用后直接终止 Looper，不在处理任何 Message，所有尝试把 Message 放进消息队列的操作都会失败，比如 Handler.sendMessage() 会返回 false，但是存在不安全性，因为有可能有 Message 还在消息队列中没来的及处理就终止 Looper 了。</p>
-<p>quitSafely() 调用后会在所有消息都处理后再终止 Looper，所有尝试把 Message 放进消息队列的操作也都会失败。</p>
-<h1 id="同步消息和异步消息有什么区别？同步屏障（Barrier）是干什么的？"><a href="#同步消息和异步消息有什么区别？同步屏障（Barrier）是干什么的？" class="headerlink" title="同步消息和异步消息有什么区别？同步屏障（Barrier）是干什么的？"></a>同步消息和异步消息有什么区别？同步屏障（Barrier）是干什么的？</h1><p>Handler创建时可以传递一个async的布尔值参数，带这个参数的构造函数只有系统才能调用，我们创建Handler时async传的是false，通过Handler进行sendMessage或post都是同步消息，如果async传true，则通过Handler发送的都是异步消息。</p>
-<p>Handler的sendMessage、post、postDelayed最终都会调用enqueueMessage，这里会判断如果构造Handler时的async传了true，就设置Message.setAsynchronous(true)。</p>
-<p>同步消息和异步消息在没有往消息队列插入同步屏障时没有区别，插入同步屏障后，执行的优先级会有变化。</p>
-<p>MessageQueue里的消息都是按照时间升序排序的，执行也是按时间由小到大的Message依次执行，如果有一个高优先级的消息需要立即执行，如果把新消息时间设置为当前时间，可能有好几个消息都是这样，原来的按时间顺序执行的机制就没办法保证执行的先后顺序，这就需要另外的机制来保证，即同步屏障机制。</p>
-<p>同步屏障也是一个Message对象，但是没有target（没有绑定Handler），通过MessageQueue的postSyncBarrier(long when)方法向消息队列添加。</p>
-<p>在MessageQueue的next()方法中，如果从消息队列取出的是同步屏障的Message（target==null），则从消息队列后面找一个异步消息来执行，如果没找到则一直阻塞等待异步消息。</p>
-<p>应用场景：</p>
-<p>app层无法调用同步屏障，在系统源码里有使用，如ViewRootImpl的schedualeTraversals，向MessageQueue中添加了内存屏障，保证了measure、layout、draw能够优于普通的Message而得到立即执行。</p>
-<h1 id="为什么-View-post-里可以拿到-View-的宽高信息呢？"><a href="#为什么-View-post-里可以拿到-View-的宽高信息呢？" class="headerlink" title="为什么 View.post 里可以拿到 View 的宽高信息呢？"></a>为什么 View.post 里可以拿到 View 的宽高信息呢？</h1><p>View.post 和 Handler.post 的区别就是：</p>
-<ol>
-<li> 如果在 performTraversals 前调用 View.post，则会将消息进行保存，之后在 dispatchAttachedToWindow 的时候通过 ViewRootImpl 中的 Handler 进行调用。</li>
-<li> 如果在 performTraversals 以后调用 View.post，则直接通过 ViewRootImpl 中的 Handler 进行调用。</li>
-</ol>
-<p>因为 View.post 的 Runnable 执行的时候，已经执行过 performTraversals 了，也就是 View 的 measure layout draw 方法都执行过了，自然可以获取到 View 的宽高信息了。</p>
 
       
     </div>
@@ -1492,7 +1545,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">186</span>
+          <span class="site-state-item-count">187</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1505,7 +1558,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">249</span>
+        <span class="site-state-item-count">250</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

@@ -186,6 +186,120 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Kotlin/Kotlin%E7%A9%BA%E5%AE%89%E5%85%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Kotlin/Kotlin%E7%A9%BA%E5%AE%89%E5%85%A8/" class="post-title-link" itemprop="url">Kotlin 空安全</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-03 20:13:00" itemprop="dateCreated datePublished" datetime="2018-12-03T20:13:00+08:00">2018-12-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kotlin/" itemprop="url" rel="index"><span itemprop="name">Kotlin</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Kotlin/Kotlin%E7%A9%BA%E5%AE%89%E5%85%A8/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Kotlin/Kotlin空安全/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Kotlin调Java可能返回为空的函数"><a href="#Kotlin调Java可能返回为空的函数" class="headerlink" title="Kotlin调Java可能返回为空的函数"></a>Kotlin调Java可能返回为空的函数</h1><p>Java 中的任何引用都可能是 null，这使得 Kotlin 对来自 Java 的对象要求严格空安全是不现实的。 Java 声明的类型在 Kotlin 中会被特别对待并称为平台类型。</p>
+<p>当把一个平台值赋值给一个 Kotlin 变量时，可以选择我们期望的类型（可空或非空类型）：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> nullable: String? = item <span class="comment">// 允许，没有问题</span></span><br><span class="line"><span class="keyword">val</span> notNull: String = item <span class="comment">// 允许，运行时可能失败</span></span><br></pre></td></tr></table></figure>
+<p>如果我们选择非空类型，编译器会在赋值时触发一个断言。这防止 Kotlin 的非空变量保存空值。当我们把平台值传递给期待非空值等的 Kotlin 函数时，也会触发断言。 总的来说，编译器尽力阻止空值通过程序向远传播（尽管鉴于泛型的原因，有时这不可能完全消除）。</p>
+<p>如果我们选择非空类型，编译器会在赋值时触发一个断言。这防止 Kotlin 的非空变量保存空值。当我们把平台值传递给期待非空值等的 Kotlin 函数时，也会触发断言。 总的来说，编译器尽力阻止空值通过程序向远传播。</p>
+<p>只有在Java层给方法加上<code>@Nullable</code>之后才会提示返回值可空。</p>
+<h1 id="空安全实际遇到的问题"><a href="#空安全实际遇到的问题" class="headerlink" title="空安全实际遇到的问题"></a>空安全实际遇到的问题</h1><p>一开始有一个Java的旧类，一直没有改动过，但是有需求要有不同的实现，所以需要把类的各个方法抽象为接口，接口类用Kotlin实现，接口的实现类还是原来的Java类，其中有个方法在Kotlin的接口中返回值是非空的String，java实现类中返回值是String，但是没有加@NotNull的注解，也就是可空的。</p>
+<p>在实际调用这个方法的时候，当java实现类中返回null，就会报空指针异常。</p>
+<h1 id="Nullable注解应该是哪个库哪个包的注解？"><a href="#Nullable注解应该是哪个库哪个包的注解？" class="headerlink" title="Nullable注解应该是哪个库哪个包的注解？"></a>Nullable注解应该是哪个库哪个包的注解？</h1><p>具有可空性注解的Java类型并不表示为平台类型，而是表示为实际可空或非空的 Kotlin 类型。编译器支持多种可空性注解，包括：</p>
+<ul>
+<li><p>  <a target="_blank" rel="noopener" href="https://www.jetbrains.com/idea/help/nullable-and-notnull-annotations.html">JetBrains</a> （org.jetbrains.annotations 包中的 @Nullable 和 @NotNull）</p>
+</li>
+<li><p>  Android（com.android.annotations 和 android.support.annotations)</p>
+</li>
+<li><p>  JSR-305（javax.annotation，详见下文）</p>
+</li>
+<li><p>  FindBugs（edu.umd.cs.findbugs.annotations）</p>
+</li>
+<li><p>  Eclipse（org.eclipse.jdt.annotation）</p>
+</li>
+<li><p>  Lombok（lombok.NonNull）。</p>
+</li>
+</ul>
+<p>你可以在 <a target="_blank" rel="noopener" href="https://github.com/JetBrains/kotlin/blob/master/core/compiler.common.jvm/src/org/jetbrains/kotlin/load/java/JvmAnnotationNames.kt">Kotlin 编译器源代码</a>中找到完整的列表。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://www.kotlincn.net/docs/reference/java-interop.html#%E7%A9%BA%E5%AE%89%E5%85%A8%E4%B8%8E%E5%B9%B3%E5%8F%B0%E7%B1%BB%E5%9E%8B">Kotlin官方文档：空安全和平台类型</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Kotlin/Kotlin%E4%B8%BA%E4%BD%95%E5%BA%9F%E5%BC%83checked%E5%BC%82%E5%B8%B8%EF%BC%9F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +331,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -319,7 +433,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -417,7 +531,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -526,7 +640,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -621,7 +735,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -759,7 +873,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -890,7 +1004,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1015,7 +1129,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1133,7 +1247,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1277,108 +1391,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/" class="post-title-link" itemprop="url">Java集合类-ArrayDeque</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-05-14 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-14T20:00:00+08:00">2018-05-14</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-ArrayDeque/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="ArrayDeque特点"><a href="#ArrayDeque特点" class="headerlink" title="ArrayDeque特点"></a>ArrayDeque特点</h1><p>基于数组的双端队列。</p>
-<p>分别用两个索引指针指示头尾元素位置，循环访问数组元素，访问头尾元素时间复杂度为O(1)</p>
-<p>容量不够时扩容，容量增加一倍。</p>
-<p>也可以当栈使用。</p>
-<h1 id="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"><a href="#有了LinkedList实现双端队列，为什么还要用ArrayDeque？" class="headerlink" title="有了LinkedList实现双端队列，为什么还要用ArrayDeque？"></a>有了LinkedList实现双端队列，为什么还要用ArrayDeque？</h1><p>数组在内存中是连续存储的，CPU访问内存数据具有空间局部性特点，数组对CPU缓存很友好，可以大大提升访问速度。</p>
-<p>链表每个节点存储位置是分散不连续的，CPU缓存命中率低，CPU访问主存次数增加，速度慢。</p>
-<p>所以需要栈和队列时，优先选择用ArrayDeque。</p>
-<h1 id="ArrayDeque缺点"><a href="#ArrayDeque缺点" class="headerlink" title="ArrayDeque缺点"></a>ArrayDeque缺点</h1><ol>
-<li> ArrayDeque较于链表的方式的缺点就是容量不够时需要扩容，耗费O(n)的时间</li>
-<li> 删除元素后不会缩容，所以不适合数据量变化大且长期处于少数据状态的情况，会浪费空间</li>
-</ol>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/6163166/why-is-arraydeque-better-than-linkedlist">Why is ArrayDeque better than LinkedList</a></li>
-<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/PG6NOMgXS6Slh0aXRv9W-g">死磕 java集合之ArrayDeque源码分析</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1450,7 +1462,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">186</span>
+          <span class="site-state-item-count">187</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1463,7 +1475,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">249</span>
+        <span class="site-state-item-count">250</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
