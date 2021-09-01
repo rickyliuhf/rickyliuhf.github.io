@@ -186,6 +186,108 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Kotlin/Kotlin%E4%B8%BA%E4%BD%95%E5%BA%9F%E5%BC%83checked%E5%BC%82%E5%B8%B8%EF%BC%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Kotlin/Kotlin%E4%B8%BA%E4%BD%95%E5%BA%9F%E5%BC%83checked%E5%BC%82%E5%B8%B8%EF%BC%9F/" class="post-title-link" itemprop="url">Kotlin为何废弃checked异常？</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-02 20:13:00" itemprop="dateCreated datePublished" datetime="2018-12-02T20:13:00+08:00">2018-12-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kotlin/" itemprop="url" rel="index"><span itemprop="name">Kotlin</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Kotlin/Kotlin%E4%B8%BA%E4%BD%95%E5%BA%9F%E5%BC%83checked%E5%BC%82%E5%B8%B8%EF%BC%9F/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Kotlin/Kotlin为何废弃checked异常？/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？"><a href="#kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？" class="headerlink" title="kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？"></a>kotlin为何放弃了check和uncheck异常的分别？不强制要求代码捕获异常？</h1><p>Kotlin 在官网给出了一些解释，大概的意思是Checked Exception 在项目小的时候确实能够提升效率和代码质量，但是在大型项目中却会降低代码质量。</p>
+<p>关于CE，Anders Hejlsberg认为它带来了两个问题版本问题和扩展问题。</p>
+<h2 id="所谓的版本问题是什么意思呢？"><a href="#所谓的版本问题是什么意思呢？" class="headerlink" title="所谓的版本问题是什么意思呢？"></a>所谓的版本问题是什么意思呢？</h2><p>Anders Hejlsberg举了一个例子：</p>
+<p>假设有一个方法foo，它声明了抛出异常A、B和C，在下一个版本设计的时候，foo增加了一个新的特性，可能会抛出异常D。对于设计者来说，很明显这是一个大的改变，几乎可以确定的是，客户程序员不会去处理这个异常。为了避免出现问题，设计者不得不声明一个新的方法foo2，抛出一个新的异常。然后，客户程序员可以将针对foo的逻辑处理切换到foo2。</p>
+<h2 id="所谓的扩展问题又是什么意思呢？"><a href="#所谓的扩展问题又是什么意思呢？" class="headerlink" title="所谓的扩展问题又是什么意思呢？"></a>所谓的扩展问题又是什么意思呢？</h2><p>以下来自Anders Hejlsberg的原话翻译并整理：</p>
+<p>如果你在设计一个很小的系统，声明一个方法抛出一个异常，这很棒。可是，如果你尝试构建一个大的系统，其中包含了四、五个小系统的时候，问题来了。假设每个子系统可能抛出四到五个异常，而每上升一个系统，就犹如爬阶梯，异常数量会指数倍增加，最终你可能处理的异常将达到40个甚至80个。很显然，这是一个很糟糕的设计！</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>综上，异常其实是发生在实现阶段，而不是定义阶段，既要在明确实现阶段的异常又要有灵活的实现是相悖的。</p>
+<p>所以 Kotlin 选择抛弃 Checked Exception，靠工程师来处理，这的确增加了 Kotlin 编写的难度，但也对大型项目更加友好，并且可以增加开发速度。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://www.kotlincn.net/docs/reference/exceptions.html">https://www.kotlincn.net/docs/reference/exceptions.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://kotlinlang.org/docs/reference/exceptions.html">https://kotlinlang.org/docs/reference/exceptions.html</a></li>
+<li><a target="_blank" rel="noopener" href="http://radio-weblogs.com/0122027/stories/2003/04/01/JavasCheckedExceptionsWereAMistake.html">Java’s checked exceptions were a mistake</a> (Rod Waldhoff)</li>
+<li><a target="_blank" rel="noopener" href="http://www.artima.com/intv/handcuffs.html">The Trouble with Checked Exceptions</a> (Anders Hejlsberg)</li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/58639126/whats-the-idea-behind-kotlin-removing-checked-exceptions">What’s the idea behind Kotlin removing checked exceptions?</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%E4%B9%8BContext%E3%80%81ContextImp%E3%80%81ContextWrapper/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +319,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -315,7 +417,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -424,7 +526,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -519,7 +621,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -657,7 +759,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -788,7 +890,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -913,7 +1015,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1031,7 +1133,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1210,7 +1312,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 23:20:48" itemprop="dateModified" datetime="2021-09-01T23:20:48+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1262,116 +1364,6 @@
 <li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/6163166/why-is-arraydeque-better-than-linkedlist">Why is ArrayDeque better than LinkedList</a></li>
 <li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/PG6NOMgXS6Slh0aXRv9W-g">死磕 java集合之ArrayDeque源码分析</a></li>
 </ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/" class="post-title-link" itemprop="url">Java集合类-CopyOnWriteArrayList</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-05-13 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-13T20:00:00+08:00">2018-05-13</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-CopyOnWriteArrayList/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-CopyOnWriteArrayList/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="ArrayList存在什么问题？"><a href="#ArrayList存在什么问题？" class="headerlink" title="ArrayList存在什么问题？"></a>ArrayList存在什么问题？</h1><p>ArrayList是线程不安全的。</p>
-<p>可以用Collections.synchronizedList()加全局独占锁保证线程安全，但在读多写少的情况下，多线程读之间互斥降低了系统吞吐量。</p>
-<p>如果读与读之间不互斥，写与写、写与读才互斥，这样可以保证最大的吞吐量，这就是CopyOnWriteArrayList。</p>
-<h1 id="CopyOnWriteArrayList保证线程安全的原理？"><a href="#CopyOnWriteArrayList保证线程安全的原理？" class="headerlink" title="CopyOnWriteArrayList保证线程安全的原理？"></a>CopyOnWriteArrayList保证线程安全的原理？</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Appends the specified element to the end of this list.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> e element to be appended to this list</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; (as specified by &#123;<span class="doctag">@link</span> Collection#add&#125;)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Object[] elements = getArray();</span><br><span class="line">        <span class="keyword">int</span> len = elements.length;</span><br><span class="line">        Object[] newElements = Arrays.copyOf(elements, len + <span class="number">1</span>);</span><br><span class="line">        newElements[len] = e;</span><br><span class="line">        setArray(newElements);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">get</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> get(getArray(), index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果用读写锁保证并发，可以保证读读之间没有阻塞等待，但有线程写数据时，读线程必须阻塞等待，这保证了每次都都可以读到最新修改的值。</p>
-<p>CopyOnWriteArrayList牺牲了读的实时性，读操作不上锁，只在写数据时使用ReentrantLock上锁，写数据时会把原数组拷贝到新的数组中，写数据的同时再有线程读数据，读到的是之前数组的值，不保证数据实时性，只保证最终结果一致性，牺牲了数据实时性，换取了读操作没有阻塞等待。</p>
-<p>对数据实时性要求很高的需求，不要使用CopyOnWriteArrayList。</p>
-<p>线程1在add数据时，线程2随后get数据，不一定能获取到线程1刚add的的元素，因为线程1可能还没执行完。</p>
-<h1 id="CopyOnWriteArrayList存在什么问题？"><a href="#CopyOnWriteArrayList存在什么问题？" class="headerlink" title="CopyOnWriteArrayList存在什么问题？"></a>CopyOnWriteArrayList存在什么问题？</h1><ol>
-<li> 读数据不是实时的，读的时候可能正在写数据，读不到最新的值，也不会阻塞等待，适合读多写少的场景</li>
-<li> 每次写数据都要复制整个数组，如果写操作频繁，会频繁触发垃圾回收，垃圾回收又会导致线程停顿，造成APP卡顿变多</li>
-</ol>
-<h1 id="CopyOnWriteArrayList适用场景？"><a href="#CopyOnWriteArrayList适用场景？" class="headerlink" title="CopyOnWriteArrayList适用场景？"></a>CopyOnWriteArrayList适用场景？</h1><ol>
-<li> 高并发</li>
-<li> 读多写少</li>
-<li> 对读数据实时性要求不高</li>
-</ol>
-<h1 id="为什么没有扩容"><a href="#为什么没有扩容" class="headerlink" title="为什么没有扩容?"></a>为什么没有扩容?</h1><p>因为每次add元素都要拷贝数组，这个时间消耗是必须的，所以也没必要扩容了，拷贝数据到一个恰好比原数组多一个位置的新数组。</p>
-<h1 id="Vector有什么问题"><a href="#Vector有什么问题" class="headerlink" title="Vector有什么问题?"></a>Vector有什么问题?</h1><ol>
-<li> Vector是线程安全的列表，底层实现也是数组，但是几乎每一个方法都加上了synchonized，多线程读操作之间会互斥，读多写少的情况下，吞吐量不高</li>
-<li> Vector扩容，容量是翻倍，指数增长，ArrayList只增长为原来的1.5倍，更节约空间。</li>
-</ol>
 
       
     </div>
@@ -1458,20 +1450,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">185</span>
+          <span class="site-state-item-count">186</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">247</span>
+        <span class="site-state-item-count">249</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

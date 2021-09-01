@@ -7731,33 +7731,6 @@
       </tags>
   </entry>
   <entry>
-    <title>TCP超时重传</title>
-    <url>/%E7%BD%91%E7%BB%9C/TCP%E8%B6%85%E6%97%B6%E9%87%8D%E4%BC%A0/</url>
-    <content><![CDATA[<h1 id="超时重传的等待时间设置为多少合适？"><a href="#超时重传的等待时间设置为多少合适？" class="headerlink" title="超时重传的等待时间设置为多少合适？"></a>超时重传的等待时间设置为多少合适？</h1><p>超时重传的等待时间：Retransmission Time Out, RTO。</p>
-<p>等待时间过长，若丢包严重，则传输的吞吐量低。</p>
-<p>等待时间过短，会导致频繁的发包，增加网络拥堵，占用带宽。</p>
-<p>等待时间只能尽可能的短，按照正常的节奏，一端发送报文到收到ACK报文的时间（往返时间Round Trip Time）就是最短的等待时间，RTO可以略微大于RTT，以增加一点容错范围。</p>
-<p>但RTT并不是固定的，因为网络拥堵状况随时在发生变化，所以RTT应当不停的动态计算，有一系列的算法支持。</p>
-<h1 id="基于定时器的超时重传存在什么问题？"><a href="#基于定时器的超时重传存在什么问题？" class="headerlink" title="基于定时器的超时重传存在什么问题？"></a>基于定时器的超时重传存在什么问题？</h1><p>会重发接收方已经收到的报文，浪费带宽，通信时间被拖长。</p>
-<p>接收方发送的ACK报文中确认的报文序号有个特点，就是这个序号之前的报文接收方一定都已经收到了。</p>
-<p>这样就会导致一个问题，如果发送方发了一系列序号连续的报文，接收方只有中间的几个报文没有收到，那么收到序号较大的报文后回应的ACK里的确认序号是较小的，这会导致发送方无法确认较大序号的报文接收方有没有收到。</p>
-<p>此时发送方该重发哪些报文就成了问题，此时有两种策略：</p>
-<p>一种策略是只重传ACK期待的序号的报文，序号较大报文暂时不重发，等待它们的定时器超时了再重发，如果较大序号的报文接收方都接受到了倒没问题，但如果较大序号的报文接收方都没收到，一个个等待报文超时无疑是拖慢了整体的传输时间。</p>
-<p>另一种策略就是重传ACK序号后所有的报文，如果丢包严重，这种做法效率挺高，但如果丢包并不严重，这种做法会浪费很多流量。</p>
-<p>如果能知道没有收到的报文序号是哪些就很好办了，用SACK可以解决这个问题。</p>
-<p>例如发送方发了序号为1、2、3、4、5、6的报文，接收方收到了1、2、4、5、6，唯独为没有收到3（3可能卡在某个网络节点上），在接收到1后回应ACK 2，接收2后回应ACK 3，接收到4、5、6，也是回应ACK 3，此时发送方对3、4、5、6的定时器都会超时，然后都会重发3、4、5、6，但实际4、5、6已经接收到了，重发4、5、6其实是浪费带宽，也增加了整体传输时长。</p>
-]]></content>
-      <categories>
-        <category>网络</category>
-      </categories>
-      <tags>
-        <tag>网络</tag>
-        <tag>TCP</tag>
-        <tag>超时重传</tag>
-        <tag>RTO</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>TCP流量控制</title>
     <url>/%E7%BD%91%E7%BB%9C/TCP%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6/</url>
     <content><![CDATA[<h1 id="为什么要有流量控制？"><a href="#为什么要有流量控制？" class="headerlink" title="为什么要有流量控制？"></a>为什么要有流量控制？</h1><p>双端通信的时候，发送方发送数据速度和接收方处理数据速度不一定相等；</p>
@@ -7786,6 +7759,33 @@
         <tag>网络</tag>
         <tag>TCP</tag>
         <tag>流量控制</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>TCP超时重传</title>
+    <url>/%E7%BD%91%E7%BB%9C/TCP%E8%B6%85%E6%97%B6%E9%87%8D%E4%BC%A0/</url>
+    <content><![CDATA[<h1 id="超时重传的等待时间设置为多少合适？"><a href="#超时重传的等待时间设置为多少合适？" class="headerlink" title="超时重传的等待时间设置为多少合适？"></a>超时重传的等待时间设置为多少合适？</h1><p>超时重传的等待时间：Retransmission Time Out, RTO。</p>
+<p>等待时间过长，若丢包严重，则传输的吞吐量低。</p>
+<p>等待时间过短，会导致频繁的发包，增加网络拥堵，占用带宽。</p>
+<p>等待时间只能尽可能的短，按照正常的节奏，一端发送报文到收到ACK报文的时间（往返时间Round Trip Time）就是最短的等待时间，RTO可以略微大于RTT，以增加一点容错范围。</p>
+<p>但RTT并不是固定的，因为网络拥堵状况随时在发生变化，所以RTT应当不停的动态计算，有一系列的算法支持。</p>
+<h1 id="基于定时器的超时重传存在什么问题？"><a href="#基于定时器的超时重传存在什么问题？" class="headerlink" title="基于定时器的超时重传存在什么问题？"></a>基于定时器的超时重传存在什么问题？</h1><p>会重发接收方已经收到的报文，浪费带宽，通信时间被拖长。</p>
+<p>接收方发送的ACK报文中确认的报文序号有个特点，就是这个序号之前的报文接收方一定都已经收到了。</p>
+<p>这样就会导致一个问题，如果发送方发了一系列序号连续的报文，接收方只有中间的几个报文没有收到，那么收到序号较大的报文后回应的ACK里的确认序号是较小的，这会导致发送方无法确认较大序号的报文接收方有没有收到。</p>
+<p>此时发送方该重发哪些报文就成了问题，此时有两种策略：</p>
+<p>一种策略是只重传ACK期待的序号的报文，序号较大报文暂时不重发，等待它们的定时器超时了再重发，如果较大序号的报文接收方都接受到了倒没问题，但如果较大序号的报文接收方都没收到，一个个等待报文超时无疑是拖慢了整体的传输时间。</p>
+<p>另一种策略就是重传ACK序号后所有的报文，如果丢包严重，这种做法效率挺高，但如果丢包并不严重，这种做法会浪费很多流量。</p>
+<p>如果能知道没有收到的报文序号是哪些就很好办了，用SACK可以解决这个问题。</p>
+<p>例如发送方发了序号为1、2、3、4、5、6的报文，接收方收到了1、2、4、5、6，唯独为没有收到3（3可能卡在某个网络节点上），在接收到1后回应ACK 2，接收2后回应ACK 3，接收到4、5、6，也是回应ACK 3，此时发送方对3、4、5、6的定时器都会超时，然后都会重发3、4、5、6，但实际4、5、6已经接收到了，重发4、5、6其实是浪费带宽，也增加了整体传输时长。</p>
+]]></content>
+      <categories>
+        <category>网络</category>
+      </categories>
+      <tags>
+        <tag>网络</tag>
+        <tag>TCP</tag>
+        <tag>超时重传</tag>
+        <tag>RTO</tag>
       </tags>
   </entry>
   <entry>
@@ -9755,6 +9755,40 @@
         <tag>TreeMap</tag>
         <tag>ConcurrentSkipListMap</tag>
         <tag>跳表</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>6种方式实现多线程交替打印10次ABC</title>
+    <url>/%E9%9D%A2%E8%AF%95%E9%A2%98/6%E7%A7%8D%E6%96%B9%E5%BC%8F%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%BA%A4%E6%9B%BF%E6%89%93%E5%8D%B010%E6%AC%A1ABC/</url>
+    <content><![CDATA[<h1 id="考察点"><a href="#考察点" class="headerlink" title="考察点"></a>考察点</h1><ul>
+<li>线程同步工具熟悉和理解程度</li>
+<li>代码规范，是否注重代码可读性、整洁性，考察编码习惯</li>
+<li>代码熟练度，具体语言掌握情况</li>
+<li>能否说出每种实现的原理、细节 注意事项、适用场景</li>
+</ul>
+<h1 id="synchronized"><a href="#synchronized" class="headerlink" title="synchronized"></a>synchronized</h1><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> STATE_A = <span class="number">1</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> STATE_B = <span class="number">2</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> STATE_C = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@Volatile</span>  </span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> state = STATE_A</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> lock = Object()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            synchronized(lock) &#123;</span><br><span class="line">                <span class="keyword">while</span> (state != STATE_A) lock.wait()</span><br><span class="line">                println(<span class="string">&quot;A&quot;</span>)</span><br><span class="line">                state = STATE_B</span><br><span class="line">                lock.notifyAll()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            synchronized(lock) &#123;</span><br><span class="line">                <span class="keyword">while</span> (state != STATE_B) lock.wait()</span><br><span class="line">                println(<span class="string">&quot;B&quot;</span>)</span><br><span class="line">                state = STATE_C</span><br><span class="line">                lock.notifyAll()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            synchronized(lock) &#123;</span><br><span class="line">                <span class="keyword">while</span> (state != STATE_C) lock.wait()</span><br><span class="line">                println(<span class="string">&quot;C&quot;</span>)</span><br><span class="line">                state = STATE_A</span><br><span class="line">                lock.notifyAll()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="ReentrantLock"><a href="#ReentrantLock" class="headerlink" title="ReentrantLock"></a>ReentrantLock</h1><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.locks.ReentrantLock</span><br><span class="line"><span class="keyword">import</span> kotlin.concurrent.withLock</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> STATE_A = <span class="number">1</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> STATE_B = <span class="number">2</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> STATE_C = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@Volatile</span>  </span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> state = STATE_A</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> lock = ReentrantLock()</span><br><span class="line">    <span class="keyword">val</span> c1 = lock.newCondition()</span><br><span class="line">    <span class="keyword">val</span> c2 = lock.newCondition()</span><br><span class="line">    <span class="keyword">val</span> c3 = lock.newCondition()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            lock.withLock &#123;</span><br><span class="line">                <span class="keyword">while</span> (state != STATE_A) c1.await()</span><br><span class="line">                println(<span class="string">&quot;A&quot;</span>)</span><br><span class="line">                state = STATE_B</span><br><span class="line">                c2.signal()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            lock.withLock &#123;</span><br><span class="line">                <span class="keyword">while</span> (state != STATE_B) c2.await()</span><br><span class="line">                println(<span class="string">&quot;B&quot;</span>)</span><br><span class="line">                state = STATE_C</span><br><span class="line">                c3.signal()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            lock.withLock &#123;</span><br><span class="line">                <span class="keyword">while</span> (state != STATE_C) c3.await()</span><br><span class="line">                println(<span class="string">&quot;C&quot;</span>)</span><br><span class="line">                state = STATE_A</span><br><span class="line">                c1.signal()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Sempahore"><a href="#Sempahore" class="headerlink" title="Sempahore"></a>Sempahore</h1><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.Semaphore</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> s1 = Semaphore(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">val</span> s2 = Semaphore(<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">val</span> s3 = Semaphore(<span class="number">0</span>)</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            s1.acquire()</span><br><span class="line">            println(<span class="string">&quot;A&quot;</span>)</span><br><span class="line">            s2.release()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            s2.acquire()</span><br><span class="line">            println(<span class="string">&quot;B&quot;</span>)</span><br><span class="line">            s3.release()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            s3.acquire()</span><br><span class="line">            println(<span class="string">&quot;C&quot;</span>)</span><br><span class="line">            s1.release()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="CountDownLatch"><a href="#CountDownLatch" class="headerlink" title="CountDownLatch"></a>CountDownLatch</h1><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.CountDownLatch</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> latchA = CountDownLatch(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">var</span> latchB = CountDownLatch(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">var</span> latchC = CountDownLatch(<span class="number">1</span>)</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            latchA.await()</span><br><span class="line">            latchA = CountDownLatch(<span class="number">1</span>)</span><br><span class="line">            println(<span class="string">&quot;A&quot;</span>)</span><br><span class="line">            latchB.countDown()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            latchB.await()</span><br><span class="line">            latchB = CountDownLatch(<span class="number">1</span>)</span><br><span class="line">            println(<span class="string">&quot;B&quot;</span>)</span><br><span class="line">            latchC.countDown()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            latchC.await()</span><br><span class="line">            latchC = CountDownLatch(<span class="number">1</span>)</span><br><span class="line">            println(<span class="string">&quot;C&quot;</span>)</span><br><span class="line">            latchA.countDown()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    latchA.countDown()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="CyclicBarrier"><a href="#CyclicBarrier" class="headerlink" title="CyclicBarrier"></a>CyclicBarrier</h1><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.CyclicBarrier</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> cb1 = CyclicBarrier(<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">val</span> cb2 = CyclicBarrier(<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">val</span> cb3 = CyclicBarrier(<span class="number">2</span>)</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            cb3.await()</span><br><span class="line">            println(<span class="string">&quot;A&quot;</span>)</span><br><span class="line">            cb1.await()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            cb1.await()</span><br><span class="line">            println(<span class="string">&quot;B&quot;</span>)</span><br><span class="line">            cb2.await()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            cb2.await()</span><br><span class="line">            println(<span class="string">&quot;C&quot;</span>)</span><br><span class="line">            cb3.await()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    cb3.await()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="无锁自旋"><a href="#无锁自旋" class="headerlink" title="无锁自旋"></a>无锁自旋</h1><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> STATE_A = <span class="number">1</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> STATE_B = <span class="number">2</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> STATE_C = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@Volatile</span>  </span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> state = STATE_A</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            <span class="keyword">while</span> (state != STATE_A) &#123;</span><br><span class="line">            &#125;</span><br><span class="line">            println(<span class="string">&quot;A&quot;</span>)</span><br><span class="line">            state = STATE_B</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            <span class="keyword">while</span> (state != STATE_B) &#123;</span><br><span class="line">            &#125;</span><br><span class="line">            println(<span class="string">&quot;B&quot;</span>)</span><br><span class="line">            state = STATE_C</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">    Thread &#123;</span><br><span class="line">        repeat(<span class="number">10</span>) &#123;</span><br><span class="line">            <span class="keyword">while</span> (state != STATE_C) &#123;</span><br><span class="line">            &#125;</span><br><span class="line">            println(<span class="string">&quot;C&quot;</span>)</span><br><span class="line">            state = STATE_A</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>面试题</category>
+      </categories>
+      <tags>
+        <tag>CyclicBarrier</tag>
+        <tag>Semaphore</tag>
+        <tag>synchronized</tag>
+        <tag>ReentrantLock</tag>
+        <tag>面试</tag>
+        <tag>CountDownLatch</tag>
+        <tag>自旋</tag>
       </tags>
   </entry>
   <entry>
