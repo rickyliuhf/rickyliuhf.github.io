@@ -186,6 +186,180 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%A6%82%E4%BD%95%E8%AE%A9GreenDao%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE%E8%BF%94%E5%9B%9ELiveData/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%A6%82%E4%BD%95%E8%AE%A9GreenDao%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE%E8%BF%94%E5%9B%9ELiveData/" class="post-title-link" itemprop="url">如何让GreenDao查询数据返回LiveData</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-12 20:35:00" itemprop="dateCreated datePublished" datetime="2018-05-12T20:35:00+08:00">2018-05-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%A6%82%E4%BD%95%E8%AE%A9GreenDao%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE%E8%BF%94%E5%9B%9ELiveData/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="源码分析/如何让GreenDao查询数据返回LiveData/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h1><p>当新业务模块引入JetPack体系后，数据获取变成单一数据源，要求底层数据库查询支持监听表变化，Room天然支持返回LiveData或Flow来实现单一数据源变化响应。</p>
+<p>但是对于老代码，有的数据来源还是内存缓存，或者GreenDao存储的，在新的业务模块也需要读取一部分老的数据，这就需要让老的数据源也支持LiveData或Flow的返回模式。</p>
+<p>内存缓存的方式很好实现LiveData机制，只要内存缓存有监听机制，转换为LiveData即可。</p>
+<p>GreenDao由于官方就不支持数据表监听，没办法支持，所以只能自己实现。</p>
+<h1 id="如何实现GreenDao数据表变化监听？"><a href="#如何实现GreenDao数据表变化监听？" class="headerlink" title="如何实现GreenDao数据表变化监听？"></a>如何实现GreenDao数据表变化监听？</h1><p>既然Room支持监听表变化，那就参考Room源码实现思路，把这个功能也添加到GreenDao中。</p>
+<h1 id="Room源码实现思路"><a href="#Room源码实现思路" class="headerlink" title="Room源码实现思路"></a>Room源码实现思路</h1><p>LiveData或Flow是是Dao对象返回的，所以从Dao对象的源码看起。</p>
+<p>可以以<a target="_blank" rel="noopener" href="https://github.com/android/architecture-components-samples/tree/main/GithubBrowserSample">architecture-components-samples的GithubBrowserSample</a>为例分析。</p>
+<p>对于<code>UserDao</code>，有一个<code>findByLogin</code>方法返回<code>LiveData</code>。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">  </span><br><span class="line"><span class="meta">@Dao</span>  </span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">UserDao</span> </span>&#123;  </span><br><span class="line">    <span class="meta">@Insert(onConflict = OnConflictStrategy.REPLACE)</span>  </span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">insert</span><span class="params">(user: <span class="type">User</span>)</span></span>  </span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Query(<span class="meta-string">&quot;SELECT * FROM user WHERE login = :login&quot;</span>)</span>  </span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findByLogin</span><span class="params">(login: <span class="type">String</span>)</span></span>: LiveData&lt;User&gt;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>UserDao_Impl</code>中<code>findByLogin</code>方法的实现：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> LiveData&lt;User&gt; findByLogin(String login) &#123;</span><br><span class="line">  <span class="keyword">final</span> String _sql = <span class="string">&quot;SELECT * FROM user WHERE login = ?&quot;</span>;</span><br><span class="line">  <span class="keyword">final</span> RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, <span class="number">1</span>);</span><br><span class="line">  int _argIndex = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">if</span> (login == <span class="literal">null</span>) &#123;</span><br><span class="line">    _statement.bindNull(_argIndex);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    _statement.bindString(_argIndex, login);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> new ComputableLiveData&lt;User&gt;(__db.getQueryExecutor()) &#123;</span><br><span class="line">    <span class="keyword">private</span> Observer _observer;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> User compute() &#123;</span><br><span class="line">      <span class="keyword">if</span> (_observer == <span class="literal">null</span>) &#123;</span><br><span class="line">        _observer = new Observer(<span class="string">&quot;user&quot;</span>) &#123;</span><br><span class="line">          <span class="meta">@Override</span></span><br><span class="line">          <span class="keyword">public</span> void onInvalidated(<span class="meta">@NonNull</span> Set&lt;String&gt; tables) &#123;</span><br><span class="line">            invalidate();</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        __db.getInvalidationTracker().addWeakObserver(_observer);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">final</span> Cursor _cursor = DBUtil.query(__db, _statement, <span class="literal">false</span>);</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> int _cursorIndexOfLogin = _cursor.getColumnIndexOrThrow(<span class="string">&quot;login&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> int _cursorIndexOfAvatarUrl = _cursor.getColumnIndexOrThrow(<span class="string">&quot;avatarUrl&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> int _cursorIndexOfName = _cursor.getColumnIndexOrThrow(<span class="string">&quot;name&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> int _cursorIndexOfCompany = _cursor.getColumnIndexOrThrow(<span class="string">&quot;company&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> int _cursorIndexOfReposUrl = _cursor.getColumnIndexOrThrow(<span class="string">&quot;reposUrl&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> int _cursorIndexOfBlog = _cursor.getColumnIndexOrThrow(<span class="string">&quot;blog&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> User _result;</span><br><span class="line">        <span class="keyword">if</span>(_cursor.moveToFirst()) &#123;</span><br><span class="line">          <span class="keyword">final</span> String _tmpLogin;</span><br><span class="line">          _tmpLogin = _cursor.getString(_cursorIndexOfLogin);</span><br><span class="line">          <span class="keyword">final</span> String _tmpAvatarUrl;</span><br><span class="line">          _tmpAvatarUrl = _cursor.getString(_cursorIndexOfAvatarUrl);</span><br><span class="line">          <span class="keyword">final</span> String _tmpName;</span><br><span class="line">          _tmpName = _cursor.getString(_cursorIndexOfName);</span><br><span class="line">          <span class="keyword">final</span> String _tmpCompany;</span><br><span class="line">          _tmpCompany = _cursor.getString(_cursorIndexOfCompany);</span><br><span class="line">          <span class="keyword">final</span> String _tmpReposUrl;</span><br><span class="line">          _tmpReposUrl = _cursor.getString(_cursorIndexOfReposUrl);</span><br><span class="line">          <span class="keyword">final</span> String _tmpBlog;</span><br><span class="line">          _tmpBlog = _cursor.getString(_cursorIndexOfBlog);</span><br><span class="line">          _result = new User(_tmpLogin,_tmpAvatarUrl,_tmpName,_tmpCompany,_tmpReposUrl,_tmpBlog);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          _result = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> _result;</span><br><span class="line">      &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        _cursor.close();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> void finalize() &#123;</span><br><span class="line">      _statement.release();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;.getLiveData();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>findByLogin</code>中创建了一个<code>ComputableLiveData</code>，返回其<code>getLiveData()</code>。</p>
+<h2 id="ComputableLiveData是做什么的？"><a href="#ComputableLiveData是做什么的？" class="headerlink" title="ComputableLiveData是做什么的？"></a>ComputableLiveData是做什么的？</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ComputableLiveData</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> LiveData&lt;T&gt; mLiveData;</span><br><span class="line">    ......</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Creates a computable live data which is computed when there are active observers.</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;</span></span><br><span class="line"><span class="comment">     * It can also be invalidated via &#123;<span class="doctag">@link</span> #invalidate()&#125; which will result in a call to</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@link</span> #compute()&#125; if there are active observers (or when they start observing)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;WeakerAccess&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ComputableLiveData</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        mLiveData = <span class="keyword">new</span> LiveData&lt;T&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onActive</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">// TODO if we make this class public, we should accept an executor</span></span><br><span class="line">                AppToolkitTaskExecutor.getInstance().executeOnDiskIO(mRefreshRunnable);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns the LiveData managed by this class.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> A LiveData that is controlled by ComputableLiveData.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;WeakerAccess&quot;)</span></span><br><span class="line">    <span class="meta">@NonNull</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> LiveData&lt;T&gt; <span class="title">getLiveData</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mLiveData;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@VisibleForTesting</span></span><br><span class="line">    <span class="keyword">final</span> Runnable mRefreshRunnable = <span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@WorkerThread</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">boolean</span> computed;</span><br><span class="line">            <span class="keyword">do</span> &#123;</span><br><span class="line">                computed = <span class="keyword">false</span>;</span><br><span class="line">                <span class="comment">// compute can happen only in 1 thread but no reason to lock others.</span></span><br><span class="line">                <span class="keyword">if</span> (mComputing.compareAndSet(<span class="keyword">false</span>, <span class="keyword">true</span>)) &#123;</span><br><span class="line">                    <span class="comment">// as long as it is invalid, keep computing.</span></span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        T value = <span class="keyword">null</span>;</span><br><span class="line">                        <span class="keyword">while</span> (mInvalid.compareAndSet(<span class="keyword">true</span>, <span class="keyword">false</span>)) &#123;</span><br><span class="line">                            computed = <span class="keyword">true</span>;</span><br><span class="line">                            value = compute();</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">if</span> (computed) &#123;</span><br><span class="line">                            mLiveData.postValue(value);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                        <span class="comment">// release compute lock</span></span><br><span class="line">                        mComputing.set(<span class="keyword">false</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">while</span> (computed &amp;&amp; mInvalid.get());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// invalidation check always happens on the main thread</span></span><br><span class="line">    <span class="meta">@VisibleForTesting</span></span><br><span class="line">    <span class="keyword">final</span> Runnable mInvalidationRunnable = <span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@MainThread</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">boolean</span> isActive = mLiveData.hasActiveObservers();</span><br><span class="line">            <span class="keyword">if</span> (mInvalid.compareAndSet(<span class="keyword">false</span>, <span class="keyword">true</span>)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (isActive) &#123;</span><br><span class="line">                    <span class="comment">// TODO if we make this class public, we should accept an executor.</span></span><br><span class="line">                    AppToolkitTaskExecutor.getInstance().executeOnDiskIO(mRefreshRunnable);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Invalidates the LiveData.</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;</span></span><br><span class="line"><span class="comment">     * When there are active observers, this will trigger a call to &#123;<span class="doctag">@link</span> #compute()&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">invalidate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        AppToolkitTaskExecutor.getInstance().executeOnMainThread(mInvalidationRunnable);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;WeakerAccess&quot;)</span></span><br><span class="line">    <span class="meta">@WorkerThread</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> T <span class="title">compute</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过源码可知：</p>
+<ul>
+<li>ComputableLiveData是对LiveData的封装处理。</li>
+<li>LiveData在onActive()时，用线程池调用mRefreshRunnable。</li>
+<li>mRefreshRunnable中只要不在计算、并且要求invalidate，就调用compute()求得一个结果，然后发送给LiveData。</li>
+<li>单独调用invalidate() 也会触发mRefreshRunnable的运行。</li>
+</ul>
+<h2 id="UserDao-Impl-findByLogin-中的ComputableLiveData的compute-中做了什么？"><a href="#UserDao-Impl-findByLogin-中的ComputableLiveData的compute-中做了什么？" class="headerlink" title="UserDao_Impl.findByLogin()中的ComputableLiveData的compute()中做了什么？"></a>UserDao_Impl.findByLogin()中的ComputableLiveData的compute()中做了什么？</h2><p>这里主要做两件事：</p>
+<ul>
+<li>查询表数据，把<code>Cursor</code>中的数据映射为<code>User</code>对象。</li>
+<li>调用了<code>__db.getInvalidationTracker().addWeakObserver()</code>，添加了一个观察者，观察者收到通知后调用<code>ComputableLiveData.invalidate()</code>。</li>
+</ul>
+<p>调用<code>ComputableLiveData.invalidate()</code>后，其实就是会重新再查询表中数据。</p>
+<p>也就是说<code>__db.getInvalidationTracker().addWeakObserver()</code>是实现表变化监听的关键。</p>
+<h2 id="db-getInvalidationTracker-是什么？"><a href="#db-getInvalidationTracker-是什么？" class="headerlink" title="__db.getInvalidationTracker()是什么？"></a>__db.getInvalidationTracker()是什么？</h2><ul>
+<li><code>__db</code>是<code>RoomDatabase</code>对象。</li>
+<li><code>getInvalidationTracker()</code>获取的是<code>InvalidationTracker</code>对象。</li>
+</ul>
+<h2 id="InvalidationTracker-addWeakObserver-监听的是什么？"><a href="#InvalidationTracker-addWeakObserver-监听的是什么？" class="headerlink" title="InvalidationTracker.addWeakObserver()监听的是什么？"></a>InvalidationTracker.addWeakObserver()监听的是什么？</h2><p>涉及到的源码挺多。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addWeakObserver</span><span class="params">(Observer observer)</span> </span>&#123;</span><br><span class="line">    addObserver(<span class="keyword">new</span> WeakObserver(<span class="keyword">this</span>, observer));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addObserver</span><span class="params">(<span class="meta">@NonNull</span> Observer observer)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> String[] tableNames = observer.mTables;</span><br><span class="line">    <span class="keyword">int</span>[] tableIds = <span class="keyword">new</span> <span class="keyword">int</span>[tableNames.length];</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> size = tableNames.length;</span><br><span class="line">    <span class="keyword">long</span>[] versions = <span class="keyword">new</span> <span class="keyword">long</span>[tableNames.length];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// TODO sync versions ?</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++) &#123;</span><br><span class="line">        Integer tableId = mTableIdLookup.get(tableNames[i].toLowerCase(Locale.US));</span><br><span class="line">        <span class="keyword">if</span> (tableId == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;There is no table with name &quot;</span> + tableNames[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        tableIds[i] = tableId;</span><br><span class="line">        versions[i] = mMaxVersion;</span><br><span class="line">    &#125;</span><br><span class="line">    ObserverWrapper wrapper = <span class="keyword">new</span> ObserverWrapper(observer, tableIds, tableNames, versions);</span><br><span class="line">    ObserverWrapper currentObserver;</span><br><span class="line">    <span class="keyword">synchronized</span> (mObserverMap) &#123;</span><br><span class="line">        currentObserver = mObserverMap.putIfAbsent(observer, wrapper);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (currentObserver == <span class="keyword">null</span> &amp;&amp; mObservedTableTracker.onAdded(tableIds)) &#123;</span><br><span class="line">        syncTriggers();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ObservedTableTracker</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> true if # of triggers is affected.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">onAdded</span><span class="params">(<span class="keyword">int</span>... tableIds)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> needTriggerSync = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> tableId : tableIds) &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">long</span> prevObserverCount = mTableObservers[tableId];</span><br><span class="line">                mTableObservers[tableId] = prevObserverCount + <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span> (prevObserverCount == <span class="number">0</span>) &#123;</span><br><span class="line">                    mNeedsSync = <span class="keyword">true</span>;</span><br><span class="line">                    needTriggerSync = <span class="keyword">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> needTriggerSync;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>addWeakObserver()</code>调用<code>addObserver()</code>。</p>
+<p><code>addObserver()</code>主要做了：</p>
+<ul>
+<li>读取<code>Observer</code>构造时传递的要监听变化的表名。</li>
+<li>调用<code>ObservedTableTracker.onAdded(tableIds)</code>记录要监听的表名。</li>
+<li>把<code>Observer</code>存储到<code>mObserverMap</code>中。</li>
+</ul>
+<p>主要就是保存观察者。</p>
+<p>观察者什么时候被调用还不清楚，接着看看<code>syncTriggers()</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Called by RoomDatabase before each beginTransaction call.</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;</span></span><br><span class="line"><span class="comment"> * It is important that pending trigger changes are applied to the database before any query</span></span><br><span class="line"><span class="comment"> * runs. Otherwise, we may miss some changes.</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;</span></span><br><span class="line"><span class="comment"> * This api should eventually be public.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">syncTriggers</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!mDatabase.isOpen()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    syncTriggers(mDatabase.getOpenHelper().getWritableDatabase());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">syncTriggers</span><span class="params">(SupportSQLiteDatabase database)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (database.inTransaction()) &#123;</span><br><span class="line">        <span class="comment">// we won&#x27;t run this inside another transaction.</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// This method runs in a while loop because while changes are synced to db, another</span></span><br><span class="line">        <span class="comment">// runnable may be skipped. If we cause it to skip, we need to do its work.</span></span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            Lock closeLock = mDatabase.getCloseLock();</span><br><span class="line">            closeLock.lock();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// there is a potential race condition where another mSyncTriggers runnable</span></span><br><span class="line">                <span class="comment">// can start running right after we get the tables list to sync.</span></span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span>[] tablesToSync = mObservedTableTracker.getTablesToSync();</span><br><span class="line">                <span class="keyword">if</span> (tablesToSync == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> limit = tablesToSync.length;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    database.beginTransaction();</span><br><span class="line">                    <span class="keyword">for</span> (<span class="keyword">int</span> tableId = <span class="number">0</span>; tableId &lt; limit; tableId++) &#123;</span><br><span class="line">                        <span class="keyword">switch</span> (tablesToSync[tableId]) &#123;</span><br><span class="line">                            <span class="keyword">case</span> ObservedTableTracker.ADD:</span><br><span class="line">                                startTrackingTable(database, tableId);</span><br><span class="line">                                <span class="keyword">break</span>;</span><br><span class="line">                            <span class="keyword">case</span> ObservedTableTracker.REMOVE:</span><br><span class="line">                                stopTrackingTable(database, tableId);</span><br><span class="line">                                <span class="keyword">break</span>;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    database.setTransactionSuccessful();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    database.endTransaction();</span><br><span class="line">                &#125;</span><br><span class="line">                mObservedTableTracker.onSyncCompleted();</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                closeLock.unlock();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IllegalStateException | SQLiteException exception) &#123;</span><br><span class="line">        <span class="comment">// may happen if db is closed. just log.</span></span><br><span class="line">        Log.e(Room.LOG_TAG, <span class="string">&quot;Cannot run invalidation tracker. Is the db closed?&quot;</span>,</span><br><span class="line">                exception);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startTrackingTable</span><span class="params">(SupportSQLiteDatabase writableDb, <span class="keyword">int</span> tableId)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> String tableName = mTableNames[tableId];</span><br><span class="line">    StringBuilder stringBuilder = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">    <span class="keyword">for</span> (String trigger : TRIGGERS) &#123;</span><br><span class="line">        stringBuilder.setLength(<span class="number">0</span>);</span><br><span class="line">        stringBuilder.append(<span class="string">&quot;CREATE TEMP TRIGGER IF NOT EXISTS &quot;</span>);</span><br><span class="line">        appendTriggerName(stringBuilder, tableName, trigger);</span><br><span class="line">        stringBuilder.append(<span class="string">&quot; AFTER &quot;</span>)</span><br><span class="line">                .append(trigger)</span><br><span class="line">                .append(<span class="string">&quot; ON `&quot;</span>)</span><br><span class="line">                .append(tableName)</span><br><span class="line">                .append(<span class="string">&quot;` BEGIN INSERT OR REPLACE INTO &quot;</span>)</span><br><span class="line">                .append(UPDATE_TABLE_NAME)</span><br><span class="line">                .append(<span class="string">&quot; VALUES(null, &quot;</span>)</span><br><span class="line">                .append(tableId)</span><br><span class="line">                .append(<span class="string">&quot;); END&quot;</span>);</span><br><span class="line">        writableDb.execSQL(stringBuilder.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String[] TRIGGERS = <span class="keyword">new</span> String[]&#123;<span class="string">&quot;UPDATE&quot;</span>, <span class="string">&quot;DELETE&quot;</span>, <span class="string">&quot;INSERT&quot;</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String UPDATE_TABLE_NAME = <span class="string">&quot;room_table_modification_log&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>注释里说<code>syncTriggers()</code>在每个<code>beginTransaction</code>前会调用。</p>
+<p>这里最关键的逻辑就是：</p>
+<ul>
+<li>读取之前记录过的要监听变化的表。</li>
+<li>调用<code>startTrackingTable()</code>进行监听。</li>
+</ul>
+<h3 id="startTrackingTable-做了什么？"><a href="#startTrackingTable-做了什么？" class="headerlink" title="startTrackingTable()做了什么？"></a>startTrackingTable()做了什么？</h3><p>创建了一个触发器，当要监听的表发生了UPDATE、DELETE、INSERT后，往room_table_modification_log这个表里插入一条数据，记录发生变化的表的id。</p>
+<h3 id="什么时候读取room-table-modification-log的记录？"><a href="#什么时候读取room-table-modification-log的记录？" class="headerlink" title="什么时候读取room_table_modification_log的记录？"></a>什么时候读取room_table_modification_log的记录？</h3><p>查看源码其他地方可以发现，在<code>RoomDatabase.endTransaction()</code>中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">endTransaction</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mOpenHelper.getWritableDatabase().endTransaction();</span><br><span class="line">    <span class="keyword">if</span> (!inTransaction()) &#123;</span><br><span class="line">        <span class="comment">// enqueue refresh only if we are NOT in a transaction. Otherwise, wait for the last</span></span><br><span class="line">        <span class="comment">// endTransaction call to do it.</span></span><br><span class="line">        mInvalidationTracker.refreshVersionsAsync();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>会异步调用<code>InvalidationTracker.refreshVersionsAsync()</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">refreshVersionsAsync</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// TODO we should consider doing this sync instead of async.</span></span><br><span class="line">    <span class="keyword">if</span> (mPendingRefresh.compareAndSet(<span class="keyword">false</span>, <span class="keyword">true</span>)) &#123;</span><br><span class="line">        ArchTaskExecutor.getInstance().executeOnDiskIO(mRefreshRunnable);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Runnable mRefreshRunnable = <span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> Lock closeLock = mDatabase.getCloseLock();</span><br><span class="line">        <span class="keyword">boolean</span> hasUpdatedTable = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            closeLock.lock();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!ensureInitialization()) &#123;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!mPendingRefresh.compareAndSet(<span class="keyword">true</span>, <span class="keyword">false</span>)) &#123;</span><br><span class="line">                <span class="comment">// no pending refresh</span></span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (mDatabase.inTransaction()) &#123;</span><br><span class="line">                <span class="comment">// current thread is in a transaction. when it ends, it will invoke</span></span><br><span class="line">                <span class="comment">// refreshRunnable again. mPendingRefresh is left as false on purpose</span></span><br><span class="line">                <span class="comment">// so that the last transaction can flip it on again.</span></span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            mCleanupStatement.executeUpdateDelete();</span><br><span class="line">            mQueryArgs[<span class="number">0</span>] = mMaxVersion;</span><br><span class="line">            <span class="keyword">if</span> (mDatabase.mWriteAheadLoggingEnabled) &#123;</span><br><span class="line">                <span class="comment">// This transaction has to be on the underlying DB rather than the RoomDatabase</span></span><br><span class="line">                <span class="comment">// in order to avoid a recursive loop after endTransaction.</span></span><br><span class="line">                SupportSQLiteDatabase db = mDatabase.getOpenHelper().getWritableDatabase();</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    db.beginTransaction();</span><br><span class="line">                    hasUpdatedTable = checkUpdatedTable();</span><br><span class="line">                    db.setTransactionSuccessful();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    db.endTransaction();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                hasUpdatedTable = checkUpdatedTable();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalStateException | SQLiteException exception) &#123;</span><br><span class="line">            <span class="comment">// may happen if db is closed. just log.</span></span><br><span class="line">            Log.e(Room.LOG_TAG, <span class="string">&quot;Cannot run invalidation tracker. Is the db closed?&quot;</span>,</span><br><span class="line">                    exception);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            closeLock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (hasUpdatedTable) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (mObserverMap) &#123;</span><br><span class="line">                <span class="keyword">for</span> (Map.Entry&lt;Observer, ObserverWrapper&gt; entry : mObserverMap) &#123;</span><br><span class="line">                    entry.getValue().checkForInvalidation(mTableVersions);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">checkUpdatedTable</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> hasUpdatedTable = <span class="keyword">false</span>;</span><br><span class="line">        Cursor cursor = mDatabase.query(SELECT_UPDATED_TABLES_SQL, mQueryArgs);</span><br><span class="line">        <span class="comment">//noinspection TryFinallyCanBeTryWithResources</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">while</span> (cursor.moveToNext()) &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">long</span> version = cursor.getLong(<span class="number">0</span>);</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> tableId = cursor.getInt(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">                mTableVersions[tableId] = version;</span><br><span class="line">                hasUpdatedTable = <span class="keyword">true</span>;</span><br><span class="line">                <span class="comment">// result is ordered so we can safely do this assignment</span></span><br><span class="line">                mMaxVersion = version;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            cursor.close();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> hasUpdatedTable;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这里的关键是<code>checkUpdatedTable()</code>会去读取<code>room_table_modification_log</code>表中记录的发生数据变化的表id，以及表的版本，这个表的主键是自增的，所以每次插入同一个表id，主键都不一样，可以作为版本号。</p>
+<p>接着会去调用<code>ObserverWrapper.checkForInvalidation()</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ObserverWrapper</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span>[] mTableIds;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String[] mTableNames;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">long</span>[] mVersions;</span><br><span class="line">    <span class="keyword">final</span> Observer mObserver;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Set&lt;String&gt; mSingleTableSet;</span><br><span class="line"></span><br><span class="line">    ObserverWrapper(Observer observer, <span class="keyword">int</span>[] tableIds, String[] tableNames, <span class="keyword">long</span>[] versions) &#123;</span><br><span class="line">        mObserver = observer;</span><br><span class="line">        mTableIds = tableIds;</span><br><span class="line">        mTableNames = tableNames;</span><br><span class="line">        mVersions = versions;</span><br><span class="line">        <span class="keyword">if</span> (tableIds.length == <span class="number">1</span>) &#123;</span><br><span class="line">            ArraySet&lt;String&gt; set = <span class="keyword">new</span> ArraySet&lt;&gt;();</span><br><span class="line">            set.add(mTableNames[<span class="number">0</span>]);</span><br><span class="line">            mSingleTableSet = Collections.unmodifiableSet(set);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            mSingleTableSet = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">checkForInvalidation</span><span class="params">(<span class="keyword">long</span>[] versions)</span> </span>&#123;</span><br><span class="line">        Set&lt;String&gt; invalidatedTables = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> size = mTableIds.length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> index = <span class="number">0</span>; index &lt; size; index++) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> tableId = mTableIds[index];</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">long</span> newVersion = versions[tableId];</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">long</span> currentVersion = mVersions[index];</span><br><span class="line">            <span class="keyword">if</span> (currentVersion &lt; newVersion) &#123;</span><br><span class="line">                mVersions[index] = newVersion;</span><br><span class="line">                <span class="keyword">if</span> (size == <span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="comment">// Optimization for a single-table observer</span></span><br><span class="line">                    invalidatedTables = mSingleTableSet;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (invalidatedTables == <span class="keyword">null</span>) &#123;</span><br><span class="line">                        invalidatedTables = <span class="keyword">new</span> ArraySet&lt;&gt;(size);</span><br><span class="line">                    &#125;</span><br><span class="line">                    invalidatedTables.add(mTableNames[index]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (invalidatedTables != <span class="keyword">null</span>) &#123;</span><br><span class="line">            mObserver.onInvalidated(invalidatedTables);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>发现了表的版本号有变化，说明表数据是真的变化了，再调用<code>mObserver.onInvalidated(invalidatedTables)</code>。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>这里就把所有逻辑串起来了，概括一下。</p>
+<ul>
+<li>Dao对象查询方法中创建一个ComputableLiveData，并返回其内部的LiveData。</li>
+<li>ComputableLiveData的compute()方法中：<ul>
+<li>做数据库查询。</li>
+<li>在通过InvalidationTracker监听表变化，表发生变化了就调用ComputableLiveData.invalidate()重新调用compute()，重新查询数据库。</li>
+</ul>
+</li>
+</ul>
+<p>InvalidationTracker监听表数据变化原理：</p>
+<ul>
+<li>添加观察者时记录要监听的表。</li>
+<li>每次事务开启前，创建要监听的表的触发器。<ul>
+<li>触发器监听到要创建的表发生了UPDATE或DELTE或INSERT，就往一个临时表记录这个表的id。</li>
+</ul>
+</li>
+<li>每次事务结束时，查询临时表中发生数据变化的表id，通知观察者表数据变化了。</li>
+</ul>
+<h1 id="GreenDao如何实现LiveData监听数据表变化？"><a href="#GreenDao如何实现LiveData监听数据表变化？" class="headerlink" title="GreenDao如何实现LiveData监听数据表变化？"></a>GreenDao如何实现LiveData监听数据表变化？</h1><p>回到最开始的需求。</p>
+<p>只需要把ComputableLiveData和InvalidationTracker的逻辑迁移出来即可。</p>
+<p>在GreenDao的beginTransaction()创建触发器，endTransaction()中查询临时表结果通知观察者。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayList/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +391,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -337,7 +511,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -445,7 +619,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -651,7 +825,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -812,7 +986,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -935,7 +1109,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1065,7 +1239,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1401,7 +1575,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1523,7 +1697,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1638,111 +1812,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/UDP%E4%B8%8ETCP%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%BD%91%E7%BB%9C/UDP%E4%B8%8ETCP%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">UDP与TCP区别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-03-16 19:31:00" itemprop="dateCreated datePublished" datetime="2018-03-16T19:31:00+08:00">2018-03-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/UDP%E4%B8%8ETCP%E5%8C%BA%E5%88%AB/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/UDP与TCP区别/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="UDP报文头"><a href="#UDP报文头" class="headerlink" title="UDP报文头"></a>UDP报文头</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210827230610.png"></p>
-<p>UDP 协议头中只包含 4 个字段，分别是源端口、目的端口、长度和校验码，其中每一个字段都占 16 比特，即 2 字节，这 4 个字段的作用如下：</p>
-<ul>
-<li>源端口是一个可选字段，它表示发送方进程的端口号，接收方可以使用该字段（不一定准确）向发送方发送信息；</li>
-<li>目的端口是数据报接收方的端口号，它只在目标的 IP 地址下才有意义；</li>
-<li>长度是协议头和数据报中数据长度的总和，表示整个数据报的大小；</li>
-<li>  校验码使用 IP 首部、UDP 首部和数据报中的数据进行计算，接收方可以通过校验码验证数据的准确性，发现传输过程中出现的问题。</li>
-</ul>
-<h1 id="UDP特点"><a href="#UDP特点" class="headerlink" title="UDP特点"></a>UDP特点</h1><p>简单高效：</p>
-<ol>
-<li> 面向无连接</li>
-<li> 报文头简单，只有8字节</li>
-<li> 对应用层数据不分段</li>
-</ol>
-<p>关于分段：</p>
-<p>应用层交给UDP多长的报文，UDP就照样发送，即一次发送一个报文。若报文太长，则到达IP层需要分片，降低效率。若太短，则传输效率会下降（举个例子，1字节的数据，加上20字节的UDP首部，再加上20字节的IP层首部，结果发了41字节的包只完成了1字节有用数据的交付）。UDP对应用层交下来的报文，既不合并，也不拆分，而是保留这些报文的边界。</p>
-<h1 id="UDP和TCP区别？"><a href="#UDP和TCP区别？" class="headerlink" title="UDP和TCP区别？"></a>UDP和TCP区别？</h1><p>UDP 在传送数据之前不需要先建立连接，远地主机在收到 UDP 报文后，不需要给出任何确认。虽然 UDP 不提供可靠交付，但在某些情况下 UDP 确是一种最有效的工作方式（一般用于即时通信），比如： QQ 语音、 QQ 视频 、直播等等。</p>
-<p>TCP 提供面向连接的服务。在传送数据之前必须先建立连接，数据传送结束后要释放连接。 TCP 不提供广播或多播服务。由于 TCP 要提供可靠的，面向连接的传输服务（TCP的可靠体现在TCP在传递数据之前，会有三次握手来建立连接，而且在数据传递时，有确认、窗口、重传、拥塞控制机制，在数据传完后，还会断开连接用来节约系统资源），这一难以避免增加了许多开销，如确认，流量控制，计时器以及连接管理等。这不仅使协议数据单元的首部增大很多，还要占用许多处理机资源。TCP 一般用于文件传输、发送和接收邮件、远程登录等场景。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1814,7 +1883,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">184</span>
+          <span class="site-state-item-count">185</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1827,7 +1896,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">246</span>
+        <span class="site-state-item-count">247</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

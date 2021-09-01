@@ -28,7 +28,7 @@
 <meta property="og:description" content="设计一个崩溃收集SDK应该考虑哪些因素？包体积核心框架保持尽可能精简，不依赖任何第三方库，保证增大集成SDK的App的体积。 需要依赖第三方库的功能，尽量设计为可插拔，让用户可选自行决策。 稳定性作为一个全局性SDK，首先保证对App主功能没有影响。 其中最主要的是SDK绝对不能自己崩溃，所以不放心可以在关键逻辑都try catch。 其次是对CPU占用、网络带宽占用、电量消耗等App性能指标的影">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2019-06-15T12:37:00.000Z">
-<meta property="article:modified_time" content="2021-09-01T08:11:04.731Z">
+<meta property="article:modified_time" content="2021-09-01T08:29:36.975Z">
 <meta property="article:author" content="Ricky.L">
 <meta property="article:tag" content="崩溃收集">
 <meta property="article:tag" content="系统设计">
@@ -220,7 +220,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 16:11:04" itemprop="dateModified" datetime="2021-09-01T16:11:04+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-01 16:29:36" itemprop="dateModified" datetime="2021-09-01T16:29:36+08:00">2021-09-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -352,8 +352,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/Kotlin/Kotlin%20%E6%B3%9B%E5%9E%8B/" rel="prev" title="Kotlin 泛型">
-      <i class="fa fa-chevron-left"></i> Kotlin 泛型
+    <a href="/Kotlin/Gson%E5%9C%A8Kotlin%E4%B8%8B%E7%9A%84%E5%B4%A9%E6%BA%83/" rel="prev" title="Gson在Kotlin下的崩溃">
+      <i class="fa fa-chevron-left"></i> Gson在Kotlin下的崩溃
     </a></div>
       <div class="post-nav-item">
     <a href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ACRA%E5%8E%9F%E7%90%86/" rel="next" title="崩溃收集 - ACRA原理">
@@ -440,7 +440,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">184</span>
+          <span class="site-state-item-count">185</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -453,7 +453,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">246</span>
+        <span class="site-state-item-count">247</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
