@@ -1233,6 +1233,54 @@
 <p>子Job运行失败抛出异常时会立刻取消父Job和它所有的子Job。</p>
 <p>这样的控制可以改变，让任务控制更加的自由灵活，实现自己想要的效果。</p>
 <h2 id="序列生成器"><a href="#序列生成器" class="headerlink" title="序列生成器"></a>序列生成器</h2><p>序列生成器，也是利用控制yield()这个挂起函数的Continuation对象的执行，来计算下一个值。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a href="https://developer.android.com/kotlin/coroutines-adv?hl=zh-cn">官方文档：利用 Kotlin 协程提升应用性能</a></li>
+<li><a href="https://developer.android.com/kotlin/coroutines">官方文档：Android 上的 Kotlin 协程</a></li>
+<li><a href="https://developer.android.com/kotlin/coroutines-adv">官方文档：利用 Kotlin 协程提升应用性能</a></li>
+<li><a href="https://github.com/Kotlin/KEEP/blob/master/proposals/coroutines.md">官方文档：Kotlin Coroutines Design</a></li>
+<li><a href="http://www.kotlincn.net/docs/reference/coroutines/coroutines-guide.html">官方文档：协程指南</a></li>
+<li><a href="https://github.com/Kotlin/coroutines-examples">协程官方示例代码</a></li>
+<li><a href="https://github.com/JetBrains/kotlin/tree/master/libraries/stdlib/src/kotlin/coroutines">源码：标准库协程api</a></li>
+<li><a href="https://github.com/JetBrains/kotlin/tree/master/libraries/stdlib/jvm/src/kotlin/coroutines">源码：标准库api的jvm实现</a></li>
+<li><a href="https://github.com/Kotlin/kotlinx.coroutines/tree/master/kotlinx-coroutines-core/common/src">源码：扩展库协程api</a></li>
+<li><a href="https://github.com/Kotlin/kotlinx.coroutines/tree/master/kotlinx-coroutines-core/jvm/src">源码：扩展库api的jvm实现</a></li>
+<li><a href="https://mp.weixin.qq.com/s/N9BiufCWTRuoh6J-QERlWQ">硬核万字解读——Kotlin协程原理解析</a> </li>
+<li><a href="https://juejin.cn/post/6844904037586829320">最全面的Kotlin协程: Coroutine/Channel/Flow 以及实际应用</a></li>
+<li><a href="https://kaixue.io/tag/kotlin-coroutines/">扔物线：Kotlin协程</a> </li>
+<li><a href="https://juejin.cn/post/6883652600462327821">Kotlin Jetpack 实战 | 09. 图解协程：suspend</a> </li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105027646">Kotlin协程源码分析-2 调用挂起函数</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105031381">Kotlin协程源码分析-3 调用挂起函数</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105033167">Kotlin协程源码分析-4 状态机</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105056317">Kotlin协程源码分析-5 状态机</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105151079">Kotlin协程源码分析-6 suspendCoroutineUninterceptedOrReturn注意点</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105081080">Kotlin协程源码分析-7 Context左向链表</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105181027">Kotlin协程源码分析-8 拦截器</a> </li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105184822">Kotlin协程核心库分析-1 Dispatchers</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105547092">Kotlin协程核心库分析-2 Job简述</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105623638">Kotlin协程核心库分析-3 Job链</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105718944">Kotlin协程核心库分析-4 Job父子取消</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105733824">Kotlin协程核心库分析-5 Job异常处理器注意点</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105750095">Kotlin协程核心库分析-6 范围协程</a></li>
+<li><a href="https://fanmingyi.blog.csdn.net/article/details/105848995">Kotlin协程核心库分析-7 Sequence</a> </li>
+<li><a href="https://mp.weixin.qq.com/s?__biz=MzIzMTYzOTYzNA==&mid=2247483875&idx=1&sn=b1b565f651ee1221d4bda19ab12009ce">深入理解 Kotlin Coroutine （一）</a></li>
+<li><a href="https://mp.weixin.qq.com/s?__biz=MzIzMTYzOTYzNA==&mid=2247483878&idx=1&sn=710189e6e22a13fc7d1ea67bc2dd9270">深入理解 Kotlin coroutine (二）</a> </li>
+<li><a href="https://www.bennyhuo.com/2019/04/01/basic-coroutines/">破解 Kotlin 协程(1) - 入门篇</a></li>
+<li><a href="https://www.bennyhuo.com/2019/04/08/coroutines-start-mode/">破解 Kotlin 协程(2) - 协程启动篇</a></li>
+<li><a href="https://www.bennyhuo.com/2019/04/11/coroutine-dispatchers/">破解 Kotlin 协程(3) - 协程调度篇</a></li>
+<li><a href="https://www.bennyhuo.com/2019/04/23/coroutine-exceptions/">破解 Kotlin 协程(3) - 协程调度篇</a></li>
+<li><a href="https://www.bennyhuo.com/2019/04/30/coroutine-cancellation/">破解 Kotlin 协程(5) - 协程取消篇</a></li>
+<li><a href="https://www.bennyhuo.com/2019/05/07/coroutine-suspend/">破解 Kotlin 协程(6) - 协程挂起篇</a></li>
+<li><a href="https://www.bennyhuo.com/2019/10/19/coroutine-why-so-called-lightweight-thread/">破解 Kotlin 协程  番外篇(1) - 协程为什么被称为『轻量级线程』？</a> </li>
+<li><a href="http://johnnyshieh.me/posts/kotlin-coroutine-introduction/">Kotlin Coroutines(协程) 完全解析（一），协程简介</a></li>
+<li><a href="http://johnnyshieh.me/posts/kotlin-coroutine-deep-diving/">Kotlin Coroutines(协程) 完全解析（二），深入理解协程的挂起、恢复与调度</a></li>
+<li><a href="http://johnnyshieh.me/posts/kotlin-coroutine-integration-and-cancel/">Kotlin Coroutines(协程) 完全解析（三），封装异步回调、协程间关系及协程的取消</a></li>
+<li><a href="http://johnnyshieh.me/posts/kotlin-coroutine-exception-handling/">Kotlin Coroutines(协程) 完全解析（四），协程的异常处理</a></li>
+<li><a href="http://johnnyshieh.me/posts/kotlin-coroutine-concurrency/">Kotlin Coroutines(协程) 完全解析（五），协程的并发</a> </li>
+<li><a href="https://mp.weixin.qq.com/s?__biz=MzIzNTc5NDY4Nw==&mid=2247484630&idx=1&sn=967175b88ce6d57e25917b4763601776">Kotlin协程实现原理:Suspend&amp;CoroutineContext</a></li>
+<li><a href="https://mp.weixin.qq.com/s?__biz=MzIzNTc5NDY4Nw==&mid=2247484642&idx=1&sn=3d628b5094d05f0ea6fcb9559dcf73e4">Kotlin协程实现原理:CoroutineScope&amp;Job</a></li>
+<li><a href="https://mp.weixin.qq.com/s?__biz=MzIzNTc5NDY4Nw==&mid=2247484655&idx=1&sn=36fe3d4a0018b9b633e7aab0f00236a6">Kotlin协程实现原理:ContinuationInterceptor&amp;CoroutineDispatcher</a></li>
+<li><a href="https://blog.csdn.net/weixin_42063726/java/article/details/106198068">Kotlin协程-调度器中的精妙实现</a></li>
+</ul>
 ]]></content>
       <categories>
         <category>Kotlin</category>
