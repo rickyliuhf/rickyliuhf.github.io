@@ -186,6 +186,104 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%BD%91%E7%BB%9C/TCP%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E7%BD%91%E7%BB%9C/TCP%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B/" class="post-title-link" itemprop="url">TCP四次挥手</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-09 19:31:00" itemprop="dateCreated datePublished" datetime="2018-03-09T19:31:00+08:00">2018-03-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%BD%91%E7%BB%9C/TCP%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="网络/TCP四次挥手/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="TCP断开连接为什么要四次挥手？为什么不能三次挥手？"><a href="#TCP断开连接为什么要四次挥手？为什么不能三次挥手？" class="headerlink" title="TCP断开连接为什么要四次挥手？为什么不能三次挥手？"></a>TCP断开连接为什么要四次挥手？为什么不能三次挥手？</h1><p>因为服务端接收到客户端断开连接的请求报文时，服务端可能还有数据要发送，要等待服务端把数据发送完了，才能向客户端发起断开连接的请求，此时服务端只能先回复客户端一个ACK报文，告知客户端我已经收到了断开连接的请求，你可以不用重复发送断开连接的请求了，等我把数据发完再通知你我可以断开连接。服务端的ACK和FIN指令必须分开发送，所以需要四次挥手，而不能三次。</p>
+<h1 id="TCP断开连接时，客户端发送最后一个ACK给服务端后，为什么要进入TIME-WAIT等待一段时间才能关闭连接？为什么又要等待2MSL？"><a href="#TCP断开连接时，客户端发送最后一个ACK给服务端后，为什么要进入TIME-WAIT等待一段时间才能关闭连接？为什么又要等待2MSL？" class="headerlink" title="TCP断开连接时，客户端发送最后一个ACK给服务端后，为什么要进入TIME_WAIT等待一段时间才能关闭连接？为什么又要等待2MSL？"></a>TCP断开连接时，客户端发送最后一个ACK给服务端后，为什么要进入TIME_WAIT等待一段时间才能关闭连接？为什么又要等待2MSL？</h1><ol>
+<li>防止延迟的数据段被其他使用相同源地址、源端口、目的地址以及目的端口的 TCP 连接收到；</li>
+<li>保证 TCP 连接的远程被正确关闭，即等待被动关闭连接的一方收到 FIN 对应的 ACK 消息；</li>
+</ol>
+<h2 id="阻止延迟报文"><a href="#阻止延迟报文" class="headerlink" title="阻止延迟报文"></a>阻止延迟报文</h2><p>TCP断开连接时，如果客户端在接收到服务端的FIN自己发送完ACK后直接关闭连接，服务端可能没有收到ACK，会超时重传FIN，此时由于客户端已经关闭了连接，如果客户端有新的程序需要向该服务端的同一个端口传输数据，会重新建立TCP连接，并且这个新TCP连接无法和上一个关闭的TCP连接区分开来，因为源IP地址、源端口、目标IP地址、目标端口都一样，此时新连接传输数据过程中如果收到上次连接的传来的FIN，新连接的状态就异常了，新连接SYN握手会失败，服务端会发送RST阻止客户端连接的建立，因为旧的连接并没有关闭。。也有可能会收到其他服务端发送的报文。</p>
+<h2 id="保证连接关闭"><a href="#保证连接关闭" class="headerlink" title="保证连接关闭"></a>保证连接关闭</h2><p>服务端发送FIN报文后，如果没有接收到ACK会超时重传FIN，直到收到ACK了才会关闭连接。服务端要等待什么时候超时重传呢？服务端发送FIN后，最多经过一个MSL到达客户端，客户端发送ACK最多经过一个MSL到达服务端，所以服务端等待2MSL没有收到ACK就重发FIN报文，FIN报文最多经过一个MSL到达客户端，所以从客户端发送ACK给服务端要至少等待2MSL，以取保服务端收到了自己发送的ACK，不会超时重传FIN</p>
+<h1 id="为什么TIME-WAIT要等待2MSL？"><a href="#为什么TIME-WAIT要等待2MSL？" class="headerlink" title="为什么TIME_WAIT要等待2MSL？"></a>为什么TIME_WAIT要等待2MSL？</h1><p>MSL（Maximum Segment Lifetime，最大报文生存时间）是指任何报文在网络上存在的最长时间，超过这个时间的报文都会被丢弃。</p>
+<p>网络中可能存在来自发送方的报文，接收方收到后需要回ACK，一来一回两个MSL，等待两个MSL可以确保网络中一定不存在报文。</p>
+<p>服务端发送FIN后，会计时等待接受ACK，等待的时间大约是一个RTT多一点的时间，也就是2MSL左右，如果FIN没丢失，客户端发送ACK，发送ACK时服务端已经等待了一个MSL左右，如果ACK丢失了，服务端再等待一个MSL，超时未收到ACK，则会重传FIN，FIN再次到达客户端也需要一个MSL左右，这样客户端至少得等待2MSL，以让服务端重传的FIN达到，如果2MSL后没有收到服务端的FIN，说明服务端已经接收到ACK了，服务端已经关闭连接，同时网络也不可能有此次连接的任何报文了，客户端就可以安全的关闭连接。</p>
+<h1 id="进入TIME-WAIT有什么问题？"><a href="#进入TIME-WAIT有什么问题？" class="headerlink" title="进入TIME_WAIT有什么问题？"></a>进入TIME_WAIT有什么问题？</h1><p>大并发量的短时间传输的连接，会造成连接等待时间变长。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%8F%A5%E6%9F%84%E3%80%81%E7%9B%B4%E6%8E%A5%E6%8C%87%E9%92%88/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +315,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -344,7 +442,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -471,7 +569,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -610,7 +708,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -747,7 +845,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -889,7 +987,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1023,7 +1121,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1238,7 +1336,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1448,7 +1546,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
+                <time title="修改时间：2021-09-02 00:02:10" itemprop="dateModified" datetime="2021-09-02T00:02:10+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1541,109 +1639,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/" class="post-title-link" itemprop="url">Object.finalize()</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-01-17 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-17T20:00:00+08:00">2018-01-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-01 23:51:27" itemprop="dateModified" datetime="2021-09-01T23:51:27+08:00">2021-09-01</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Object.finalize()/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Object的finalize-方法什么时候被执行？"><a href="#Object的finalize-方法什么时候被执行？" class="headerlink" title="Object的finalize()方法什么时候被执行？"></a>Object的finalize()方法什么时候被执行？</h1><p>当垃圾回收器要宣告一个对象死亡时，至少要经过两次标记过程：</p>
-<p>如果对象在进行可达性分析后发现没有和GC Roots相连接的引用链，就会被第一次标记。</p>
-<p>GC会再判断该对象是否覆盖了finalize方法，若未覆盖，则直接将其回收。</p>
-<p>如果对象覆盖finalize()方法且未被虚拟机调用过，那么这个对象会被放置在F-Queue队列中，并在稍后由一个虚拟机自动建立的低优先级的Finalizer线程区执行触发finalize()方法，但不承诺等待其运行结束。</p>
-<p>执行finalize方法完毕后，GC会再次判断该对象是否可达，若不可达，则进行回收，否则，对象“复活”。</p>
-<h1 id="Object-finalize-设计目的？"><a href="#Object-finalize-设计目的？" class="headerlink" title="Object.finalize()设计目的？"></a>Object.finalize()设计目的？</h1><p>f对象逃脱死亡的最后一次机会。（只要重新与引用链上的任何一个对象建立关联即可。）但是不建议使用，运行代价高昂，不确定性大，且无法保证各个对象的调用顺序。可用try-finally或其他替代。</p>
-<h1 id="Object-finalize-使用场景"><a href="#Object-finalize-使用场景" class="headerlink" title="Object.finalize()使用场景"></a>Object.finalize()使用场景</h1><p>由于发生垃圾回收就会调用finalize()，所以它可以作为垃圾回收的监听回调。</p>
-<p>在Android framework源码中BinderInternal实现了gc监听的功能，ActivityThread在gc发生时，如果当前内存不足时，则清理一些不必要的activity以释放内存。</p>
-<p>再比如你调用了一些native的方法，可以要在finalize()里去调用C的释放函数。</p>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数
-</a></li>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1082673">是时候忘掉finalize方法了</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/questionTerminal/d8eab06913084e42b515633604eef7cd">finalize()方法什么时候被调用？析构函数(finalization)的目的是什么？</a></li>
-<li>《深入理解Java虚拟机》</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1715,7 +1710,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">187</span>
+          <span class="site-state-item-count">188</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1728,7 +1723,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">250</span>
+        <span class="site-state-item-count">251</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

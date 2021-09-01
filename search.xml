@@ -6445,6 +6445,49 @@
       </tags>
   </entry>
   <entry>
+    <title>Kotlin协程原理</title>
+    <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Kotlin%E5%8D%8F%E7%A8%8B%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><p>协程核心优势是结构化编程，通俗直接理解可以异步转同步，每个协程都是一个逻辑调度流，并加以各种自定义的控制。<br>代码结构清晰，可读性增强，便于调试和测试。</p>
+<h2 id="协程核心实现"><a href="#协程核心实现" class="headerlink" title="协程核心实现"></a>协程核心实现</h2><p>Kotlin协程的实现的核心是围绕Continuation对象和挂起函数展开的。</p>
+<p>要理解协程的各个原理和机制，首先要搞明白挂起函数的原理，再搞懂启动一个协程具体的执行步骤和底层实现，然后才能理解其他的机制，比如线程切换、拦截器、任务取消、异常处理等机制。</p>
+<p>比如说取消，如果调用了一个系统的挂起函数，是支持取消的，当取消Job的时候，挂起函数就不执行它的Continuation的回调方法，挂起函数后续的逻辑也就不会执行了。</p>
+<h2 id="挂起函数和Continuation"><a href="#挂起函数和Continuation" class="headerlink" title="挂起函数和Continuation"></a>挂起函数和Continuation</h2><p>挂起函数在编译后，都会给函数增加一个Continuation的参数，Continuation类代表就是一个异步回调，里面的resumeWith()方法就是代表一般意义上回调对象里的onSuccess或者onFail。</p>
+<p>回调的onSuccess后执行的是什么呢？<br>执行的是调用挂起函数的后续逻辑，Continuation等于是把逻辑流给封装了一下。</p>
+<h2 id="Continuation是怎么做到封装挂起函数后续逻辑的？"><a href="#Continuation是怎么做到封装挂起函数后续逻辑的？" class="headerlink" title="Continuation是怎么做到封装挂起函数后续逻辑的？"></a>Continuation是怎么做到封装挂起函数后续逻辑的？</h2><p>这要从协程的启动说起。</p>
+<p>通过CoroutineScope的launch()方法启动一个协程的时候，观察launch函数的参数，协程体代码是写在一个suspend修饰过的lambda表达式里面的，这个suspend lambda最终会编译为一个SuspendLambda类。</p>
+<p>launch函数中执行协程，最终是通过调用SuspendLambda类的create()函数返回一个Continuation对象，再调用这个Continuation的resume()方法来执行。</p>
+<ul>
+<li>SuspendLambda的create()方法返回的Continuation对象就是创建一个SuspendLambda对象返回，SuspendLambda其实是继承Continuation对象的，所以可以被作为Continuation返回；</li>
+<li>其resumeWith的方法实现是在继承链中的BaseContinuationImpl对象中，这里会调用invokeSuspend()方法，invokeSuspend()是实现在SuspendLambda中的，协程体里的代码都是在invokeSuspend()中的。</li>
+</ul>
+<p>如果在协程体里调用了别的挂起函数，之前说了会需要传一个Continuation对象，传的就是SuspendLambda本身；</p>
+<p>如果挂起函数的逻辑要切线程，不在同一个栈中执行，会返回一个挂起的枚举常量，然后invokeSuspend()方法就直接return了，不执行后续的逻辑。</p>
+<p>等到这个挂起函数执行完了，会调用Continuation的resumeWith()恢复后续逻辑执行，就会又执行到SuspendLambda的invokeSuspend()方法，执行协程体的后续代码。</p>
+<h2 id="状态机"><a href="#状态机" class="headerlink" title="状态机"></a>状态机</h2><p>这里是通过状态机来控制执行逻辑，简单理解就是一个读取状态的switch语句，编译时会把挂起函数前后的逻辑划分到不同的状态下，分在不同的case中执行，每次执行一个挂起函数，都会改变状态，每次重新调用invokeSuspend()的时候，会走到switch语句的不同的case，以执行不同的逻辑。</p>
+<p>这里使用状态机还有个好处就是，如果协程体里执行了100个挂起函数，给这100个挂起函数传递Continuation参数的时候，只需要传递SuspendLambda一个实例，而不用创建100个Continuation对象，这样节约内存，所以保证了高性能。</p>
+<h2 id="suspendCoroutine"><a href="#suspendCoroutine" class="headerlink" title="suspendCoroutine"></a>suspendCoroutine</h2><p>还有一个神奇的函数是suspendCoroutine，函数有个参数是一个带Continuation参数的lambda表达式，也是crossline内联的，这个方法的作用是获取到代表后续执行逻辑的Continuation对象，这个方法是suspend修饰的，并且是内联的，因为方法和lambda都是内联的，所以最后lambda里的代码会直接贴到suspendCoroutine的调用处。</p>
+<p>因为函数又是suspend的，所以会把SuspendLambda对象传给挂起函数的Continuation参数，SuspendLambda就获取到了后续的代码执行逻辑，其实就是状态机的一个case。</p>
+<h2 id="调度器-线程切换"><a href="#调度器-线程切换" class="headerlink" title="调度器 - 线程切换"></a>调度器 - 线程切换</h2><p>线程切换的生效靠的是拦截器机制，每次启动协程的时候，会在创建SuspendLambda之后，调用一下SuspendLambda的intercept()方法，调用intercept()返回的Continuation的resume()来启动协程。</p>
+<p>intercept()里面会去到context中去寻找key为CoroutineInterceptor的对象，也就是拦截器对象。<br>存在的话，会调用一下interceptContinuation()方法，把当前的SuspendLambda传递过去，返回一个新的Continuation对象。</p>
+<p>我们一般做协程的线程调度的时候，会在launch的时候传递一个<code>Dispatchers.Default</code>或<code>Dispatchers.IO</code>，这两个对象都是CoroutineDispatcher的实现类，会以CoroutineInterceptor为Key存储在coroutineContext中。</p>
+<p>然后就会在intercept()取出来调用，CoroutineDispatcher中会返回一个新的Continuation对象，对原始的Continuation对象也就是SuspendLambda做一个代理，新的Continuation对象里会用线程池来控制原始的Continuation的resumeWith()的执行时机，从而实现了线程的调度。</p>
+<h2 id="线程池"><a href="#线程池" class="headerlink" title="线程池"></a>线程池</h2><p>线程池是类似于ForkJoinPool的实现，每个线程都有私有队列，私有队列没有任务时会去其他线程私有队列的另外一头窃取任务，这样可以最大程度避免了单个共享队列添加和移除任务的加锁开销，又保证某个线程私有队列没有任务时不会一直空等消耗CPU，任务窃取相当于实现了队列共享。</p>
+<p>如果线程的状态跟任务的类型不匹配或者线程还没创建，会先把任务放到一个全局队列，让其他准备好的线程从全局队列取任务，这样减少线程没有准备好的空等消耗。一切机制都是为了最大程度提高线程池整体的吞吐量。</p>
+<h2 id="Job"><a href="#Job" class="headerlink" title="Job"></a>Job</h2><p>Job可以被编排为一系列的父子层次关系，当取消父Job时会递归的取消所有的子Job。</p>
+<p>子Job运行失败抛出异常时会立刻取消父Job和它所有的子Job。</p>
+<p>这样的控制可以改变，让任务控制更加的自由灵活，实现自己想要的效果。</p>
+<h2 id="序列生成器"><a href="#序列生成器" class="headerlink" title="序列生成器"></a>序列生成器</h2><p>序列生成器，也是利用控制yield()这个挂起函数的Continuation对象的执行，来计算下一个值。</p>
+]]></content>
+      <categories>
+        <category>Kotlin</category>
+      </categories>
+      <tags>
+        <tag>Kotlin</tag>
+        <tag>源码分析</tag>
+        <tag>协程</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Okio解决了什么？</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okio%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/</url>
     <content><![CDATA[<h1 id="传统Blocking-IO存在什么问题？"><a href="#传统Blocking-IO存在什么问题？" class="headerlink" title="传统Blocking IO存在什么问题？"></a>传统Blocking IO存在什么问题？</h1><p>传统BIO不管是读入还是写出，缓冲区的存在必然涉及copy的过程，而如果涉及双流操作，比如从一个输入流读入，再写入到一个输出流，那么这种情况下，在缓冲存在的情况下，数据走向是：</p>
