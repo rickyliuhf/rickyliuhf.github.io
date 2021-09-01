@@ -6518,6 +6518,44 @@
       </tags>
   </entry>
   <entry>
+    <title>Okio解决了什么？</title>
+    <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okio%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/</url>
+    <content><![CDATA[<h1 id="传统Blocking-IO存在什么问题？"><a href="#传统Blocking-IO存在什么问题？" class="headerlink" title="传统Blocking IO存在什么问题？"></a>传统Blocking IO存在什么问题？</h1><p>传统BIO不管是读入还是写出，缓冲区的存在必然涉及copy的过程，而如果涉及双流操作，比如从一个输入流读入，再写入到一个输出流，那么这种情况下，在缓冲存在的情况下，数据走向是：</p>
+<p>-&gt; 从输入流读出到缓冲区</p>
+<p>-&gt; 从输入流缓冲区copy到 b[]</p>
+<p>-&gt; 将 b[] copy 到输出流缓冲区</p>
+<p>-&gt; 输出流缓冲区读出数据到输出流</p>
+<p>上面情况存在冗余copy操作。</p>
+<h1 id="Okio解决了什么？"><a href="#Okio解决了什么？" class="headerlink" title="Okio解决了什么？"></a>Okio解决了什么？</h1><p>Okio减少了冗余的复制。</p>
+<p>Okio从输入流读取到的数据用一个Segment链表存储，写入数据会把Segment链表中的结点拿过来，不用做中间拷贝。</p>
+<p>Segment 实际上也是对 byte[] 进行封装，再通过各种属性来记录各种状态。在读写时，如果可以，将Segment整体作为数据传授媒介，这样就没有具体数据的copy过程，而是交换了对应的Segment引用，这是减少数据copy进而交换数据的关键。</p>
+<p>Okio并没有打算优化底层IO方式以及替代原生IO方式，Okio优化了缓冲策略以减轻内存压力和性能消耗，并且对于部分IO场景，提供了更友好的API。</p>
+<h1 id="Okio内部实现"><a href="#Okio内部实现" class="headerlink" title="Okio内部实现"></a>Okio内部实现</h1><p>Okio底层还是用Java标准的io流来操作，只是缓存机制是自己实现了一套，避免了减少一次中间拷贝过程。</p>
+<p>不管是RealBufferedSource还是RealBufferedSink，内部本质上都是通过Buffer这个类来实现缓存功能，而Buffer内部又是通过Segment这个核心类来缓存读取到的数据，Buffer就是一个管理者用来调度Segment。</p>
+<p>Segment是双向链表中的一个结点，Buffer类存储了链表的头结点。</p>
+<p>Segment中有个byte数组存储了真正的数据，最大字节数是8K，还有一些指针，表明了有效数据的范围。</p>
+<p>有数据超过8K，就会创建新的Segment，跟前面的Segment连起来</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">BufferedSource bufferedSource = Okio.buffer(Okio.source(src));</span><br><span class="line">BufferedSink bufferedSink = Okio.buffer(Okio.sink(dest));</span><br><span class="line">bufferedSink.writeAll(bufferedSource);</span><br><span class="line">bufferedSink.close();</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li> 先从原始的Source对象读数据，到RealBufferedSource的buffer对象，通过尾插法创建Segment，数据依次填满一个个的Segment对象里的byte数组。</li>
+<li> RealBufferedSource中的buffer中的Segment转移到RealBufferedSink中的buffer中</li>
+<li> 最后遍历RealBufferedSink的buffer中Segment链表写到OutputStream中</li>
+</ol>
+<p>(1) Source中需要传递的数据是”满”的情况，也就是8k都是有效数据，这种情况直接从source的buffer中拿到Segment，然后添加到sink的buffer上即可，和java io流相比，省去了中间的一次临时buffer拷贝，从而提高的读写效率</p>
+<p>(2) Source中需要传递的数据不”满”的情况，通过pos和limit可以定位到有效数据区间，和Sink中buffer的尾Segment有效数据进行对比，如果两个Segment中的有效数据可以合并到一个Segment中那么会进行数据整理，多余的Segment会被回收到。</p>
+<p>如果两个Segment的有效数据总和超过8k，那么直接将Source中的Segment链接到Sink中buffer的尾部即可。</p>
+<p>(3) Source的buffer中的Segment只是传递部分数据，如5K的数据值传递其中2K，okio内部会通过split方法将Segment分成2K和3K两个Segment，然后将2K的Segment参照第二种情况和Sink中的Segment进行合并。</p>
+]]></content>
+      <categories>
+        <category>源码分析</category>
+      </categories>
+      <tags>
+        <tag>源码分析</tag>
+        <tag>Okio</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeakCanary浅析</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/LeakCanary%E6%B5%85%E6%9E%90/</url>
     <content><![CDATA[<h1 id="LeakCanary怎么使用的？入口在哪？"><a href="#LeakCanary怎么使用的？入口在哪？" class="headerlink" title="LeakCanary怎么使用的？入口在哪？"></a>LeakCanary怎么使用的？入口在哪？</h1><p><a href="https://square.github.io/leakcanary/getting_started/">https://square.github.io/leakcanary/getting_started/</a></p>
@@ -6633,44 +6671,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Okio解决了什么？</title>
-    <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okio%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/</url>
-    <content><![CDATA[<h1 id="传统Blocking-IO存在什么问题？"><a href="#传统Blocking-IO存在什么问题？" class="headerlink" title="传统Blocking IO存在什么问题？"></a>传统Blocking IO存在什么问题？</h1><p>传统BIO不管是读入还是写出，缓冲区的存在必然涉及copy的过程，而如果涉及双流操作，比如从一个输入流读入，再写入到一个输出流，那么这种情况下，在缓冲存在的情况下，数据走向是：</p>
-<p>-&gt; 从输入流读出到缓冲区</p>
-<p>-&gt; 从输入流缓冲区copy到 b[]</p>
-<p>-&gt; 将 b[] copy 到输出流缓冲区</p>
-<p>-&gt; 输出流缓冲区读出数据到输出流</p>
-<p>上面情况存在冗余copy操作。</p>
-<h1 id="Okio解决了什么？"><a href="#Okio解决了什么？" class="headerlink" title="Okio解决了什么？"></a>Okio解决了什么？</h1><p>Okio减少了冗余的复制。</p>
-<p>Okio从输入流读取到的数据用一个Segment链表存储，写入数据会把Segment链表中的结点拿过来，不用做中间拷贝。</p>
-<p>Segment 实际上也是对 byte[] 进行封装，再通过各种属性来记录各种状态。在读写时，如果可以，将Segment整体作为数据传授媒介，这样就没有具体数据的copy过程，而是交换了对应的Segment引用，这是减少数据copy进而交换数据的关键。</p>
-<p>Okio并没有打算优化底层IO方式以及替代原生IO方式，Okio优化了缓冲策略以减轻内存压力和性能消耗，并且对于部分IO场景，提供了更友好的API。</p>
-<h1 id="Okio内部实现"><a href="#Okio内部实现" class="headerlink" title="Okio内部实现"></a>Okio内部实现</h1><p>Okio底层还是用Java标准的io流来操作，只是缓存机制是自己实现了一套，避免了减少一次中间拷贝过程。</p>
-<p>不管是RealBufferedSource还是RealBufferedSink，内部本质上都是通过Buffer这个类来实现缓存功能，而Buffer内部又是通过Segment这个核心类来缓存读取到的数据，Buffer就是一个管理者用来调度Segment。</p>
-<p>Segment是双向链表中的一个结点，Buffer类存储了链表的头结点。</p>
-<p>Segment中有个byte数组存储了真正的数据，最大字节数是8K，还有一些指针，表明了有效数据的范围。</p>
-<p>有数据超过8K，就会创建新的Segment，跟前面的Segment连起来</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">BufferedSource bufferedSource = Okio.buffer(Okio.source(src));</span><br><span class="line">BufferedSink bufferedSink = Okio.buffer(Okio.sink(dest));</span><br><span class="line">bufferedSink.writeAll(bufferedSource);</span><br><span class="line">bufferedSink.close();</span><br></pre></td></tr></table></figure>
-
-<ol>
-<li> 先从原始的Source对象读数据，到RealBufferedSource的buffer对象，通过尾插法创建Segment，数据依次填满一个个的Segment对象里的byte数组。</li>
-<li> RealBufferedSource中的buffer中的Segment转移到RealBufferedSink中的buffer中</li>
-<li> 最后遍历RealBufferedSink的buffer中Segment链表写到OutputStream中</li>
-</ol>
-<p>(1) Source中需要传递的数据是”满”的情况，也就是8k都是有效数据，这种情况直接从source的buffer中拿到Segment，然后添加到sink的buffer上即可，和java io流相比，省去了中间的一次临时buffer拷贝，从而提高的读写效率</p>
-<p>(2) Source中需要传递的数据不”满”的情况，通过pos和limit可以定位到有效数据区间，和Sink中buffer的尾Segment有效数据进行对比，如果两个Segment中的有效数据可以合并到一个Segment中那么会进行数据整理，多余的Segment会被回收到。</p>
-<p>如果两个Segment的有效数据总和超过8k，那么直接将Source中的Segment链接到Sink中buffer的尾部即可。</p>
-<p>(3) Source的buffer中的Segment只是传递部分数据，如5K的数据值传递其中2K，okio内部会通过split方法将Segment分成2K和3K两个Segment，然后将2K的Segment参照第二种情况和Sink中的Segment进行合并。</p>
-]]></content>
-      <categories>
-        <category>源码分析</category>
-      </categories>
-      <tags>
-        <tag>源码分析</tag>
-        <tag>Okio</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>App提权 - Shizuku源码浅析</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Shizuku%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h1 id="Shizuku做什么的？"><a href="#Shizuku做什么的？" class="headerlink" title="Shizuku做什么的？"></a>Shizuku做什么的？</h1><p>Shizuku可以做到让App拥有Shell权限，不用root，来调用系统的服务，但是需要借助adb命令来执行一个脚本，并且手机不能重启。</p>
@@ -6755,6 +6755,115 @@
         <tag>Binder</tag>
         <tag>源码分析</tag>
         <tag>Shizuku</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>依赖注入 - Dagger2基本机制</title>
+    <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Dagger2/</url>
+    <content><![CDATA[<h1 id="为什么要用依赖注入？"><a href="#为什么要用依赖注入？" class="headerlink" title="为什么要用依赖注入？"></a>为什么要用依赖注入？</h1><p>让每个类保持职责单一。</p>
+<p>好处：</p>
+<ul>
+<li>方便mock测试，减少排错和调试成本。</li>
+<li>类职责单一后，代码复用性非常强，减少改动成本。</li>
+</ul>
+<h1 id="Dagger2的优势？"><a href="#Dagger2的优势？" class="headerlink" title="Dagger2的优势？"></a>Dagger2的优势？</h1><ul>
+<li>无反射，编译时生成注入代码，无运行时性能损耗。</li>
+<li>符合jsr-330依赖注入标准，以后切换为其他符合jsr-330的依赖注入框架成本低。</li>
+</ul>
+<p>其他Java下的依赖注入框架，比如Dagger1、Guice，是通过反射在运行时对要注入的对象进行赋值，反射在运行时是比较耗时的，Dagger2没有反射，在编译时进行生成辅助代码，利用辅助代码做对象赋值，运行时性能没有消耗。</p>
+<p>Dagger2还有个好处是，按照jsr-330依赖注入标准要求来设计，比如支持@Inject、@Qualifier、@Scope等jsr-330中规定的注解，以后替换为其他符合jsr-330标准的依赖注入框架时切换成本小。</p>
+<h1 id="Dagger2基本运行流程"><a href="#Dagger2基本运行流程" class="headerlink" title="Dagger2基本运行流程"></a>Dagger2基本运行流程</h1><ul>
+<li>开发者把要注入的对象写在Module对象中，Module对象挂载在各种Component下，都用注解来配置。</li>
+<li>要注入的对象的生命周期受Component对象的生命周期控制，Component对象什么时候创建、什么时候丢弃是完全自行控制的。</li>
+<li>编译时通过解析注解处理器，生成注入相关的代码。</li>
+<li>在Activity、Fragment中通过调用Component的inject()方法，给所有标注为@Inject的属性赋值。<ul>
+<li>也可以通过Component直接get到对象。</li>
+<li>inject()后，所有依赖路径上的对象都会被创建。</li>
+</ul>
+</li>
+</ul>
+<h1 id="作用域Scope"><a href="#作用域Scope" class="headerlink" title="作用域Scope"></a>作用域Scope</h1><p>Scope可以在三个地方使用：</p>
+<ul>
+<li>Component类上标记。</li>
+<li>Module中providerXXX方法。</li>
+<li>Dagger2要创建的类上标记。</li>
+</ul>
+<p>作用域的唯一的实际作用，是让Component里的对象创建过后就缓存在Component对象里。</p>
+<p>所有作用域是完全跟Component对象的生命周期走的。</p>
+<p>比如，有一个UserScope，表示用户登陆到用户注销期间的作用域范围。</p>
+<ul>
+<li>在Dagger2中，UserScope是要标记到Component上去的，可以把所有用户登陆期间需要的对象都挂载到一个UserComponent上去。</li>
+<li>用户登陆时创建一个UserComponent对象并保存，用户注销时丢弃保存的UserComponent对象。</li>
+<li>在Module中标记为UserScope的对象，通过UserComponent去获取的时候都是同一个。</li>
+</ul>
+<h2 id="作用域如何嵌套？"><a href="#作用域如何嵌套？" class="headerlink" title="作用域如何嵌套？"></a>作用域如何嵌套？</h2><p>比如用户作用域内，可能通过蓝牙绑定智能设备到App，会存在设备相关的状态，就定义一个DeviceComponent代表设备相关的状态对象。</p>
+<ul>
+<li>在设备绑定时创建DeviceComponent对象并保存，在设备解绑时丢弃DeviceComponent对象。</li>
+<li>再次绑定设备时，创建新的DeviceComponent对象示例，这样挂载在DeviceComponent的对象就都重新生成了，设备的状态对象都会更新。</li>
+<li>设备绑定和解绑的动作一定是发生在用户登陆期间的，所以DeviceComponent和UserComponent并无代码上的直接关联，就可以实现概念上的作用域嵌套。</li>
+</ul>
+<h1 id="SubComponent解决了什么？"><a href="#SubComponent解决了什么？" class="headerlink" title="SubComponent解决了什么？"></a>SubComponent解决了什么？</h1><p>有了Component，怎么还搞一个SubComponent？</p>
+<p>顾名思义，就是建立Component的层级关系，而建立层级关系是为了读取共享的对象。</p>
+<p>比如：</p>
+<ul>
+<li>用户登陆生命周期对应UserComponent。</li>
+<li>用户绑定手环手表的生命周期对应DeviceComponent。</li>
+<li>用户在App开启设备的跑步到停止跑步的生命周期对应RunningComponent。</li>
+<li>用户在App开启设备的心率检测到结束心率检测的生命周期对应HeartRateComponent。</li>
+<li>用户在App里观看运动课程的生命周期对应CourseComponent。</li>
+</ul>
+<p>这里的层级关系从功能上看比较明显：</p>
+<ul>
+<li>用户绑定了设备才能启用跑步和心率检测的功能，所以：<ul>
+<li>HeartRateComponent和RunningComponent平级。</li>
+<li>DeviceComponent是RunningComponent和HeartRateComponent的父Component。</li>
+<li>RunningComponent和HeartRateComponent中的对象想要读取设备信息，应该都是读取DeviceComponent中同一份设备信息，这就催生了共享的需求。</li>
+</ul>
+</li>
+<li>不同用户之间设备信息是不一样的，所以：<ul>
+<li>UserComponent是DeviceComponent的父Component。</li>
+<li>DeviceComponent中的对象需要读取用户信息，读取的都是UserComponent下的对象状态。</li>
+<li>RunningComponent和HeartRateComponent中的对象要读取用户相关的状态，也要读取UserComponent挂载的对象。</li>
+</ul>
+</li>
+</ul>
+<p>如果没有Component的层级关系，DeviceComponent和RunningComponent中的对象要读取设备和用户相关的状态都要写重复的代码，Component层级关系消除了冗余的重复。</p>
+<h1 id="如何异步注入？"><a href="#如何异步注入？" class="headerlink" title="如何异步注入？"></a>如何异步注入？</h1><p>官方提供Producers机制，理解起来比较困难，其实更方便的是，通过Dagger2获取一个创建对象的函数，自己在代码里异步控制什么时候创建对象。</p>
+<h1 id="多绑定解决了什么？"><a href="#多绑定解决了什么？" class="headerlink" title="多绑定解决了什么？"></a>多绑定解决了什么？</h1><p>多绑定的意思是把要注入的对象信息都存储到一个集合里，比如Set或Map。</p>
+<p><strong>把要注入的对象存储到集合有什么好处？</strong></p>
+<p>可以实现一种插件化的架构。<br>把对象收集到一个中心，再做对象注入的时候，不需要依赖某个具体的Component或者Module对象，而是直接去中心里的集合中查表就行了。</p>
+<p>比如dagger.android中：</p>
+<ul>
+<li>每个Activity和Fragment都是单独的生命周期，都是单独的SubComponent。</li>
+<li>可以把这些SubComponent挂载的对象通过多绑定的注解标记，存入一个Map中，Key就是Activity或者Fragment类名。</li>
+<li>在Activity和Fragment的onCreate中，就可以只调用<code>AndroidInjection.inject(this)</code>。</li>
+<li>Dagger2内部就可以到Map中通过类名的Key查询到对应的Activity或者Fragment对应的SubComponent。</li>
+<li>然后创建Component对象，做实际的对象创建和注入。</li>
+</ul>
+<p>这样就简化了注入处的代码。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://dagger.dev/dev-guide/multibindings">multibindings</a></li>
+</ul>
+<h1 id="Dagger2存在什么问题？"><a href="#Dagger2存在什么问题？" class="headerlink" title="Dagger2存在什么问题？"></a>Dagger2存在什么问题？</h1><ol>
+<li> 学习和科普成本极高。</li>
+<li> APT生成的辅助代码增加编译时间。</li>
+<li> APT生成的辅助代码增加了Apk体积。</li>
+</ol>
+<p>dagger2中各种基本情况组合起来非常复杂，光注解就非常繁多，比如@Inject、@Component、@Subcomponent、@MultiBinding、@Binds、@ContributesAndroidInjector，要在大型团队中推广，必须要保证至少有一个人能完全hold住所有Dagger2相关的问题，否则就是灾难。</p>
+<p>这位负责人还要尽量文档化，负责科普宣讲，减少认知和沟通成本。</p>
+]]></content>
+      <categories>
+        <category>源码分析</category>
+      </categories>
+      <tags>
+        <tag>源码分析</tag>
+        <tag>Dagger2</tag>
+        <tag>Scope</tag>
+        <tag>SubComponent</tag>
+        <tag>multibindings</tag>
+        <tag>dagger.android</tag>
+        <tag>依赖注入</tag>
       </tags>
   </entry>
   <entry>
