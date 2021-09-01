@@ -6518,44 +6518,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Okio解决了什么？</title>
-    <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okio%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/</url>
-    <content><![CDATA[<h1 id="传统Blocking-IO存在什么问题？"><a href="#传统Blocking-IO存在什么问题？" class="headerlink" title="传统Blocking IO存在什么问题？"></a>传统Blocking IO存在什么问题？</h1><p>传统BIO不管是读入还是写出，缓冲区的存在必然涉及copy的过程，而如果涉及双流操作，比如从一个输入流读入，再写入到一个输出流，那么这种情况下，在缓冲存在的情况下，数据走向是：</p>
-<p>-&gt; 从输入流读出到缓冲区</p>
-<p>-&gt; 从输入流缓冲区copy到 b[]</p>
-<p>-&gt; 将 b[] copy 到输出流缓冲区</p>
-<p>-&gt; 输出流缓冲区读出数据到输出流</p>
-<p>上面情况存在冗余copy操作。</p>
-<h1 id="Okio解决了什么？"><a href="#Okio解决了什么？" class="headerlink" title="Okio解决了什么？"></a>Okio解决了什么？</h1><p>Okio减少了冗余的复制。</p>
-<p>Okio从输入流读取到的数据用一个Segment链表存储，写入数据会把Segment链表中的结点拿过来，不用做中间拷贝。</p>
-<p>Segment 实际上也是对 byte[] 进行封装，再通过各种属性来记录各种状态。在读写时，如果可以，将Segment整体作为数据传授媒介，这样就没有具体数据的copy过程，而是交换了对应的Segment引用，这是减少数据copy进而交换数据的关键。</p>
-<p>Okio并没有打算优化底层IO方式以及替代原生IO方式，Okio优化了缓冲策略以减轻内存压力和性能消耗，并且对于部分IO场景，提供了更友好的API。</p>
-<h1 id="Okio内部实现"><a href="#Okio内部实现" class="headerlink" title="Okio内部实现"></a>Okio内部实现</h1><p>Okio底层还是用Java标准的io流来操作，只是缓存机制是自己实现了一套，避免了减少一次中间拷贝过程。</p>
-<p>不管是RealBufferedSource还是RealBufferedSink，内部本质上都是通过Buffer这个类来实现缓存功能，而Buffer内部又是通过Segment这个核心类来缓存读取到的数据，Buffer就是一个管理者用来调度Segment。</p>
-<p>Segment是双向链表中的一个结点，Buffer类存储了链表的头结点。</p>
-<p>Segment中有个byte数组存储了真正的数据，最大字节数是8K，还有一些指针，表明了有效数据的范围。</p>
-<p>有数据超过8K，就会创建新的Segment，跟前面的Segment连起来</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">BufferedSource bufferedSource = Okio.buffer(Okio.source(src));</span><br><span class="line">BufferedSink bufferedSink = Okio.buffer(Okio.sink(dest));</span><br><span class="line">bufferedSink.writeAll(bufferedSource);</span><br><span class="line">bufferedSink.close();</span><br></pre></td></tr></table></figure>
-
-<ol>
-<li> 先从原始的Source对象读数据，到RealBufferedSource的buffer对象，通过尾插法创建Segment，数据依次填满一个个的Segment对象里的byte数组。</li>
-<li> RealBufferedSource中的buffer中的Segment转移到RealBufferedSink中的buffer中</li>
-<li> 最后遍历RealBufferedSink的buffer中Segment链表写到OutputStream中</li>
-</ol>
-<p>(1) Source中需要传递的数据是”满”的情况，也就是8k都是有效数据，这种情况直接从source的buffer中拿到Segment，然后添加到sink的buffer上即可，和java io流相比，省去了中间的一次临时buffer拷贝，从而提高的读写效率</p>
-<p>(2) Source中需要传递的数据不”满”的情况，通过pos和limit可以定位到有效数据区间，和Sink中buffer的尾Segment有效数据进行对比，如果两个Segment中的有效数据可以合并到一个Segment中那么会进行数据整理，多余的Segment会被回收到。</p>
-<p>如果两个Segment的有效数据总和超过8k，那么直接将Source中的Segment链接到Sink中buffer的尾部即可。</p>
-<p>(3) Source的buffer中的Segment只是传递部分数据，如5K的数据值传递其中2K，okio内部会通过split方法将Segment分成2K和3K两个Segment，然后将2K的Segment参照第二种情况和Sink中的Segment进行合并。</p>
-]]></content>
-      <categories>
-        <category>源码分析</category>
-      </categories>
-      <tags>
-        <tag>源码分析</tag>
-        <tag>Okio</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeakCanary浅析</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/LeakCanary%E6%B5%85%E6%9E%90/</url>
     <content><![CDATA[<h1 id="LeakCanary怎么使用的？入口在哪？"><a href="#LeakCanary怎么使用的？入口在哪？" class="headerlink" title="LeakCanary怎么使用的？入口在哪？"></a>LeakCanary怎么使用的？入口在哪？</h1><p><a href="https://square.github.io/leakcanary/getting_started/">https://square.github.io/leakcanary/getting_started/</a></p>
@@ -6671,6 +6633,44 @@
       </tags>
   </entry>
   <entry>
+    <title>Okio解决了什么？</title>
+    <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okio%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/</url>
+    <content><![CDATA[<h1 id="传统Blocking-IO存在什么问题？"><a href="#传统Blocking-IO存在什么问题？" class="headerlink" title="传统Blocking IO存在什么问题？"></a>传统Blocking IO存在什么问题？</h1><p>传统BIO不管是读入还是写出，缓冲区的存在必然涉及copy的过程，而如果涉及双流操作，比如从一个输入流读入，再写入到一个输出流，那么这种情况下，在缓冲存在的情况下，数据走向是：</p>
+<p>-&gt; 从输入流读出到缓冲区</p>
+<p>-&gt; 从输入流缓冲区copy到 b[]</p>
+<p>-&gt; 将 b[] copy 到输出流缓冲区</p>
+<p>-&gt; 输出流缓冲区读出数据到输出流</p>
+<p>上面情况存在冗余copy操作。</p>
+<h1 id="Okio解决了什么？"><a href="#Okio解决了什么？" class="headerlink" title="Okio解决了什么？"></a>Okio解决了什么？</h1><p>Okio减少了冗余的复制。</p>
+<p>Okio从输入流读取到的数据用一个Segment链表存储，写入数据会把Segment链表中的结点拿过来，不用做中间拷贝。</p>
+<p>Segment 实际上也是对 byte[] 进行封装，再通过各种属性来记录各种状态。在读写时，如果可以，将Segment整体作为数据传授媒介，这样就没有具体数据的copy过程，而是交换了对应的Segment引用，这是减少数据copy进而交换数据的关键。</p>
+<p>Okio并没有打算优化底层IO方式以及替代原生IO方式，Okio优化了缓冲策略以减轻内存压力和性能消耗，并且对于部分IO场景，提供了更友好的API。</p>
+<h1 id="Okio内部实现"><a href="#Okio内部实现" class="headerlink" title="Okio内部实现"></a>Okio内部实现</h1><p>Okio底层还是用Java标准的io流来操作，只是缓存机制是自己实现了一套，避免了减少一次中间拷贝过程。</p>
+<p>不管是RealBufferedSource还是RealBufferedSink，内部本质上都是通过Buffer这个类来实现缓存功能，而Buffer内部又是通过Segment这个核心类来缓存读取到的数据，Buffer就是一个管理者用来调度Segment。</p>
+<p>Segment是双向链表中的一个结点，Buffer类存储了链表的头结点。</p>
+<p>Segment中有个byte数组存储了真正的数据，最大字节数是8K，还有一些指针，表明了有效数据的范围。</p>
+<p>有数据超过8K，就会创建新的Segment，跟前面的Segment连起来</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">BufferedSource bufferedSource = Okio.buffer(Okio.source(src));</span><br><span class="line">BufferedSink bufferedSink = Okio.buffer(Okio.sink(dest));</span><br><span class="line">bufferedSink.writeAll(bufferedSource);</span><br><span class="line">bufferedSink.close();</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li> 先从原始的Source对象读数据，到RealBufferedSource的buffer对象，通过尾插法创建Segment，数据依次填满一个个的Segment对象里的byte数组。</li>
+<li> RealBufferedSource中的buffer中的Segment转移到RealBufferedSink中的buffer中</li>
+<li> 最后遍历RealBufferedSink的buffer中Segment链表写到OutputStream中</li>
+</ol>
+<p>(1) Source中需要传递的数据是”满”的情况，也就是8k都是有效数据，这种情况直接从source的buffer中拿到Segment，然后添加到sink的buffer上即可，和java io流相比，省去了中间的一次临时buffer拷贝，从而提高的读写效率</p>
+<p>(2) Source中需要传递的数据不”满”的情况，通过pos和limit可以定位到有效数据区间，和Sink中buffer的尾Segment有效数据进行对比，如果两个Segment中的有效数据可以合并到一个Segment中那么会进行数据整理，多余的Segment会被回收到。</p>
+<p>如果两个Segment的有效数据总和超过8k，那么直接将Source中的Segment链接到Sink中buffer的尾部即可。</p>
+<p>(3) Source的buffer中的Segment只是传递部分数据，如5K的数据值传递其中2K，okio内部会通过split方法将Segment分成2K和3K两个Segment，然后将2K的Segment参照第二种情况和Sink中的Segment进行合并。</p>
+]]></content>
+      <categories>
+        <category>源码分析</category>
+      </categories>
+      <tags>
+        <tag>源码分析</tag>
+        <tag>Okio</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>App提权 - Shizuku源码浅析</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Shizuku%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h1 id="Shizuku做什么的？"><a href="#Shizuku做什么的？" class="headerlink" title="Shizuku做什么的？"></a>Shizuku做什么的？</h1><p>Shizuku可以做到让App拥有Shell权限，不用root，来调用系统的服务，但是需要借助adb命令来执行一个脚本，并且手机不能重启。</p>
@@ -6765,6 +6765,7 @@
 <ul>
 <li>方便mock测试，减少排错和调试成本。</li>
 <li>类职责单一后，代码复用性非常强，减少改动成本。</li>
+<li>方便单元测试、自动化测试，促进项目健壮性。</li>
 </ul>
 <h1 id="Dagger2的优势？"><a href="#Dagger2的优势？" class="headerlink" title="Dagger2的优势？"></a>Dagger2的优势？</h1><ul>
 <li>无反射，编译时生成注入代码，无运行时性能损耗。</li>
@@ -6810,7 +6811,6 @@
 <li>用户绑定手环手表的生命周期对应DeviceComponent。</li>
 <li>用户在App开启设备的跑步到停止跑步的生命周期对应RunningComponent。</li>
 <li>用户在App开启设备的心率检测到结束心率检测的生命周期对应HeartRateComponent。</li>
-<li>用户在App里观看运动课程的生命周期对应CourseComponent。</li>
 </ul>
 <p>这里的层级关系从功能上看比较明显：</p>
 <ul>
