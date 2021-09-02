@@ -2786,36 +2786,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.279.完全平方数（中等）</title>
-    <url>/LeetCode/LeetCode.279.%E5%AE%8C%E5%85%A8%E5%B9%B3%E6%96%B9%E6%95%B0%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/perfect-squares/">LeetCode.279.完全平方数（中等）</a></p>
-<p>给定正整数 n，找到若干个完全平方数（比如 1, 4, 9, 16, …）使得它们的和等于 n。你需要让组成和的完全平方数的个数最少。</p>
-<p>给你一个整数 n ，返回和为 n 的完全平方数的 最少数量 。</p>
-<p>完全平方数 是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，1、4、9 和 16 都是完全平方数，而 3 和 11 不是。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：动态规划"><a href="#解法1：动态规划" class="headerlink" title="解法1：动态规划"></a>解法1：动态规划</h2><p>给定一个目标，有一组选择，做出选择，得出最优的结果，就是背包问题。<br>完全平方数没有限定选择个数，所以是完全背包问题。</p>
-<p>设<code>dp[i]</code>表示和为i的完全平方数的最少数量。<br>对于每个<code>dp[i]</code>求解，从小到大穷举所有可选的完全平方数做出一次选择，挑选一个使用平方数数量最少的。</p>
-<p>状态转移方程<br><code>dp[i] = minOf(dp[i], 1 + dp[i - j * j] + 1</code>，其中<code>1 &lt;= j &lt;= i</code>。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numSquares</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="comment">// dp[i]表示和为i的完全平方数的最少数量</span></span><br><span class="line">        <span class="comment">// dp[0]没意义</span></span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.n) &#123;</span><br><span class="line">            <span class="comment">// dp[i]最多数量就是全部1相加，当做默认值，看有没有小的</span></span><br><span class="line">            dp[i] = i</span><br><span class="line">            <span class="keyword">var</span> j = <span class="number">1</span></span><br><span class="line">            <span class="keyword">while</span> (j * j &lt;= i) &#123;</span><br><span class="line">                dp[i] = minOf(dp[i], <span class="number">1</span> + dp[i - j * j])</span><br><span class="line">                j++</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>时间复杂度：$O(n *\sqrt{n})$<br>空间复杂度：$O(n)$</p>
-</blockquote>
-<h2 id="解法2：bfs"><a href="#解法2：bfs" class="headerlink" title="解法2：bfs"></a>解法2：bfs</h2><p>如果先用递归求解，画出递归树就很好想象了。<br>可以进行层序遍历一层一层的算。<br>第一层依次减去一个平方数得到第二层；<br>第二层依次减去一个平方数得到第三层；<br>每递进一层，使用过的平方数个数加1；<br>当某一层出现了0，当前层数就是答案。</p>
-<p><strong>注意点</strong><br>因为会有重叠子问题，所以要避免重复纳入已经计算过的节点，用visited数组记录访问过的节点。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numSquares</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> queue = ArrayDeque&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="keyword">val</span> visited = mutableSetOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        queue.add(n)</span><br><span class="line">        <span class="keyword">var</span> level = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> (queue.isNotEmpty()) &#123;</span><br><span class="line">            level++</span><br><span class="line">            <span class="keyword">val</span> size = queue.size</span><br><span class="line">            repeat(size) &#123;</span><br><span class="line">                <span class="keyword">val</span> num = queue.poll()</span><br><span class="line">                visited.add(num)</span><br><span class="line"></span><br><span class="line">                <span class="keyword">var</span> j = <span class="number">1</span></span><br><span class="line">                <span class="keyword">while</span> (j * j &lt;= num) &#123;</span><br><span class="line">                    <span class="keyword">val</span> small = num - j * j</span><br><span class="line">                    <span class="keyword">if</span> (small == <span class="number">0</span>) <span class="keyword">return</span> level</span><br><span class="line">                    <span class="keyword">if</span> (!visited.contains(small)) &#123;</span><br><span class="line">                        queue.add(small)</span><br><span class="line">                    &#125;</span><br><span class="line">                    j++</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
-        <tag>完全背包</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.273.整数转换英文表示（困难）</title>
     <url>/LeetCode/LeetCode.273.%E6%95%B4%E6%95%B0%E8%BD%AC%E6%8D%A2%E8%8B%B1%E6%96%87%E8%A1%A8%E7%A4%BA%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/integer-to-english-words/">LeetCode.273.整数转换英文表示（困难）</a></p>
@@ -2906,6 +2876,36 @@
         <tag>LeetCode困难</tag>
         <tag>分治</tag>
         <tag>哈希表</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.279.完全平方数（中等）</title>
+    <url>/LeetCode/LeetCode.279.%E5%AE%8C%E5%85%A8%E5%B9%B3%E6%96%B9%E6%95%B0%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/perfect-squares/">LeetCode.279.完全平方数（中等）</a></p>
+<p>给定正整数 n，找到若干个完全平方数（比如 1, 4, 9, 16, …）使得它们的和等于 n。你需要让组成和的完全平方数的个数最少。</p>
+<p>给你一个整数 n ，返回和为 n 的完全平方数的 最少数量 。</p>
+<p>完全平方数 是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，1、4、9 和 16 都是完全平方数，而 3 和 11 不是。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：动态规划"><a href="#解法1：动态规划" class="headerlink" title="解法1：动态规划"></a>解法1：动态规划</h2><p>给定一个目标，有一组选择，做出选择，得出最优的结果，就是背包问题。<br>完全平方数没有限定选择个数，所以是完全背包问题。</p>
+<p>设<code>dp[i]</code>表示和为i的完全平方数的最少数量。<br>对于每个<code>dp[i]</code>求解，从小到大穷举所有可选的完全平方数做出一次选择，挑选一个使用平方数数量最少的。</p>
+<p>状态转移方程<br><code>dp[i] = minOf(dp[i], 1 + dp[i - j * j] + 1</code>，其中<code>1 &lt;= j &lt;= i</code>。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numSquares</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="comment">// dp[i]表示和为i的完全平方数的最少数量</span></span><br><span class="line">        <span class="comment">// dp[0]没意义</span></span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.n) &#123;</span><br><span class="line">            <span class="comment">// dp[i]最多数量就是全部1相加，当做默认值，看有没有小的</span></span><br><span class="line">            dp[i] = i</span><br><span class="line">            <span class="keyword">var</span> j = <span class="number">1</span></span><br><span class="line">            <span class="keyword">while</span> (j * j &lt;= i) &#123;</span><br><span class="line">                dp[i] = minOf(dp[i], <span class="number">1</span> + dp[i - j * j])</span><br><span class="line">                j++</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：$O(n *\sqrt{n})$<br>空间复杂度：$O(n)$</p>
+</blockquote>
+<h2 id="解法2：bfs"><a href="#解法2：bfs" class="headerlink" title="解法2：bfs"></a>解法2：bfs</h2><p>如果先用递归求解，画出递归树就很好想象了。<br>可以进行层序遍历一层一层的算。<br>第一层依次减去一个平方数得到第二层；<br>第二层依次减去一个平方数得到第三层；<br>每递进一层，使用过的平方数个数加1；<br>当某一层出现了0，当前层数就是答案。</p>
+<p><strong>注意点</strong><br>因为会有重叠子问题，所以要避免重复纳入已经计算过的节点，用visited数组记录访问过的节点。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numSquares</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> queue = ArrayDeque&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="keyword">val</span> visited = mutableSetOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        queue.add(n)</span><br><span class="line">        <span class="keyword">var</span> level = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> (queue.isNotEmpty()) &#123;</span><br><span class="line">            level++</span><br><span class="line">            <span class="keyword">val</span> size = queue.size</span><br><span class="line">            repeat(size) &#123;</span><br><span class="line">                <span class="keyword">val</span> num = queue.poll()</span><br><span class="line">                visited.add(num)</span><br><span class="line"></span><br><span class="line">                <span class="keyword">var</span> j = <span class="number">1</span></span><br><span class="line">                <span class="keyword">while</span> (j * j &lt;= num) &#123;</span><br><span class="line">                    <span class="keyword">val</span> small = num - j * j</span><br><span class="line">                    <span class="keyword">if</span> (small == <span class="number">0</span>) <span class="keyword">return</span> level</span><br><span class="line">                    <span class="keyword">if</span> (!visited.contains(small)) &#123;</span><br><span class="line">                        queue.add(small)</span><br><span class="line">                    &#125;</span><br><span class="line">                    j++</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode中等</tag>
+        <tag>完全背包</tag>
       </tags>
   </entry>
   <entry>
@@ -3090,12 +3090,8 @@
 <p>我们想通过比较末尾元素，是想更新某个长度的递增子序列的末尾元素为更小的。</p>
 <p>递增子序列末尾元素的大小顺序和子序列的长度有没有什么关联？</p>
 <p>可以发现，如果相同长度的子序列只保留最小的末尾数字，那么长度大的子序列的末尾元素一定比长度小的子序列的末尾元素大。<br>因为只有新的数字比原来短的递增子序列的末尾元素大，才能形成长度更长的递增子序列；如果新的数字比原来短的递增子序列的末尾元素小，是无法形成长度更长的递增子序列的。</p>
-<hr>
-<p><strong>能否在查找方法上做优化？</strong><br>一说到查找和比较，就能想到最优化的查找元素方法是二分查找，可以把时间复杂度降低到$O(log n)$。</p>
-<p>二分查找是要求在有序数组里做查找比较的，那就把递增子序列的末尾数字从小到大排序。<br>新的数字去二分比较后，能否确定新数字可以拼接的子序列最长长度？只有能确定，才可以不跟所有末尾数字比较，二分查找才能节约出时间，否则还得顺序扫描所有元素。</p>
-<p>换句话说，递增子序列末尾元素的大小顺序和子序列的长度有没有什么关联？</p>
-<p>可以发现，如果相同长度的子序列只保留最小的末尾数字，那么长度大的子序列的末尾元素一定比长度小的子序列的末尾元素大。<br>因为只有新的数字比原来短的递增子序列的末尾元素大，才能形成长度更长的递增子序列；如果新的数字比原来短的递增子序列的末尾元素小，是无法形成长度更长的递增子序列的；如果新数字比某长度的递增子序列的最小的末尾数字都要小，那肯定是无法接在它后面形成长度更长的递增子子序列了。</p>
-<p>所以二分查找是可行的，可以保存每个长度的递增子序列的最小末尾数字形成数组，递增子序列长度作为数组索引，数组元素默认就是严格递增。<br>遇到新的数字用二分查找，就可以知道应该更新哪个长度的子序列的末尾元素。</p>
+<p>所以二分查找是可行的，可以保存每个长度的递增子序列的最小末尾数字形成数组，递增子序列长度作为数组索引，数组元素默认就是严格递增。</p>
+<p>遇到新的数字用二分查找，就可以知道应该更新哪个长度的子序列的末尾元素。</p>
 <figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">lengthOfLIS</span><span class="params">(nums: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (nums.isEmpty()) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (nums.size == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">val</span> n = nums.size</span><br><span class="line">        <span class="comment">// dp[i]表示以长度为i + 1的所有上升子序列中结尾最小的数，0 &lt;= i &lt;= n - 1，n为数组长度</span></span><br><span class="line">        <span class="comment">// 由于上升子序列的长度可能是小于n的，所以这里创建动态列表来作为状态存储</span></span><br><span class="line">        <span class="keyword">val</span> dp = mutableListOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        dp.add(nums[<span class="number">0</span>])</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="comment">// 可以形成更长的子序列</span></span><br><span class="line">            <span class="keyword">if</span> (nums[i] &gt; dp.last()) &#123;</span><br><span class="line">                dp.add(nums[i])</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// 不能形成更长的子序列，但是要更新之前子序列末尾的元素为更小的，方便后续快速比较</span></span><br><span class="line">                <span class="keyword">var</span> left = <span class="number">0</span></span><br><span class="line">                <span class="keyword">var</span> right = dp.size - <span class="number">1</span></span><br><span class="line">                <span class="keyword">while</span> (left &lt;= right) &#123;</span><br><span class="line">                    <span class="keyword">val</span> mid = left + (right - left) / <span class="number">2</span></span><br><span class="line">                    <span class="keyword">when</span> &#123;</span><br><span class="line">                        <span class="comment">// 要找比子序列末尾元素大的位置，所以不会是mid本身，要mid + 1</span></span><br><span class="line">                        dp[mid] &lt; nums[i] -&gt; left = mid + <span class="number">1</span></span><br><span class="line">                        <span class="comment">// dp[mid] &gt; nums[i]，dp严格递增，不存在dp[mid] == nums[i]</span></span><br><span class="line">                        <span class="keyword">else</span> -&gt; right = mid - <span class="number">1</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 熟悉二分法可知，循环结束后，一定会有 nums[left - 1] &lt; nums[i] &lt; nums[left]</span></span><br><span class="line">                <span class="comment">// 更新子序列末尾元素为更小的</span></span><br><span class="line">                dp[left] = nums[i]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp.size</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 ]]></content>
