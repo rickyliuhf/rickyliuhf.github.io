@@ -1203,7 +1203,7 @@
   <entry>
     <title>Kotlin协程原理</title>
     <url>/Kotlin/Kotlin%E5%8D%8F%E7%A8%8B%E5%8E%9F%E7%90%86/</url>
-    <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><p>协程核心优势是结构化编程，通俗直接理解可以异步转同步，每个协程都是一个逻辑调度流，并加以各种自定义的控制。<br>代码结构清晰，可读性增强，便于调试和测试。</p>
+    <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><p>协程核心优势是结构化编程，每个协程都是一个逻辑调度流，并加以各种自定义的控制。<br>代码结构清晰，可读性增强，便于调试和测试。</p>
 <h2 id="协程核心实现"><a href="#协程核心实现" class="headerlink" title="协程核心实现"></a>协程核心实现</h2><p>Kotlin协程的实现的核心是围绕Continuation对象和挂起函数展开的。</p>
 <p>要理解协程的各个原理和机制，首先要搞明白挂起函数的原理，再搞懂启动一个协程具体的执行步骤和底层实现，然后才能理解其他的机制，比如线程切换、拦截器、任务取消、异常处理等机制。</p>
 <p>比如说取消，如果调用了一个系统的挂起函数，是支持取消的，当取消Job的时候，挂起函数就不执行它的Continuation的回调方法，挂起函数后续的逻辑也就不会执行了。</p>
