@@ -186,121 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/" class="post-title-link" itemprop="url">Java并发-指令重排序、指令流水线</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-10-23 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-23T20:00:00+08:00">2017-10-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/指令重排序/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="如何验证指令发生了重排序？"><a href="#如何验证指令发生了重排序？" class="headerlink" title="如何验证指令发生了重排序？"></a>如何验证指令发生了重排序？</h1><p>定义两个变量设置初始值，在两个线程中分别赋新的值，然后打印在赋值语句后面打印另外一个线程修改的变量。</p>
-<p>执行很多次，如果发生了打印的都是变量的初始值，就是发生重排序了，违反直觉，但是编译器觉得两条语句没有依赖关系，允许指令重排序</p>
-<h1 id="CPU的指令流水线是什么？解决了什么问题？"><a href="#CPU的指令流水线是什么？解决了什么问题？" class="headerlink" title="CPU的指令流水线是什么？解决了什么问题？"></a>CPU的指令流水线是什么？解决了什么问题？</h1><p>一条指令可以分为多个步骤完成，每个步骤可以由不同的硬件功能单元来执行，这样就可以让多个功能单元并行执行指令的不同步骤，不需要等待一个指令执行完再执行执行下一个指令，流水线可以让指令的一个步骤完成了就可以执行下一个指令的同一个步骤</p>
-<h1 id="CPU指令流水线存在什么问题？"><a href="#CPU指令流水线存在什么问题？" class="headerlink" title="CPU指令流水线存在什么问题？"></a>CPU指令流水线存在什么问题？</h1><p>如果指令之间存在数据相关性，导致前一条指令执行完后才能执行后一条指令，指令重叠就会发生冲突，无法并行执行，后面的指令只能等待，这个时候就可以把数据无关的指令重排序，以防止流水线停顿。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215853.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215901.png"></p>
-<h1 id="CPU指令流水线什么情况下会需要指令重排序"><a href="#CPU指令流水线什么情况下会需要指令重排序" class="headerlink" title="CPU指令流水线什么情况下会需要指令重排序?"></a>CPU指令流水线什么情况下会需要指令重排序?</h1><p>一条指令可以分为多个步骤完成，如下:</p>
-<ol>
-<li> 取指 IF</li>
-<li> 译码和取寄存器操作数 ID</li>
-<li> 执行或者有效地址计算 EX</li>
-<li> 存储器访问 MEM</li>
-<li> 写回 WB</li>
-</ol>
-<p>CPU在工作时，需要将上述指令分为多个步骤依次执行</p>
-<p>为了提高硬件利用率，CPU指令是按流水线技术来执行的，如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215936.png"></p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215945.png"></p>
-<ol>
-<li> LW指令 表示 load，其中LW R1,b表示把b的值加载到寄存器R1中</li>
-<li> LW R2,c 表示把c的值加载到寄存器R2中</li>
-<li> ADD 指令表示加法，把R1 、R2的值相加，并存入R3寄存器中。</li>
-<li> SW 表示 store 即将 R3寄存器的值保持到变量a中</li>
-<li> LW R4,e 表示把e的值加载到寄存器R4中</li>
-<li> LW R5,f 表示把f的值加载到寄存器R5中</li>
-<li> SUB 指令表示减法，把R4 、R5的值相减，并存入R6寄存器中。</li>
-<li> SW d,R6 表示将R6寄存器的值保持到变量d中</li>
-</ol>
-<p>上述便是汇编指令的执行过程，在某些指令上存在X的标志，X代表中断的含义，也就是只要有X的地方就会导致指令流水线技术停顿，同时也会影响后续指令的执行，可能需要经过1个或几个指令周期才可能恢复正常，那为什么停顿呢？这是因为部分数据还没准备好，如执行ADD指令时，需要使用到前面指令的数据R1，R2，而此时R2的MEM操作没有完成，即未拷贝到存储器中，这样加法计算就无法进行，必须等到MEM操作完成后才能执行，也就因此而停顿了，其他指令也是类似的情况。前面阐述过，停顿会造成CPU性能下降，因此我们应该想办法消除这些停顿，这时就需要使用到指令重排了，如下图，既然ADD指令需要等待，那我们就利用等待的时间做些别的事情，如把LW R4,e 和 LW R5,f 移动到前面执行，毕竟LW R4,e 和 LW R5,f执行并没有数据依赖关系，对他们有数据依赖关系的SUB R6,R5,R4指令在R4,R5加载完成后才执行的，没有影响</p>
-<p>正如上图所示，所有的停顿都完美消除了，指令流水线也无需中断了，这样CPU的性能也能带来很好的提升，这就是处理器指令重排的作用。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-volatile/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -332,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -518,7 +403,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -665,7 +550,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -792,7 +677,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -888,7 +773,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -996,7 +881,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1112,7 +997,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1227,7 +1112,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1398,7 +1283,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 11:32:46" itemprop="dateModified" datetime="2021-09-02T11:32:46+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1454,6 +1339,126 @@
 <h1 id="CAS缺点"><a href="#CAS缺点" class="headerlink" title="CAS缺点"></a>CAS缺点</h1><h2 id="ABA问题"><a href="#ABA问题" class="headerlink" title="ABA问题"></a>ABA问题</h2><p>ABA问题：CAS在操作的时候会检查变量的值是否被更改过，如果没有则更新值，但是带来一个问题，最开始的值是A，接着变成B，最后又变成了A。经过检查这个值确实没有修改过，因为最后的值还是A，但是实际上这个值确实已经被修改过了。为了解决这个问题，在每次进行操作的时候加上一个版本号，每次操作的就是两个值，一个版本号和某个值，A——&gt;B——&gt;A问题就变成了1A——&gt;2B——&gt;3A。在jdk中提供了AtomicStampedReference类解决ABA问题，用Pair这个内部类实现，包含两个属性，分别代表版本号和引用，在compareAndSet中先对当前引用进行检查，再对版本号标志进行检查，只有全部相等才更新值。</p>
 <h2 id="可能会消耗较高的CPU"><a href="#可能会消耗较高的CPU" class="headerlink" title="可能会消耗较高的CPU"></a>可能会消耗较高的CPU</h2><p>看起来CAS比锁的效率高，从阻塞机制变成了非阻塞机制，减少了线程之间等待的时间。每个方法不能绝对的比另一个好，在线程之间竞争程度大的时候，如果使用CAS，每次都有很多的线程在竞争，也就是说CAS机制不能更新成功。这种情况下CAS机制会一直重试，这样就会比较耗费CPU。因此可以看出，如果线程之间竞争程度小，使用CAS是一个很好的选择；但是如果竞争很大，使用锁可能是个更好的选择。在并发量非常高的环境中，如果仍然想通过原子类来更新的话，可以使用AtomicLong的替代类：LongAdder。</p>
 <h2 id="不能保证代码块的原子性"><a href="#不能保证代码块的原子性" class="headerlink" title="不能保证代码块的原子性"></a>不能保证代码块的原子性</h2><p>Java中的CAS机制只能保证共享变量操作的原子性，而不能保证代码块的原子性。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20%E5%8A%A8%E7%94%BB%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Android/Android%20%E5%8A%A8%E7%94%BB%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Android 动画原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-13 19:55:00" itemprop="dateCreated datePublished" datetime="2017-07-13T19:55:00+08:00">2017-07-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-02 13:53:29" itemprop="dateModified" datetime="2021-09-02T13:53:29+08:00">2021-09-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/Android%20%E5%8A%A8%E7%94%BB%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android 动画机制原理/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="View-Animation原理"><a href="#View-Animation原理" class="headerlink" title="View Animation原理"></a>View Animation原理</h1><ol>
+<li> 首先，当调用了 View.startAnimation() 时动画并没有马上就执行，而是通过 invalidate() 层层通知到 ViewRootImpl 发起一次遍历 View 树的请求，而这次请求会等到接收到最近一帧到了的信号时才去发起遍历 View 树绘制操作。</li>
+<li> 从 DecorView 开始遍历，绘制流程在遍历时会调用到 View 的 draw() 方法，当该方法被调用时，如果 View 有绑定动画，那么会去调用applyLegacyAnimation()，这个方法是专门用来处理动画相关逻辑的。</li>
+<li> 在 applyLegacyAnimation() 这个方法里，如果动画还没有执行过初始化，先调用动画的初始化方法 initialized()，同时调用 onAnimationStart() 通知动画开始了，然后调用 getTransformation() 来根据当前时间计算动画进度，紧接着调用 applyTransformation() 并传入动画进度来应用动画。</li>
+<li> getTransformation() 这个方法有返回值，如果动画还没结束会返回 true，动画已经结束或者被取消了返回 false。所以 applyLegacyAnimation() 会根据 getTransformation() 的返回值来决定是否通知 ViewRootImpl 再发起一次遍历请求，返回值是 true 表示动画没结束，那么就去通知 ViewRootImpl 再次发起一次遍历请求。然后当下一帧到来时，再从 DecorView 开始遍历 View 树绘制，重复上面的步骤，这样直到动画结束。</li>
+<li> 有一点需要注意，动画是在每一帧的绘制流程里被执行，所以动画并不是单独执行的，也就是说，如果这一帧里有一些 View 需要重绘，那么这些工作同样是在这一帧里的这次遍历 View 树的过程中完成的。每一帧只会发起一次 perfromTraversals() 操作。</li>
+</ol>
+<p>View Animation 是在绘制的时候，改变 view 的视觉效果来实现动画的。所以不会对 view 的测量和布局过程有影响。</p>
+<p>View 的动画是通过触发绘制过程来执行 draw 的。因为动画是连续的，所以需要不停的触发。</p>
+<h1 id="View-Animation为什么移动位置后，点击事件的响应依旧是在原来位置上？"><a href="#View-Animation为什么移动位置后，点击事件的响应依旧是在原来位置上？" class="headerlink" title="View Animation为什么移动位置后，点击事件的响应依旧是在原来位置上？"></a>View Animation为什么移动位置后，点击事件的响应依旧是在原来位置上？</h1><p>因为动画是在 draw 时候形成的，也就是说只是视觉效果。其并没有改变它本身在父类中的位置；</p>
+<h1 id="View-Animation中如果对-View-做放大缩小得动画，那么其宽度高度值是否会变化？"><a href="#View-Animation中如果对-View-做放大缩小得动画，那么其宽度高度值是否会变化？" class="headerlink" title="View Animation中如果对 View 做放大缩小得动画，那么其宽度高度值是否会变化？"></a>View Animation中如果对 View 做放大缩小得动画，那么其宽度高度值是否会变化？</h1><p>View Animation 是在绘制的时候，改变 view 的视觉效果来实现动画的。所以不会对 view 的测量和布局过程有影响。</p>
+<h1 id="属性动画的原理"><a href="#属性动画的原理" class="headerlink" title="属性动画的原理"></a>属性动画的原理</h1><ol>
+<li> ValueAnimator 属性动画调用了 start() 之后，会先去进行一些初始化工作，包括变量的初始化、通知动画开始事件；</li>
+<li> 然后通过 AnimationHandler 将其自身 this 添加到 mAnimationCallbacks 队列里，AnimationHandller 是一个单例类，为所有的属性动画服务，列表里存放着所有正在进行或准备开始的属性动画；</li>
+<li> 如果当前存在要运行的动画，那么 AnimationHandler 会去通过 Choreographer 向底层注册监听下一个屏幕刷新信号，当接收到信号时，它的 mFrameCallback 会开始进行工作，工作的内容包括遍历列表来分别处理每个属性动画在当前帧的行为，处理完列表中的所有动画后，如果列表还不为 0，那么它又会通过 Choreographer 再去向底层注册监听下一个屏幕刷新信号事件，如此反复，直至所有的动画都结束。</li>
+<li> AnimationHandler 遍历列表处理动画是在 doAnimationFrame() 中进行，而具体每个动画的处理逻辑则是在各自，也就是 ValueAnimator 的 doAnimationFrame() 中进行，各个动画如果处理完自身的工作后发现动画已经结束了，那么会将其在列表中的引用赋值为空，AnimationHandler 最后会去将列表中所有为 null 的都移除掉，来清理资源。</li>
+<li> 每个动画 ValueAnimator 在处理自身的动画行为时，首先，如果当前是动画的第一帧，那么会根据是否有”跳过片头”（setCurrentPlayTime()）来记录当前动画第一帧的时间 mStartTime 应该是什么。</li>
+<li> 第一帧的动画其实也就是记录 mStartTime 的时间以及一些变量的初始化而已，动画进度仍然是 0，所以下一帧才是动画开始的关键，但由于属性动画的处理工作是在绘制界面之前的，那么有可能因为绘制耗时，而导致 mStartTime 记录的第一帧时间与第二帧之间隔得太久，造成丢了开头的多帧，所以如果是这种情况下，会进行 mStartTime 的修正。</li>
+<li> 修正的具体做法则是当绘制工作完成后，此时，再根据当前时间与 mStartTime 记录的时间做比较，然后进行修正。</li>
+<li> 如果是在动画过程中的某一帧才出现绘制耗时现象，那么，只能表示无能为力了，丢帧是避免不了的了，想要解决就得自己去分析下为什么绘制会耗时；而如果是在第一帧是出现绘制耗时，那么，系统还是可以帮忙补救一下，修正下 mStartTime 来达到避免丢帧。</li>
+</ol>
+<hr>
+<ol>
+<li> 当接收到屏幕刷新信号后，AnimationHandler 会去遍历列表，将所有待执行的属性动画都取出来去计算当前帧的动画行为。</li>
+<li> 每个动画在处理当前帧的动画逻辑时，首先会先根据当前时间和动画第一帧时间以及动画的持续时长来初步计算出当前帧时动画所处的进度，然后会将这个进度值等价转换到 0-1 区间之内。</li>
+<li> 接着，插值器会将这个经过初步计算之后的进度值根据设定的规则计算出实际的动画进度值，取值也是在 0-1 区间内。</li>
+<li> 计算出当前帧动画的实际进度之后，会将这个进度值交给关键帧机制，来换算出我们需要的值，比如 ValueAnimator.ofInt(0, 100) 表示我们需要的值变化范围是从 0-100，那么插值器计算出的进度值是 0-1 之间的，接下去就需要借助关键帧机制来映射到 0-100 之间。</li>
+<li> 关键帧的数量是由 ValueAnimator.ofInt(0, 1, 2, 3) 参数的数量来决定的，比如这个就有四个关键帧，第一帧和最后一帧是必须的，所以最少会有两个关键帧，如果参数只有一个，那么第一帧默认为 0，最后一帧就是参数的值。当调用了这个 ofInt() 方法时，关键帧组也就被创建了。</li>
+<li> 当只有两个关键帧时，映射的规则是，如果没有设置估值器，那么就等比例映射，比如动画进度为 0.5，需要的值变化区间是 0-100，那么等比例映射后的值就是 50，那么我们在 onAnimationUpdate 的回调中通过 animation.getAnimatedValue() 获取到的值 50 就是这么来的。</li>
+<li> 如果有设置估值器，那么就按估值器的规则来进行映射。</li>
+<li> 当关键帧超过两个时，需要先找到当前动画进度是落于哪两个关键帧之间，然后将这个进度值先映射到这两个关键帧之间的取值，接着就可以将这两个关键帧看成是第一帧和最后一帧，那么就可以按照只有两个关键帧的情况下的映射规则来进行计算了。</li>
+<li> 而进度值映射到两个关键帧之间的取值，这就需要知道每个关键帧在整个关键帧组中的位置信息，或者说权重。而这个位置信息是在创建每个关键帧时就传进来的。onInt() 的规则是所有关键帧按等比例来分配权重，比如有三个关键帧，第一帧是 0，那么第二帧就是 0.5， 最后一帧 1。</li>
+</ol>
 
       
     </div>
@@ -1540,7 +1545,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-count">187</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
