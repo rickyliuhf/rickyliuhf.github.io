@@ -6506,6 +6506,8 @@
     <title>App提权 - Shizuku源码浅析</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Shizuku%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h1 id="Shizuku做什么的？"><a href="#Shizuku做什么的？" class="headerlink" title="Shizuku做什么的？"></a>Shizuku做什么的？</h1><p>Shizuku可以做到让App拥有Shell权限，不用root，来调用系统的服务，但是需要借助adb命令来执行一个脚本，并且手机不能重启。</p>
+<span id="more"></span>
+
 <h1 id="如何启动Shizuku"><a href="#如何启动Shizuku" class="headerlink" title="如何启动Shizuku"></a>如何启动Shizuku</h1><p><a href="https://shizuku.rikka.app/zh-hans/guide/setup.html">https://shizuku.rikka.app/zh-hans/guide/setup.html</a></p>
 <p>android 7.0+</p>
 <p>adb shell sh /data/user_de/0/moe.shizuku.privileged.api/start.sh</p>
