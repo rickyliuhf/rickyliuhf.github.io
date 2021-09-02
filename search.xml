@@ -6511,7 +6511,16 @@
 <h1 id="如何启动Shizuku"><a href="#如何启动Shizuku" class="headerlink" title="如何启动Shizuku"></a>如何启动Shizuku</h1><p><a href="https://shizuku.rikka.app/zh-hans/guide/setup.html">https://shizuku.rikka.app/zh-hans/guide/setup.html</a></p>
 <p>android 7.0+</p>
 <p>adb shell sh /data/user_de/0/moe.shizuku.privileged.api/start.sh</p>
-<h1 id="Shizuku的原理是什么？"><a href="#Shizuku的原理是什么？" class="headerlink" title="Shizuku的原理是什么？"></a>Shizuku的原理是什么？</h1><p>shizuku manager 分为client和server。</p>
+<h1 id="Shizuku原理综述"><a href="#Shizuku原理综述" class="headerlink" title="Shizuku原理综述"></a>Shizuku原理综述</h1><p>Shizuku提供了一个权限管理器App供安装，这个App中可以控制授权哪些应用可以使用Shizuku的提权操作，需要提权的App会在AndroidManifest中声明使用Shuzuku定义的一个自定义权限。</p>
+<p>在这个管理器App的主Activity启动时，会把一个shell脚本、一个so文件、一个dex文件从Apk资源目录拷贝到系统目录中，用户通过adb shell命令执行指定系统目录下的shell脚本，shell脚本执行so文件，so文件中会fork一个进程，因为是从shell进程fork出来的，所以fork出的子进程具有shell权限，fork出子进程后，通过app_process执行dex文件中的一个启动类，app_process是Android系统里内置的一个程序，作用就是运行一个新的Java程序，Zygote进程的启动也是用到app_process来运行的。</p>
+<p>这个dex文件中的启动类中会创建一个Looper对象并执行loop()方法，以保证程序一直运行，作为一个服务端常驻进程。</p>
+<p>服务端会监听App的启动，每个App启动后，会查看这个启动的App有没有申请Shizuku自定义的权限，有这个权限说明这个App需要提权。</p>
+<p>接着服务端程序会主动调用App里的一个ContentProvider的call方法，把服务端的一个Binder对象发送给App，这个Binder对象就是用来提权用的。</p>
+<p>然后App中就可以使用Shizuku封装的api来做需要提权的操作，也就是获取各种系统服务并调用系统服务的方法，比如静默安装apk。</p>
+<p>具体是怎么做到提权的呢？</p>
+<p>如果直接在普通App进程里去调用系统服务的方法，权限还是App的权限，没有权限调用系统服务的方法；需要在服务端程序中调用系统服务才行，因为服务端程序有Shell权限。所以就需要把App进程中的系统服务调用转发给服务端程序，由服务端程序去执行系统服务调用，再把结果返回给App进程。这就用到了服务端程序发送给App的Binder对象了，用这个Binder对象对系统服务的Binder对象做一层代理，对请求和响应都做转发，App这一层调用无感知。</p>
+<p>这里调用系统服务的方法利用的是类加载的双亲委派机制，在App模块里定义framework层的类并做空实现，然后App代码就可以直接使用，framework类是由BootClassLoader加载的，所以最后调用到的方法并不是空实现的方法，而是系统的framework.jar里的类方法，在Zygote进程启动时就预加载了。系统调用一个类的时候，会去找通过BootClassLoader找到framework中的类。</p>
+<h1 id="Shizuk怎么实现的？"><a href="#Shizuk怎么实现的？" class="headerlink" title="Shizuk怎么实现的？"></a>Shizuk怎么实现的？</h1><p>shizuku manager 分为client和server。</p>
 <p>server是一个纯java项目，被打包成dex, 作为资源文件被打包到shizuku manager App中， server负责响应执行一些提权的命令。app安装运行后， server和libshizuku.so会被释放到sdcard上，用户使用adb 执行shell命令后，由于adb 用户具有比普通用户更高的权限, libshizuku.so会执行提权操作并启动server。</p>
 <p>server端和client直接通信采用Android binder方式进行，实现是contentProvider，server启动后会监听应用的启动，每个app启动后，server端会主动调取对应app的moe.shizuku.api.ShizukuBinderReceiveProvider这个contentProvider，如果有权限就主动调用call方法发送binder到对方app。</p>
 <p>app获取到这个binder后就可以根据api提供的方法调用shizuku manager提供的接口达到权限提升的目的。</p>
@@ -6562,15 +6571,6 @@
 <p>与 Java 相似， Android 支持在环境变量 CLASSPATH 中指定类搜索路径 (CLASSPATH)，此外还可以在虚拟机参数中指定 <a href="https://android.googlesource.com/platform/libcore/+/android-8.0.0_r4/ojluni/src/main/java/java/lang/ClassLoader.java#207">-Djava.class.path=</a> 。但是， Android 使用 ART 环境运行 Java ，传统的 Java 字节码文件(.class) 是不能直接运行的，app_process 支持在 CLASSPATH 中指定 dex 或 apk 文件。</p>
 <h2 id="使用-dex"><a href="#使用-dex" class="headerlink" title="使用 dex"></a>使用 dex</h2><p>CLASSPATH=/data/local/tmp/test.dex app_process /system/bin moe.haruue.Test<br>app_process -Djava.class.path=/data/local/tmp/test.dex /system/bin moe.haruue.Test</p>
 <h2 id="使用-apk"><a href="#使用-apk" class="headerlink" title="使用 apk"></a>使用 apk</h2><p>CLASSPATH=/data/app/moe.haruue.test-1/base.apk app_process /system/bin moe.haruue.Test<br>app_process -Djava.class.path=/data/app/moe.haruue.test-1/base.apk /system/bin moe.haruue.Test</p>
-<h1 id="Shizuku原理综述"><a href="#Shizuku原理综述" class="headerlink" title="Shizuku原理综述"></a>Shizuku原理综述</h1><p>Shizuku提供了一个权限管理器App供安装，这个App中可以控制授权哪些应用可以使用Shizuku的提权操作，需要提权的App会在AndroidManifest中声明使用Shuzuku定义的一个自定义权限。</p>
-<p>在这个管理器App的主Activity启动时，会把一个shell脚本、一个so文件、一个dex文件从Apk资源目录拷贝到系统目录中，用户通过adb shell命令执行指定系统目录下的shell脚本，shell脚本执行so文件，so文件中会fork一个进程，因为是从shell进程fork出来的，所以fork出的子进程具有shell权限，fork出子进程后，通过app_process执行dex文件中的一个启动类，app_process是Android系统里内置的一个程序，作用就是运行一个新的Java程序，Zygote进程的启动也是用到app_process来运行的。</p>
-<p>这个dex文件中的启动类中会创建一个Looper对象并执行loop()方法，以保证程序一直运行，作为一个服务端常驻进程。</p>
-<p>服务端会监听App的启动，每个App启动后，会查看这个启动的App有没有申请Shizuku自定义的权限，有这个权限说明这个App需要提权。</p>
-<p>接着服务端程序会主动调用App里的一个ContentProvider的call方法，把服务端的一个Binder对象发送给App，这个Binder对象就是用来提权用的。</p>
-<p>然后App中就可以使用Shizuku封装的api来做需要提权的操作，也就是获取各种系统服务并调用系统服务的方法，比如静默安装apk。</p>
-<p>具体是怎么做到提权的呢？</p>
-<p>如果直接在普通App进程里去调用系统服务的方法，权限还是App的权限，没有权限调用系统服务的方法；需要在服务端程序中调用系统服务才行，因为服务端程序有Shell权限。所以就需要把App进程中的系统服务调用转发给服务端程序，由服务端程序去执行系统服务调用，再把结果返回给App进程。这就用到了服务端程序发送给App的Binder对象了，用这个Binder对象对系统服务的Binder对象做一层代理，对请求和响应都做转发，App这一层调用无感知。</p>
-<p>这里调用系统服务的方法利用的是类加载的双亲委派机制，在App模块里定义framework层的类并做空实现，然后App代码就可以直接使用，framework类是由BootClassLoader加载的，所以最后调用到的方法并不是空实现的方法，而是系统的framework.jar里的类方法，在Zygote进程启动时就预加载了。系统调用一个类的时候，会去找通过BootClassLoader找到framework中的类。</p>
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
 <li><a href="https://github.com/brevent/Brevent">黑阈</a></li>
 <li><a href="https://github.com/RikkaApps/Shizuku">Shizuku</a></li>
