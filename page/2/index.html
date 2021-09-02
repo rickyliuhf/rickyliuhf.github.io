@@ -186,167 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Shizuku%E5%8E%9F%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Shizuku%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">App提权 - Shizuku源码浅析</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-09-09 20:35:00" itemprop="dateCreated datePublished" datetime="2020-09-09T20:35:00+08:00">2020-09-09</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Shizuku%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="源码分析/Shizuku原理/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Shizuku做什么的？"><a href="#Shizuku做什么的？" class="headerlink" title="Shizuku做什么的？"></a>Shizuku做什么的？</h1><p>Shizuku可以做到让App拥有Shell权限，不用root，来调用系统的服务，但是需要借助adb命令来执行一个脚本，并且手机不能重启。</p>
-<h1 id="如何启动Shizuku"><a href="#如何启动Shizuku" class="headerlink" title="如何启动Shizuku"></a>如何启动Shizuku</h1><p><a target="_blank" rel="noopener" href="https://shizuku.rikka.app/zh-hans/guide/setup.html">https://shizuku.rikka.app/zh-hans/guide/setup.html</a></p>
-<p>android 7.0+</p>
-<p>adb shell sh /data/user_de/0/moe.shizuku.privileged.api/start.sh</p>
-<h1 id="Shizuku的原理是什么？"><a href="#Shizuku的原理是什么？" class="headerlink" title="Shizuku的原理是什么？"></a>Shizuku的原理是什么？</h1><p>shizuku manager 分为client和server。</p>
-<p>server是一个纯java项目，被打包成dex, 作为资源文件被打包到shizuku manager App中， server负责响应执行一些提权的命令。app安装运行后， server和libshizuku.so会被释放到sdcard上，用户使用adb 执行shell命令后，由于adb 用户具有比普通用户更高的权限, libshizuku.so会执行提权操作并启动server。</p>
-<p>server端和client直接通信采用Android binder方式进行，实现是contentProvider，server启动后会监听应用的启动，每个app启动后，server端会主动调取对应app的moe.shizuku.api.ShizukuBinderReceiveProvider这个contentProvider，如果有权限就主动调用call方法发送binder到对方app。</p>
-<p>app获取到这个binder后就可以根据api提供的方法调用shizuku manager提供的接口达到权限提升的目的。</p>
-<h1 id="server是如何启动的？"><a href="#server是如何启动的？" class="headerlink" title="server是如何启动的？"></a>server是如何启动的？</h1><p>Shizuku Manager运行后，在HomeActivity的onCreate()会执行moe.shizuku.manager.starter.Starter.writeFilesAsync(this)，把server.dex、libshizuku.so还有start.sh脚本写入sdcard上。</p>
-<p>用户通过adb shell命令执行start.sh脚本，脚本中会执行，libshizuku.so中会fork()一个进程出来，然后通过/system/bin/app_process启动指定的类，也就是moe.shizuku.server.Starter类，执行Starter类的main方法，Starter.main()中执行了ShizukuService.main()方法。</p>
-<p>app_process可以启动独立的Java程序，需要dex文件。</p>
-<h1 id="为什么要用app-process启动server？不用app-process不行吗？"><a href="#为什么要用app-process启动server？不用app-process不行吗？" class="headerlink" title="为什么要用app_process启动server？不用app_process不行吗？"></a>为什么要用app_process启动server？不用app_process不行吗？</h1><p>start.sh是通过adb shell启动的，<code>start.sh</code>中再执行<code>libshizuku.so</code>，libshizuku.so中fork出的进程是从/system/bin/sh中fork出来，再从fork出的进程执行app_process，通过app_process启动server程序拥有shell权限，普通的app与server跨进程通信，可以完成高级权限的事。</p>
-<ul>
-<li>利用adb shell启动的Java进程，这种情况下Java进程拥有shell级别的权限，所以Java程序对应的PID和Shell的PID一样。</li>
-<li>利用app启动的Java进程，这种情况下Java进程跟当前app的权限一样，没有Shell权限。</li>
-</ul>
-<h1 id="daemon-函数是干什么的？在shizuku里起到了什么作用？"><a href="#daemon-函数是干什么的？在shizuku里起到了什么作用？" class="headerlink" title="daemon()函数是干什么的？在shizuku里起到了什么作用？"></a>daemon()函数是干什么的？在shizuku里起到了什么作用？</h1><p>为了让app_process运行的server程序运行在后台</p>
-<p>如果想要在后台运行，可以用系统的 nohup 命令 (Android 6.0 把 toolbox 换成 toybox 之后才开始自带这个) ，别忘了重定向 stdout 和 stderr ，并使用 –nice-name= 取个好听的进程名，以便在需要的时候能够使用 killall 结束它。</p>
-<p>CLASSPATH=$(echo /data/app/com.package.name-*/base.apk) \<br>nohup app_process /system/bin –nice-name=process_name com.package.name.Main &gt; /dev/null 2&gt;&amp;1 &amp;</p>
-<p>当然你也可以自己写一个 C 程序，在调用 <a target="_blank" rel="noopener" href="http://man7.org/linux/man-pages/man3/daemon.3.html">daemon()</a> 函数后启动 app_process 进程。</p>
-<h1 id="server干了什么？"><a href="#server干了什么？" class="headerlink" title="server干了什么？"></a>server干了什么？</h1><p>执行流程：</p>
-<p>libshizuku.so的start.cpp的main() -&gt; start_server() -&gt; moe.shizuku.server.Starter.main() -&gt; moe.shizuku.server.ShizukuService.main() -&gt; new ShizukuService()</p>
-<p>ShizukuService是Binder对象，ShizukuService的构造函数里调用了BinderSender.register(this)，监听所有进程，监听到Shizuku Manager进程启动和Shizuku客户端进程启动，就把ShizukuService对象发送给它们。</p>
-<p>ShizukuManager进程判断的依据是进程有没有请求使用moe.shizuku.manager.permission.MANAGER权限</p>
-<p>Shizuku客户端进程的判断依据是进程有没有请求使用moe.shizuku.manager.permission.API_V23权限</p>
-<p>发送ShizukuService的Binder对象给目标进程，最终都会调用ShizukuService.sendBinderToUserApp()，再通过ActivityManagerService.getContentProviderExternal()获取目标进程中的ContentProvider，然后调用ContentProvider的call方法把ShizukuService传递给目标进程。</p>
-<h1 id="ShizukuServer的main方法为什么要执行Looper-prepare-和Looper-loop-？"><a href="#ShizukuServer的main方法为什么要执行Looper-prepare-和Looper-loop-？" class="headerlink" title="ShizukuServer的main方法为什么要执行Looper.prepare()和Looper.loop()？"></a>ShizukuServer的main方法为什么要执行Looper.prepare()和Looper.loop()？</h1><p>保证当前线程不结束，如果没有消息就会阻塞线程。</p>
-<h1 id="如何调用系统隐藏的API？"><a href="#如何调用系统隐藏的API？" class="headerlink" title="如何调用系统隐藏的API？"></a>如何调用系统隐藏的API？</h1><p>1.通过反射调用</p>
-<p>当应用在设备上运行时，它会加载 /system/framework/framework.jar ，framework.jar 和 android.jar的唯一的区别就是它没有移除 internal API 和 hidden API，这就说明了为什么我们可以通过反射调用，因为我们开发的SDK中不包含这些API，所以我们无法进行显式的调用，当我们利用反射，程序在设备上运行的时候，其实是可以找到对应的方法进行调用的。</p>
-<p>2.使用Android内部资源</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/anggrayudi/android-hidden-api">https://github.com/anggrayudi/android-hidden-api</a></p>
-<h1 id="Adb-shell提权还有哪些应用？"><a href="#Adb-shell提权还有哪些应用？" class="headerlink" title="Adb shell提权还有哪些应用？"></a>Adb shell提权还有哪些应用？</h1><p>在未经root的Android手机上使用adb logcat查看日志</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/Zane96/Fairy/blob/master/readme-zh.md">https://github.com/Zane96/Fairy/blob/master/readme-zh.md</a></p>
-<h1 id="Sample里的addUserService-standalone-process-是干什么的？"><a href="#Sample里的addUserService-standalone-process-是干什么的？" class="headerlink" title="Sample里的addUserService(standalone process)是干什么的？"></a>Sample里的addUserService(standalone process)是干什么的？</h1><p>addUserService是ShizukuService的一个方法，自定义的UserService是一个IBinder对象。</p>
-<p>ShizukuService是通过adb shell用app_process启动的，位于单独的进程中，拥有adb shell权限。</p>
-<p>ShizukuService.addUserService()最终会调用ShizukuService.startUserServiceNewProcess()，内部会调用app_process启动ServiceStarter类的main方法，main中会创建自定义的UserService类，这个进程也是拥有adb shell权限的，相当于启动了一个自定义的系统服务。</p>
-<p>main中再调用sendBinder把自定义的UserService传递给ShizukuManagerProvider的call方法的sendUserService逻辑分支处理，这里做了两件事：</p>
-<p>第一件事是ShizukuManagerProvider中把自定义的UserService通过ShizukuService.sendUserService()传递给ShikuzuService所在进程，并保存在ShizukuService的userServiceRecords里。</p>
-<p>第二件事是ShizukuManagerProvider把ShizukuService这个IBinder对象返回给ServiceStarter，当ShuzikuService死亡时（通过linkToDeath监听）自定义的UserService的进程也随机终止。</p>
-<h1 id="app-process用法"><a href="#app-process用法" class="headerlink" title="app_process用法"></a>app_process用法</h1><p>app_process 是 Android 上的一个原生程序，是 APP 进程的主入口点。总之就是个可以让虚拟机从 main() 方法开始执行一个 Java 程序的东西啦。</p>
-<p>参数和用法</p>
-<p>这个命令没有帮助程序，还好 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/cmds/app_process/app_main.cpp#30">源代码</a> 里说得很清楚</p>
-<p>Usage: app_process [java-options] cmd-dir start-class-name [options]</p>
-<p>对这些参数的详细介绍也在 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/cmds/app_process/app_main.cpp#200">源代码</a> 里，基本上是这样</p>
-<p>java-options  - 传递给 JVM 的参数<br>cmd-dir  - 暂时没有用，学着 init.rc.* 里给传个 /system/bin 就好<br>start-class-name - 程序入口， main() 方法所在的类名<br>options  - 可以是下面这些<br>–zygote 启动 zygote 进程用的<br>–start-system-server 启动系统服务(也是启动 zygote 进程的时候用的)<br>–application 启动应用程序<br>–nice-name=启动之后的进程名称</p>
-<p>根据源代码还能得出一些关于这些参数的更加详细的结论。</p>
-<ul>
-<li>  根据 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/cmds/app_process/app_main.cpp#343">这里</a>，传入 –zygote 会启动 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base.git/+/android-8.0.0_r4/core/java/com/android/internal/os/ZygoteInit.java#671">com.android.internal.os.ZygoteInit</a>，否则启动 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/core/java/com/android/internal/os/RuntimeInit.java#269">com.android.internal.os.RuntimeInit</a>。</li>
-<li>  可以发现 –start-system-server 只在启动 zygote 时有效。</li>
-<li>  在非 zygote 模式中，有无 –application 的选项的区别只是 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/core/java/com/android/internal/os/RuntimeInit.java#271">是否将 stdout 和 stderr 重定向到 AndroidPrintStream</a> 。</li>
-<li>  也只有在 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/cmds/app_process/app_main.cpp#281">非 zygote 的情况下</a>，–nice-name= 选项有效。</li>
-</ul>
-<p>与 Java 相似， Android 支持在环境变量 CLASSPATH 中指定类搜索路径 (CLASSPATH)，此外还可以在虚拟机参数中指定 <a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/libcore/+/android-8.0.0_r4/ojluni/src/main/java/java/lang/ClassLoader.java#207">-Djava.class.path=</a> 。但是， Android 使用 ART 环境运行 Java ，传统的 Java 字节码文件(.class) 是不能直接运行的，app_process 支持在 CLASSPATH 中指定 dex 或 apk 文件。</p>
-<h2 id="使用-dex"><a href="#使用-dex" class="headerlink" title="使用 dex"></a>使用 dex</h2><p>CLASSPATH=/data/local/tmp/test.dex app_process /system/bin moe.haruue.Test<br>app_process -Djava.class.path=/data/local/tmp/test.dex /system/bin moe.haruue.Test</p>
-<h2 id="使用-apk"><a href="#使用-apk" class="headerlink" title="使用 apk"></a>使用 apk</h2><p>CLASSPATH=/data/app/moe.haruue.test-1/base.apk app_process /system/bin moe.haruue.Test<br>app_process -Djava.class.path=/data/app/moe.haruue.test-1/base.apk /system/bin moe.haruue.Test</p>
-<h1 id="Shizuku原理综述"><a href="#Shizuku原理综述" class="headerlink" title="Shizuku原理综述"></a>Shizuku原理综述</h1><p>Shizuku提供了一个权限管理器App供安装，这个App中可以控制授权哪些应用可以使用Shizuku的提权操作，需要提权的App会在AndroidManifest中声明使用Shuzuku定义的一个自定义权限。</p>
-<p>在这个管理器App的主Activity启动时，会把一个shell脚本、一个so文件、一个dex文件从Apk资源目录拷贝到系统目录中，用户通过adb shell命令执行指定系统目录下的shell脚本，shell脚本执行so文件，so文件中会fork一个进程，因为是从shell进程fork出来的，所以fork出的子进程具有shell权限，fork出子进程后，通过app_process执行dex文件中的一个启动类，app_process是Android系统里内置的一个程序，作用就是运行一个新的Java程序，Zygote进程的启动也是用到app_process来运行的。</p>
-<p>这个dex文件中的启动类中会创建一个Looper对象并执行loop()方法，以保证程序一直运行，作为一个服务端常驻进程。</p>
-<p>服务端会监听App的启动，每个App启动后，会查看这个启动的App有没有申请Shizuku自定义的权限，有这个权限说明这个App需要提权。</p>
-<p>接着服务端程序会主动调用App里的一个ContentProvider的call方法，把服务端的一个Binder对象发送给App，这个Binder对象就是用来提权用的。</p>
-<p>然后App中就可以使用Shizuku封装的api来做需要提权的操作，也就是获取各种系统服务并调用系统服务的方法，比如静默安装apk。</p>
-<p>具体是怎么做到提权的呢？</p>
-<p>如果直接在普通App进程里去调用系统服务的方法，权限还是App的权限，没有权限调用系统服务的方法；需要在服务端程序中调用系统服务才行，因为服务端程序有Shell权限。所以就需要把App进程中的系统服务调用转发给服务端程序，由服务端程序去执行系统服务调用，再把结果返回给App进程。这就用到了服务端程序发送给App的Binder对象了，用这个Binder对象对系统服务的Binder对象做一层代理，对请求和响应都做转发，App这一层调用无感知。</p>
-<p>这里调用系统服务的方法利用的是类加载的双亲委派机制，在App模块里定义framework层的类并做空实现，然后App代码就可以直接使用，framework类是由BootClassLoader加载的，所以最后调用到的方法并不是空实现的方法，而是系统的framework.jar里的类方法，在Zygote进程启动时就预加载了。系统调用一个类的时候，会去找通过BootClassLoader找到framework中的类。</p>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/brevent/Brevent">黑阈</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/RikkaApps/Shizuku">Shizuku</a></li>
-<li><a target="_blank" rel="noopener" href="https://haruue.moe/blog/2017/08/30/call-privileged-api-with-app-process/">使用 app_process 来调用高权限 API</a></li>
-<li><a target="_blank" rel="noopener" href="https://juejin.im/post/6844903936785137671">Android免root获取shell级权限实现静默卸载安装</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/brevent/Brevent/issues/359">一句话描述黑域实现机制</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/57930304/answer/218150881">绿色守护vs黑域（前禁止运行）？ - Zane的回答 - 知乎</a></li>
-<li><a target="_blank" rel="noopener" href="https://lcblog.cn/post/android-shizuku-theory">Android Shizuku源码分析</a></li>
-<li><a target="_blank" rel="noopener" href="https://lcblog.cn/post/android-shizuku-theory2">Android Shizuku源码分析 第二篇</a>&gt;</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.714.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%E5%90%AB%E6%89%8B%E7%BB%AD%E8%B4%B9%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -378,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -477,7 +316,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -575,7 +414,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -671,7 +510,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -769,7 +608,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -868,7 +707,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -934,6 +773,106 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.304.%E4%BA%8C%E7%BB%B4%E5%8C%BA%E5%9F%9F%E5%92%8C%E6%A3%80%E7%B4%A2%20-%20%E7%9F%A9%E9%98%B5%E4%B8%8D%E5%8F%AF%E5%8F%98%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/LeetCode/LeetCode.304.%E4%BA%8C%E7%BB%B4%E5%8C%BA%E5%9F%9F%E5%92%8C%E6%A3%80%E7%B4%A2%20-%20%E7%9F%A9%E9%98%B5%E4%B8%8D%E5%8F%AF%E5%8F%98%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" class="post-title-link" itemprop="url">LeetCode.304.二维区域和检索 - 矩阵不可变（中等）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-10 22:39:51" itemprop="dateCreated datePublished" datetime="2020-08-10T22:39:51+08:00">2020-08-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LeetCode/" itemprop="url" rel="index"><span itemprop="name">LeetCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/LeetCode/LeetCode.304.%E4%BA%8C%E7%BB%B4%E5%8C%BA%E5%9F%9F%E5%92%8C%E6%A3%80%E7%B4%A2%20-%20%E7%9F%A9%E9%98%B5%E4%B8%8D%E5%8F%AF%E5%8F%98%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="LeetCode/LeetCode.304.二维区域和检索 - 矩阵不可变（中等）/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/range-sum-query-2d-immutable/">LeetCode.304.二维区域和检索 - 矩阵不可变（中等）</a></p>
+<p>给定一个二维矩阵 matrix，以下类型的多个请求：</p>
+<ul>
+<li>计算其子矩形范围内元素的总和，该子矩阵的左上角为 (row1, col1) ，右下角为 (row2, col2) 。<br>实现 NumMatrix 类：</li>
+<li>NumMatrix(int[][] matrix) 给定整数矩阵 matrix 进行初始化</li>
+<li>int sumRegion(int row1, int col1, int row2, int col2) 返回左上角 (row1, col1) 、右下角 (row2, col2) 的子矩阵的元素总和。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/LeetCode/LeetCode.304.%E4%BA%8C%E7%BB%B4%E5%8C%BA%E5%9F%9F%E5%92%8C%E6%A3%80%E7%B4%A2%20-%20%E7%9F%A9%E9%98%B5%E4%B8%8D%E5%8F%AF%E5%8F%98%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/LeetCode/LeetCode.931.%20%E4%B8%8B%E9%99%8D%E8%B7%AF%E5%BE%84%E6%9C%80%E5%B0%8F%E5%92%8C%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -965,7 +904,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1062,7 +1001,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1163,7 +1102,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-02 09:28:36" itemprop="dateModified" datetime="2021-09-02T09:28:36+08:00">2021-09-02</time>
+                <time title="修改时间：2021-09-02 11:22:31" itemprop="dateModified" datetime="2021-09-02T11:22:31+08:00">2021-09-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
