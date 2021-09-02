@@ -1721,46 +1721,6 @@
   </entry>
   <entry>
     <title>LeetCode.1314.矩阵区域和（中等）</title>
-    <url>/LeetCode/LeetCode.1314.%E7%9F%A9%E9%98%B5%E5%8C%BA%E5%9F%9F%E5%92%8C/</url>
-    <content><![CDATA[<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><a href="https://leetcode-cn.com/problems/matrix-block-sum/">LeetCode.1314.矩阵区域和</a></p>
-<p>给你一个 m x n 的矩阵 mat 和一个整数 k ，请你返回一个矩阵 answer ，其中每个 answer[i][j] 是所有满足下述条件的元素 mat[r][c] 的和： </p>
-<ul>
-<li>i - k &lt;= r &lt;= i + k,</li>
-<li>j - k &lt;= c &lt;= j + k 且</li>
-<li>(r, c) 在矩阵内。</li>
-</ul>
-<span id="more"></span>
-
-<p>提示：</p>
-<blockquote>
-<p>m == mat.length<br>n == mat[i].length<br>1 &lt;= m, n, k &lt;= 100<br>1 &lt;= mat[i][j] &lt;= 100</p>
-</blockquote>
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>暴力解法需要O($n^4$)时间复杂度，考虑时间更优化的算法。</p>
-<h3 id="简化"><a href="#简化" class="headerlink" title="简化"></a>简化</h3><p>题目要求解区域和是二维的，可以简化问题，先看看一维数组某一区间的元素和怎么求，因为二维的区域相当于一维的叠加。</p>
-<h3 id="一维数组某区间内元素和怎么快速求解？"><a href="#一维数组某区间内元素和怎么快速求解？" class="headerlink" title="一维数组某区间内元素和怎么快速求解？"></a>一维数组某区间内元素和怎么快速求解？</h3><p>可以预先计算和存储每个位置的前缀和（第0个到第i个元素之间所有元素的和），要计算某个区间的和，用区间端点的前缀和相减就可以在O(1)时间复杂度内求解，但需要占用O(n)空间。</p>
-<p>考虑用二维前缀和快速求解面积问题。</p>
-<h3 id="二维前缀和定义"><a href="#二维前缀和定义" class="headerlink" title="二维前缀和定义"></a>二维前缀和定义</h3><p>第0行第0列到第r行第c列形成的矩形区域内所有元素的和。<br>记为<code>preSum[r][c]</code>。</p>
-<h3 id="怎么利用二维前缀和求解区域面积？"><a href="#怎么利用二维前缀和求解区域面积？" class="headerlink" title="怎么利用二维前缀和求解区域面积？"></a>怎么利用二维前缀和求解区域面积？</h3><p>比如要求区域d的元素和。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">列：                  </span><br><span class="line">0   a a a b b b b b   </span><br><span class="line">1   a a a b b b b b</span><br><span class="line">2   c c c d d d d d</span><br><span class="line">3   c c c d d d d d</span><br><span class="line">4   c c c d d d d d</span><br><span class="line">行： 0 1 2 3 4 5 6 7</span><br></pre></td></tr></table></figure>
-<p><code>区域d所有元素和 = 整个区域所有元素和 - 区域a所有元素和- 区域b所有元素和 - 区域c所有元素和</code></p>
-<p>公式表达：<br><code>区域d所有元素和 = preSum[7,4] - preSum[2, 4] - preSum[7, 1] + preSum[2, 1]</code><br><code>preSum[7,4]</code>：整个区域所有元素和<br><code>preSum[2, 4]</code>：区域a + 区域c<br><code>preSum[7, 1]</code>：区域a + 区域b<br><code>preSum[2, 1]</code>：区域a</p>
-<h3 id="二维前缀和怎么推导？"><a href="#二维前缀和怎么推导？" class="headerlink" title="二维前缀和怎么推导？"></a>二维前缀和怎么推导？</h3><ul>
-<li>第一行和第一列前缀和不用推导，左边和上边都没有元素，直接等于元素本身。</li>
-<li>第一行上方没有元素，当作一维前缀和求解。</li>
-<li>第一列和第一行情况相同，方向变了一下，还是当作一维前缀和求解。</li>
-<li>非第一行和非第一列位置的前缀和，跟求解区域和类似，前缀和 = 上方二维前缀和 + 左方二维前缀和 - 左上方二维前缀和 + 本元素值。</li>
-</ul>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">matrixBlockSum</span><span class="params">(mat: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;, k: <span class="type">Int</span>)</span></span>: Array&lt;IntArray&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> m = mat.size</span><br><span class="line">        <span class="keyword">val</span> n = mat[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> preSum = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">val</span> answer = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 计算二维前缀和</span></span><br><span class="line">        preSum[<span class="number">0</span>][<span class="number">0</span>] = mat[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">1</span> until m) preSum[r][<span class="number">0</span>] = mat[r][<span class="number">0</span>] + preSum[r - <span class="number">1</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (c <span class="keyword">in</span> <span class="number">1</span> until n) preSum[<span class="number">0</span>][c] = mat[<span class="number">0</span>][c] + preSum[<span class="number">0</span>][c - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">                preSum[r][c] = mat[r][c] + preSum[r - <span class="number">1</span>][c] + preSum[r][c - <span class="number">1</span>] - preSum[r - <span class="number">1</span>][c - <span class="number">1</span>]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 求解区域和</span></span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> <span class="number">0</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="keyword">val</span> leftTopX = maxOf(r - k, <span class="number">0</span>)</span><br><span class="line">                <span class="keyword">val</span> leftTopY = maxOf(c - k, <span class="number">0</span>)</span><br><span class="line">                <span class="keyword">val</span> rightBottomX = minOf(r + k, m - <span class="number">1</span>)</span><br><span class="line">                <span class="keyword">val</span> rightBottomY = minOf(c + k, n - <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">                <span class="keyword">val</span> wholeArea = preSum[rightBottomX][rightBottomY]</span><br><span class="line">                <span class="keyword">val</span> leftArea = <span class="keyword">if</span> (leftTopX == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> preSum[leftTopX - <span class="number">1</span>][rightBottomY] </span><br><span class="line">                <span class="keyword">val</span> topArea = <span class="keyword">if</span> (leftTopY == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> preSum[rightBottomX][leftTopY - <span class="number">1</span>]</span><br><span class="line">                <span class="keyword">val</span> leftTopArea = <span class="keyword">if</span> (leftTopX == <span class="number">0</span> || leftTopY == <span class="number">0</span>) <span class="number">0</span> <span class="keyword">else</span> preSum[leftTopX - <span class="number">1</span>][leftTopY - <span class="number">1</span>]</span><br><span class="line">                answer[r][c] = wholeArea - leftArea - topArea + leftTopArea</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> answer</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.1314.矩阵区域和（中等）</title>
     <url>/LeetCode/LeetCode.1314.%E7%9F%A9%E9%98%B5%E5%8C%BA%E5%9F%9F%E5%92%8C%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/matrix-block-sum/">LeetCode.1314.矩阵区域和</a></p>
 <p>给你一个 m x n 的矩阵 mat 和一个整数 k ，请你返回一个矩阵 answer ，其中每个 answer[i][j] 是所有满足下述条件的元素 mat[r][c] 的和： </p>
