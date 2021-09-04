@@ -3761,35 +3761,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.392.判断子序列（简单）</title>
-    <url>/LeetCode/LeetCode.392.%E5%88%A4%E6%96%AD%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/is-subsequence">LeetCode.392.判断子序列（简单）</a></p>
-<p>给定字符串 s 和 t ，判断 s 是否为 t 的子序列。</p>
-<p>字符串的一个子序列是原始字符串删除一些（也可以不删除）字符而不改变剩余字符相对位置形成的新字符串。（例如，”ace”是”abcde”的一个子序列，而”aec”不是）。</p>
-<p>进阶：<br>如果有大量输入的 S，称作 S1, S2, … , Sk 其中 k &gt;= 10亿，你需要依次检查它们是否为 T 的子序列。在这种情况下，你会怎样改变代码？</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：双指针"><a href="#解法1：双指针" class="headerlink" title="解法1：双指针"></a>解法1：双指针</h2><p>可以直接拿s和t做比较，遇到不相同的字符就跳过，只要保证s所有字符在t中，并且顺序没有改变即可。</p>
-<p>时间复杂度O(m + n)：m为字符串s长度，n为字符串t长度，最坏情况下两个指针都要移动到字符串末尾。<br>空间复杂度O(1)：没有额外空间占用。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">isSubsequence</span><span class="params">(s: <span class="type">String</span>, t: <span class="type">String</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> i = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> j = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> (i &lt; s.length &amp;&amp; j &lt; t.length) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s[i] == t[j]) i++</span><br><span class="line">            j++</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> i == s.length</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="解法2：后续挑战-动态规划"><a href="#解法2：后续挑战-动态规划" class="headerlink" title="解法2：后续挑战 - 动态规划"></a>解法2：后续挑战 - 动态规划</h2><p>如果有大量输入的 S，称作 S1, S2, … , Sk 其中 k &gt;= 10亿，你需要依次检查它们是否为 T 的子序列。</p>
-<p>双指针的问题在于：<br>S中的一个字符跟T中的字符匹配后，再去匹配下一个字符，需要在T中顺序查找，如果能直接查表得到位置，时间就降下来了。<br>假设S的长度为m，那么复杂度就可以降低为O(m)。</p>
-<p>可以对T做预处理，记录位于<code>T</code>中第<code>i</code>个位置时字符<code>j</code>第一次出现的索引位置，用<code>dp[i][j]</code>来表示。<br>字符集是常数个，所以<code>j</code>的取值范围是一个常量。</p>
-<p><strong>状态转移方程</strong><br>因为<code>dp[i][j]</code>记录的是<code>j</code>在<code>i</code>或<code>i</code>之后第一次出现的位置；<br>如果<code>T[i] == j</code>，<code>dp[i][j] = i</code>。<br>如果<code>T[i] != j</code>，<code>dp[i][j] = dp[i + 1][j]</code>。<br>如果<code>i</code>之后不存在字符<code>j</code>，令<code>dp[i][j] = -1</code><br>要从后往前递推。</p>
-<p><strong>复杂度</strong><br>设m为S长度，n为T长度。<br>预处理时间复杂度O(n)。<br>判断子序列时间复杂度O(m)。</p>
-<p>空间复杂度O(n * 字符集个数)。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">isSubsequence</span><span class="params">(s: <span class="type">String</span>, t: <span class="type">String</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (s.isEmpty()) <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        <span class="keyword">if</span> (t.isEmpty()) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> m = s.length</span><br><span class="line">        <span class="keyword">val</span> n = t.length</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 预处理</span></span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; IntArray(<span class="number">26</span>) &#123; -<span class="number">1</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">1</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until <span class="number">26</span>) &#123;</span><br><span class="line">                <span class="keyword">val</span> c = (<span class="string">&#x27;a&#x27;</span>.toInt() + j).toChar()</span><br><span class="line">                <span class="keyword">if</span> (t[i] == c) dp[i][j] = i</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (i &lt; n - <span class="number">1</span>) dp[i][j] = dp[i + <span class="number">1</span>][j]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> indexT = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (c <span class="keyword">in</span> s) &#123;</span><br><span class="line">            <span class="comment">// t已经没有后续字符了，s还没匹配完，那肯定不是子序列</span></span><br><span class="line">            <span class="keyword">if</span> (indexT == n) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">            <span class="keyword">val</span> cIndex = c.toInt() - <span class="string">&#x27;a&#x27;</span>.toInt()</span><br><span class="line">            <span class="keyword">if</span> (dp[indexT][cIndex] == -<span class="number">1</span>) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">            <span class="comment">// s中的字符c匹配到了T中的字符，从T中下一个字符开始继续匹配</span></span><br><span class="line">            indexT = dp[indexT][cIndex] + <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode简单</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.4.寻找两个正序数组的中位数（困难）</title>
     <url>/LeetCode/LeetCode.4.%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/median-of-two-sorted-arrays/">LeetCode.4.寻找两个正序数组的中位数（困难）</a></p>
@@ -4013,6 +3984,35 @@
         <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
         <tag>栈</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.392.判断子序列（简单）</title>
+    <url>/LeetCode/LeetCode.392.%E5%88%A4%E6%96%AD%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/is-subsequence">LeetCode.392.判断子序列（简单）</a></p>
+<p>给定字符串 s 和 t ，判断 s 是否为 t 的子序列。</p>
+<p>字符串的一个子序列是原始字符串删除一些（也可以不删除）字符而不改变剩余字符相对位置形成的新字符串。（例如，”ace”是”abcde”的一个子序列，而”aec”不是）。</p>
+<p>进阶：<br>如果有大量输入的 S，称作 S1, S2, … , Sk 其中 k &gt;= 10亿，你需要依次检查它们是否为 T 的子序列。在这种情况下，你会怎样改变代码？</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：双指针"><a href="#解法1：双指针" class="headerlink" title="解法1：双指针"></a>解法1：双指针</h2><p>可以直接拿s和t做比较，遇到不相同的字符就跳过，只要保证s所有字符在t中，并且顺序没有改变即可。</p>
+<p>时间复杂度O(m + n)：m为字符串s长度，n为字符串t长度，最坏情况下两个指针都要移动到字符串末尾。<br>空间复杂度O(1)：没有额外空间占用。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">isSubsequence</span><span class="params">(s: <span class="type">String</span>, t: <span class="type">String</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> i = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> j = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> (i &lt; s.length &amp;&amp; j &lt; t.length) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s[i] == t[j]) i++</span><br><span class="line">            j++</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> i == s.length</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解法2：后续挑战-动态规划"><a href="#解法2：后续挑战-动态规划" class="headerlink" title="解法2：后续挑战 - 动态规划"></a>解法2：后续挑战 - 动态规划</h2><p>如果有大量输入的 S，称作 S1, S2, … , Sk 其中 k &gt;= 10亿，你需要依次检查它们是否为 T 的子序列。</p>
+<p>双指针的问题在于：<br>S中的一个字符跟T中的字符匹配后，再去匹配下一个字符，需要在T中顺序查找，如果能直接查表得到位置，时间就降下来了。<br>假设S的长度为m，那么复杂度就可以降低为O(m)。</p>
+<p>可以对T做预处理，记录位于<code>T</code>中第<code>i</code>个位置时字符<code>j</code>第一次出现的索引位置，用<code>dp[i][j]</code>来表示。<br>字符集是常数个，所以<code>j</code>的取值范围是一个常量。</p>
+<p><strong>状态转移方程</strong><br>因为<code>dp[i][j]</code>记录的是<code>j</code>在<code>i</code>或<code>i</code>之后第一次出现的位置；<br>如果<code>T[i] == j</code>，<code>dp[i][j] = i</code>。<br>如果<code>T[i] != j</code>，<code>dp[i][j] = dp[i + 1][j]</code>。<br>如果<code>i</code>之后不存在字符<code>j</code>，令<code>dp[i][j] = -1</code><br>要从后往前递推。</p>
+<p><strong>复杂度</strong><br>设m为S长度，n为T长度。<br>预处理时间复杂度O(n)。<br>判断子序列时间复杂度O(m)。</p>
+<p>空间复杂度O(n * 字符集个数)。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">isSubsequence</span><span class="params">(s: <span class="type">String</span>, t: <span class="type">String</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (s.isEmpty()) <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        <span class="keyword">if</span> (t.isEmpty()) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> m = s.length</span><br><span class="line">        <span class="keyword">val</span> n = t.length</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 预处理</span></span><br><span class="line">        <span class="keyword">val</span> dp = Array(n) &#123; IntArray(<span class="number">26</span>) &#123; -<span class="number">1</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">1</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until <span class="number">26</span>) &#123;</span><br><span class="line">                <span class="keyword">val</span> c = (<span class="string">&#x27;a&#x27;</span>.toInt() + j).toChar()</span><br><span class="line">                <span class="keyword">if</span> (t[i] == c) dp[i][j] = i</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (i &lt; n - <span class="number">1</span>) dp[i][j] = dp[i + <span class="number">1</span>][j]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> indexT = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (c <span class="keyword">in</span> s) &#123;</span><br><span class="line">            <span class="comment">// t已经没有后续字符了，s还没匹配完，那肯定不是子序列</span></span><br><span class="line">            <span class="keyword">if</span> (indexT == n) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">            <span class="keyword">val</span> cIndex = c.toInt() - <span class="string">&#x27;a&#x27;</span>.toInt()</span><br><span class="line">            <span class="keyword">if</span> (dp[indexT][cIndex] == -<span class="number">1</span>) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">            <span class="comment">// s中的字符c匹配到了T中的字符，从T中下一个字符开始继续匹配</span></span><br><span class="line">            indexT = dp[indexT][cIndex] + <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode简单</tag>
       </tags>
   </entry>
   <entry>
@@ -4794,28 +4794,6 @@
       </tags>
   </entry>
   <entry>
-    <title>LeetCode.714.买卖股票的最佳时机含手续费（中等）</title>
-    <url>/LeetCode/LeetCode.714.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%E5%90%AB%E6%89%8B%E7%BB%AD%E8%B4%B9%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/">LeetCode.714.买卖股票的最佳时机含手续费（中等）</a></p>
-<p>给定一个整数数组 prices，其中第 i 个元素代表了第 i 天的股票价格 ；整数 fee 代表了交易股票的手续费用。</p>
-<p>你可以无限次地完成交易，但是你每笔交易都需要付手续费。如果你已经购买了一个股票，在卖出它之前你就不能再继续购买股票了。</p>
-<p>返回获得利润的最大值。</p>
-<p>注意：这里的一笔交易指买入持有并卖出股票的整个过程，每笔交易你只需要为支付一次手续费。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>状态转移方程同<a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/">LeetCode.122.买卖股票的最佳时机 II（简单）</a></p>
-<p>卖出时计算利润时把交易费扣除即可。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxProfit</span><span class="params">(prices: <span class="type">IntArray</span>, fee: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> noholdProfit = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> holdProfit = -prices[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            noholdProfit = maxOf(noholdProfit, holdProfit + prices[i] - fee)</span><br><span class="line">            holdProfit = maxOf(holdProfit, noholdProfit - prices[i])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> noholdProfit</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.72.编辑距离（困难）</title>
     <url>/LeetCode/LeetCode.72.%E7%BC%96%E8%BE%91%E8%B7%9D%E7%A6%BB%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/edit-distance/">LeetCode.72.编辑距离（困难）</a></p>
@@ -4886,6 +4864,28 @@
 <blockquote>
 <p>时间复杂度 ：O(mn)，m为word1长度，n为word2长度。<br>空间复杂度 ：O(n)，只需要用一维dp数组记录中间计算状态。</p>
 </blockquote>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode中等</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.714.买卖股票的最佳时机含手续费（中等）</title>
+    <url>/LeetCode/LeetCode.714.%E4%B9%B0%E5%8D%96%E8%82%A1%E7%A5%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E6%97%B6%E6%9C%BA%E5%90%AB%E6%89%8B%E7%BB%AD%E8%B4%B9%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/">LeetCode.714.买卖股票的最佳时机含手续费（中等）</a></p>
+<p>给定一个整数数组 prices，其中第 i 个元素代表了第 i 天的股票价格 ；整数 fee 代表了交易股票的手续费用。</p>
+<p>你可以无限次地完成交易，但是你每笔交易都需要付手续费。如果你已经购买了一个股票，在卖出它之前你就不能再继续购买股票了。</p>
+<p>返回获得利润的最大值。</p>
+<p>注意：这里的一笔交易指买入持有并卖出股票的整个过程，每笔交易你只需要为支付一次手续费。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>状态转移方程同<a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/">LeetCode.122.买卖股票的最佳时机 II（简单）</a></p>
+<p>卖出时计算利润时把交易费扣除即可。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxProfit</span><span class="params">(prices: <span class="type">IntArray</span>, fee: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = prices.size</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> noholdProfit = <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> holdProfit = -prices[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            noholdProfit = maxOf(noholdProfit, holdProfit + prices[i] - fee)</span><br><span class="line">            holdProfit = maxOf(holdProfit, noholdProfit - prices[i])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> noholdProfit</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>LeetCode</category>
@@ -5394,6 +5394,8 @@
 <h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
 <p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
 <p>然后重新计数，继续同样的过程。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dowait(<span class="keyword">false</span>, <span class="number">0L</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (TimeoutException toe) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> Error(toe); <span class="comment">// cannot happen</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Main barrier code, covering the various policies.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">dowait</span><span class="params">(<span class="keyword">boolean</span> timed, <span class="keyword">long</span> nanos)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> InterruptedException, BrokenBarrierException,</span></span><br><span class="line"><span class="function">           TimeoutException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> Generation g = generation;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (g.broken)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">            breakBarrier();</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> index = --count;</span><br><span class="line">        <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;  <span class="comment">// tripped</span></span><br><span class="line">            <span class="keyword">boolean</span> ranAction = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> Runnable command = barrierCommand;</span><br><span class="line">                <span class="keyword">if</span> (command != <span class="keyword">null</span>)</span><br><span class="line">                    command.run();</span><br><span class="line">                ranAction = <span class="keyword">true</span>;</span><br><span class="line">                nextGeneration();</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!ranAction)</span><br><span class="line">                    breakBarrier();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// loop until tripped, broken, interrupted, or timed out</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!timed)</span><br><span class="line">                    trip.await();</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (nanos &gt; <span class="number">0L</span>)</span><br><span class="line">                    nanos = trip.awaitNanos(nanos);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">                <span class="keyword">if</span> (g == generation &amp;&amp; ! g.broken) &#123;</span><br><span class="line">                    breakBarrier();</span><br><span class="line">                    <span class="keyword">throw</span> ie;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// We&#x27;re about to finish waiting even if we had not</span></span><br><span class="line">                    <span class="comment">// been interrupted, so this interrupt is deemed to</span></span><br><span class="line">                    <span class="comment">// &quot;belong&quot; to subsequent execution.</span></span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g.broken)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g != generation)</span><br><span class="line">                <span class="keyword">return</span> index;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (timed &amp;&amp; nanos &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                breakBarrier();</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
 <p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
 <p>CountDownLatch是一次性的，而CyclicBarrier则可以被重置而重复使用。</p>
@@ -9335,34 +9337,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Object.finalize()</title>
-    <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/</url>
-    <content><![CDATA[<h1 id="Object的finalize-方法什么时候被执行？"><a href="#Object的finalize-方法什么时候被执行？" class="headerlink" title="Object的finalize()方法什么时候被执行？"></a>Object的finalize()方法什么时候被执行？</h1><p>当垃圾回收器要宣告一个对象死亡时，至少要经过两次标记过程：</p>
-<p>如果对象在进行可达性分析后发现没有和GC Roots相连接的引用链，就会被第一次标记。</p>
-<p>GC会再判断该对象是否覆盖了finalize方法，若未覆盖，则直接将其回收。</p>
-<p>如果对象覆盖finalize()方法且未被虚拟机调用过，那么这个对象会被放置在F-Queue队列中，并在稍后由一个虚拟机自动建立的低优先级的Finalizer线程区执行触发finalize()方法，但不承诺等待其运行结束。</p>
-<p>执行finalize方法完毕后，GC会再次判断该对象是否可达，若不可达，则进行回收，否则，对象“复活”。</p>
-<h1 id="Object-finalize-设计目的？"><a href="#Object-finalize-设计目的？" class="headerlink" title="Object.finalize()设计目的？"></a>Object.finalize()设计目的？</h1><p>f对象逃脱死亡的最后一次机会。（只要重新与引用链上的任何一个对象建立关联即可。）但是不建议使用，运行代价高昂，不确定性大，且无法保证各个对象的调用顺序。可用try-finally或其他替代。</p>
-<h1 id="Object-finalize-使用场景"><a href="#Object-finalize-使用场景" class="headerlink" title="Object.finalize()使用场景"></a>Object.finalize()使用场景</h1><p>由于发生垃圾回收就会调用finalize()，所以它可以作为垃圾回收的监听回调。</p>
-<p>在Android framework源码中BinderInternal实现了gc监听的功能，ActivityThread在gc发生时，如果当前内存不足时，则清理一些不必要的activity以释放内存。</p>
-<p>再比如你调用了一些native的方法，可以要在finalize()里去调用C的释放函数。</p>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li><a href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数
-</a></li>
-<li><a href="https://cloud.tencent.com/developer/article/1082673">是时候忘掉finalize方法了</a></li>
-<li><a href="https://www.nowcoder.com/questionTerminal/d8eab06913084e42b515633604eef7cd">finalize()方法什么时候被调用？析构函数(finalization)的目的是什么？</a></li>
-<li>《深入理解Java虚拟机》</li>
-</ul>
-]]></content>
-      <categories>
-        <category>虚拟机</category>
-      </categories>
-      <tags>
-        <tag>虚拟机</tag>
-        <tag>Object.finalize()</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>TLAB（线程本地分配缓存 ）</title>
     <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/TLAB%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%9C%AC%E5%9C%B0%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98%20%EF%BC%89/</url>
     <content><![CDATA[<h1 id="TLAB全称"><a href="#TLAB全称" class="headerlink" title="TLAB全称"></a>TLAB全称</h1><p>Thread Local Allocation Buffer</p>
@@ -9390,6 +9364,34 @@
       <tags>
         <tag>虚拟机</tag>
         <tag>TLAB</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Object.finalize()</title>
+    <url>/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/</url>
+    <content><![CDATA[<h1 id="Object的finalize-方法什么时候被执行？"><a href="#Object的finalize-方法什么时候被执行？" class="headerlink" title="Object的finalize()方法什么时候被执行？"></a>Object的finalize()方法什么时候被执行？</h1><p>当垃圾回收器要宣告一个对象死亡时，至少要经过两次标记过程：</p>
+<p>如果对象在进行可达性分析后发现没有和GC Roots相连接的引用链，就会被第一次标记。</p>
+<p>GC会再判断该对象是否覆盖了finalize方法，若未覆盖，则直接将其回收。</p>
+<p>如果对象覆盖finalize()方法且未被虚拟机调用过，那么这个对象会被放置在F-Queue队列中，并在稍后由一个虚拟机自动建立的低优先级的Finalizer线程区执行触发finalize()方法，但不承诺等待其运行结束。</p>
+<p>执行finalize方法完毕后，GC会再次判断该对象是否可达，若不可达，则进行回收，否则，对象“复活”。</p>
+<h1 id="Object-finalize-设计目的？"><a href="#Object-finalize-设计目的？" class="headerlink" title="Object.finalize()设计目的？"></a>Object.finalize()设计目的？</h1><p>f对象逃脱死亡的最后一次机会。（只要重新与引用链上的任何一个对象建立关联即可。）但是不建议使用，运行代价高昂，不确定性大，且无法保证各个对象的调用顺序。可用try-finally或其他替代。</p>
+<h1 id="Object-finalize-使用场景"><a href="#Object-finalize-使用场景" class="headerlink" title="Object.finalize()使用场景"></a>Object.finalize()使用场景</h1><p>由于发生垃圾回收就会调用finalize()，所以它可以作为垃圾回收的监听回调。</p>
+<p>在Android framework源码中BinderInternal实现了gc监听的功能，ActivityThread在gc发生时，如果当前内存不足时，则清理一些不必要的activity以释放内存。</p>
+<p>再比如你调用了一些native的方法，可以要在finalize()里去调用C的释放函数。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数
+</a></li>
+<li><a href="https://cloud.tencent.com/developer/article/1082673">是时候忘掉finalize方法了</a></li>
+<li><a href="https://www.nowcoder.com/questionTerminal/d8eab06913084e42b515633604eef7cd">finalize()方法什么时候被调用？析构函数(finalization)的目的是什么？</a></li>
+<li>《深入理解Java虚拟机》</li>
+</ul>
+]]></content>
+      <categories>
+        <category>虚拟机</category>
+      </categories>
+      <tags>
+        <tag>虚拟机</tag>
+        <tag>Object.finalize()</tag>
       </tags>
   </entry>
   <entry>
