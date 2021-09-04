@@ -7079,7 +7079,19 @@
   <entry>
     <title>卡顿检测 - BlockCanary浅析</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanary%E6%B5%85%E6%9E%90/</url>
-    <content><![CDATA[<h1 id="监控触发的逻辑在哪？"><a href="#监控触发的逻辑在哪？" class="headerlink" title="监控触发的逻辑在哪？"></a>监控触发的逻辑在哪？</h1><ol>
+    <content><![CDATA[<h1 id="BlockCanary检测卡顿基本原理"><a href="#BlockCanary检测卡顿基本原理" class="headerlink" title="BlockCanary检测卡顿基本原理"></a>BlockCanary检测卡顿基本原理</h1><ul>
+<li>利用Looper.setMessageLogging()设置自定义的Printer。</li>
+<li>主Handler一条消息处理前后会分别调用Printer的方法。</li>
+<li>在消息处理前做线程堆栈采样，消息处理完时结束采样。</li>
+<li>如果一条消息处理时间过长，就认为是卡顿，上报采样结果</li>
+</ul>
+<h1 id="BlockCanary缺点？"><a href="#BlockCanary缺点？" class="headerlink" title="BlockCanary缺点？"></a>BlockCanary缺点？</h1><ul>
+<li>采样数据占用一定CPU资源。</li>
+<li>采样的堆栈并不准确，有可能遗漏真正发生卡顿的代码堆栈。</li>
+</ul>
+<span id="more"></span>
+
+<h1 id="监控触发的逻辑在哪？"><a href="#监控触发的逻辑在哪？" class="headerlink" title="监控触发的逻辑在哪？"></a>监控触发的逻辑在哪？</h1><ol>
 <li> 通过调用静态方法 BlockCanary.install(Context context, BlockCanaryContext blockCanaryContext) 获取BlockCanary实例</li>
 <li> 调用BlockCanary.start()</li>
 </ol>
