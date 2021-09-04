@@ -507,6 +507,83 @@
       </tags>
   </entry>
   <entry>
+    <title>Android 三大热修复方案基本原理</title>
+    <url>/Android/Android%20%E4%B8%89%E5%A4%A7%E7%83%AD%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[<h1 id="什么是热修复？有什么用？"><a href="#什么是热修复？有什么用？" class="headerlink" title="什么是热修复？有什么用？"></a>什么是热修复？有什么用？</h1><p>让应用能够在无需重新安装的情况实现更新，帮助应用快速建立动态修复能力。</p>
+<h1 id="热修复的使用场景在哪？有什么用？"><a href="#热修复的使用场景在哪？有什么用？" class="headerlink" title="热修复的使用场景在哪？有什么用？"></a>热修复的使用场景在哪？有什么用？</h1><h2 id="轻量而快速的升级"><a href="#轻量而快速的升级" class="headerlink" title="轻量而快速的升级"></a>轻量而快速的升级</h2><p>热修复是一个动态修改代码与资源的方式，适合于修改量较少的情况。</p>
+<p>传统的APP发布升级流程慢，热补丁可以在更短的时间内发布，非常适合在灰度阶段快速验证问题是否已修复，大大缩短发布流程。</p>
+<p>热补丁技术可以降低开发成本，缩短开发周期，实现轻量而快速的升级。</p>
+<h2 id="远端调试"><a href="#远端调试" class="headerlink" title="远端调试"></a>远端调试</h2><p>排查用户反馈的问题会遇到”本地不复现”，”日志查不出”，”联系用户不鸟你”等情况，只要能向特定用户发送补丁，就可以很方便的排查问题，不用依赖用户操作，可以默默的就排查解决。</p>
+<h2 id="数据统计"><a href="#数据统计" class="headerlink" title="数据统计"></a>数据统计</h2><p>可以方便的进行ABTest，对不同的用户群发送不同的补丁，做不同的行为统计</p>
+<span id="more"></span>
+
+<h1 id="热修复有什么局限性？是否能代替发布？"><a href="#热修复有什么局限性？是否能代替发布？" class="headerlink" title="热修复有什么局限性？是否能代替发布？"></a>热修复有什么局限性？是否能代替发布？</h1><p>热修复无法完全代替APP升级发布。</p>
+<ol>
+<li> 补丁只能针对单一客户端版本，随着版本差异变大补丁体积也会增大；</li>
+<li> 补丁不能支持所有的修改，例如AndroidManifest；</li>
+<li> 补丁无论对代码还是资源的更新成功率都无法达到100%。</li>
+</ol>
+<h1 id="主流热修复方案原理是什么？"><a href="#主流热修复方案原理是什么？" class="headerlink" title="主流热修复方案原理是什么？"></a>主流热修复方案原理是什么？</h1><p>目前主流热修复方案可分为：</p>
+<ol>
+<li> Native层替换方法结构体</li>
+<li> Java层干预ClassLoader加载Dex</li>
+<li> instant-run 插桩方案</li>
+</ol>
+<h2 id="Native层方案"><a href="#Native层方案" class="headerlink" title="Native层方案"></a>Native层方案</h2><p>Native派的做法大致有以下两种：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210904133158.png"></p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210904133208.png"></p>
+<p>代表框架：Epic、Dexposed、Andfix</p>
+<h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><ol>
+<li> 实时生效，不需要重新启动App</li>
+<li> 不仅可以hook自己的代码，还可以hook同进程的Android SDK代码</li>
+</ol>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li> 无法支持新增或者删除类的filed的情况，因为没有整体替换class, 而field在class中的相对地址在class加载时已确定</li>
+<li> 兼容性问题严重，由于 Android 系统每个版本的实现都有差别，不同的手机厂商定制的系统千差万别，所以需要做很多的兼容</li>
+</ol>
+<h3 id="适用场景"><a href="#适用场景" class="headerlink" title="适用场景"></a>适用场景</h3><p>native hook不适用于：</p>
+<ol>
+<li> 引起原有类中发生结构性变化的修改</li>
+<li> 修复了的非静态方法会被反射调用</li>
+</ol>
+<p>新增一个完整的、原包中不存在的新类是可以的。</p>
+<p>原因是一旦补丁中出现了方法的增加或减少，会导致这个类以及整个Dex的方法数变化，随之方法索引就会变化，访问方法时无法索引到正确的方法了。</p>
+<h2 id="Java层干预类加载方案"><a href="#Java层干预类加载方案" class="headerlink" title="Java层干预类加载方案"></a>Java层干预类加载方案</h2><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210904133301.png"></p>
+<p>代表框架：微信Tinker</p>
+<h2 id="优点-1"><a href="#优点-1" class="headerlink" title="优点"></a>优点</h2><ol>
+<li> 不需要适配虚拟机的变化，没有很大的兼容性问题。</li>
+<li> 代码非侵入，对apk体积没有影响。</li>
+<li> 虚拟机在安装期间为类打上CLASS_ISPREVERIFIED标志是为了提高性能的，我们强制防止类被打上标志会影响性能。</li>
+</ol>
+<h2 id="缺点-1"><a href="#缺点-1" class="headerlink" title="缺点"></a>缺点</h2><ul>
+<li>需要反射更改DexElements，改变Dex的加载顺序，这使得patch需要在下次启动时才能生效，实时性就受到了影响。</li>
+<li>这种方案在android N [speed-profile]编译模式下可能会有问题，可以参考<a href="https://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=2649286341&idx=1&sn=054d595af6e824cbe4edd79427fc2706&scene=0#wechat_redirect">Android N混合编译与对热补丁影响解析</a></li>
+</ul>
+<h2 id="instant-run-插桩方案"><a href="#instant-run-插桩方案" class="headerlink" title="instant-run 插桩方案"></a>instant-run 插桩方案</h2><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210904133309.png"></p>
+<p>代表框架：美团Robust</p>
+<p>原理：</p>
+<ol>
+<li> Robust插件对每个产品代码的每个函数都在编译打包阶段自动的插入了一段代码，插入过程对业务开发是完全透明</li>
+<li> 编译打包阶段自动为每个class都增加了一个类型为ChangeQuickRedirect的静态成员，而在每个方法前都插入了使用changeQuickRedirect相关的逻辑，当 changeQuickRedirect不为null时，可能会执行到accessDispatch从而替换掉之前老的逻辑，达到fix的目的。</li>
+</ol>
+<h2 id="优点-2"><a href="#优点-2" class="headerlink" title="优点"></a>优点</h2><ol>
+<li> 正常的使用DexClassLoader，没有兼容性问题的，修复成功率高达99.9%</li>
+<li> 补丁实时生效，不需要重新启动</li>
+</ol>
+<h2 id="缺点-2"><a href="#缺点-2" class="headerlink" title="缺点"></a>缺点</h2><ol>
+<li> 在原有类中插入了代码，增加了APK体积</li>
+<li> 使用了Robust插件后，原来能被ProGuard内联的函数不能被内联了</li>
+</ol>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>热修复</tag>
+        <tag>Dex</tag>
+        <tag>ClassLoader</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Android 动画原理</title>
     <url>/Android/Android%20%E5%8A%A8%E7%94%BB%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h1 id="View-Animation原理"><a href="#View-Animation原理" class="headerlink" title="View Animation原理"></a>View Animation原理</h1><ol>
@@ -7591,10 +7668,10 @@
       </categories>
       <tags>
         <tag>Android</tag>
+        <tag>ClassLoader</tag>
         <tag>Context</tag>
         <tag>插件化</tag>
         <tag>系统设计</tag>
-        <tag>ClassLoader</tag>
         <tag>Resources</tag>
       </tags>
   </entry>

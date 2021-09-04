@@ -186,6 +186,121 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Kotlin/Kotlin%20%E6%B3%9B%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Kotlin/Kotlin%20%E6%B3%9B%E5%9E%8B/" class="post-title-link" itemprop="url">Kotlin 泛型</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-06 20:23:00" itemprop="dateCreated datePublished" datetime="2018-12-06T20:23:00+08:00">2018-12-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kotlin/" itemprop="url" rel="index"><span itemprop="name">Kotlin</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Kotlin/Kotlin%20%E6%B3%9B%E5%9E%8B/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Kotlin/Kotlin 泛型/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="reified解决的是什么问题"><a href="#reified解决的是什么问题" class="headerlink" title="reified解决的是什么问题?"></a>reified解决的是什么问题?</h1><p>泛型会在编译后类型擦除，在运行时无法获得泛型类型T的类型信息。</p>
+<p>想要在运行时获取泛型类型信息，需要使用reified和inline配合。</p>
+<p>Kotlin编译器会将reified方法内联(inline)到调用的地方(call-site)。</p>
+<p>方法被内联到调用的地方后，泛型T会被替换成具体的类型。</p>
+<p>所以 reified 使得泛型的方法假装在运行时能够获取泛型的类信息。</p>
+<p>这样不用为了获取泛型的类型再单独给方法传一个Class参数。</p>
+<h1 id="协变是什么意思？"><a href="#协变是什么意思？" class="headerlink" title="协变是什么意思？"></a>协变是什么意思？</h1><p>带 extends 限定（上界）的通配符类型使得类型是协变的（covariant）。</p>
+<h1 id="逆变是什么意思？"><a href="#逆变是什么意思？" class="headerlink" title="逆变是什么意思？"></a>逆变是什么意思？</h1><p>super限定的下界通配符使得类型是逆变的（contravariance）。</p>
+<p>在 Java 中有 <code>List&lt;? super String&gt;</code> 是 <code>List&lt;Object&gt;</code>、<code>List&lt;String&gt;</code> 的一个超类。</p>
+<h1 id="in和out关键字是做什么的？"><a href="#in和out关键字是做什么的？" class="headerlink" title="in和out关键字是做什么的？"></a>in和out关键字是做什么的？</h1><p>使用关键字 out 来支持协变，等同于 Java 中的上界通配符 ? extends。</p>
+<p>使用关键字 in 来支持逆变，等同于 Java 中的下界通配符 ? super。</p>
+<p>上界通配符用于读取，是产出东西给外面用，所以是out。</p>
+<p>下界通配符用于修改，是生产东西存到容器里，所以是in。</p>
+<p>消费者 in, 生产者 out。</p>
+<h1 id="kotlin泛型中的where有什么作用？"><a href="#kotlin泛型中的where有什么作用？" class="headerlink" title="kotlin泛型中的where有什么作用？"></a>kotlin泛型中的where有什么作用？</h1><p>Java 中声明类或接口的时候，可以使用 extends 来设置边界，将泛型类型参数限制为某个类型的子集：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// T的类型必须是 Animal 的子类型</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Monster</span>&lt;<span class="type">T extends Animal</span>&gt;</span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意这个和前面讲的声明变量时的泛型类型声明是不同的东西，这里并没有 ?。<br>同时这个边界是可以设置多个，用 &amp; 符号连接：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// T 的类型必须同时是 Animal 和 Food 的子类型</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Monster</span>&lt;<span class="type">T extends Animal &amp; Food</span>&gt;</span>&#123; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Kotlin 只是把 extends 换成了 : 冒号。<br><code>class Monster&lt;T : Animal&gt;</code><br>设置多个边界可以使用 where 关键字：<br><code>class Monster&lt;T&gt; where T : Animal, T : Food</code><br>有人在看文档的时候觉得这个 where 是个新东西，其实虽然 Java 里没有 where ，但它并没有带来新功能，只是把一个老功能换了个新写法。</p>
+<p>不过笔者觉得 Kotlin 里 where 这样的写法可读性更符合英文里的语法，尤其是如果 Monster 本身还有继承的时候：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Monster</span>&lt;<span class="type">T</span>&gt; : <span class="type">MonsterParent</span>&lt;<span class="type">T</span>&gt;</span></span><br><span class="line">    <span class="keyword">where</span> T : Animal</span><br></pre></td></tr></table></figure>
+
+<h1 id="实现一个-fill-函数，传入一个-Array-和一个对象，将对象填充到-Array-中，要求-Array-参数的泛型支持逆变（假设-Array-size-为-1）"><a href="#实现一个-fill-函数，传入一个-Array-和一个对象，将对象填充到-Array-中，要求-Array-参数的泛型支持逆变（假设-Array-size-为-1）" class="headerlink" title="实现一个 fill 函数，传入一个 Array 和一个对象，将对象填充到 Array 中，要求 Array 参数的泛型支持逆变（假设 Array size 为 1）"></a>实现一个 fill 函数，传入一个 Array 和一个对象，将对象填充到 Array 中，要求 Array 参数的泛型支持逆变（假设 Array size 为 1）</h1><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="type">&lt;T&gt;</span> <span class="title">fill</span><span class="params">(to: <span class="type">Array</span>&lt;<span class="type">in</span> <span class="type">T</span>&gt;, from: <span class="type">T</span>)</span></span> &#123;</span><br><span class="line">    to[<span class="number">0</span>] = from</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="实现一个-copy-函数，传入两个-Array-参数，将一个-Array-中的元素复制到另外个-Array-中，要求-Array-参数的泛型分别支持协变和逆变。"><a href="#实现一个-copy-函数，传入两个-Array-参数，将一个-Array-中的元素复制到另外个-Array-中，要求-Array-参数的泛型分别支持协变和逆变。" class="headerlink" title="实现一个 copy 函数，传入两个 Array 参数，将一个 Array 中的元素复制到另外个 Array 中，要求 Array 参数的泛型分别支持协变和逆变。"></a>实现一个 copy 函数，传入两个 Array 参数，将一个 Array 中的元素复制到另外个 Array 中，要求 Array 参数的泛型分别支持协变和逆变。</h1><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="type">&lt;T&gt;</span> <span class="title">copy</span><span class="params">(from: <span class="type">Array</span>&lt;<span class="type">out</span> <span class="type">T</span>&gt;, to: <span class="type">Array</span>&lt;<span class="type">in</span> <span class="type">T</span>&gt;)</span></span> &#123;</span><br><span class="line">    assert(from.size == to.size)</span><br><span class="line">    <span class="keyword">for</span> (i <span class="keyword">in</span> from.indices) &#123;</span><br><span class="line">        to[i] = from[i]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Kotlin/Kotlin%E5%86%85%E8%81%94/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +332,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -338,7 +453,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -452,7 +567,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -554,7 +669,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -652,7 +767,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -761,7 +876,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -856,7 +971,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -994,7 +1109,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1125,7 +1240,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 13:41:43" itemprop="dateModified" datetime="2021-09-04T13:41:43+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1215,124 +1330,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/" class="post-title-link" itemprop="url">B树、B+树</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-07-05 20:00:00" itemprop="dateCreated datePublished" datetime="2018-07-05T20:00:00+08:00">2018-07-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 13:28:05" itemprop="dateModified" datetime="2021-09-04T13:28:05+08:00">2021-09-04</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/B树、B+树/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="B和B-里的B是什么意思"><a href="#B和B-里的B是什么意思" class="headerlink" title="B和B+里的B是什么意思?"></a>B和B+里的B是什么意思?</h1><p>B是Balanced的缩写，平衡的意思。</p>
-<p>全称可以叫多路（多叉）平衡查找（搜索）树。</p>
-<h2 id="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"><a href="#多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？" class="headerlink" title="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"></a>多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？</h2><p>由于平衡二叉查找树只有两个分叉，查询叶子结点需要访问$log_2{n}$次节点，即树的高度。</p>
-<p>如果要减少查找次数，就要让树变矮一点。</p>
-<p>那么一个节点有多个分叉，同时让一个节点存储多个值，就可以降低树的高度，进而减少节点平均的访问次数。</p>
-<h2 id="减少节点的访问次数有什么好处？"><a href="#减少节点的访问次数有什么好处？" class="headerlink" title="减少节点的访问次数有什么好处？"></a>减少节点的访问次数有什么好处？</h2><p>访问节点的成本可能非常大，减少访问节点的次数，就可以降低总的访问成本。</p>
-<p>例如访问IO比访问内存要慢的多，文件系统中普遍采用多路平衡查找树作为存储数据的结构。</p>
-<h2 id="B树与B-的区别？"><a href="#B树与B-的区别？" class="headerlink" title="B树与B+的区别？"></a>B树与B+的区别？</h2><p>B树与B+共同点：</p>
-<ol>
-<li> 都是一个节点按顺序存储多个值</li>
-<li> 每个节点可以有多个分叉</li>
-</ol>
-<p>B树独有：</p>
-<ol>
-<li> 非叶子节点存储了数据，非叶子节点占用空间更大</li>
-</ol>
-<p>B+树独有：</p>
-<ol>
-<li> 非叶子节点不存数据只存索引信息，数据全部在叶子节点，非叶子节点占用空间更小</li>
-<li> 叶子结点用双向链表相连，便于顺序查找</li>
-</ol>
-<h2 id="B-树作为数据库索引有什么优势？"><a href="#B-树作为数据库索引有什么优势？" class="headerlink" title="B+树作为数据库索引有什么优势？"></a>B+树作为数据库索引有什么优势？</h2><p>非叶子结点的大小可以设置为一页，内存从外存读取数据是按页读取的，这样就减少了IO访问次数。</p>
-<p>结点内部是有序的，可以再用二分查找去查找元素。</p>
-<p>B+树的非叶子结点不存储数据，只存键，这样同样空间大小可以存的键就更多，非叶子结点的数量就会减少，IO访问次数也就变少了。</p>
-<p>B+树的叶子结点用双链表链接，这样对区间查询友好，只需要通过非叶结点查找到区间范围，然后顺序遍历即可，可以减少对非叶结点的访问，进而减少IO访问次数。因为由于虚拟内存机制，非叶结点加载到内存后，可能也会被置换到外存，减少对非叶结点的访问次数，也就降低了置换次数，置换是需要IO访问的。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://draveness.me/whys-the-design-mysql-b-plus-tree/">为什么 MySQL 使用 B+ 树</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/v_july_v/article/details/6530142">从B树、B+树、B*树谈到R 树</a></li>
-<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/svL_yNmNJ-wj9aGjtO_Yww">拜托，别再问我什么是B+树 了</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_21993785/java/article/details/80580679">B+Tree在数据库索引上拥有独特优势的原因（为什么比红黑树更合适）</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1404,7 +1401,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-count">189</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1417,7 +1414,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">255</span>
+        <span class="site-state-item-count">257</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
