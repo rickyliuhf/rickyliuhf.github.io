@@ -220,6 +220,99 @@
       </tags>
   </entry>
   <entry>
+    <title>Android View Touch事件分发</title>
+    <url>/Android/Android%20View%20Touch%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91/</url>
+    <content><![CDATA[<h1 id="事件是如何从屏幕点击最终到达-Activity-的？"><a href="#事件是如何从屏幕点击最终到达-Activity-的？" class="headerlink" title="事件是如何从屏幕点击最终到达 Activity 的？"></a>事件是如何从屏幕点击最终到达 Activity 的？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171545.png"></p>
+<h1 id="CANCEL-事件什么时候会触发？"><a href="#CANCEL-事件什么时候会触发？" class="headerlink" title="CANCEL 事件什么时候会触发？"></a>CANCEL 事件什么时候会触发？</h1><ol>
+<li> View 收到 ACTION_DOWN 事件以后，上一个事件还没有结束（可能因为 APP 的切换、ANR 等导致系统扔掉了后续的事件），这个时候会先执行一次 ACTION_CANCEL。</li>
+<li> 子 View 之前拦截了事件，但是后面父 View 重新拦截了事件，这个时候会给子 View 发送 ACTION_CANCEL 事件。</li>
+</ol>
+<h1 id="如何解决滑动冲突？"><a href="#如何解决滑动冲突？" class="headerlink" title="如何解决滑动冲突？"></a>如何解决滑动冲突？</h1><ul>
+<li>  通过重写父类的 onInterceptTouchEvent 来拦截滑动事件。</li>
+<li>  通过在子类中调用 parent.requestDisallowInterceptTouchEvent 来通知父类是否要拦截事件。</li>
+</ul>
+<h1 id="Touch事件分发流程"><a href="#Touch事件分发流程" class="headerlink" title="Touch事件分发流程"></a>Touch事件分发流程</h1><p>Activity -&gt; Window -&gt; DecorView -&gt; ViewGroup -&gt; View.dispatchTouchEvent()</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171640.png"></p>
+<p>注意点：</p>
+<ul>
+<li>如果在执行ACTION_DOWN时返回false，后面一系列的ACTION_MOVE、ACTION_UP事件都不会执行。</li>
+<li>如果在最上层的View的onTouchEvent在DOWN时间返回true，虽然ViewGroup的onInterceptTouchEvent（）对DOWN事件返回了false，但后续的事件（MOVE、UP）依然会传递给它的onInterceptTouchEvent()</li>
+<li>onInterceptTouchEvent（）一旦返回一次true，就再也不会被调用了。</li>
+<li>当dispatchTouchEvent（）事件分发时，只有前一个事件（如ACTION_DOWN）返回true，才会收到后一个事件（ACTION_MOVE和ACTION_UP）</li>
+<li>dispatchTouchEvent()、 onTouchEvent() 消费事件、终结事件传递（返回true）</li>
+<li>onInterceptTouchEvent 并不能消费事件，它相当于是一个分叉口起到分流导流的作用，对后续的ACTION_MOVE和ACTION_UP事件接收起到非常大的作用。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>Touch事件</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android View 绘制机制</title>
+    <url>/Android/Android%20View%20%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<h1 id="View绘制整个流程"><a href="#View绘制整个流程" class="headerlink" title="View绘制整个流程"></a>View绘制整个流程</h1><p>Activity走到onResume时，会调用ActivityThread的handleResumeActivity。</p>
+<p>在这里会创建DecorView，通过WindowManager添加到PhoneWindow中。</p>
+<p>这里也会创建ViewRootImpl，把DecorView的parent指定为ViewRootImpl。</p>
+<p>再调用DecorView的requestLayout，requestLayout会层层的调用parent的requestLayout，最后走到ViewRootImpl的requestLayout。</p>
+<p>然后走到ViewRootImpl.scheduleTraversals()，注册垂直同步监听。</p>
+<p>当垂直同步信号来临时，去调用ViewRootImpl.doTraversal() .</p>
+<p>再调用ViewRootImpl.performTraversals()，然后依次调用performMeasure()、performLayout()、performDraw()。</p>
+<hr>
+<p>View.invalidate()也会层层调用parent的invalidateChildInParent，最后调用到ViewRootImpl的invalidateChildInParent，然后调用ViewRootImpl.scheduleTraversals()。</p>
+<p>等待垂直同步信号来临时，调用ViewRootImpl.doTraversal()，由于没有给View设置FORCE_LAYOUT的flag，所以不会走measure和layout，只会performDraw()，并且只绘制dirty区域。</p>
+<h1 id="首次-View-的绘制流程是在什么时候触发的？"><a href="#首次-View-的绘制流程是在什么时候触发的？" class="headerlink" title="首次 View 的绘制流程是在什么时候触发的？"></a>首次 View 的绘制流程是在什么时候触发的？</h1><p>ActivityThread.handleResumeActivity 里触发的。</p>
+<p>ActivityThread.handleResumeActivity 里会调用 wm.addView 来添加 DecorView，wm 是 WindowManagerImpl</p>
+<p>最终通过 WindowManagerImpl.addView -&gt; WindowManagerGlobal.addView -&gt; ViewRootImpl.setView -&gt; ViewRootImpl.requestLayout 就触发了第一次 View 的绘制。</p>
+<h1 id="ViewRootImpl-创建的时机？"><a href="#ViewRootImpl-创建的时机？" class="headerlink" title="ViewRootImpl 创建的时机？"></a>ViewRootImpl 创建的时机？</h1><p>ActivityThread.handleResumeActivity -&gt; WindowManagerImpl.addView -&gt; WindowManagerGlobal.addView  中创建ViewRootImpl</p>
+<h1 id="DecorView的创建时机？"><a href="#DecorView的创建时机？" class="headerlink" title="DecorView的创建时机？"></a>DecorView的创建时机？</h1><p>ActivityThread.handleResumeActivity()中ActivityClientRecord.window.getDecorView();</p>
+<p>PhoneWindow.getDecorView()调用installDecor() -&gt; generateDecor()去new DecorView()</p>
+<h1 id="ViewRootImpl-和-DecorView-的关系是什么？"><a href="#ViewRootImpl-和-DecorView-的关系是什么？" class="headerlink" title="ViewRootImpl 和 DecorView 的关系是什么？"></a>ViewRootImpl 和 DecorView 的关系是什么？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172333.png"></p>
+<p>在 ViewRootImpl.setView 里，通过 DecorView.assignParent 把 ViewRootImpl 设置为 DecorView 的 parent。</p>
+<p>所以 ViewRootImpl 和 DecorView 的关系就是 ViewRootImpl 是 DecorView 的 parent。</p>
+<p>因为 DecorView 是我们布局的顶层，现在我们就知道层层调用 requestLayout 等方法是怎么调用到 ViewRootImpl 里的了。</p>
+<h1 id="Activity、PhoneWindow、DecorView、ViewRootImpl-的关系？"><a href="#Activity、PhoneWindow、DecorView、ViewRootImpl-的关系？" class="headerlink" title="Activity、PhoneWindow、DecorView、ViewRootImpl 的关系？"></a>Activity、PhoneWindow、DecorView、ViewRootImpl 的关系？</h1><ul>
+<li>PhoneWindow 其实是 Window 的唯一子类，是 Activity 和 View 交互系统的中间层。</li>
+<li>DecorView 是整个 View 层级的最顶层。</li>
+<li>ViewRootImpl 是 DecorView 的 parent，但是他并不是一个真正的 View，只是继承了 ViewParent 接口，用来掌管 View 的各种事件，包括 requestLayout、invalidate、dispatchInputEvent 等等。</li>
+</ul>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172438.png"></p>
+<h1 id="如何触发重新绘制？"><a href="#如何触发重新绘制？" class="headerlink" title="如何触发重新绘制？"></a>如何触发重新绘制？</h1><p>View的 requestLayout 和 invalidate</p>
+<h1 id="View-requestLayout-流程？"><a href="#View-requestLayout-流程？" class="headerlink" title="View.requestLayout()流程？"></a>View.requestLayout()流程？</h1><p>层层调用 parent 的 requestLayout  ，一直到ViewRootImpl.requestLayout()</p>
+<p>ViewRootImpl.requestLayout() 调用 scheduleTraversals() -&gt; doTraversal() -&gt; performTraversals() 开启绘制流程。</p>
+<p>在 performTraversals 里，就是熟悉的 performMeasure -&gt; performLayout -&gt; performDraw 三个流程了。</p>
+<p>在performDraw View 的绘制过程中，我们可以看到，只有 flag 被设置为 PFLAG_DIRTY_OPAQUE 才会进行绘制（这里划重点）。这也就是大家经常说的 requestLayout 不会引发 draw。</p>
+<h1 id="View-invalidate-流程？"><a href="#View-invalidate-流程？" class="headerlink" title="View.invalidate()流程？"></a>View.invalidate()流程？</h1><p>invalidate -&gt; invalidateInternal  -&gt; parent.invalidateChild</p>
+<p>invalidateChild的while 循环里，会层层计算 parent 的 dirty 区域，最终会调用到 ViewRootImpl.invalidateChildInParent -&gt; ViewRootImpl.invalidateRectOnScreen -&gt; ViewRootImpl.scheduleTraversals -&gt; ViewRootImpl.performDraw -&gt; ViewRootImpl.draw -&gt; DecorView的draw()</p>
+<p>View.draw 方法，根据 PFLAG_DIRTY_OPAQUE flag 去决定是否重新绘制。</p>
+<h1 id="requestLayout-和-invalidate-的区别？"><a href="#requestLayout-和-invalidate-的区别？" class="headerlink" title="requestLayout 和 invalidate 的区别？"></a>requestLayout 和 invalidate 的区别？</h1><p>requestLayout 和 invalidate 都会触发整个绘制流程。但是在 measure 和 layout 过程中，只会对 flag 设置为 FORCE_LAYOUT 的情况进行重新测量和布局，而 draw 只会重绘 flag 为 dirty 的区域。</p>
+<p>requestLayout 是用来设置 FORCE_LAYOUT 标志，invalidate 用来设置 dirty 标志。所以 requestLayout 只会触发 measure 和 layout，invalidate 只会触发 draw。</p>
+<h1 id="requestLayout-一定会触发onMeasure和onLayout吗？"><a href="#requestLayout-一定会触发onMeasure和onLayout吗？" class="headerlink" title="requestLayout 一定会触发onMeasure和onLayout吗？"></a>requestLayout 一定会触发onMeasure和onLayout吗？</h1><p>不一定。</p>
+<p>ViewRootImpl.performMeasure，最终调用的是 View.measure。<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172624.png"><br>measureSpec 和 oldMeasureSpec 不相符的时候才会onMeasure。</p>
+<p>ViewRootImpl.performLayout()：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172646.png"><br>位置有变化才去onLayout。</p>
+<h1 id="PFLAG-DIRTY-OPAQUE是什么意思？"><a href="#PFLAG-DIRTY-OPAQUE是什么意思？" class="headerlink" title="PFLAG_DIRTY_OPAQUE是什么意思？"></a>PFLAG_DIRTY_OPAQUE是什么意思？</h1><p>不透明，实心。</p>
+<p>实心控件：控件的onDraw方法能够保证此控件的所有区域都会被其所绘制的内容完全覆盖。换句话说，通过此控件所属的区域无法看到此控件之下的内容，也就是既没有半透明也没有空缺的部分。</p>
+<h1 id="什么时候View的flag-被设置为-PFLAG-DIRTY-OPAQUE？"><a href="#什么时候View的flag-被设置为-PFLAG-DIRTY-OPAQUE？" class="headerlink" title="什么时候View的flag 被设置为 PFLAG_DIRTY_OPAQUE？"></a>什么时候View的flag 被设置为 PFLAG_DIRTY_OPAQUE？</h1><p>invalidate 会调用 parent.invalidateChild，在这里被赋值的。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172722.png"></p>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>View绘制</tag>
+        <tag>ViewRootImpl</tag>
+        <tag>DecorView</tag>
+        <tag>requestLayout()</tag>
+        <tag>invalidate()</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Android Task</title>
     <url>/Android/Android%20Task/</url>
     <content><![CDATA[<p>在日常开发过程中，只要涉及到activity，那么对task相关的东西总会或多或少的接触到，不过对task相关的一些配置的作用理解的还不是很透彻，官方文档在细节上说的也不够清楚，要透彻理解还是得自己写demo实践检验，所以便有了这篇总结。</p>
@@ -365,99 +458,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Android View Touch事件分发</title>
-    <url>/Android/Android%20View%20Touch%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91/</url>
-    <content><![CDATA[<h1 id="事件是如何从屏幕点击最终到达-Activity-的？"><a href="#事件是如何从屏幕点击最终到达-Activity-的？" class="headerlink" title="事件是如何从屏幕点击最终到达 Activity 的？"></a>事件是如何从屏幕点击最终到达 Activity 的？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171545.png"></p>
-<h1 id="CANCEL-事件什么时候会触发？"><a href="#CANCEL-事件什么时候会触发？" class="headerlink" title="CANCEL 事件什么时候会触发？"></a>CANCEL 事件什么时候会触发？</h1><ol>
-<li> View 收到 ACTION_DOWN 事件以后，上一个事件还没有结束（可能因为 APP 的切换、ANR 等导致系统扔掉了后续的事件），这个时候会先执行一次 ACTION_CANCEL。</li>
-<li> 子 View 之前拦截了事件，但是后面父 View 重新拦截了事件，这个时候会给子 View 发送 ACTION_CANCEL 事件。</li>
-</ol>
-<h1 id="如何解决滑动冲突？"><a href="#如何解决滑动冲突？" class="headerlink" title="如何解决滑动冲突？"></a>如何解决滑动冲突？</h1><ul>
-<li>  通过重写父类的 onInterceptTouchEvent 来拦截滑动事件。</li>
-<li>  通过在子类中调用 parent.requestDisallowInterceptTouchEvent 来通知父类是否要拦截事件。</li>
-</ul>
-<h1 id="Touch事件分发流程"><a href="#Touch事件分发流程" class="headerlink" title="Touch事件分发流程"></a>Touch事件分发流程</h1><p>Activity -&gt; Window -&gt; DecorView -&gt; ViewGroup -&gt; View.dispatchTouchEvent()</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828171640.png"></p>
-<p>注意点：</p>
-<ul>
-<li>如果在执行ACTION_DOWN时返回false，后面一系列的ACTION_MOVE、ACTION_UP事件都不会执行。</li>
-<li>如果在最上层的View的onTouchEvent在DOWN时间返回true，虽然ViewGroup的onInterceptTouchEvent（）对DOWN事件返回了false，但后续的事件（MOVE、UP）依然会传递给它的onInterceptTouchEvent()</li>
-<li>onInterceptTouchEvent（）一旦返回一次true，就再也不会被调用了。</li>
-<li>当dispatchTouchEvent（）事件分发时，只有前一个事件（如ACTION_DOWN）返回true，才会收到后一个事件（ACTION_MOVE和ACTION_UP）</li>
-<li>dispatchTouchEvent()、 onTouchEvent() 消费事件、终结事件传递（返回true）</li>
-<li>onInterceptTouchEvent 并不能消费事件，它相当于是一个分叉口起到分流导流的作用，对后续的ACTION_MOVE和ACTION_UP事件接收起到非常大的作用。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Android</category>
-      </categories>
-      <tags>
-        <tag>Android</tag>
-        <tag>Touch事件</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Android View 绘制机制</title>
-    <url>/Android/Android%20View%20%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6/</url>
-    <content><![CDATA[<span id="more"></span>
-
-<h1 id="View绘制整个流程"><a href="#View绘制整个流程" class="headerlink" title="View绘制整个流程"></a>View绘制整个流程</h1><p>Activity走到onResume时，会调用ActivityThread的handleResumeActivity。</p>
-<p>在这里会创建DecorView，通过WindowManager添加到PhoneWindow中。</p>
-<p>这里也会创建ViewRootImpl，把DecorView的parent指定为ViewRootImpl。</p>
-<p>再调用DecorView的requestLayout，requestLayout会层层的调用parent的requestLayout，最后走到ViewRootImpl的requestLayout。</p>
-<p>然后走到ViewRootImpl.scheduleTraversals()，注册垂直同步监听。</p>
-<p>当垂直同步信号来临时，去调用ViewRootImpl.doTraversal() .</p>
-<p>再调用ViewRootImpl.performTraversals()，然后依次调用performMeasure()、performLayout()、performDraw()。</p>
-<hr>
-<p>View.invalidate()也会层层调用parent的invalidateChildInParent，最后调用到ViewRootImpl的invalidateChildInParent，然后调用ViewRootImpl.scheduleTraversals()。</p>
-<p>等待垂直同步信号来临时，调用ViewRootImpl.doTraversal()，由于没有给View设置FORCE_LAYOUT的flag，所以不会走measure和layout，只会performDraw()，并且只绘制dirty区域。</p>
-<h1 id="首次-View-的绘制流程是在什么时候触发的？"><a href="#首次-View-的绘制流程是在什么时候触发的？" class="headerlink" title="首次 View 的绘制流程是在什么时候触发的？"></a>首次 View 的绘制流程是在什么时候触发的？</h1><p>ActivityThread.handleResumeActivity 里触发的。</p>
-<p>ActivityThread.handleResumeActivity 里会调用 wm.addView 来添加 DecorView，wm 是 WindowManagerImpl</p>
-<p>最终通过 WindowManagerImpl.addView -&gt; WindowManagerGlobal.addView -&gt; ViewRootImpl.setView -&gt; ViewRootImpl.requestLayout 就触发了第一次 View 的绘制。</p>
-<h1 id="ViewRootImpl-创建的时机？"><a href="#ViewRootImpl-创建的时机？" class="headerlink" title="ViewRootImpl 创建的时机？"></a>ViewRootImpl 创建的时机？</h1><p>ActivityThread.handleResumeActivity -&gt; WindowManagerImpl.addView -&gt; WindowManagerGlobal.addView  中创建ViewRootImpl</p>
-<h1 id="DecorView的创建时机？"><a href="#DecorView的创建时机？" class="headerlink" title="DecorView的创建时机？"></a>DecorView的创建时机？</h1><p>ActivityThread.handleResumeActivity()中ActivityClientRecord.window.getDecorView();</p>
-<p>PhoneWindow.getDecorView()调用installDecor() -&gt; generateDecor()去new DecorView()</p>
-<h1 id="ViewRootImpl-和-DecorView-的关系是什么？"><a href="#ViewRootImpl-和-DecorView-的关系是什么？" class="headerlink" title="ViewRootImpl 和 DecorView 的关系是什么？"></a>ViewRootImpl 和 DecorView 的关系是什么？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172333.png"></p>
-<p>在 ViewRootImpl.setView 里，通过 DecorView.assignParent 把 ViewRootImpl 设置为 DecorView 的 parent。</p>
-<p>所以 ViewRootImpl 和 DecorView 的关系就是 ViewRootImpl 是 DecorView 的 parent。</p>
-<p>因为 DecorView 是我们布局的顶层，现在我们就知道层层调用 requestLayout 等方法是怎么调用到 ViewRootImpl 里的了。</p>
-<h1 id="Activity、PhoneWindow、DecorView、ViewRootImpl-的关系？"><a href="#Activity、PhoneWindow、DecorView、ViewRootImpl-的关系？" class="headerlink" title="Activity、PhoneWindow、DecorView、ViewRootImpl 的关系？"></a>Activity、PhoneWindow、DecorView、ViewRootImpl 的关系？</h1><ul>
-<li>PhoneWindow 其实是 Window 的唯一子类，是 Activity 和 View 交互系统的中间层。</li>
-<li>DecorView 是整个 View 层级的最顶层。</li>
-<li>ViewRootImpl 是 DecorView 的 parent，但是他并不是一个真正的 View，只是继承了 ViewParent 接口，用来掌管 View 的各种事件，包括 requestLayout、invalidate、dispatchInputEvent 等等。</li>
-</ul>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172438.png"></p>
-<h1 id="如何触发重新绘制？"><a href="#如何触发重新绘制？" class="headerlink" title="如何触发重新绘制？"></a>如何触发重新绘制？</h1><p>View的 requestLayout 和 invalidate</p>
-<h1 id="View-requestLayout-流程？"><a href="#View-requestLayout-流程？" class="headerlink" title="View.requestLayout()流程？"></a>View.requestLayout()流程？</h1><p>层层调用 parent 的 requestLayout  ，一直到ViewRootImpl.requestLayout()</p>
-<p>ViewRootImpl.requestLayout() 调用 scheduleTraversals() -&gt; doTraversal() -&gt; performTraversals() 开启绘制流程。</p>
-<p>在 performTraversals 里，就是熟悉的 performMeasure -&gt; performLayout -&gt; performDraw 三个流程了。</p>
-<p>在performDraw View 的绘制过程中，我们可以看到，只有 flag 被设置为 PFLAG_DIRTY_OPAQUE 才会进行绘制（这里划重点）。这也就是大家经常说的 requestLayout 不会引发 draw。</p>
-<h1 id="View-invalidate-流程？"><a href="#View-invalidate-流程？" class="headerlink" title="View.invalidate()流程？"></a>View.invalidate()流程？</h1><p>invalidate -&gt; invalidateInternal  -&gt; parent.invalidateChild</p>
-<p>invalidateChild的while 循环里，会层层计算 parent 的 dirty 区域，最终会调用到 ViewRootImpl.invalidateChildInParent -&gt; ViewRootImpl.invalidateRectOnScreen -&gt; ViewRootImpl.scheduleTraversals -&gt; ViewRootImpl.performDraw -&gt; ViewRootImpl.draw -&gt; DecorView的draw()</p>
-<p>View.draw 方法，根据 PFLAG_DIRTY_OPAQUE flag 去决定是否重新绘制。</p>
-<h1 id="requestLayout-和-invalidate-的区别？"><a href="#requestLayout-和-invalidate-的区别？" class="headerlink" title="requestLayout 和 invalidate 的区别？"></a>requestLayout 和 invalidate 的区别？</h1><p>requestLayout 和 invalidate 都会触发整个绘制流程。但是在 measure 和 layout 过程中，只会对 flag 设置为 FORCE_LAYOUT 的情况进行重新测量和布局，而 draw 只会重绘 flag 为 dirty 的区域。</p>
-<p>requestLayout 是用来设置 FORCE_LAYOUT 标志，invalidate 用来设置 dirty 标志。所以 requestLayout 只会触发 measure 和 layout，invalidate 只会触发 draw。</p>
-<h1 id="requestLayout-一定会触发onMeasure和onLayout吗？"><a href="#requestLayout-一定会触发onMeasure和onLayout吗？" class="headerlink" title="requestLayout 一定会触发onMeasure和onLayout吗？"></a>requestLayout 一定会触发onMeasure和onLayout吗？</h1><p>不一定。</p>
-<p>ViewRootImpl.performMeasure，最终调用的是 View.measure。<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172624.png"><br>measureSpec 和 oldMeasureSpec 不相符的时候才会onMeasure。</p>
-<p>ViewRootImpl.performLayout()：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172646.png"><br>位置有变化才去onLayout。</p>
-<h1 id="PFLAG-DIRTY-OPAQUE是什么意思？"><a href="#PFLAG-DIRTY-OPAQUE是什么意思？" class="headerlink" title="PFLAG_DIRTY_OPAQUE是什么意思？"></a>PFLAG_DIRTY_OPAQUE是什么意思？</h1><p>不透明，实心。</p>
-<p>实心控件：控件的onDraw方法能够保证此控件的所有区域都会被其所绘制的内容完全覆盖。换句话说，通过此控件所属的区域无法看到此控件之下的内容，也就是既没有半透明也没有空缺的部分。</p>
-<h1 id="什么时候View的flag-被设置为-PFLAG-DIRTY-OPAQUE？"><a href="#什么时候View的flag-被设置为-PFLAG-DIRTY-OPAQUE？" class="headerlink" title="什么时候View的flag 被设置为 PFLAG_DIRTY_OPAQUE？"></a>什么时候View的flag 被设置为 PFLAG_DIRTY_OPAQUE？</h1><p>invalidate 会调用 parent.invalidateChild，在这里被赋值的。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828172722.png"></p>
-]]></content>
-      <categories>
-        <category>Android</category>
-      </categories>
-      <tags>
-        <tag>Android</tag>
-        <tag>View绘制</tag>
-        <tag>ViewRootImpl</tag>
-        <tag>DecorView</tag>
-        <tag>requestLayout()</tag>
-        <tag>invalidate()</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Android Zygote</title>
     <url>/Android/Android%20Zygote/</url>
     <content><![CDATA[<h1 id="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？"><a href="#为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？" class="headerlink" title="为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？"></a>为什么要用Zygote孵化一个进程？直接创建一个进程会有什么问题？</h1><p>Zygote 作为一个孵化器，可以提前加载一些资源，这样 fork() 时基于 Copy-On-Write 机制创建的其他进程就能直接使用这些资源，而不用重新加载。</p>
@@ -591,6 +591,33 @@
       </tags>
   </entry>
   <entry>
+    <title>Android之Context、ContextImp、ContextWrapper</title>
+    <url>/Android/Android%E4%B9%8BContext%E3%80%81ContextImp%E3%80%81ContextWrapper/</url>
+    <content><![CDATA[<h1 id="Context、ContextImpl、ContextWrapper关系？"><a href="#Context、ContextImpl、ContextWrapper关系？" class="headerlink" title="Context、ContextImpl、ContextWrapper关系？"></a>Context、ContextImpl、ContextWrapper关系？</h1><ul>
+<li>Context是行为的抽象接口。</li>
+<li>ContextImpl是Android平台上的具体实现。</li>
+<li>ContextWrapper是装饰器可以修改Context的行为而不修改原始的Context对象。<span id="more"></span></li>
+</ul>
+<h1 id="ContextWrapper装饰Context有什么具体场景？"><a href="#ContextWrapper装饰Context有什么具体场景？" class="headerlink" title="ContextWrapper装饰Context有什么具体场景？"></a>ContextWrapper装饰Context有什么具体场景？</h1><p>比如遇到Receiver的时候，ReceiverRestrictedContext就能够限制Receiver调用startService，让应用程序的Receiver不能够启动Service。通过实现装饰器，能够提供各种各样的装饰，并且也为Android应用程序组件提供了应用环境。</p>
+<h1 id="Context类继承关系"><a href="#Context类继承关系" class="headerlink" title="Context类继承关系"></a>Context类继承关系</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828170109.png"></p>
+<h1 id="ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？"><a href="#ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？" class="headerlink" title="ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？"></a>ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？</h1><ul>
+<li>Activity通过ContextWrapper的成员mBase来引用了一个ContextImpl对象，这样，Activity组件以后就可以通过这个ContextImpl对象来执行一些具体的操作（启动Service等）。</li>
+<li>同时ContextImpl类又通过自己的成员mOuterContext引用了与它关联的Activity，这样ContextImpl类也可以操作Activity。</li>
+</ul>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828170210.png"></p>
+<h1 id="ContextThemeWrapper使用场景？"><a href="#ContextThemeWrapper使用场景？" class="headerlink" title="ContextThemeWrapper使用场景？"></a>ContextThemeWrapper使用场景？</h1><p>可以传一个主题样式id过来，用style中的各个属性，覆盖原有Context中的属性，在动态替换主题的时候会比较有用。</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>Context</tag>
+        <tag>ContextImp</tag>
+        <tag>ContextWrapper</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Android 动画原理</title>
     <url>/Android/Android%20%E5%8A%A8%E7%94%BB%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h1 id="View-Animation原理"><a href="#View-Animation原理" class="headerlink" title="View Animation原理"></a>View Animation原理</h1><ol>
@@ -634,33 +661,6 @@
         <tag>Android</tag>
         <tag>补间动画</tag>
         <tag>属性动画</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Android之Context、ContextImp、ContextWrapper</title>
-    <url>/Android/Android%E4%B9%8BContext%E3%80%81ContextImp%E3%80%81ContextWrapper/</url>
-    <content><![CDATA[<h1 id="Context、ContextImpl、ContextWrapper关系？"><a href="#Context、ContextImpl、ContextWrapper关系？" class="headerlink" title="Context、ContextImpl、ContextWrapper关系？"></a>Context、ContextImpl、ContextWrapper关系？</h1><ul>
-<li>Context是行为的抽象接口。</li>
-<li>ContextImpl是Android平台上的具体实现。</li>
-<li>ContextWrapper是装饰器可以修改Context的行为而不修改原始的Context对象。<span id="more"></span></li>
-</ul>
-<h1 id="ContextWrapper装饰Context有什么具体场景？"><a href="#ContextWrapper装饰Context有什么具体场景？" class="headerlink" title="ContextWrapper装饰Context有什么具体场景？"></a>ContextWrapper装饰Context有什么具体场景？</h1><p>比如遇到Receiver的时候，ReceiverRestrictedContext就能够限制Receiver调用startService，让应用程序的Receiver不能够启动Service。通过实现装饰器，能够提供各种各样的装饰，并且也为Android应用程序组件提供了应用环境。</p>
-<h1 id="Context类继承关系"><a href="#Context类继承关系" class="headerlink" title="Context类继承关系"></a>Context类继承关系</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828170109.png"></p>
-<h1 id="ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？"><a href="#ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？" class="headerlink" title="ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？"></a>ContextWrapper的mBase是哪个对象？ContextImpl的mOuterContext是哪个对象？</h1><ul>
-<li>Activity通过ContextWrapper的成员mBase来引用了一个ContextImpl对象，这样，Activity组件以后就可以通过这个ContextImpl对象来执行一些具体的操作（启动Service等）。</li>
-<li>同时ContextImpl类又通过自己的成员mOuterContext引用了与它关联的Activity，这样ContextImpl类也可以操作Activity。</li>
-</ul>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828170210.png"></p>
-<h1 id="ContextThemeWrapper使用场景？"><a href="#ContextThemeWrapper使用场景？" class="headerlink" title="ContextThemeWrapper使用场景？"></a>ContextThemeWrapper使用场景？</h1><p>可以传一个主题样式id过来，用style中的各个属性，覆盖原有Context中的属性，在动态替换主题的时候会比较有用。</p>
-]]></content>
-      <categories>
-        <category>Android</category>
-      </categories>
-      <tags>
-        <tag>Android</tag>
-        <tag>Context</tag>
-        <tag>ContextImp</tag>
-        <tag>ContextWrapper</tag>
       </tags>
   </entry>
   <entry>
@@ -849,6 +849,71 @@
       </tags>
   </entry>
   <entry>
+    <title>Java 泛型、上下界通配符、泛型擦除</title>
+    <url>/Java/Java%20%E6%B3%9B%E5%9E%8B%E3%80%81%E4%B8%8A%E4%B8%8B%E7%95%8C%E9%80%9A%E9%85%8D%E7%AC%A6%E3%80%81%E6%B3%9B%E5%9E%8B%E6%93%A6%E9%99%A4/</url>
+    <content><![CDATA[<h1 id="泛型解决的是什么问题？"><a href="#泛型解决的是什么问题？" class="headerlink" title="泛型解决的是什么问题？"></a>泛型解决的是什么问题？</h1><p>在Java SE 1.5之前，没有泛型的情况的下，通过对类型Object的引用来实现参数的“任意化”，“任意化”带来的缺点是要做显式的强制类型转换，而这种转换是要求开发者对实际参数类型可以预知的情况下进行的。对于强制类型转换错误的情况，编译器可能不提示错误，在运行的时候才出现异常，这是一个安全隐患。</p>
+<p>泛型的好处是在编译的时候检查类型安全，并且所有的强制转换都是自动和隐式的，以提高代码的重用率。</p>
+<h1 id="通配符表示什么？"><a href="#通配符表示什么？" class="headerlink" title="通配符表示什么？"></a>通配符表示什么？</h1><p>通配符?表示未知类型</p>
+<h1 id="泛型存在什么问题？"><a href="#泛型存在什么问题？" class="headerlink" title="泛型存在什么问题？"></a>泛型存在什么问题？</h1><p>泛型的类型存在继承关系，不代表使用泛型的类也存在继承关系。</p>
+<p>例如Integer是Number的子类，List<Integer>不是List<Number>的子类，不能把List<Integer>的变量赋值给List<Number>的变量。</p>
+<h1 id="为什么不能把List的变量赋值给List的变量？"><a href="#为什么不能把List的变量赋值给List的变量？" class="headerlink" title="为什么不能把List的变量赋值给List的变量？"></a>为什么不能把List<Integer>的变量赋值给List<Number>的变量？</h1><p>因为List<Number>可能还存储Float、Double等类型的元素，List<Integer>如果可以赋值给List<Number>，List<Integer>里就可以存储Float、Double等非Integer元素了，这与泛型的定义冲突</p>
+<h1 id="上界通配符是什么？"><a href="#上界通配符是什么？" class="headerlink" title="上界通配符是什么？"></a>上界通配符是什么？</h1><p><code>&lt;? extends T&gt;</code>：是指 “上界通配符（Upper Bounds Wildcards）”。</p>
+<p>上界通配符只能读取，因为读取到的类型进行类型转换是安全的，所有的子类都可以安全的转换为父类。</p>
+<p>但是不能插入，因为不知道具体类型。</p>
+<h1 id="下界通配符是什么？"><a href="#下界通配符是什么？" class="headerlink" title="下界通配符是什么？"></a>下界通配符是什么？</h1><p><code>&lt;? super T&gt;</code>：是指 “下界通配符（Lower Bounds Wildcards）”</p>
+<p>当你知道集合里所持有的元素类型都是A及其父类的时候，此时往list集合里面插入A及其子类（B或C）是安全的。</p>
+<h1 id="泛型通配符具体的使用场景？"><a href="#泛型通配符具体的使用场景？" class="headerlink" title="泛型通配符具体的使用场景？"></a>泛型通配符具体的使用场景？</h1><p>有一组类继承关系如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210829000917.png"></p>
+<p>一个常见的获取容器元素的需求就是，写一个基于容器元素基类的方法，从容器中去取出元素进行打印，而不用针对每一个具体子类定义打印方法。</p>
+<p>但实际<code>List&lt;Apple&gt;</code>不能赋值给<code>List&lt;Fruit&gt;</code>，编译会报错，如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210829000935.png"></p>
+<p>因为<code>List&lt;Fruit&gt;</code>可能还持有Banana或Pear，与<code>List&lt;Apple&gt;</code>不能等价。</p>
+<p>把<code>List&lt;Fruit&gt;</code>改为<code>List&lt;? extends Fruit&gt;</code>就可以了，这个上界通配符的意思是，List里持有的都是Fruit的子类，具体是哪些子类不知道，<code>List&lt;Apple&gt;</code>可以看做是<code>List&lt;? extends Fruit&gt;</code>子类，从<code>List&lt;? extends Fruit&gt;</code>也只能取出Fruit，不能取出Fruit的子类。但是不能给<code>List&lt;? extends Fruit&gt;</code>里add任何的Apple、Banana、Pear，因为 <code>? extends Fruit</code> 并不知道具体的子类是什么。</p>
+<p>需要读取就用上界匹配符。</p>
+<p>当需要往容器添加元素，<code>List&lt;Object&gt;</code>不能直接赋值给<code>List&lt;Fruit&gt;</code>变量。</p>
+<p>因为<code>List&lt;Object&gt;</code>可能存在非Fruit的元素，如果允许赋值，跟类型定义就矛盾了。<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210829001034.png"></p>
+<p>解决方法就是把<code>List&lt;Fruit&gt;</code>改为<code>List&lt;? super Fruit&gt;</code></p>
+<p><code>addVariousFruits(List&lt;? super Fruit&gt; fruitList)</code></p>
+<p>下界通配符表示容器中都是Fruit的父类元素，<code>List&lt;? super Fruit&gt;</code>是<code>List&lt;Object&gt;</code>的父类，所以<code>List&lt;Object&gt;</code>可以赋值给<code>List&lt;? super Fruit&gt;</code>变量。</p>
+<h1 id="什么时候用上界通配符？什么时候用下界通配符？"><a href="#什么时候用上界通配符？什么时候用下界通配符？" class="headerlink" title="什么时候用上界通配符？什么时候用下界通配符？"></a>什么时候用上界通配符？什么时候用下界通配符？</h1><p>PECS原则：Producer extends Consumer super</p>
+<ul>
+<li>  如果你只需要从集合中获得类型T , 使用&lt;? extends T&gt;通配符</li>
+<li>  如果你只需要将类型T放到集合中, 使用&lt;? super T&gt;通配符</li>
+<li>  如果你既要获取又要放置元素，则不使用任何通配符。</li>
+</ul>
+<h1 id="泛型擦除是什么意思"><a href="#泛型擦除是什么意思" class="headerlink" title="泛型擦除是什么意思?"></a>泛型擦除是什么意思?</h1><p>仅于编译时类型检查，在运行时擦除类型信息。</p>
+<p>生成的字节码中不包含泛型的类型信息。</p>
+<h1 id="泛型擦除会带来什么问题？"><a href="#泛型擦除会带来什么问题？" class="headerlink" title="泛型擦除会带来什么问题？"></a>泛型擦除会带来什么问题？</h1><p>在编译时不一定能靠编译器坚持出类型错误，擦除使得使用泛型的代码可以和没有使用泛型的代码随意互用，这样运行时有可能发生类型转换异常。</p>
+<p>比如通过反射调用代码，可以绕过编译器的类型错误检查，因为反射是在运行时发生的，编译后泛型的类型就被擦除了，所以不会报错。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828230831.png"><br>深入理解Java虚拟机（第2版）10.3.1 泛型与类型擦除</p>
+<p>如下的代码输出结果为true</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">List&lt;String&gt; l1 = new ArrayList&lt;String&gt;(); </span><br><span class="line">List&lt;Integer&gt; l2 = new ArrayList&lt;Integer&gt;(); </span><br><span class="line">System.out.println(l1.getClass() == l2.getClass());</span><br></pre></td></tr></table></figure>
+
+<h1 id="既然泛型擦除有问题，为什么当初不设计成跟C-模板那种一样呢？"><a href="#既然泛型擦除有问题，为什么当初不设计成跟C-模板那种一样呢？" class="headerlink" title="既然泛型擦除有问题，为什么当初不设计成跟C++模板那种一样呢？"></a>既然泛型擦除有问题，为什么当初不设计成跟C++模板那种一样呢？</h1><p>C++的模板实例化类时会为每种类型都创建新的类，就会造成代码膨胀。</p>
+<p>同时为了保持JDK5之前的代码能够兼容运行。</p>
+<h1 id="泛型擦除的优点"><a href="#泛型擦除的优点" class="headerlink" title="泛型擦除的优点"></a>泛型擦除的优点</h1><ol>
+<li> 兼容JDK5之前的代码</li>
+<li> 不会像C++模板造成代码膨胀</li>
+</ol>
+<h1 id="泛型擦除的缺点"><a href="#泛型擦除的缺点" class="headerlink" title="泛型擦除的缺点"></a>泛型擦除的缺点</h1><ol>
+<li> 编译时不一定能靠编译器坚持出类型错误，这样运行时有可能发生类型转换异常，例如反射可以绕过编译器的类型错误检查。</li>
+<li> 不能创建具体类型的泛型数组。</li>
+<li> 方法重载时不同的泛型具体类会被认为擦除后是一个类型从而禁止重载。</li>
+</ol>
+<h1 id="为什么不能创建具体类型的泛型数组？"><a href="#为什么不能创建具体类型的泛型数组？" class="headerlink" title="为什么不能创建具体类型的泛型数组？"></a>为什么不能创建具体类型的泛型数组？</h1><p><code>List&lt;Integer&gt;[] list = new ArrayList&lt;Integer&gt;[];</code></p>
+<p>这段代码编译会不通过</p>
+<p><code>List&lt;Integer&gt;</code>和  <code>List&lt;Boolean&gt;</code>在 jvm 中等同于<code>List&lt;Object&gt;</code>，所有的类型信息都被擦除，程序也无法分辨一个数组中的元素类型具体是  <code>List&lt;Integer&gt;</code>类型还是  <code>List&lt;Boolean&gt;</code>类型。</p>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>泛型</tag>
+        <tag>泛型擦除</tag>
+        <tag>上界通配符</tag>
+        <tag>下界通配符</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>序列化：Serializable与Parceable</title>
     <url>/Java/Java%20Serializable%E5%BA%8F%E5%88%97%E5%8C%96/</url>
     <content><![CDATA[<span id="more"></span>
@@ -912,71 +977,6 @@
         <tag>Parceable</tag>
         <tag>序列化</tag>
         <tag>serialVersionUID</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java 泛型、上下界通配符、泛型擦除</title>
-    <url>/Java/Java%20%E6%B3%9B%E5%9E%8B%E3%80%81%E4%B8%8A%E4%B8%8B%E7%95%8C%E9%80%9A%E9%85%8D%E7%AC%A6%E3%80%81%E6%B3%9B%E5%9E%8B%E6%93%A6%E9%99%A4/</url>
-    <content><![CDATA[<h1 id="泛型解决的是什么问题？"><a href="#泛型解决的是什么问题？" class="headerlink" title="泛型解决的是什么问题？"></a>泛型解决的是什么问题？</h1><p>在Java SE 1.5之前，没有泛型的情况的下，通过对类型Object的引用来实现参数的“任意化”，“任意化”带来的缺点是要做显式的强制类型转换，而这种转换是要求开发者对实际参数类型可以预知的情况下进行的。对于强制类型转换错误的情况，编译器可能不提示错误，在运行的时候才出现异常，这是一个安全隐患。</p>
-<p>泛型的好处是在编译的时候检查类型安全，并且所有的强制转换都是自动和隐式的，以提高代码的重用率。</p>
-<h1 id="通配符表示什么？"><a href="#通配符表示什么？" class="headerlink" title="通配符表示什么？"></a>通配符表示什么？</h1><p>通配符?表示未知类型</p>
-<h1 id="泛型存在什么问题？"><a href="#泛型存在什么问题？" class="headerlink" title="泛型存在什么问题？"></a>泛型存在什么问题？</h1><p>泛型的类型存在继承关系，不代表使用泛型的类也存在继承关系。</p>
-<p>例如Integer是Number的子类，List<Integer>不是List<Number>的子类，不能把List<Integer>的变量赋值给List<Number>的变量。</p>
-<h1 id="为什么不能把List的变量赋值给List的变量？"><a href="#为什么不能把List的变量赋值给List的变量？" class="headerlink" title="为什么不能把List的变量赋值给List的变量？"></a>为什么不能把List<Integer>的变量赋值给List<Number>的变量？</h1><p>因为List<Number>可能还存储Float、Double等类型的元素，List<Integer>如果可以赋值给List<Number>，List<Integer>里就可以存储Float、Double等非Integer元素了，这与泛型的定义冲突</p>
-<h1 id="上界通配符是什么？"><a href="#上界通配符是什么？" class="headerlink" title="上界通配符是什么？"></a>上界通配符是什么？</h1><p><code>&lt;? extends T&gt;</code>：是指 “上界通配符（Upper Bounds Wildcards）”。</p>
-<p>上界通配符只能读取，因为读取到的类型进行类型转换是安全的，所有的子类都可以安全的转换为父类。</p>
-<p>但是不能插入，因为不知道具体类型。</p>
-<h1 id="下界通配符是什么？"><a href="#下界通配符是什么？" class="headerlink" title="下界通配符是什么？"></a>下界通配符是什么？</h1><p><code>&lt;? super T&gt;</code>：是指 “下界通配符（Lower Bounds Wildcards）”</p>
-<p>当你知道集合里所持有的元素类型都是A及其父类的时候，此时往list集合里面插入A及其子类（B或C）是安全的。</p>
-<h1 id="泛型通配符具体的使用场景？"><a href="#泛型通配符具体的使用场景？" class="headerlink" title="泛型通配符具体的使用场景？"></a>泛型通配符具体的使用场景？</h1><p>有一组类继承关系如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210829000917.png"></p>
-<p>一个常见的获取容器元素的需求就是，写一个基于容器元素基类的方法，从容器中去取出元素进行打印，而不用针对每一个具体子类定义打印方法。</p>
-<p>但实际<code>List&lt;Apple&gt;</code>不能赋值给<code>List&lt;Fruit&gt;</code>，编译会报错，如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210829000935.png"></p>
-<p>因为<code>List&lt;Fruit&gt;</code>可能还持有Banana或Pear，与<code>List&lt;Apple&gt;</code>不能等价。</p>
-<p>把<code>List&lt;Fruit&gt;</code>改为<code>List&lt;? extends Fruit&gt;</code>就可以了，这个上界通配符的意思是，List里持有的都是Fruit的子类，具体是哪些子类不知道，<code>List&lt;Apple&gt;</code>可以看做是<code>List&lt;? extends Fruit&gt;</code>子类，从<code>List&lt;? extends Fruit&gt;</code>也只能取出Fruit，不能取出Fruit的子类。但是不能给<code>List&lt;? extends Fruit&gt;</code>里add任何的Apple、Banana、Pear，因为 <code>? extends Fruit</code> 并不知道具体的子类是什么。</p>
-<p>需要读取就用上界匹配符。</p>
-<p>当需要往容器添加元素，<code>List&lt;Object&gt;</code>不能直接赋值给<code>List&lt;Fruit&gt;</code>变量。</p>
-<p>因为<code>List&lt;Object&gt;</code>可能存在非Fruit的元素，如果允许赋值，跟类型定义就矛盾了。<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210829001034.png"></p>
-<p>解决方法就是把<code>List&lt;Fruit&gt;</code>改为<code>List&lt;? super Fruit&gt;</code></p>
-<p><code>addVariousFruits(List&lt;? super Fruit&gt; fruitList)</code></p>
-<p>下界通配符表示容器中都是Fruit的父类元素，<code>List&lt;? super Fruit&gt;</code>是<code>List&lt;Object&gt;</code>的父类，所以<code>List&lt;Object&gt;</code>可以赋值给<code>List&lt;? super Fruit&gt;</code>变量。</p>
-<h1 id="什么时候用上界通配符？什么时候用下界通配符？"><a href="#什么时候用上界通配符？什么时候用下界通配符？" class="headerlink" title="什么时候用上界通配符？什么时候用下界通配符？"></a>什么时候用上界通配符？什么时候用下界通配符？</h1><p>PECS原则：Producer extends Consumer super</p>
-<ul>
-<li>  如果你只需要从集合中获得类型T , 使用&lt;? extends T&gt;通配符</li>
-<li>  如果你只需要将类型T放到集合中, 使用&lt;? super T&gt;通配符</li>
-<li>  如果你既要获取又要放置元素，则不使用任何通配符。</li>
-</ul>
-<h1 id="泛型擦除是什么意思"><a href="#泛型擦除是什么意思" class="headerlink" title="泛型擦除是什么意思?"></a>泛型擦除是什么意思?</h1><p>仅于编译时类型检查，在运行时擦除类型信息。</p>
-<p>生成的字节码中不包含泛型的类型信息。</p>
-<h1 id="泛型擦除会带来什么问题？"><a href="#泛型擦除会带来什么问题？" class="headerlink" title="泛型擦除会带来什么问题？"></a>泛型擦除会带来什么问题？</h1><p>在编译时不一定能靠编译器坚持出类型错误，擦除使得使用泛型的代码可以和没有使用泛型的代码随意互用，这样运行时有可能发生类型转换异常。</p>
-<p>比如通过反射调用代码，可以绕过编译器的类型错误检查，因为反射是在运行时发生的，编译后泛型的类型就被擦除了，所以不会报错。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828230831.png"><br>深入理解Java虚拟机（第2版）10.3.1 泛型与类型擦除</p>
-<p>如下的代码输出结果为true</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">List&lt;String&gt; l1 = new ArrayList&lt;String&gt;(); </span><br><span class="line">List&lt;Integer&gt; l2 = new ArrayList&lt;Integer&gt;(); </span><br><span class="line">System.out.println(l1.getClass() == l2.getClass());</span><br></pre></td></tr></table></figure>
-
-<h1 id="既然泛型擦除有问题，为什么当初不设计成跟C-模板那种一样呢？"><a href="#既然泛型擦除有问题，为什么当初不设计成跟C-模板那种一样呢？" class="headerlink" title="既然泛型擦除有问题，为什么当初不设计成跟C++模板那种一样呢？"></a>既然泛型擦除有问题，为什么当初不设计成跟C++模板那种一样呢？</h1><p>C++的模板实例化类时会为每种类型都创建新的类，就会造成代码膨胀。</p>
-<p>同时为了保持JDK5之前的代码能够兼容运行。</p>
-<h1 id="泛型擦除的优点"><a href="#泛型擦除的优点" class="headerlink" title="泛型擦除的优点"></a>泛型擦除的优点</h1><ol>
-<li> 兼容JDK5之前的代码</li>
-<li> 不会像C++模板造成代码膨胀</li>
-</ol>
-<h1 id="泛型擦除的缺点"><a href="#泛型擦除的缺点" class="headerlink" title="泛型擦除的缺点"></a>泛型擦除的缺点</h1><ol>
-<li> 编译时不一定能靠编译器坚持出类型错误，这样运行时有可能发生类型转换异常，例如反射可以绕过编译器的类型错误检查。</li>
-<li> 不能创建具体类型的泛型数组。</li>
-<li> 方法重载时不同的泛型具体类会被认为擦除后是一个类型从而禁止重载。</li>
-</ol>
-<h1 id="为什么不能创建具体类型的泛型数组？"><a href="#为什么不能创建具体类型的泛型数组？" class="headerlink" title="为什么不能创建具体类型的泛型数组？"></a>为什么不能创建具体类型的泛型数组？</h1><p><code>List&lt;Integer&gt;[] list = new ArrayList&lt;Integer&gt;[];</code></p>
-<p>这段代码编译会不通过</p>
-<p><code>List&lt;Integer&gt;</code>和  <code>List&lt;Boolean&gt;</code>在 jvm 中等同于<code>List&lt;Object&gt;</code>，所有的类型信息都被擦除，程序也无法分辨一个数组中的元素类型具体是  <code>List&lt;Integer&gt;</code>类型还是  <code>List&lt;Boolean&gt;</code>类型。</p>
-]]></content>
-      <categories>
-        <category>Java</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>泛型</tag>
-        <tag>泛型擦除</tag>
-        <tag>上界通配符</tag>
-        <tag>下界通配符</tag>
       </tags>
   </entry>
   <entry>
@@ -1285,6 +1285,45 @@
       </tags>
   </entry>
   <entry>
+    <title>Kotlin 空安全</title>
+    <url>/Kotlin/Kotlin%E7%A9%BA%E5%AE%89%E5%85%A8/</url>
+    <content><![CDATA[<h1 id="Kotlin调Java可能返回为空的函数"><a href="#Kotlin调Java可能返回为空的函数" class="headerlink" title="Kotlin调Java可能返回为空的函数"></a>Kotlin调Java可能返回为空的函数</h1><p>Java 中的任何引用都可能是 null，这使得 Kotlin 对来自 Java 的对象要求严格空安全是不现实的。 Java 声明的类型在 Kotlin 中会被特别对待并称为平台类型。</p>
+<p>当把一个平台值赋值给一个 Kotlin 变量时，可以选择我们期望的类型（可空或非空类型）：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">val</span> nullable: String? = item <span class="comment">// 允许，没有问题</span></span><br><span class="line"><span class="keyword">val</span> notNull: String = item <span class="comment">// 允许，运行时可能失败</span></span><br></pre></td></tr></table></figure>
+<p>如果我们选择非空类型，编译器会在赋值时触发一个断言。这防止 Kotlin 的非空变量保存空值。当我们把平台值传递给期待非空值等的 Kotlin 函数时，也会触发断言。 总的来说，编译器尽力阻止空值通过程序向远传播（尽管鉴于泛型的原因，有时这不可能完全消除）。</p>
+<p>如果我们选择非空类型，编译器会在赋值时触发一个断言。这防止 Kotlin 的非空变量保存空值。当我们把平台值传递给期待非空值等的 Kotlin 函数时，也会触发断言。 总的来说，编译器尽力阻止空值通过程序向远传播。</p>
+<p>只有在Java层给方法加上<code>@Nullable</code>之后才会提示返回值可空。</p>
+<h1 id="空安全实际遇到的问题"><a href="#空安全实际遇到的问题" class="headerlink" title="空安全实际遇到的问题"></a>空安全实际遇到的问题</h1><p>一开始有一个Java的旧类，一直没有改动过，但是有需求要有不同的实现，所以需要把类的各个方法抽象为接口，接口类用Kotlin实现，接口的实现类还是原来的Java类，其中有个方法在Kotlin的接口中返回值是非空的String，java实现类中返回值是String，但是没有加@NotNull的注解，也就是可空的。</p>
+<p>在实际调用这个方法的时候，当java实现类中返回null，就会报空指针异常。</p>
+<h1 id="Nullable注解应该是哪个库哪个包的注解？"><a href="#Nullable注解应该是哪个库哪个包的注解？" class="headerlink" title="Nullable注解应该是哪个库哪个包的注解？"></a>Nullable注解应该是哪个库哪个包的注解？</h1><p>具有可空性注解的Java类型并不表示为平台类型，而是表示为实际可空或非空的 Kotlin 类型。编译器支持多种可空性注解，包括：</p>
+<ul>
+<li><p>  <a href="https://www.jetbrains.com/idea/help/nullable-and-notnull-annotations.html">JetBrains</a> （org.jetbrains.annotations 包中的 @Nullable 和 @NotNull）</p>
+</li>
+<li><p>  Android（com.android.annotations 和 android.support.annotations)</p>
+</li>
+<li><p>  JSR-305（javax.annotation，详见下文）</p>
+</li>
+<li><p>  FindBugs（edu.umd.cs.findbugs.annotations）</p>
+</li>
+<li><p>  Eclipse（org.eclipse.jdt.annotation）</p>
+</li>
+<li><p>  Lombok（lombok.NonNull）。</p>
+</li>
+</ul>
+<p>你可以在 <a href="https://github.com/JetBrains/kotlin/blob/master/core/compiler.common.jvm/src/org/jetbrains/kotlin/load/java/JvmAnnotationNames.kt">Kotlin 编译器源代码</a>中找到完整的列表。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a href="https://www.kotlincn.net/docs/reference/java-interop.html#%E7%A9%BA%E5%AE%89%E5%85%A8%E4%B8%8E%E5%B9%B3%E5%8F%B0%E7%B1%BB%E5%9E%8B">Kotlin官方文档：空安全和平台类型</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Kotlin</category>
+      </categories>
+      <tags>
+        <tag>Kotlin</tag>
+        <tag>空安全</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Kotlin协程原理</title>
     <url>/Kotlin/Kotlin%E5%8D%8F%E7%A8%8B%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><p>协程核心优势是结构化编程，每个协程都是一个逻辑调度流，并加以各种自定义的控制。<br>代码结构清晰，可读性增强，便于调试和测试。</p>
@@ -1376,42 +1415,38 @@
       </tags>
   </entry>
   <entry>
-    <title>Kotlin 空安全</title>
-    <url>/Kotlin/Kotlin%E7%A9%BA%E5%AE%89%E5%85%A8/</url>
-    <content><![CDATA[<h1 id="Kotlin调Java可能返回为空的函数"><a href="#Kotlin调Java可能返回为空的函数" class="headerlink" title="Kotlin调Java可能返回为空的函数"></a>Kotlin调Java可能返回为空的函数</h1><p>Java 中的任何引用都可能是 null，这使得 Kotlin 对来自 Java 的对象要求严格空安全是不现实的。 Java 声明的类型在 Kotlin 中会被特别对待并称为平台类型。</p>
-<p>当把一个平台值赋值给一个 Kotlin 变量时，可以选择我们期望的类型（可空或非空类型）：</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">val</span> nullable: String? = item <span class="comment">// 允许，没有问题</span></span><br><span class="line"><span class="keyword">val</span> notNull: String = item <span class="comment">// 允许，运行时可能失败</span></span><br></pre></td></tr></table></figure>
-<p>如果我们选择非空类型，编译器会在赋值时触发一个断言。这防止 Kotlin 的非空变量保存空值。当我们把平台值传递给期待非空值等的 Kotlin 函数时，也会触发断言。 总的来说，编译器尽力阻止空值通过程序向远传播（尽管鉴于泛型的原因，有时这不可能完全消除）。</p>
-<p>如果我们选择非空类型，编译器会在赋值时触发一个断言。这防止 Kotlin 的非空变量保存空值。当我们把平台值传递给期待非空值等的 Kotlin 函数时，也会触发断言。 总的来说，编译器尽力阻止空值通过程序向远传播。</p>
-<p>只有在Java层给方法加上<code>@Nullable</code>之后才会提示返回值可空。</p>
-<h1 id="空安全实际遇到的问题"><a href="#空安全实际遇到的问题" class="headerlink" title="空安全实际遇到的问题"></a>空安全实际遇到的问题</h1><p>一开始有一个Java的旧类，一直没有改动过，但是有需求要有不同的实现，所以需要把类的各个方法抽象为接口，接口类用Kotlin实现，接口的实现类还是原来的Java类，其中有个方法在Kotlin的接口中返回值是非空的String，java实现类中返回值是String，但是没有加@NotNull的注解，也就是可空的。</p>
-<p>在实际调用这个方法的时候，当java实现类中返回null，就会报空指针异常。</p>
-<h1 id="Nullable注解应该是哪个库哪个包的注解？"><a href="#Nullable注解应该是哪个库哪个包的注解？" class="headerlink" title="Nullable注解应该是哪个库哪个包的注解？"></a>Nullable注解应该是哪个库哪个包的注解？</h1><p>具有可空性注解的Java类型并不表示为平台类型，而是表示为实际可空或非空的 Kotlin 类型。编译器支持多种可空性注解，包括：</p>
-<ul>
-<li><p>  <a href="https://www.jetbrains.com/idea/help/nullable-and-notnull-annotations.html">JetBrains</a> （org.jetbrains.annotations 包中的 @Nullable 和 @NotNull）</p>
-</li>
-<li><p>  Android（com.android.annotations 和 android.support.annotations)</p>
-</li>
-<li><p>  JSR-305（javax.annotation，详见下文）</p>
-</li>
-<li><p>  FindBugs（edu.umd.cs.findbugs.annotations）</p>
-</li>
-<li><p>  Eclipse（org.eclipse.jdt.annotation）</p>
-</li>
-<li><p>  Lombok（lombok.NonNull）。</p>
-</li>
-</ul>
-<p>你可以在 <a href="https://github.com/JetBrains/kotlin/blob/master/core/compiler.common.jvm/src/org/jetbrains/kotlin/load/java/JvmAnnotationNames.kt">Kotlin 编译器源代码</a>中找到完整的列表。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a href="https://www.kotlincn.net/docs/reference/java-interop.html#%E7%A9%BA%E5%AE%89%E5%85%A8%E4%B8%8E%E5%B9%B3%E5%8F%B0%E7%B1%BB%E5%9E%8B">Kotlin官方文档：空安全和平台类型</a></li>
-</ul>
+    <title>LeetCode.1014.最佳观光组合（中等）</title>
+    <url>/LeetCode/LeetCode.1014.%E6%9C%80%E4%BD%B3%E8%A7%82%E5%85%89%E7%BB%84%E5%90%88%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/best-sightseeing-pair/">LeetCode.1014.最佳观光组合（中等）</a></p>
+<p>给你一个正整数数组 values，其中 values[i] 表示第 i 个观光景点的评分，并且两个景点 i 和 j 之间的 距离 为 j - i。<br>一对景点（i &lt; j）组成的观光组合的得分为 values[i] + values[j] + i - j ，也就是景点的评分之和 减去 它们两者之间的距离。<br>返回一对观光景点能取得的最高分。、</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="思路梳理"><a href="#思路梳理" class="headerlink" title="思路梳理"></a>思路梳理</h2><ol>
+<li>对一个确定的<code>j</code>，需要在<code>[0, j - 1]</code>中选取一个<code>i</code>，使得观光组合得分最高。</li>
+<li>不知道选哪个<code>j</code>能让得分最高，就需要穷举所有<code>j</code>的取值可能性。</li>
+</ol>
+<h2 id="目标分析"><a href="#目标分析" class="headerlink" title="目标分析"></a>目标分析</h2><p>目标是求最大的观察观光组合得分，那么就得思考得分与什么相关，能否分解为独立的几个部分，再穷举每个部分所有的可能性，看这些可能性是怎么操作得到的，就可以知道得分是怎么来的了。</p>
+<h2 id="具体分析"><a href="#具体分析" class="headerlink" title="具体分析"></a>具体分析</h2><p>得分公式<code>values[i] + values[j] + i - j</code>里会变的东西就是<code>i</code>和<code>j</code>，这两个是独立变化的，那么就可以把公式拆成两部分：</p>
+<ol>
+<li>仅跟<code>i</code>相关的，即 <code>values[i] + i</code>，可以称为<code>scoreI</code></li>
+<li>仅跟<code>j</code>相关的，即 <code>values[j] - j</code>，可以称为<code>scoreJ</code></li>
+</ol>
+<p>总分<code>score = scoreI + scoreJ</code></p>
+<h2 id="对于一个确定的j，怎么使得得分最高呢？"><a href="#对于一个确定的j，怎么使得得分最高呢？" class="headerlink" title="对于一个确定的j，怎么使得得分最高呢？"></a>对于一个确定的j，怎么使得得分最高呢？</h2><ol>
+<li><code>j</code>确定了， <code>scoreJ</code> 是确定的，不会变动。</li>
+<li>然后在<code>[0, j - 1]</code>中选取一个<code>i</code>，使得<code>scoreI</code> 最大，得分就是最高了。</li>
+</ol>
+<p>不确定选哪个<code>j</code>可以得分最高，那就遍历数组，穷举<code>j</code>所有的取值可能。</p>
+<p>但是按照这个思路，先穷举<code>j</code>，再在每个<code>j</code>处往回穷举<code>i</code>，时间复杂度是O($n^2$)，是否存在不必要的操作？</p>
+<h2 id="时间优化"><a href="#时间优化" class="headerlink" title="时间优化"></a>时间优化</h2><p>仔细分析两个步骤可以发现，没有必要往回穷举<code>i</code>，因为<code>i &lt; j</code>，在数组中遍历到<code>j</code>，<code>j</code>前面的位置肯定都遍历过了，<code>i</code>已经可以确定了；简单点说，<code>j</code>确定了，<code>i</code>就确定了。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxScoreSightseeingPair</span><span class="params">(values: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = values.size</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> maxScoreI = values[<span class="number">0</span>] + <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> maxScore = <span class="number">0</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 穷举所有的j</span></span><br><span class="line">        <span class="comment">// 只有1个景点无法形成观光组合，所以从1开始遍历，这样至少2个有两个景点能形成观光组合</span></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">val</span> scoreJ = values[j] - j</span><br><span class="line">            <span class="keyword">val</span> score = maxScoreI + scoreJ</span><br><span class="line">            maxScore = maxOf(maxScore, score)</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 上面已经处理过j，对于下一个j而言，需要知道下一个j前面最大的scoreI是多少</span></span><br><span class="line">            <span class="keyword">val</span> scoreI = values[j] + j</span><br><span class="line">            maxScoreI = maxOf(maxScoreI, scoreI)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> maxScore</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>Kotlin</category>
+        <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>Kotlin</tag>
-        <tag>空安全</tag>
+        <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -1468,93 +1503,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
+        <tag>动态规划</tag>
         <tag>LeetCode困难</tag>
-        <tag>动态规划</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.1014.最佳观光组合（中等）</title>
-    <url>/LeetCode/LeetCode.1014.%E6%9C%80%E4%BD%B3%E8%A7%82%E5%85%89%E7%BB%84%E5%90%88%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/best-sightseeing-pair/">LeetCode.1014.最佳观光组合（中等）</a></p>
-<p>给你一个正整数数组 values，其中 values[i] 表示第 i 个观光景点的评分，并且两个景点 i 和 j 之间的 距离 为 j - i。<br>一对景点（i &lt; j）组成的观光组合的得分为 values[i] + values[j] + i - j ，也就是景点的评分之和 减去 它们两者之间的距离。<br>返回一对观光景点能取得的最高分。、</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="思路梳理"><a href="#思路梳理" class="headerlink" title="思路梳理"></a>思路梳理</h2><ol>
-<li>对一个确定的<code>j</code>，需要在<code>[0, j - 1]</code>中选取一个<code>i</code>，使得观光组合得分最高。</li>
-<li>不知道选哪个<code>j</code>能让得分最高，就需要穷举所有<code>j</code>的取值可能性。</li>
-</ol>
-<h2 id="目标分析"><a href="#目标分析" class="headerlink" title="目标分析"></a>目标分析</h2><p>目标是求最大的观察观光组合得分，那么就得思考得分与什么相关，能否分解为独立的几个部分，再穷举每个部分所有的可能性，看这些可能性是怎么操作得到的，就可以知道得分是怎么来的了。</p>
-<h2 id="具体分析"><a href="#具体分析" class="headerlink" title="具体分析"></a>具体分析</h2><p>得分公式<code>values[i] + values[j] + i - j</code>里会变的东西就是<code>i</code>和<code>j</code>，这两个是独立变化的，那么就可以把公式拆成两部分：</p>
-<ol>
-<li>仅跟<code>i</code>相关的，即 <code>values[i] + i</code>，可以称为<code>scoreI</code></li>
-<li>仅跟<code>j</code>相关的，即 <code>values[j] - j</code>，可以称为<code>scoreJ</code></li>
-</ol>
-<p>总分<code>score = scoreI + scoreJ</code></p>
-<h2 id="对于一个确定的j，怎么使得得分最高呢？"><a href="#对于一个确定的j，怎么使得得分最高呢？" class="headerlink" title="对于一个确定的j，怎么使得得分最高呢？"></a>对于一个确定的j，怎么使得得分最高呢？</h2><ol>
-<li><code>j</code>确定了， <code>scoreJ</code> 是确定的，不会变动。</li>
-<li>然后在<code>[0, j - 1]</code>中选取一个<code>i</code>，使得<code>scoreI</code> 最大，得分就是最高了。</li>
-</ol>
-<p>不确定选哪个<code>j</code>可以得分最高，那就遍历数组，穷举<code>j</code>所有的取值可能。</p>
-<p>但是按照这个思路，先穷举<code>j</code>，再在每个<code>j</code>处往回穷举<code>i</code>，时间复杂度是O($n^2$)，是否存在不必要的操作？</p>
-<h2 id="时间优化"><a href="#时间优化" class="headerlink" title="时间优化"></a>时间优化</h2><p>仔细分析两个步骤可以发现，没有必要往回穷举<code>i</code>，因为<code>i &lt; j</code>，在数组中遍历到<code>j</code>，<code>j</code>前面的位置肯定都遍历过了，<code>i</code>已经可以确定了；简单点说，<code>j</code>确定了，<code>i</code>就确定了。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxScoreSightseeingPair</span><span class="params">(values: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = values.size</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> maxScoreI = values[<span class="number">0</span>] + <span class="number">0</span></span><br><span class="line">        <span class="keyword">var</span> maxScore = <span class="number">0</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 穷举所有的j</span></span><br><span class="line">        <span class="comment">// 只有1个景点无法形成观光组合，所以从1开始遍历，这样至少2个有两个景点能形成观光组合</span></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            <span class="keyword">val</span> scoreJ = values[j] - j</span><br><span class="line">            <span class="keyword">val</span> score = maxScoreI + scoreJ</span><br><span class="line">            maxScore = maxOf(maxScore, score)</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 上面已经处理过j，对于下一个j而言，需要知道下一个j前面最大的scoreI是多少</span></span><br><span class="line">            <span class="keyword">val</span> scoreI = values[j] + j</span><br><span class="line">            maxScoreI = maxOf(maxScoreI, scoreI)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> maxScore</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.1143.最长公共子序列（中等）</title>
-    <url>/LeetCode/LeetCode.1143.%E6%9C%80%E9%95%BF%E5%85%AC%E5%85%B1%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/longest-common-subsequence/">LeetCode.1143.最长公共子序列（中等）</a></p>
-<p>给定两个字符串 text1 和 text2，返回这两个字符串的最长 公共子序列 的长度。如果不存在 公共子序列 ，返回 0 。</p>
-<p>一个字符串的 子序列 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。</p>
-<p>例如，”ace” 是 “abcde” 的子序列，但 “aec” 不是 “abcde” 的子序列。<br>两个字符串的 公共子序列 是这两个字符串所共同拥有的子序列。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：记忆化递归"><a href="#解法1：记忆化递归" class="headerlink" title="解法1：记忆化递归"></a>解法1：记忆化递归</h2><p>尝试划分子问题。</p>
-<p><strong>如果text1和text2存在公共子序列，那是怎么得来的？</strong><br>肯定是之前没有公共子序列或者存在公共子序列，然后又发现了两者相同的字符，得到了更长的公共子序列。</p>
-<p><strong>如果末尾字符不相同怎么办？</strong></p>
-<ol>
-<li>删除text1的末尾字符，剩余字符串去跟text2比较。</li>
-<li>删除text2的末尾字符，剩余字符串去跟text1比较。</li>
-</ol>
-<p>取两种情况中可以得到的最长公共子序列的情况。</p>
-<p>同时删除text1和text2的末尾字符要不要考虑？</p>
-<p>这里划分出了子问题和所有的递推步骤。</p>
-<p><strong>递归</strong></p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">longestCommonSubsequence</span><span class="params">(text1: <span class="type">String</span>, text2: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">solve</span><span class="params">(i1: <span class="type">Int</span>, i2: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (i1 == -<span class="number">1</span> || i2 == -<span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span> </span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">if</span> (text1[i1] == text2[i2]) <span class="number">1</span> + solve(i1 - <span class="number">1</span>, i2 - <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">else</span> maxOf(solve(i1 - <span class="number">1</span>, i2), solve(i1, i2 - <span class="number">1</span>))</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> solve(text1.length - <span class="number">1</span>, text2.length - <span class="number">1</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>存在重叠子问题，有大量重复计算，用数组记录中间计算结果。</p>
-<p><strong>记忆化递归</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class Solution &#123;</span><br><span class="line">    fun longestCommonSubsequence(text1: String, text2: String): Int &#123;</span><br><span class="line">        val memo = Array(text1.length) &#123; IntArray(text2.length) &#123; 0 &#125; &#125;</span><br><span class="line">        fun solve(i1: Int, i2: Int): Int &#123;</span><br><span class="line">            if (i1 == -1 || i2 == -1) return 0 </span><br><span class="line">            if (memo[i1][i2] &gt; 0) return memo[i1][i2]</span><br><span class="line">            memo[i1][i2] = if (text1[i1] == text2[i2]) 1 + solve(i1 - 1, i2 - 1)</span><br><span class="line">            else maxOf(solve(i1 - 1, i2), solve(i1, i2 - 1))</span><br><span class="line">            return memo[i1][i2]</span><br><span class="line">        &#125;</span><br><span class="line">        return solve(text1.length - 1, text2.length - 1)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="解法2：自底向上动态规划"><a href="#解法2：自底向上动态规划" class="headerlink" title="解法2：自底向上动态规划"></a>解法2：自底向上动态规划</h2><p>设<code>dp[i][j]</code>为<code>text1</code>的前<code>i + 1</code>个字符与<code>text2</code>的前<code>j + 1</code>个字符最长公共子序列的长度。</p>
-<p><strong>状态转移方程</strong></p>
-<ul>
-<li><code>text1[i] == text2[j]</code>时，<code>dp[i][j] = 1 + dp[i - 1][j - 1]</code></li>
-<li><code>text1[i] != text2[j]</code>时，<code>dp[i][j] = maxOf(dp[i - 1][j], dp[i][j - 1])</code></li>
-</ul>
-<p><strong>边界处理</strong><br>设<code>s1</code>是<code>text1</code>子字符串，<code>s2</code>是<code>text2</code>子字符串。</p>
-<ul>
-<li><code>s1</code>和<code>s2</code>为一个字符时，只需要判断字符是否相同，可以计算<code>dp[0][0]</code>。</li>
-<li><code>s1</code>只有一个字符时，如果跟<code>s2</code>的字符不相同，<code>s1</code>没办法再删减，直接取<code>s2</code>删减后的结果。</li>
-<li><code>s2</code>只有一个字符时，如果跟<code>s1</code>的字符不相同，<code>s2</code>没办法再删减，直接取<code>s1</code>删减后的结果。</li>
-</ul>
-<p><strong>复杂度</strong><br>设<code>text1</code>长度为<code>m</code>，<code>text2</code>长度为<code>n</code>。<br>时间复杂度O(mn)：双循环无法省略。<br>空间复杂度O(mn)。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">longestCommonSubsequence</span><span class="params">(text1: <span class="type">String</span>, text2: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n1 = text1.length</span><br><span class="line">        <span class="keyword">val</span> n2 = text2.length</span><br><span class="line">        <span class="keyword">val</span> dp = Array(n1) &#123; IntArray(n2) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">0</span>] = <span class="keyword">if</span> (text1[<span class="number">0</span>] == text2[<span class="number">0</span>]) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n1) dp[i][<span class="number">0</span>] = <span class="keyword">if</span> (text1[i] == text2[<span class="number">0</span>]) <span class="number">1</span> <span class="keyword">else</span> dp[i - <span class="number">1</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n2) dp[<span class="number">0</span>][j] = <span class="keyword">if</span> (text1[<span class="number">0</span>] == text2[j]) <span class="number">1</span> <span class="keyword">else</span> dp[<span class="number">0</span>][j - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n1) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n2) &#123;</span><br><span class="line">                dp[i][j] = <span class="keyword">if</span> (text1[i] == text2[j]) <span class="number">1</span> + dp[i - <span class="number">1</span>][j - <span class="number">1</span>]</span><br><span class="line">                <span class="keyword">else</span> maxOf(dp[i - <span class="number">1</span>][j], dp[i][j - <span class="number">1</span>])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n1 - <span class="number">1</span>][n2 - <span class="number">1</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
       </tags>
   </entry>
   <entry>
@@ -1604,6 +1554,56 @@
       </tags>
   </entry>
   <entry>
+    <title>LeetCode.1143.最长公共子序列（中等）</title>
+    <url>/LeetCode/LeetCode.1143.%E6%9C%80%E9%95%BF%E5%85%AC%E5%85%B1%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/longest-common-subsequence/">LeetCode.1143.最长公共子序列（中等）</a></p>
+<p>给定两个字符串 text1 和 text2，返回这两个字符串的最长 公共子序列 的长度。如果不存在 公共子序列 ，返回 0 。</p>
+<p>一个字符串的 子序列 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。</p>
+<p>例如，”ace” 是 “abcde” 的子序列，但 “aec” 不是 “abcde” 的子序列。<br>两个字符串的 公共子序列 是这两个字符串所共同拥有的子序列。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：记忆化递归"><a href="#解法1：记忆化递归" class="headerlink" title="解法1：记忆化递归"></a>解法1：记忆化递归</h2><p>尝试划分子问题。</p>
+<p><strong>如果text1和text2存在公共子序列，那是怎么得来的？</strong><br>肯定是之前没有公共子序列或者存在公共子序列，然后又发现了两者相同的字符，得到了更长的公共子序列。</p>
+<p><strong>如果末尾字符不相同怎么办？</strong></p>
+<ol>
+<li>删除text1的末尾字符，剩余字符串去跟text2比较。</li>
+<li>删除text2的末尾字符，剩余字符串去跟text1比较。</li>
+</ol>
+<p>取两种情况中可以得到的最长公共子序列的情况。</p>
+<p>同时删除text1和text2的末尾字符要不要考虑？</p>
+<p>这里划分出了子问题和所有的递推步骤。</p>
+<p><strong>递归</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">longestCommonSubsequence</span><span class="params">(text1: <span class="type">String</span>, text2: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">solve</span><span class="params">(i1: <span class="type">Int</span>, i2: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (i1 == -<span class="number">1</span> || i2 == -<span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span> </span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">if</span> (text1[i1] == text2[i2]) <span class="number">1</span> + solve(i1 - <span class="number">1</span>, i2 - <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">else</span> maxOf(solve(i1 - <span class="number">1</span>, i2), solve(i1, i2 - <span class="number">1</span>))</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> solve(text1.length - <span class="number">1</span>, text2.length - <span class="number">1</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>存在重叠子问题，有大量重复计算，用数组记录中间计算结果。</p>
+<p><strong>记忆化递归</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class Solution &#123;</span><br><span class="line">    fun longestCommonSubsequence(text1: String, text2: String): Int &#123;</span><br><span class="line">        val memo = Array(text1.length) &#123; IntArray(text2.length) &#123; 0 &#125; &#125;</span><br><span class="line">        fun solve(i1: Int, i2: Int): Int &#123;</span><br><span class="line">            if (i1 == -1 || i2 == -1) return 0 </span><br><span class="line">            if (memo[i1][i2] &gt; 0) return memo[i1][i2]</span><br><span class="line">            memo[i1][i2] = if (text1[i1] == text2[i2]) 1 + solve(i1 - 1, i2 - 1)</span><br><span class="line">            else maxOf(solve(i1 - 1, i2), solve(i1, i2 - 1))</span><br><span class="line">            return memo[i1][i2]</span><br><span class="line">        &#125;</span><br><span class="line">        return solve(text1.length - 1, text2.length - 1)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解法2：自底向上动态规划"><a href="#解法2：自底向上动态规划" class="headerlink" title="解法2：自底向上动态规划"></a>解法2：自底向上动态规划</h2><p>设<code>dp[i][j]</code>为<code>text1</code>的前<code>i + 1</code>个字符与<code>text2</code>的前<code>j + 1</code>个字符最长公共子序列的长度。</p>
+<p><strong>状态转移方程</strong></p>
+<ul>
+<li><code>text1[i] == text2[j]</code>时，<code>dp[i][j] = 1 + dp[i - 1][j - 1]</code></li>
+<li><code>text1[i] != text2[j]</code>时，<code>dp[i][j] = maxOf(dp[i - 1][j], dp[i][j - 1])</code></li>
+</ul>
+<p><strong>边界处理</strong><br>设<code>s1</code>是<code>text1</code>子字符串，<code>s2</code>是<code>text2</code>子字符串。</p>
+<ul>
+<li><code>s1</code>和<code>s2</code>为一个字符时，只需要判断字符是否相同，可以计算<code>dp[0][0]</code>。</li>
+<li><code>s1</code>只有一个字符时，如果跟<code>s2</code>的字符不相同，<code>s1</code>没办法再删减，直接取<code>s2</code>删减后的结果。</li>
+<li><code>s2</code>只有一个字符时，如果跟<code>s1</code>的字符不相同，<code>s2</code>没办法再删减，直接取<code>s1</code>删减后的结果。</li>
+</ul>
+<p><strong>复杂度</strong><br>设<code>text1</code>长度为<code>m</code>，<code>text2</code>长度为<code>n</code>。<br>时间复杂度O(mn)：双循环无法省略。<br>空间复杂度O(mn)。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">longestCommonSubsequence</span><span class="params">(text1: <span class="type">String</span>, text2: <span class="type">String</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n1 = text1.length</span><br><span class="line">        <span class="keyword">val</span> n2 = text2.length</span><br><span class="line">        <span class="keyword">val</span> dp = Array(n1) &#123; IntArray(n2) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">0</span>] = <span class="keyword">if</span> (text1[<span class="number">0</span>] == text2[<span class="number">0</span>]) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n1) dp[i][<span class="number">0</span>] = <span class="keyword">if</span> (text1[i] == text2[<span class="number">0</span>]) <span class="number">1</span> <span class="keyword">else</span> dp[i - <span class="number">1</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n2) dp[<span class="number">0</span>][j] = <span class="keyword">if</span> (text1[<span class="number">0</span>] == text2[j]) <span class="number">1</span> <span class="keyword">else</span> dp[<span class="number">0</span>][j - <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until n1) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n2) &#123;</span><br><span class="line">                dp[i][j] = <span class="keyword">if</span> (text1[i] == text2[j]) <span class="number">1</span> + dp[i - <span class="number">1</span>][j - <span class="number">1</span>]</span><br><span class="line">                <span class="keyword">else</span> maxOf(dp[i - <span class="number">1</span>][j], dp[i][j - <span class="number">1</span>])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n1 - <span class="number">1</span>][n2 - <span class="number">1</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LeetCode.120.三角形最小路径和（中等）</title>
     <url>/LeetCode/LeetCode.120.%E4%B8%89%E8%A7%92%E5%BD%A2%E6%9C%80%E5%B0%8F%E8%B7%AF%E5%BE%84%E5%92%8C%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/triangle/">LeetCode.120.三角形最小路径和（中等）</a></p>
@@ -1622,8 +1622,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -1648,8 +1648,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -1674,37 +1674,6 @@
       <tags>
         <tag>LeetCode困难</tag>
         <tag>二叉树</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.126.单词接龙 II（困难）</title>
-    <url>/LeetCode/LeetCode.126.%E5%8D%95%E8%AF%8D%E6%8E%A5%E9%BE%99%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/word-ladder-ii/">LeetCode.126.单词接龙 II（困难）</a></p>
-<p>按字典 wordList 完成从单词 beginWord 到单词 endWord 转化，一个表示此过程的 转换序列 是形式上像 beginWord -&gt; s1 -&gt; s2 -&gt; … -&gt; sk 这样的单词序列，并满足：</p>
-<ul>
-<li>每对相邻的单词之间仅有单个字母不同。</li>
-<li>转换过程中的每个单词 si（1 &lt;= i &lt;= k）必须是字典 wordList 中的单词。注意，beginWord 不必是字典 wordList 中的单词。</li>
-<li>sk == endWord</li>
-</ul>
-<p>给你两个单词 beginWord 和 endWord ，以及一个字典 wordList 。请你找出并返回所有从 beginWord 到 endWord 的 最短转换序列 ，如果不存在这样的转换序列，返回一个空列表。每个序列都应该以单词列表 [beginWord, s1, s2, …, sk] 的形式返回。</p>
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><ul>
-<li>通过广度优先搜索建立图的邻接表。<ul>
-<li>在发现最短转换路径时停止构建图。</li>
-<li>有可能有多条最短路径，所以发现了一条最短路径时不要立刻终止，等这一层都遍历完。</li>
-</ul>
-</li>
-<li>通过深度优先搜索，求得最短路径。</li>
-</ul>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findLadders</span><span class="params">(beginWord: <span class="type">String</span>, endWord: <span class="type">String</span>, wordList: <span class="type">List</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;List&lt;String&gt;&gt; &#123;</span><br><span class="line">        <span class="comment">// 单词列表转为哈希集合，便于快速查找</span></span><br><span class="line">        <span class="keyword">val</span> wordSet = wordList.toSet()</span><br><span class="line">        <span class="comment">// 单词列表中没有endWord直接返回，不用搜索了</span></span><br><span class="line">        <span class="keyword">if</span> (!wordSet.contains(endWord)) <span class="keyword">return</span> emptyList()</span><br><span class="line"></span><br><span class="line">        <span class="comment">// bfs建立图的邻接表</span></span><br><span class="line">        <span class="keyword">val</span> graph = mutableMapOf&lt;String, MutableSet&lt;String&gt;&gt;()</span><br><span class="line">        <span class="keyword">val</span> found = bfs(beginWord, endWord, wordSet, graph)</span><br><span class="line">        <span class="keyword">if</span> (!found) <span class="keyword">return</span> emptyList()</span><br><span class="line"></span><br><span class="line">        <span class="comment">// dfs搜索</span></span><br><span class="line">        <span class="keyword">val</span> result = mutableListOf&lt;List&lt;String&gt;&gt;()</span><br><span class="line">        <span class="keyword">val</span> path = mutableListOf(beginWord)</span><br><span class="line">        dfs(beginWord, endWord, graph, path, result)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">bfs</span><span class="params">(beginWord: <span class="type">String</span>, endWord: <span class="type">String</span>, wordSet: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;, graph: <span class="type">MutableMap</span>&lt;<span class="type">String</span>, MutableSet&lt;String&gt;&gt;)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> queue = java.util.ArrayDeque&lt;String&gt;()</span><br><span class="line">        <span class="keyword">val</span> visited = mutableSetOf&lt;String&gt;()</span><br><span class="line"></span><br><span class="line">        queue.add(beginWord)</span><br><span class="line">        visited.add(beginWord)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> found = <span class="literal">false</span></span><br><span class="line">        <span class="keyword">val</span> levelVisited = mutableSetOf&lt;String&gt;()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (queue.isNotEmpty()) &#123;</span><br><span class="line">            <span class="keyword">val</span> levelCount = queue.size</span><br><span class="line">            repeat(levelCount) &#123;</span><br><span class="line">                <span class="keyword">val</span> currentWord = queue.poll()</span><br><span class="line">                <span class="keyword">val</span> nextNodes = getNextLevelNodes(currentWord, wordSet)</span><br><span class="line">                <span class="keyword">for</span> (nextWord <span class="keyword">in</span> nextNodes) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (visited.contains(nextWord)) <span class="keyword">continue</span></span><br><span class="line">                    <span class="keyword">if</span> (nextWord == endWord) &#123;</span><br><span class="line">                        found = <span class="literal">true</span></span><br><span class="line">                    &#125;</span><br><span class="line">                    queue.add(nextWord)</span><br><span class="line">                    levelVisited.add(nextWord)</span><br><span class="line"></span><br><span class="line">                    graph.getOrPut(currentWord, &#123; mutableSetOf() &#125;)</span><br><span class="line">                            .add(nextWord)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 在某一层发现了路径终点，就直接不继续了，这样保证路径是最短的</span></span><br><span class="line">            <span class="keyword">if</span> (found) <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">            visited.addAll(levelVisited)</span><br><span class="line">            levelVisited.clear()</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> found</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">dfs</span><span class="params">(beginWord: <span class="type">String</span>, endWord: <span class="type">String</span>, graph: <span class="type">Map</span>&lt;<span class="type">String</span>, Set&lt;String&gt;&gt;, path: <span class="type">MutableList</span>&lt;<span class="type">String</span>&gt;, result: <span class="type">MutableList</span>&lt;<span class="type">List</span>&lt;<span class="type">String</span>&gt;&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (beginWord == endWord) &#123;</span><br><span class="line">            result.add(path.toList())</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!graph.containsKey(beginWord)) <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">        graph[beginWord]?.forEach &#123; nextWord -&gt;</span><br><span class="line">            path.add(nextWord)</span><br><span class="line">            dfs(nextWord, endWord, graph, path, result)</span><br><span class="line">            path.removeAt(path.lastIndex)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 变化[word]每一个位置的字符，看是否存在于单词列表中，存在的话，记录为下一层的顶点</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getNextLevelNodes</span><span class="params">(word: <span class="type">String</span>, wordSet: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;)</span></span>: Set&lt;String&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> nodes = mutableSetOf&lt;String&gt;()</span><br><span class="line">        <span class="keyword">val</span> chars = word.toCharArray()</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> chars.indices) &#123;</span><br><span class="line">            <span class="keyword">val</span> oldChar = chars[i]</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until <span class="number">26</span>) &#123;</span><br><span class="line">                <span class="keyword">val</span> c = <span class="string">&#x27;a&#x27;</span> + j</span><br><span class="line">                <span class="keyword">if</span> (c == oldChar) <span class="keyword">continue</span></span><br><span class="line">                chars[i] = c</span><br><span class="line">                <span class="keyword">val</span> next = String(chars)</span><br><span class="line">                <span class="keyword">if</span> (wordSet.contains(next)) &#123;</span><br><span class="line">                    nodes.add(next)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            chars[i] = oldChar</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> nodes</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
-        <tag>图</tag>
-        <tag>广度优先搜索</tag>
-        <tag>深度优先搜索</tag>
       </tags>
   </entry>
   <entry>
@@ -1799,8 +1768,39 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.126.单词接龙 II（困难）</title>
+    <url>/LeetCode/LeetCode.126.%E5%8D%95%E8%AF%8D%E6%8E%A5%E9%BE%99%20II%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/word-ladder-ii/">LeetCode.126.单词接龙 II（困难）</a></p>
+<p>按字典 wordList 完成从单词 beginWord 到单词 endWord 转化，一个表示此过程的 转换序列 是形式上像 beginWord -&gt; s1 -&gt; s2 -&gt; … -&gt; sk 这样的单词序列，并满足：</p>
+<ul>
+<li>每对相邻的单词之间仅有单个字母不同。</li>
+<li>转换过程中的每个单词 si（1 &lt;= i &lt;= k）必须是字典 wordList 中的单词。注意，beginWord 不必是字典 wordList 中的单词。</li>
+<li>sk == endWord</li>
+</ul>
+<p>给你两个单词 beginWord 和 endWord ，以及一个字典 wordList 。请你找出并返回所有从 beginWord 到 endWord 的 最短转换序列 ，如果不存在这样的转换序列，返回一个空列表。每个序列都应该以单词列表 [beginWord, s1, s2, …, sk] 的形式返回。</p>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><ul>
+<li>通过广度优先搜索建立图的邻接表。<ul>
+<li>在发现最短转换路径时停止构建图。</li>
+<li>有可能有多条最短路径，所以发现了一条最短路径时不要立刻终止，等这一层都遍历完。</li>
+</ul>
+</li>
+<li>通过深度优先搜索，求得最短路径。</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">findLadders</span><span class="params">(beginWord: <span class="type">String</span>, endWord: <span class="type">String</span>, wordList: <span class="type">List</span>&lt;<span class="type">String</span>&gt;)</span></span>: List&lt;List&lt;String&gt;&gt; &#123;</span><br><span class="line">        <span class="comment">// 单词列表转为哈希集合，便于快速查找</span></span><br><span class="line">        <span class="keyword">val</span> wordSet = wordList.toSet()</span><br><span class="line">        <span class="comment">// 单词列表中没有endWord直接返回，不用搜索了</span></span><br><span class="line">        <span class="keyword">if</span> (!wordSet.contains(endWord)) <span class="keyword">return</span> emptyList()</span><br><span class="line"></span><br><span class="line">        <span class="comment">// bfs建立图的邻接表</span></span><br><span class="line">        <span class="keyword">val</span> graph = mutableMapOf&lt;String, MutableSet&lt;String&gt;&gt;()</span><br><span class="line">        <span class="keyword">val</span> found = bfs(beginWord, endWord, wordSet, graph)</span><br><span class="line">        <span class="keyword">if</span> (!found) <span class="keyword">return</span> emptyList()</span><br><span class="line"></span><br><span class="line">        <span class="comment">// dfs搜索</span></span><br><span class="line">        <span class="keyword">val</span> result = mutableListOf&lt;List&lt;String&gt;&gt;()</span><br><span class="line">        <span class="keyword">val</span> path = mutableListOf(beginWord)</span><br><span class="line">        dfs(beginWord, endWord, graph, path, result)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">bfs</span><span class="params">(beginWord: <span class="type">String</span>, endWord: <span class="type">String</span>, wordSet: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;, graph: <span class="type">MutableMap</span>&lt;<span class="type">String</span>, MutableSet&lt;String&gt;&gt;)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> queue = java.util.ArrayDeque&lt;String&gt;()</span><br><span class="line">        <span class="keyword">val</span> visited = mutableSetOf&lt;String&gt;()</span><br><span class="line"></span><br><span class="line">        queue.add(beginWord)</span><br><span class="line">        visited.add(beginWord)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> found = <span class="literal">false</span></span><br><span class="line">        <span class="keyword">val</span> levelVisited = mutableSetOf&lt;String&gt;()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (queue.isNotEmpty()) &#123;</span><br><span class="line">            <span class="keyword">val</span> levelCount = queue.size</span><br><span class="line">            repeat(levelCount) &#123;</span><br><span class="line">                <span class="keyword">val</span> currentWord = queue.poll()</span><br><span class="line">                <span class="keyword">val</span> nextNodes = getNextLevelNodes(currentWord, wordSet)</span><br><span class="line">                <span class="keyword">for</span> (nextWord <span class="keyword">in</span> nextNodes) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (visited.contains(nextWord)) <span class="keyword">continue</span></span><br><span class="line">                    <span class="keyword">if</span> (nextWord == endWord) &#123;</span><br><span class="line">                        found = <span class="literal">true</span></span><br><span class="line">                    &#125;</span><br><span class="line">                    queue.add(nextWord)</span><br><span class="line">                    levelVisited.add(nextWord)</span><br><span class="line"></span><br><span class="line">                    graph.getOrPut(currentWord, &#123; mutableSetOf() &#125;)</span><br><span class="line">                            .add(nextWord)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 在某一层发现了路径终点，就直接不继续了，这样保证路径是最短的</span></span><br><span class="line">            <span class="keyword">if</span> (found) <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">            visited.addAll(levelVisited)</span><br><span class="line">            levelVisited.clear()</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> found</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">dfs</span><span class="params">(beginWord: <span class="type">String</span>, endWord: <span class="type">String</span>, graph: <span class="type">Map</span>&lt;<span class="type">String</span>, Set&lt;String&gt;&gt;, path: <span class="type">MutableList</span>&lt;<span class="type">String</span>&gt;, result: <span class="type">MutableList</span>&lt;<span class="type">List</span>&lt;<span class="type">String</span>&gt;&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (beginWord == endWord) &#123;</span><br><span class="line">            result.add(path.toList())</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!graph.containsKey(beginWord)) <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">        graph[beginWord]?.forEach &#123; nextWord -&gt;</span><br><span class="line">            path.add(nextWord)</span><br><span class="line">            dfs(nextWord, endWord, graph, path, result)</span><br><span class="line">            path.removeAt(path.lastIndex)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 变化[word]每一个位置的字符，看是否存在于单词列表中，存在的话，记录为下一层的顶点</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getNextLevelNodes</span><span class="params">(word: <span class="type">String</span>, wordSet: <span class="type">Set</span>&lt;<span class="type">String</span>&gt;)</span></span>: Set&lt;String&gt; &#123;</span><br><span class="line">        <span class="keyword">val</span> nodes = mutableSetOf&lt;String&gt;()</span><br><span class="line">        <span class="keyword">val</span> chars = word.toCharArray()</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> chars.indices) &#123;</span><br><span class="line">            <span class="keyword">val</span> oldChar = chars[i]</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until <span class="number">26</span>) &#123;</span><br><span class="line">                <span class="keyword">val</span> c = <span class="string">&#x27;a&#x27;</span> + j</span><br><span class="line">                <span class="keyword">if</span> (c == oldChar) <span class="keyword">continue</span></span><br><span class="line">                chars[i] = c</span><br><span class="line">                <span class="keyword">val</span> next = String(chars)</span><br><span class="line">                <span class="keyword">if</span> (wordSet.contains(next)) &#123;</span><br><span class="line">                    nodes.add(next)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            chars[i] = oldChar</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> nodes</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode困难</tag>
+        <tag>图</tag>
+        <tag>广度优先搜索</tag>
+        <tag>深度优先搜索</tag>
       </tags>
   </entry>
   <entry>
@@ -1840,8 +1840,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
         <tag>前缀和</tag>
       </tags>
   </entry>
@@ -2010,8 +2010,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -2150,8 +2150,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -2282,62 +2282,7 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.174.地下城游戏（困难）</title>
-    <url>/LeetCode/LeetCode.174.%E5%9C%B0%E4%B8%8B%E5%9F%8E%E6%B8%B8%E6%88%8F%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/dungeon-game/">LeetCode.174.地下城游戏（困难）</a></p>
-<span id="more"></span>
-
-<p>一些恶魔抓住了公主（P）并将她关在了地下城的右下角。地下城是由 M x N 个房间组成的二维网格。我们英勇的骑士（K）最初被安置在左上角的房间里，他必须穿过地下城并通过对抗恶魔来拯救公主。</p>
-<p>骑士的初始健康点数为一个正整数。如果他的健康点数在某一时刻降至 0 或以下，他会立即死亡。</p>
-<p>有些房间由恶魔守卫，因此骑士在进入这些房间时会失去健康点数（若房间里的值为负整数，则表示骑士将损失健康点数）；其他房间要么是空的（房间里的值为 0），要么包含增加骑士健康点数的魔法球（若房间里的值为正整数，则表示骑士将增加健康点数）。</p>
-<p>为了尽快到达公主，骑士决定每次只向右或向下移动一步。</p>
-<p>编写一个函数来计算确保骑士能够拯救到公主所需的最低初始健康点数。</p>
-<p>例如，考虑到如下布局的地下城，如果骑士遵循最佳路径 右 -&gt; 右 -&gt; 下 -&gt; 下，则骑士的初始健康点数至少为 7。</p>
-<p><strong>说明:</strong></p>
-<ul>
-<li>  骑士的健康点数没有上限。</li>
-<li>  任何房间都可能对骑士的健康点数造成威胁，也可能增加骑士的健康点数，包括骑士进入的左上角房间以及公主被监禁的右下角房间。</li>
-</ul>
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>设<code>dungeon[i][j]</code>为地牢的第<code>i</code>行第<code>j</code>列的点数，可正、可负、可零。</p>
-<p>这题跟最小路径和不一样的点在于：<code>在任意格子，都要求骑士的 生命值x &gt;= 1</code>。</p>
-<p>如果骑士位于某行某列，则要求<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= 1</code>，不等式两侧的项换个位置也就是：<code>x &gt;= 1 &amp;&amp; x &gt;= 1 - dungeon[i][j]</code>，我们要求最低的生命值，可得<code>x = maxOf(1, 1 - dungeon[i][j])</code>。</p>
-<p>但是骑士是要在走动的，光看当前位置的点数，是不知道当前生命值够不够用，需要知道后面的路径需要的最少生命值是多少，假设是<code>y</code>，那么当前位置就要满足<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= y</code>，我们要求最低的生命值，可得<code>x = maxOf(1, y - dungeon[i][j])</code>。</p>
-<p>状态转移的过程就出来了，是要从末尾往开头递推，才能得出结果。</p>
-<p>从左上到右下的路径，有两种选择，往右走、往下走。不知道往哪走所需的最低初始健康点数最少，就两个都试一遍，取最小的。</p>
-<p><strong>边界条件</strong></p>
-<ul>
-<li>在最后一行，只能向右走，无法向下走。</li>
-<li>在最后一列，只能向下走，无法向右走。</li>
-</ul>
-<p><strong>回溯递归解法</strong></p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) <span class="keyword">return</span> maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>递归存在重叠子问题，例如<code>findMinHp(r + 1, c)</code>会执行多次，需要记录中间状态。</p>
-<p><strong>记忆化递归</strong></p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> memo = Array(m) &#123; IntArray(n) &#123; -<span class="number">1</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (memo[r][c] != -<span class="number">1</span>) <span class="keyword">return</span> memo[r][c]</span><br><span class="line">            <span class="keyword">val</span> result =  <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">            memo[r][c] = result</span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>自底向上的动态规划</strong></p>
-<p>记忆化递归已经给出了状态转移方程，需要注意的是要从最右下角开始往左上角递推，才能得到结果。</p>
-<p>设<code>dp[i][j]</code>表示骑士位于第<code>i</code>行第<code>j</code>列格子时要达到公主处所需要的最小生命值。</p>
-<p><strong>状态转移方程</strong></p>
-<ul>
-<li>最右下角：<code>dp[i][j] = maxOf(1, 1 - dungeon[m - 1][n - 1])</code>。</li>
-<li>最后一列：<code>dp[i][j] = maxOf(1, dp[r + 1][c] - dungeon[r][c])</code>。</li>
-<li>最后一行：<code>dp[i][j] = maxOf(1, dp[r][c + 1] - dungeon[r][c])</code>。</li>
-<li>其他行和列：<code>dp[i][j] = maxOf(1, minOf(dp[r][c + 1], dp[r + 1][c]) - dungeon[r][c])</code>。</li>
-</ul>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        dp[m - <span class="number">1</span>][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[m - <span class="number">1</span>][n - <span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[i][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, dp[i + <span class="number">1</span>][n - <span class="number">1</span>] - dungeon[i][n - <span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[m - <span class="number">1</span>][i] = maxOf(<span class="number">1</span>, dp[m - <span class="number">1</span>][i + <span class="number">1</span>] - dungeon[m - <span class="number">1</span>][i])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">                dp[r][c] = maxOf(<span class="number">1</span>, minOf(dp[r][c + <span class="number">1</span>], dp[r + <span class="number">1</span>][c]) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
       </tags>
   </entry>
@@ -2413,8 +2358,63 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
+        <tag>LeetCode困难</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.174.地下城游戏（困难）</title>
+    <url>/LeetCode/LeetCode.174.%E5%9C%B0%E4%B8%8B%E5%9F%8E%E6%B8%B8%E6%88%8F%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/dungeon-game/">LeetCode.174.地下城游戏（困难）</a></p>
+<span id="more"></span>
+
+<p>一些恶魔抓住了公主（P）并将她关在了地下城的右下角。地下城是由 M x N 个房间组成的二维网格。我们英勇的骑士（K）最初被安置在左上角的房间里，他必须穿过地下城并通过对抗恶魔来拯救公主。</p>
+<p>骑士的初始健康点数为一个正整数。如果他的健康点数在某一时刻降至 0 或以下，他会立即死亡。</p>
+<p>有些房间由恶魔守卫，因此骑士在进入这些房间时会失去健康点数（若房间里的值为负整数，则表示骑士将损失健康点数）；其他房间要么是空的（房间里的值为 0），要么包含增加骑士健康点数的魔法球（若房间里的值为正整数，则表示骑士将增加健康点数）。</p>
+<p>为了尽快到达公主，骑士决定每次只向右或向下移动一步。</p>
+<p>编写一个函数来计算确保骑士能够拯救到公主所需的最低初始健康点数。</p>
+<p>例如，考虑到如下布局的地下城，如果骑士遵循最佳路径 右 -&gt; 右 -&gt; 下 -&gt; 下，则骑士的初始健康点数至少为 7。</p>
+<p><strong>说明:</strong></p>
+<ul>
+<li>  骑士的健康点数没有上限。</li>
+<li>  任何房间都可能对骑士的健康点数造成威胁，也可能增加骑士的健康点数，包括骑士进入的左上角房间以及公主被监禁的右下角房间。</li>
+</ul>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>设<code>dungeon[i][j]</code>为地牢的第<code>i</code>行第<code>j</code>列的点数，可正、可负、可零。</p>
+<p>这题跟最小路径和不一样的点在于：<code>在任意格子，都要求骑士的 生命值x &gt;= 1</code>。</p>
+<p>如果骑士位于某行某列，则要求<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= 1</code>，不等式两侧的项换个位置也就是：<code>x &gt;= 1 &amp;&amp; x &gt;= 1 - dungeon[i][j]</code>，我们要求最低的生命值，可得<code>x = maxOf(1, 1 - dungeon[i][j])</code>。</p>
+<p>但是骑士是要在走动的，光看当前位置的点数，是不知道当前生命值够不够用，需要知道后面的路径需要的最少生命值是多少，假设是<code>y</code>，那么当前位置就要满足<code>x &gt;= 1 &amp;&amp; x + dungeon[i][j] &gt;= y</code>，我们要求最低的生命值，可得<code>x = maxOf(1, y - dungeon[i][j])</code>。</p>
+<p>状态转移的过程就出来了，是要从末尾往开头递推，才能得出结果。</p>
+<p>从左上到右下的路径，有两种选择，往右走、往下走。不知道往哪走所需的最低初始健康点数最少，就两个都试一遍，取最小的。</p>
+<p><strong>边界条件</strong></p>
+<ul>
+<li>在最后一行，只能向右走，无法向下走。</li>
+<li>在最后一列，只能向下走，无法向右走。</li>
+</ul>
+<p><strong>回溯递归解法</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) <span class="keyword">return</span> maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>递归存在重叠子问题，例如<code>findMinHp(r + 1, c)</code>会执行多次，需要记录中间状态。</p>
+<p><strong>记忆化递归</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> memo = Array(m) &#123; IntArray(n) &#123; -<span class="number">1</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">findMinHp</span><span class="params">(r: <span class="type">Int</span>, c: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (memo[r][c] != -<span class="number">1</span>) <span class="keyword">return</span> memo[r][c]</span><br><span class="line">            <span class="keyword">val</span> result =  <span class="keyword">if</span> (r == m - <span class="number">1</span> &amp;&amp; c == n - <span class="number">1</span>) maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[r][c])</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">when</span> &#123;</span><br><span class="line">                r == m - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r, c + <span class="number">1</span>) - dungeon[r][c])</span><br><span class="line">                c == n - <span class="number">1</span> -&gt; maxOf(<span class="number">1</span>, findMinHp(r + <span class="number">1</span>, c) - dungeon[r][c])</span><br><span class="line">                <span class="keyword">else</span> -&gt; maxOf(<span class="number">1</span>, minOf(findMinHp(r, c + <span class="number">1</span>), findMinHp(r + <span class="number">1</span>, c)) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">            memo[r][c] = result</span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> findMinHp(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>自底向上的动态规划</strong></p>
+<p>记忆化递归已经给出了状态转移方程，需要注意的是要从最右下角开始往左上角递推，才能得到结果。</p>
+<p>设<code>dp[i][j]</code>表示骑士位于第<code>i</code>行第<code>j</code>列格子时要达到公主处所需要的最小生命值。</p>
+<p><strong>状态转移方程</strong></p>
+<ul>
+<li>最右下角：<code>dp[i][j] = maxOf(1, 1 - dungeon[m - 1][n - 1])</code>。</li>
+<li>最后一列：<code>dp[i][j] = maxOf(1, dp[r + 1][c] - dungeon[r][c])</code>。</li>
+<li>最后一行：<code>dp[i][j] = maxOf(1, dp[r][c + 1] - dungeon[r][c])</code>。</li>
+<li>其他行和列：<code>dp[i][j] = maxOf(1, minOf(dp[r][c + 1], dp[r + 1][c]) - dungeon[r][c])</code>。</li>
+</ul>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">calculateMinimumHP</span><span class="params">(dungeon: <span class="type">Array</span>&lt;<span class="type">IntArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = dungeon.size</span><br><span class="line">        <span class="keyword">val</span> n = dungeon[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> dp = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line">        dp[m - <span class="number">1</span>][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, <span class="number">1</span> - dungeon[m - <span class="number">1</span>][n - <span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[i][n - <span class="number">1</span>] = maxOf(<span class="number">1</span>, dp[i + <span class="number">1</span>][n - <span class="number">1</span>] - dungeon[i][n - <span class="number">1</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            dp[m - <span class="number">1</span>][i] = maxOf(<span class="number">1</span>, dp[m - <span class="number">1</span>][i + <span class="number">1</span>] - dungeon[m - <span class="number">1</span>][i])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (r <span class="keyword">in</span> m - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (c <span class="keyword">in</span> n - <span class="number">2</span> downTo <span class="number">0</span>) &#123;</span><br><span class="line">                dp[r][c] = maxOf(<span class="number">1</span>, minOf(dp[r][c + <span class="number">1</span>], dp[r + <span class="number">1</span>][c]) - dungeon[r][c])</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>动态规划</tag>
+        <tag>LeetCode困难</tag>
       </tags>
   </entry>
   <entry>
@@ -2441,8 +2441,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -2518,8 +2518,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -2573,6 +2573,52 @@
       <tags>
         <tag>LeetCode困难</tag>
         <tag>KMP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.221.最大正方形（中等）</title>
+    <url>/LeetCode/LeetCode.221.%E6%9C%80%E5%A4%A7%E6%AD%A3%E6%96%B9%E5%BD%A2%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/maximal-square/">LeetCode.221.最大正方形（中等）</a></p>
+<p>在一个由  <code>&#39;0&#39;</code>  和  <code>&#39;1&#39;</code>  组成的二维矩阵内，找到只包含  <code>&#39;1&#39;</code>  的最大正方形，并返回其面积。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>最值问题考虑用动态规划。<br>想办法把大问题划分子问题+有限步骤。</p>
+<h2 id="从基本情况出发"><a href="#从基本情况出发" class="headerlink" title="从基本情况出发"></a>从基本情况出发</h2><p>对于某一个点<code>[i, j]</code>，如果它的值是1，那么构成边长为1的正方形。</p>
+<h2 id="构成边长为2的正方形需要什么条件？"><a href="#构成边长为2的正方形需要什么条件？" class="headerlink" title="构成边长为2的正方形需要什么条件？"></a>构成边长为2的正方形需要什么条件？</h2><p>对于某一个点<code>[i, j]</code>，如果想要构成边长为2的正方形，要知道周围其余3个点是否都是1。</p>
+<p>而这3个点的构成有四个方向：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">b b    b b    a b    b a</span><br><span class="line">b a    a b    b b    b b</span><br><span class="line">左上    右上   右下    左下</span><br></pre></td></tr></table></figure>
+<p>判断的方向太多了，能不能归类简化一下。<br>可以发现右上、右下、左下的情况，都可以归类为左上的问题，因为它们右下角的点都会遇到左上的情况。</p>
+<p>这里还看不出一般规律，继续看边长更大的情况。</p>
+<h2 id="怎么快速判断能否构成边长为3的正方形？"><a href="#怎么快速判断能否构成边长为3的正方形？" class="headerlink" title="怎么快速判断能否构成边长为3的正方形？"></a>怎么快速判断能否构成边长为3的正方形？</h2><p>对于某一个点<code>[i, j]</code>，如果去一个个检查左上方的点是不是都是1，太麻烦了；因为如果要检查边长更大的正方形，那么往回遍历的点就越多，而且之前遍历过的点都要重复遍历。</p>
+<p>能不能利用之前的计算结果呢？<br>假设<code>side[i][j]</code>表示以<code>[i, j]</code>为右下角的正方形的个数。<br>个数的统计是通过看是否依次能够成边长为1、2、3、…、n的正方形，所以<code>a[i][j]</code>也表示能形成的最大的正方形的边长。</p>
+<p>分析如下的3x3网格：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">         col </span><br><span class="line">a0 a1 a2  0</span><br><span class="line">b0 b1 b2  1</span><br><span class="line">c0 c1 c2  2</span><br><span class="line"> 0  1  2 row </span><br></pre></td></tr></table></figure>
+<p>从正方形的边界来推理，怎么利用<code>side</code>数组快速判断格子是否为1。</p>
+<p>如果想要a2、b2为1，那么<code>side[1][2] &gt;= 2</code>才行，也就是右下角的格子上方至少有2x2的正方形。<br>如果想要c0、c1为1，那么<code>side[1][2] &gt;= 2</code>才行，也就是右下角的格子左方至少有2x2的正方形。<br>a0、a1、b0要为1，那么<code>side[1][1] &gt;= 2</code>才行，也就是右下角的格子的左上方至少有2x2的正方形。</p>
+<p>如果有两个方向的正方形边长大于2，但有一个方向的正方形边长为1，会怎么影响<code>side[2][2]</code>？<br>比如</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 1 0</span><br><span class="line">1 1 1</span><br><span class="line">1 1 1</span><br></pre></td></tr></table></figure>
+<p>只能取边长最小的这个方向的正方形边长。</p>
+<p>规律已经浮现。</p>
+<h2 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h2><p><code>side[i][j] = 1 + minOf(side[i - 1][j], side[i][j - 1], side[i - 1][j - 1])</code></p>
+<h2 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h2><p>第一行的每个格子没有上面，只能形成边长为1的正方形。<br>第一列的每个格子没有左面，只能形成边长为1的正方形。</p>
+<h2 id="最后结果"><a href="#最后结果" class="headerlink" title="最后结果"></a>最后结果</h2><p>记录最大的<code>side[i][j]</code>，再求平方就是最终结果</p>
+<h2 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h2><p>必须遍历完二维数组所有元素才能完成求解，并且只需要遍历一次，时间复杂度O(mn)。<br>需要记录<code>side</code>二维数组，空间复杂度O(mn)。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maximalSquare</span><span class="params">(matrix: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = matrix.size</span><br><span class="line">        <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> side = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        side[<span class="number">0</span>][<span class="number">0</span>] = <span class="keyword">if</span> (matrix[<span class="number">0</span>][<span class="number">0</span>] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">        maxLength = maxOf(maxLength, side[<span class="number">0</span>][<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            side[i][<span class="number">0</span>] = <span class="keyword">if</span> (matrix[i][<span class="number">0</span>] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            maxLength = maxOf(maxLength, side[i][<span class="number">0</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            side[<span class="number">0</span>][j] = <span class="keyword">if</span> (matrix[<span class="number">0</span>][j] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            maxLength = maxOf(maxLength, side[<span class="number">0</span>][j])</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">                <span class="keyword">if</span> (matrix[i][j] == <span class="string">&#x27;1&#x27;</span>) &#123;</span><br><span class="line">                    side[i][j] = <span class="number">1</span> + minOf(side[i - <span class="number">1</span>][j], side[i][j - <span class="number">1</span>], side[i - <span class="number">1</span>][j - <span class="number">1</span>])</span><br><span class="line">                    maxLength = maxOf(maxLength, side[i][j])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> maxLength * maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h2><p>状态转移只与左、上、左上三个状态有关，不需要记录所有状态。</p>
+<p>由于状态递推是从左到右遍历二维数组的，所以至少要存储一行的记录，否则要是只用三个变量记录上一个状态，换行从第1列开始递推的时候，你不知道左、上、左上的状态了。</p>
+<p>但是一行缓存记录还不够，因为要读取左边和左上方的状态，在从左到右递推的时候，左上方的值被覆盖了，只能读取到左边的状态，所以要多记录上一行的状态，以便读取左上方的状态。</p>
+<p>空间复杂度O(m)</p>
+<p>如果<code>m &gt; n</code>，按列遍历列表，跟按行遍历是一样的，可以做到O(n)空间复杂度，这里不再编写，形式相似。在n远小于m时这样做才有意义。</p>
+<h2 id="优化的代码"><a href="#优化的代码" class="headerlink" title="优化的代码"></a>优化的代码</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maximalSquare</span><span class="params">(matrix: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = matrix.size</span><br><span class="line">        <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> side = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 第一行状态</span></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            side[j] = <span class="keyword">if</span> (matrix[<span class="number">0</span>][j] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            maxLength = maxOf(maxLength, side[j])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 存储上一行状态，以方便接下来读取左上方的状态</span></span><br><span class="line">        <span class="keyword">val</span> pre = side.copyOf()</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="keyword">if</span> (matrix[i][j] == <span class="string">&#x27;1&#x27;</span>) &#123;</span><br><span class="line">	                <span class="comment">// side[j - 1]: 左方状态</span></span><br><span class="line">					<span class="comment">// pre[j - 1]: 左上方状态</span></span><br><span class="line">					<span class="comment">// pre[j]: 上方状态</span></span><br><span class="line">                    side[j] = <span class="keyword">if</span> (j == <span class="number">0</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">1</span> + minOf(side[j - <span class="number">1</span>], pre[j - <span class="number">1</span>], pre[j])</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    side[j] = <span class="number">0</span></span><br><span class="line">                &#125;</span><br><span class="line">                maxLength = maxOf(maxLength, side[j])</span><br><span class="line">            &#125;</span><br><span class="line">            side.copyInto(pre)</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> maxLength * maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -2632,52 +2678,6 @@
       </categories>
       <tags>
         <tag>LeetCode困难</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.221.最大正方形（中等）</title>
-    <url>/LeetCode/LeetCode.221.%E6%9C%80%E5%A4%A7%E6%AD%A3%E6%96%B9%E5%BD%A2%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/maximal-square/">LeetCode.221.最大正方形（中等）</a></p>
-<p>在一个由  <code>&#39;0&#39;</code>  和  <code>&#39;1&#39;</code>  组成的二维矩阵内，找到只包含  <code>&#39;1&#39;</code>  的最大正方形，并返回其面积。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><p>最值问题考虑用动态规划。<br>想办法把大问题划分子问题+有限步骤。</p>
-<h2 id="从基本情况出发"><a href="#从基本情况出发" class="headerlink" title="从基本情况出发"></a>从基本情况出发</h2><p>对于某一个点<code>[i, j]</code>，如果它的值是1，那么构成边长为1的正方形。</p>
-<h2 id="构成边长为2的正方形需要什么条件？"><a href="#构成边长为2的正方形需要什么条件？" class="headerlink" title="构成边长为2的正方形需要什么条件？"></a>构成边长为2的正方形需要什么条件？</h2><p>对于某一个点<code>[i, j]</code>，如果想要构成边长为2的正方形，要知道周围其余3个点是否都是1。</p>
-<p>而这3个点的构成有四个方向：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">b b    b b    a b    b a</span><br><span class="line">b a    a b    b b    b b</span><br><span class="line">左上    右上   右下    左下</span><br></pre></td></tr></table></figure>
-<p>判断的方向太多了，能不能归类简化一下。<br>可以发现右上、右下、左下的情况，都可以归类为左上的问题，因为它们右下角的点都会遇到左上的情况。</p>
-<p>这里还看不出一般规律，继续看边长更大的情况。</p>
-<h2 id="怎么快速判断能否构成边长为3的正方形？"><a href="#怎么快速判断能否构成边长为3的正方形？" class="headerlink" title="怎么快速判断能否构成边长为3的正方形？"></a>怎么快速判断能否构成边长为3的正方形？</h2><p>对于某一个点<code>[i, j]</code>，如果去一个个检查左上方的点是不是都是1，太麻烦了；因为如果要检查边长更大的正方形，那么往回遍历的点就越多，而且之前遍历过的点都要重复遍历。</p>
-<p>能不能利用之前的计算结果呢？<br>假设<code>side[i][j]</code>表示以<code>[i, j]</code>为右下角的正方形的个数。<br>个数的统计是通过看是否依次能够成边长为1、2、3、…、n的正方形，所以<code>a[i][j]</code>也表示能形成的最大的正方形的边长。</p>
-<p>分析如下的3x3网格：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">         col </span><br><span class="line">a0 a1 a2  0</span><br><span class="line">b0 b1 b2  1</span><br><span class="line">c0 c1 c2  2</span><br><span class="line"> 0  1  2 row </span><br></pre></td></tr></table></figure>
-<p>从正方形的边界来推理，怎么利用<code>side</code>数组快速判断格子是否为1。</p>
-<p>如果想要a2、b2为1，那么<code>side[1][2] &gt;= 2</code>才行，也就是右下角的格子上方至少有2x2的正方形。<br>如果想要c0、c1为1，那么<code>side[1][2] &gt;= 2</code>才行，也就是右下角的格子左方至少有2x2的正方形。<br>a0、a1、b0要为1，那么<code>side[1][1] &gt;= 2</code>才行，也就是右下角的格子的左上方至少有2x2的正方形。</p>
-<p>如果有两个方向的正方形边长大于2，但有一个方向的正方形边长为1，会怎么影响<code>side[2][2]</code>？<br>比如</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 1 0</span><br><span class="line">1 1 1</span><br><span class="line">1 1 1</span><br></pre></td></tr></table></figure>
-<p>只能取边长最小的这个方向的正方形边长。</p>
-<p>规律已经浮现。</p>
-<h2 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h2><p><code>side[i][j] = 1 + minOf(side[i - 1][j], side[i][j - 1], side[i - 1][j - 1])</code></p>
-<h2 id="边界处理"><a href="#边界处理" class="headerlink" title="边界处理"></a>边界处理</h2><p>第一行的每个格子没有上面，只能形成边长为1的正方形。<br>第一列的每个格子没有左面，只能形成边长为1的正方形。</p>
-<h2 id="最后结果"><a href="#最后结果" class="headerlink" title="最后结果"></a>最后结果</h2><p>记录最大的<code>side[i][j]</code>，再求平方就是最终结果</p>
-<h2 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h2><p>必须遍历完二维数组所有元素才能完成求解，并且只需要遍历一次，时间复杂度O(mn)。<br>需要记录<code>side</code>二维数组，空间复杂度O(mn)。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maximalSquare</span><span class="params">(matrix: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = matrix.size</span><br><span class="line">        <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> side = Array(m) &#123; IntArray(n) &#123; <span class="number">0</span> &#125; &#125;</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        side[<span class="number">0</span>][<span class="number">0</span>] = <span class="keyword">if</span> (matrix[<span class="number">0</span>][<span class="number">0</span>] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">        maxLength = maxOf(maxLength, side[<span class="number">0</span>][<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            side[i][<span class="number">0</span>] = <span class="keyword">if</span> (matrix[i][<span class="number">0</span>] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            maxLength = maxOf(maxLength, side[i][<span class="number">0</span>])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">            side[<span class="number">0</span>][j] = <span class="keyword">if</span> (matrix[<span class="number">0</span>][j] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            maxLength = maxOf(maxLength, side[<span class="number">0</span>][j])</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">1</span> until n) &#123;</span><br><span class="line">                <span class="keyword">if</span> (matrix[i][j] == <span class="string">&#x27;1&#x27;</span>) &#123;</span><br><span class="line">                    side[i][j] = <span class="number">1</span> + minOf(side[i - <span class="number">1</span>][j], side[i][j - <span class="number">1</span>], side[i - <span class="number">1</span>][j - <span class="number">1</span>])</span><br><span class="line">                    maxLength = maxOf(maxLength, side[i][j])</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> maxLength * maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="空间优化"><a href="#空间优化" class="headerlink" title="空间优化"></a>空间优化</h2><p>状态转移只与左、上、左上三个状态有关，不需要记录所有状态。</p>
-<p>由于状态递推是从左到右遍历二维数组的，所以至少要存储一行的记录，否则要是只用三个变量记录上一个状态，换行从第1列开始递推的时候，你不知道左、上、左上的状态了。</p>
-<p>但是一行缓存记录还不够，因为要读取左边和左上方的状态，在从左到右递推的时候，左上方的值被覆盖了，只能读取到左边的状态，所以要多记录上一行的状态，以便读取左上方的状态。</p>
-<p>空间复杂度O(m)</p>
-<p>如果<code>m &gt; n</code>，按列遍历列表，跟按行遍历是一样的，可以做到O(n)空间复杂度，这里不再编写，形式相似。在n远小于m时这样做才有意义。</p>
-<h2 id="优化的代码"><a href="#优化的代码" class="headerlink" title="优化的代码"></a>优化的代码</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maximalSquare</span><span class="params">(matrix: <span class="type">Array</span>&lt;<span class="type">CharArray</span>&gt;)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> m = matrix.size</span><br><span class="line">        <span class="keyword">val</span> n = matrix[<span class="number">0</span>].size</span><br><span class="line">        <span class="keyword">val</span> side = IntArray(n) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">var</span> maxLength = <span class="number">0</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 第一行状态</span></span><br><span class="line">        <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">            side[j] = <span class="keyword">if</span> (matrix[<span class="number">0</span>][j] == <span class="string">&#x27;1&#x27;</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            maxLength = maxOf(maxLength, side[j])</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 存储上一行状态，以方便接下来读取左上方的状态</span></span><br><span class="line">        <span class="keyword">val</span> pre = side.copyOf()</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1</span> until m) &#123;</span><br><span class="line">            <span class="keyword">for</span> (j <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="keyword">if</span> (matrix[i][j] == <span class="string">&#x27;1&#x27;</span>) &#123;</span><br><span class="line">	                <span class="comment">// side[j - 1]: 左方状态</span></span><br><span class="line">					<span class="comment">// pre[j - 1]: 左上方状态</span></span><br><span class="line">					<span class="comment">// pre[j]: 上方状态</span></span><br><span class="line">                    side[j] = <span class="keyword">if</span> (j == <span class="number">0</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">1</span> + minOf(side[j - <span class="number">1</span>], pre[j - <span class="number">1</span>], pre[j])</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    side[j] = <span class="number">0</span></span><br><span class="line">                &#125;</span><br><span class="line">                maxLength = maxOf(maxLength, side[j])</span><br><span class="line">            &#125;</span><br><span class="line">            side.copyInto(pre)</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> maxLength * maxLength</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
       </tags>
   </entry>
   <entry>
@@ -2865,8 +2865,38 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.279.完全平方数（中等）</title>
+    <url>/LeetCode/LeetCode.279.%E5%AE%8C%E5%85%A8%E5%B9%B3%E6%96%B9%E6%95%B0%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/perfect-squares/">LeetCode.279.完全平方数（中等）</a></p>
+<p>给定正整数 n，找到若干个完全平方数（比如 1, 4, 9, 16, …）使得它们的和等于 n。你需要让组成和的完全平方数的个数最少。</p>
+<p>给你一个整数 n ，返回和为 n 的完全平方数的 最少数量 。</p>
+<p>完全平方数 是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，1、4、9 和 16 都是完全平方数，而 3 和 11 不是。</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：动态规划"><a href="#解法1：动态规划" class="headerlink" title="解法1：动态规划"></a>解法1：动态规划</h2><p>给定一个目标，有一组选择，做出选择，得出最优的结果，就是背包问题。<br>完全平方数没有限定选择个数，所以是完全背包问题。</p>
+<p>设<code>dp[i]</code>表示和为i的完全平方数的最少数量。<br>对于每个<code>dp[i]</code>求解，从小到大穷举所有可选的完全平方数做出一次选择，挑选一个使用平方数数量最少的。</p>
+<p>状态转移方程<br><code>dp[i] = minOf(dp[i], 1 + dp[i - j * j] + 1</code>，其中<code>1 &lt;= j &lt;= i</code>。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numSquares</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="comment">// dp[i]表示和为i的完全平方数的最少数量</span></span><br><span class="line">        <span class="comment">// dp[0]没意义</span></span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.n) &#123;</span><br><span class="line">            <span class="comment">// dp[i]最多数量就是全部1相加，当做默认值，看有没有小的</span></span><br><span class="line">            dp[i] = i</span><br><span class="line">            <span class="keyword">var</span> j = <span class="number">1</span></span><br><span class="line">            <span class="keyword">while</span> (j * j &lt;= i) &#123;</span><br><span class="line">                dp[i] = minOf(dp[i], <span class="number">1</span> + dp[i - j * j])</span><br><span class="line">                j++</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：$O(n *\sqrt{n})$<br>空间复杂度：$O(n)$</p>
+</blockquote>
+<h2 id="解法2：bfs"><a href="#解法2：bfs" class="headerlink" title="解法2：bfs"></a>解法2：bfs</h2><p>如果先用递归求解，画出递归树就很好想象了。<br>可以进行层序遍历一层一层的算。<br>第一层依次减去一个平方数得到第二层；<br>第二层依次减去一个平方数得到第三层；<br>每递进一层，使用过的平方数个数加1；<br>当某一层出现了0，当前层数就是答案。</p>
+<p><strong>注意点</strong><br>因为会有重叠子问题，所以要避免重复纳入已经计算过的节点，用visited数组记录访问过的节点。</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numSquares</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> queue = ArrayDeque&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="keyword">val</span> visited = mutableSetOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        queue.add(n)</span><br><span class="line">        <span class="keyword">var</span> level = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> (queue.isNotEmpty()) &#123;</span><br><span class="line">            level++</span><br><span class="line">            <span class="keyword">val</span> size = queue.size</span><br><span class="line">            repeat(size) &#123;</span><br><span class="line">                <span class="keyword">val</span> num = queue.poll()</span><br><span class="line">                visited.add(num)</span><br><span class="line"></span><br><span class="line">                <span class="keyword">var</span> j = <span class="number">1</span></span><br><span class="line">                <span class="keyword">while</span> (j * j &lt;= num) &#123;</span><br><span class="line">                    <span class="keyword">val</span> small = num - j * j</span><br><span class="line">                    <span class="keyword">if</span> (small == <span class="number">0</span>) <span class="keyword">return</span> level</span><br><span class="line">                    <span class="keyword">if</span> (!visited.contains(small)) &#123;</span><br><span class="line">                        queue.add(small)</span><br><span class="line">                    &#125;</span><br><span class="line">                    j++</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
+        <tag>完全背包</tag>
       </tags>
   </entry>
   <entry>
@@ -2960,36 +2990,6 @@
         <tag>LeetCode困难</tag>
         <tag>分治</tag>
         <tag>哈希表</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.279.完全平方数（中等）</title>
-    <url>/LeetCode/LeetCode.279.%E5%AE%8C%E5%85%A8%E5%B9%B3%E6%96%B9%E6%95%B0%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/perfect-squares/">LeetCode.279.完全平方数（中等）</a></p>
-<p>给定正整数 n，找到若干个完全平方数（比如 1, 4, 9, 16, …）使得它们的和等于 n。你需要让组成和的完全平方数的个数最少。</p>
-<p>给你一个整数 n ，返回和为 n 的完全平方数的 最少数量 。</p>
-<p>完全平方数 是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，1、4、9 和 16 都是完全平方数，而 3 和 11 不是。</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="解法1：动态规划"><a href="#解法1：动态规划" class="headerlink" title="解法1：动态规划"></a>解法1：动态规划</h2><p>给定一个目标，有一组选择，做出选择，得出最优的结果，就是背包问题。<br>完全平方数没有限定选择个数，所以是完全背包问题。</p>
-<p>设<code>dp[i]</code>表示和为i的完全平方数的最少数量。<br>对于每个<code>dp[i]</code>求解，从小到大穷举所有可选的完全平方数做出一次选择，挑选一个使用平方数数量最少的。</p>
-<p>状态转移方程<br><code>dp[i] = minOf(dp[i], 1 + dp[i - j * j] + 1</code>，其中<code>1 &lt;= j &lt;= i</code>。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numSquares</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="comment">// dp[i]表示和为i的完全平方数的最少数量</span></span><br><span class="line">        <span class="comment">// dp[0]没意义</span></span><br><span class="line">        <span class="keyword">val</span> dp = IntArray(n + <span class="number">1</span>) &#123; <span class="number">0</span> &#125;</span><br><span class="line">        <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.n) &#123;</span><br><span class="line">            <span class="comment">// dp[i]最多数量就是全部1相加，当做默认值，看有没有小的</span></span><br><span class="line">            dp[i] = i</span><br><span class="line">            <span class="keyword">var</span> j = <span class="number">1</span></span><br><span class="line">            <span class="keyword">while</span> (j * j &lt;= i) &#123;</span><br><span class="line">                dp[i] = minOf(dp[i], <span class="number">1</span> + dp[i - j * j])</span><br><span class="line">                j++</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>时间复杂度：$O(n *\sqrt{n})$<br>空间复杂度：$O(n)$</p>
-</blockquote>
-<h2 id="解法2：bfs"><a href="#解法2：bfs" class="headerlink" title="解法2：bfs"></a>解法2：bfs</h2><p>如果先用递归求解，画出递归树就很好想象了。<br>可以进行层序遍历一层一层的算。<br>第一层依次减去一个平方数得到第二层；<br>第二层依次减去一个平方数得到第三层；<br>每递进一层，使用过的平方数个数加1；<br>当某一层出现了0，当前层数就是答案。</p>
-<p><strong>注意点</strong><br>因为会有重叠子问题，所以要避免重复纳入已经计算过的节点，用visited数组记录访问过的节点。</p>
-<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">numSquares</span><span class="params">(n: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> queue = ArrayDeque&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        <span class="keyword">val</span> visited = mutableSetOf&lt;<span class="built_in">Int</span>&gt;()</span><br><span class="line">        queue.add(n)</span><br><span class="line">        <span class="keyword">var</span> level = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> (queue.isNotEmpty()) &#123;</span><br><span class="line">            level++</span><br><span class="line">            <span class="keyword">val</span> size = queue.size</span><br><span class="line">            repeat(size) &#123;</span><br><span class="line">                <span class="keyword">val</span> num = queue.poll()</span><br><span class="line">                visited.add(num)</span><br><span class="line"></span><br><span class="line">                <span class="keyword">var</span> j = <span class="number">1</span></span><br><span class="line">                <span class="keyword">while</span> (j * j &lt;= num) &#123;</span><br><span class="line">                    <span class="keyword">val</span> small = num - j * j</span><br><span class="line">                    <span class="keyword">if</span> (small == <span class="number">0</span>) <span class="keyword">return</span> level</span><br><span class="line">                    <span class="keyword">if</span> (!visited.contains(small)) &#123;</span><br><span class="line">                        queue.add(small)</span><br><span class="line">                    &#125;</span><br><span class="line">                    j++</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
-        <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
-        <tag>完全背包</tag>
       </tags>
   </entry>
   <entry>
@@ -3183,8 +3183,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -3267,8 +3267,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -3304,8 +3304,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -3459,8 +3459,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
+        <tag>LeetCode困难</tag>
         <tag>栈</tag>
         <tag>字符串</tag>
       </tags>
@@ -3495,8 +3495,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
         <tag>完全背包</tag>
       </tags>
   </entry>
@@ -3525,8 +3525,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
         <tag>完全背包</tag>
       </tags>
   </entry>
@@ -3602,8 +3602,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -3629,8 +3629,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
         <tag>完全背包</tag>
       </tags>
   </entry>
@@ -3805,8 +3805,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -3884,8 +3884,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
+        <tag>LeetCode困难</tag>
         <tag>栈</tag>
       </tags>
   </entry>
@@ -3933,8 +3933,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
+        <tag>LeetCode困难</tag>
       </tags>
   </entry>
   <entry>
@@ -3987,8 +3987,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -4089,8 +4089,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -4112,8 +4112,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
         <tag>完全背包</tag>
       </tags>
   </entry>
@@ -4287,8 +4287,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -4316,8 +4316,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -4355,8 +4355,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -4685,8 +4685,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -4765,8 +4765,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -4790,8 +4790,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -5087,8 +5087,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>LeetCode困难</tag>
         <tag>动态规划</tag>
+        <tag>LeetCode困难</tag>
       </tags>
   </entry>
   <entry>
@@ -5127,34 +5127,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LeetCode.918.环形子数组的最大和（中等）</title>
-    <url>/LeetCode/LeetCode.918.%E7%8E%AF%E5%BD%A2%E5%AD%90%E6%95%B0%E7%BB%84%E7%9A%84%E6%9C%80%E5%A4%A7%E5%92%8C%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
-    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/maximum-sum-circular-subarray/">LeetCode.918.环形子数组的最大和（中等）</a></p>
-<p>给定一个由整数数组 A 表示的环形数组 C，求 C 的非空子数组的最大可能和。</p>
-<p>在此处，环形数组意味着数组的末端将会与开头相连呈环状。（形式上，当0 &lt;= i &lt; A.length 时 C[i] = A[i]，且当 i &gt;= 0 时 C[i+A.length] = C[i]）</p>
-<p>此外，子数组最多只能包含固定缓冲区 A 中的每个元素一次。（形式上，对于子数组 C[i], C[i+1], …, C[j]，不存在 i &lt;= k1, k2 &lt;= j 其中 k1 % A.length = k2 % A.length）</p>
-<span id="more"></span>
-
-<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="环形数组跟非环形数组的区别是什么？"><a href="#环形数组跟非环形数组的区别是什么？" class="headerlink" title="环形数组跟非环形数组的区别是什么？"></a>环形数组跟非环形数组的区别是什么？</h2><p>环形数组中最终求得的最大和子数组有两种情况</p>
-<ol>
-<li>数组A的首尾元素不会连接</li>
-<li>数组A的首尾元素会连接</li>
-</ol>
-<h2 id="数组A的首尾元素不会连接的情况如何求解？"><a href="#数组A的首尾元素不会连接的情况如何求解？" class="headerlink" title="数组A的首尾元素不会连接的情况如何求解？"></a>数组A的首尾元素不会连接的情况如何求解？</h2><p>第1种情况就是非环形数组的普通求法，参与计算的区间为<code>[0, n - 1]</code></p>
-<h2 id="数组A的首尾元素会连接的情况如何求解？"><a href="#数组A的首尾元素会连接的情况如何求解？" class="headerlink" title="数组A的首尾元素会连接的情况如何求解？"></a>数组A的首尾元素会连接的情况如何求解？</h2><p>第2种情况不好用非环形数组的方法求解，实际观察结果可以得到等价情况：先求出中间部分的子数组的最小和，再用整个数组A的和减去中间的最小和就是两端首尾相连的子数组的最大和。<br>这时只在数组A的<code>[1, n - 2]</code>区间求解，这才能保证首尾不连接。</p>
-<h2 id="代码（kotlin）"><a href="#代码（kotlin）" class="headerlink" title="代码（kotlin）"></a>代码（kotlin）</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxSubarraySumCircular</span><span class="params">(nums: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = nums.size</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> nums[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">getMaxSumInLinearCase</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">var</span> maxSum = nums[<span class="number">0</span>]</span><br><span class="line">            <span class="keyword">var</span> pre = <span class="number">0</span></span><br><span class="line">            <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="keyword">val</span> cur = maxOf(pre + nums[i], nums[i])</span><br><span class="line">                maxSum = maxOf(maxSum, cur)</span><br><span class="line">                pre = cur</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> maxSum</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">getMinSumInCyclicCase</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">var</span> pre = <span class="number">0</span></span><br><span class="line">            <span class="keyword">var</span> minSum = nums[<span class="number">1</span>]</span><br><span class="line">            <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.(n - <span class="number">2</span>)) &#123;</span><br><span class="line">                <span class="keyword">val</span> cur = minOf(pre + nums[i], nums[i])</span><br><span class="line">                minSum = minOf(minSum, cur)</span><br><span class="line">                pre = cur</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> minSum</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> maxOf(</span><br><span class="line">            getMaxSumInLinearCase(), </span><br><span class="line">            nums.sum() - getMinSumInCyclicCase()</span><br><span class="line">        )</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>LeetCode</category>
-      </categories>
-      <tags>
         <tag>动态规划</tag>
-        <tag>LeetCode中等</tag>
       </tags>
   </entry>
   <entry>
@@ -5185,8 +5159,34 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode.918.环形子数组的最大和（中等）</title>
+    <url>/LeetCode/LeetCode.918.%E7%8E%AF%E5%BD%A2%E5%AD%90%E6%95%B0%E7%BB%84%E7%9A%84%E6%9C%80%E5%A4%A7%E5%92%8C%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/</url>
+    <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/maximum-sum-circular-subarray/">LeetCode.918.环形子数组的最大和（中等）</a></p>
+<p>给定一个由整数数组 A 表示的环形数组 C，求 C 的非空子数组的最大可能和。</p>
+<p>在此处，环形数组意味着数组的末端将会与开头相连呈环状。（形式上，当0 &lt;= i &lt; A.length 时 C[i] = A[i]，且当 i &gt;= 0 时 C[i+A.length] = C[i]）</p>
+<p>此外，子数组最多只能包含固定缓冲区 A 中的每个元素一次。（形式上，对于子数组 C[i], C[i+1], …, C[j]，不存在 i &lt;= k1, k2 &lt;= j 其中 k1 % A.length = k2 % A.length）</p>
+<span id="more"></span>
+
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="环形数组跟非环形数组的区别是什么？"><a href="#环形数组跟非环形数组的区别是什么？" class="headerlink" title="环形数组跟非环形数组的区别是什么？"></a>环形数组跟非环形数组的区别是什么？</h2><p>环形数组中最终求得的最大和子数组有两种情况</p>
+<ol>
+<li>数组A的首尾元素不会连接</li>
+<li>数组A的首尾元素会连接</li>
+</ol>
+<h2 id="数组A的首尾元素不会连接的情况如何求解？"><a href="#数组A的首尾元素不会连接的情况如何求解？" class="headerlink" title="数组A的首尾元素不会连接的情况如何求解？"></a>数组A的首尾元素不会连接的情况如何求解？</h2><p>第1种情况就是非环形数组的普通求法，参与计算的区间为<code>[0, n - 1]</code></p>
+<h2 id="数组A的首尾元素会连接的情况如何求解？"><a href="#数组A的首尾元素会连接的情况如何求解？" class="headerlink" title="数组A的首尾元素会连接的情况如何求解？"></a>数组A的首尾元素会连接的情况如何求解？</h2><p>第2种情况不好用非环形数组的方法求解，实际观察结果可以得到等价情况：先求出中间部分的子数组的最小和，再用整个数组A的和减去中间的最小和就是两端首尾相连的子数组的最大和。<br>这时只在数组A的<code>[1, n - 2]</code>区间求解，这才能保证首尾不连接。</p>
+<h2 id="代码（kotlin）"><a href="#代码（kotlin）" class="headerlink" title="代码（kotlin）"></a>代码（kotlin）</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">maxSubarraySumCircular</span><span class="params">(nums: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> n = nums.size</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> nums[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">getMaxSumInLinearCase</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">var</span> maxSum = nums[<span class="number">0</span>]</span><br><span class="line">            <span class="keyword">var</span> pre = <span class="number">0</span></span><br><span class="line">            <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">0</span> until n) &#123;</span><br><span class="line">                <span class="keyword">val</span> cur = maxOf(pre + nums[i], nums[i])</span><br><span class="line">                maxSum = maxOf(maxSum, cur)</span><br><span class="line">                pre = cur</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> maxSum</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">getMinSumInCyclicCase</span><span class="params">()</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">            <span class="keyword">var</span> pre = <span class="number">0</span></span><br><span class="line">            <span class="keyword">var</span> minSum = nums[<span class="number">1</span>]</span><br><span class="line">            <span class="keyword">for</span> (i <span class="keyword">in</span> <span class="number">1.</span>.(n - <span class="number">2</span>)) &#123;</span><br><span class="line">                <span class="keyword">val</span> cur = minOf(pre + nums[i], nums[i])</span><br><span class="line">                minSum = minOf(minSum, cur)</span><br><span class="line">                pre = cur</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> minSum</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> maxOf(</span><br><span class="line">            getMaxSumInLinearCase(), </span><br><span class="line">            nums.sum() - getMinSumInCyclicCase()</span><br><span class="line">        )</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+      <tags>
+        <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -5212,8 +5212,8 @@
         <category>LeetCode</category>
       </categories>
       <tags>
-        <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+        <tag>动态规划</tag>
       </tags>
   </entry>
   <entry>
@@ -6687,10 +6687,10 @@
 </ul>
 <h1 id="Dagger2的优势？"><a href="#Dagger2的优势？" class="headerlink" title="Dagger2的优势？"></a>Dagger2的优势？</h1><ul>
 <li>无反射，编译时生成注入代码，无运行时性能损耗。</li>
-<li>符合jsr-330依赖注入标准，以后切换为其他符合jsr-330的依赖注入框架成本低。</li>
+<li>符合jsr-330依赖注入标准，切换成本低。</li>
 </ul>
 <p>其他Java下的依赖注入框架，比如Dagger1、Guice，是通过反射在运行时对要注入的对象进行赋值，反射在运行时是比较耗时的，Dagger2没有反射，在编译时进行生成辅助代码，利用辅助代码做对象赋值，运行时性能没有消耗。</p>
-<p>Dagger2还有个好处是，按照jsr-330依赖注入标准要求来设计，比如支持@Inject、@Qualifier、@Scope等jsr-330中规定的注解，以后替换为其他符合jsr-330标准的依赖注入框架时切换成本小。</p>
+<p>Dagger2按照jsr-330依赖注入标准要求来设计，比如支持@Inject、@Qualifier、@Scope等jsr-330中规定的注解，以后替换为其他符合jsr-330标准的依赖注入框架时切换成本小。</p>
 <h1 id="Dagger2基本运行流程"><a href="#Dagger2基本运行流程" class="headerlink" title="Dagger2基本运行流程"></a>Dagger2基本运行流程</h1><ul>
 <li>开发者把要注入的对象写在Module对象中，Module对象挂载在各种Component下，都用注解来配置。</li>
 <li>要注入的对象的生命周期受Component对象的生命周期控制，Component对象什么时候创建、什么时候丢弃是完全自行控制的。</li>
@@ -6742,6 +6742,7 @@
 <li>UserComponent是DeviceComponent的父Component。</li>
 <li>DeviceComponent中的对象需要读取用户信息，读取的都是UserComponent下的对象状态。</li>
 <li>RunningComponent和HeartRateComponent中的对象要读取用户相关的状态，也要读取UserComponent挂载的对象。</li>
+<li>退出登录换一个账号登录后，DeviceComponent里的对象内容应该也要跟着变，因为不同的用户绑定的设备不一样。</li>
 </ul>
 </li>
 </ul>
@@ -6752,7 +6753,7 @@
 <p>可以实现一种插件化的架构。<br>把对象收集到一个中心，再做对象注入的时候，不需要依赖某个具体的Component或者Module对象，而是直接去中心里的集合中查表就行了。</p>
 <p>比如dagger.android中：</p>
 <ul>
-<li>每个Activity和Fragment都是单独的生命周期，都是单独的SubComponent。</li>
+<li>每个Activity和Fragment都是单独的生命周期，都是单独的SubComponent，因为它们可能会读取共享的父Component的里的状态值。</li>
 <li>可以把这些SubComponent挂载的对象通过多绑定的注解标记，存入一个Map中，Key就是Activity或者Fragment类名。</li>
 <li>在Activity和Fragment的onCreate中，就可以只调用<code>AndroidInjection.inject(this)</code>。</li>
 <li>Dagger2内部就可以到Map中通过类名的Key查询到对应的Activity或者Fragment对应的SubComponent。</li>
