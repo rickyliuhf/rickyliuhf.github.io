@@ -696,6 +696,132 @@
       </tags>
   </entry>
   <entry>
+    <title>内存泄漏检测 - LeakCanary浅析</title>
+    <url>/Android/LeakCanary%E6%B5%85%E6%9E%90/</url>
+    <content><![CDATA[<h1 id="LeakCanary基本原理"><a href="#LeakCanary基本原理" class="headerlink" title="LeakCanary基本原理"></a>LeakCanary基本原理</h1><ol>
+<li> RefWatcher.watch() 创建一个 KeyedWeakReference 到要被监控的对象。</li>
+<li> 然后在后台线程检查引用是否被清除，如果没有，调用GC。</li>
+<li> 如果引用还是未被清除，把 heap 内存 dump 到 APP 对应的文件系统中的一个 .hprof 文件中。</li>
+<li> 在另外一个进程中的 HeapAnalyzerService 有一个 HeapAnalyzer 使用HAHA 解析这个文件。</li>
+<li> 得益于唯一的 reference key, HeapAnalyzer 找到 KeyedWeakReference，定位内存泄漏。</li>
+<li> HeapAnalyzer 计算 到 GC roots 的最短强引用路径，并确定是否是泄漏。如果是的话，建立导致泄漏的引用链。</li>
+<li> 引用链传递到 APP 进程中的 DisplayLeakService， 并以通知的形式展示出来。</li>
+</ol>
+<span id="more"></span>
+
+<h1 id="LeakCanary怎么使用的？入口在哪？"><a href="#LeakCanary怎么使用的？入口在哪？" class="headerlink" title="LeakCanary怎么使用的？入口在哪？"></a>LeakCanary怎么使用的？入口在哪？</h1><p><a href="https://square.github.io/leakcanary/getting_started/">https://square.github.io/leakcanary/getting_started/</a></p>
+<p>在gradle配置中引入依赖后就自动启用了LeakCanary</p>
+<p>LeakCanary 会自动检测下列对象的泄露：</p>
+<ol>
+<li> destroyed Activity instances</li>
+<li> destroyed Fragment instances</li>
+<li> destroyed fragment View instances</li>
+<li> cleared ViewModel instances</li>
+</ol>
+<p>手动观测一个对象的泄露，通过以下方法调用：AppWatcher.objectWatcher.watch(myDetachedView, “View was detached”)</p>
+<h1 id="为什么引入依赖后就自动启用LeakCanary了？"><a href="#为什么引入依赖后就自动启用LeakCanary了？" class="headerlink" title="为什么引入依赖后就自动启用LeakCanary了？"></a>为什么引入依赖后就自动启用LeakCanary了？</h1><p>因为在AndroidManifest里注册了名为AppWatcherInstaller$LeakCanaryProcess的ContentProvider，App启动时会自动调用ContentProvider的onCreate()方法</p>
+<p>在这里会调用AppWatcher.manualInstall(application)，  这就是LeakCanary启动的入口。</p>
+<p>ContentProvider.onCreate()调用时机是：</p>
+<p>Application.attachBaseContext() &gt; ContentProvider.onCreate() -&gt;Application.onCreate()</p>
+<h1 id="AppWatcher-manualInstall-application-做了什么？"><a href="#AppWatcher-manualInstall-application-做了什么？" class="headerlink" title="AppWatcher.manualInstall(application)做了什么？"></a>AppWatcher.manualInstall(application)做了什么？</h1><p>主要是调用了</p>
+<ol>
+<li> ActivityDestroyWatcher.install(application, objectWatcher, configProvider)</li>
+<li> FragmentDestroyWatcher.install(application, objectWatcher, configProvider)</li>
+<li> onAppWatcherInstalled(application)</li>
+</ol>
+<h2 id="ActivityDestroyWatcher-install-做的是什么？"><a href="#ActivityDestroyWatcher-install-做的是什么？" class="headerlink" title="ActivityDestroyWatcher.install()做的是什么？"></a>ActivityDestroyWatcher.install()做的是什么？</h2><ol>
+<li> 调用了application.registerActivityLifecycleCallbacks()，监听onActivityDestroyed()</li>
+<li> 在onActivityDestroyed()中调用objectWatcher.watch(activity)，监听被destroyed的activity是否发生内存泄漏</li>
+</ol>
+<h2 id="FragmentDestroyWatcher-install-做了什么？"><a href="#FragmentDestroyWatcher-install-做了什么？" class="headerlink" title="FragmentDestroyWatcher.install()做了什么？"></a>FragmentDestroyWatcher.install()做了什么？</h2><ol>
+<li> 调用了application.registerActivityLifecycleCallbacks()，监听onActivityCreated()</li>
+<li> 在onActivityCreated()中调用activity.supportFragmentManager.registerFragmentLifecycleCallbacks()，监听onFragmentCreated()、onFragmentViewDestroyed()、onFragmentDestroyed()</li>
+<li> onFragmentCreated()中调用ViewModelClearedWatcher.install()，监听被clear的ViewModel是否会发生泄漏</li>
+<li> onFragmentViewDestroyed()中调用objectWatcher.watch(fragment.view)，监听fragment的view是否发生内存泄漏</li>
+<li> onFragmentDestroyed()中调用objectWatcher.watch(fragment)，监听fragment是否发生内存泄漏</li>
+</ol>
+<h2 id="ViewModelClearedWatcher-install-做了什么？"><a href="#ViewModelClearedWatcher-install-做了什么？" class="headerlink" title="ViewModelClearedWatcher.install()做了什么？"></a>ViewModelClearedWatcher.install()做了什么？</h2><p>通过以fragment为容器，创建一个ViewModelProvider实例，再创建一个ViewModelClearedWatcher实例，ViewModelClearedWatcher是一个ViewModel；</p>
+<p>构造ViewModelClearedWatcher时，会获取到以fragment为容器的所有的ViewModel实例，然后在ViewModelClearedWatcher的onCleared()中objectWatcher.watch()观察fragment下的所有的ViewModel实例，检查是否有ViewModel实例发生内存泄漏</p>
+<h2 id="onAppWatcherInstalled-做了什么？"><a href="#onAppWatcherInstalled-做了什么？" class="headerlink" title="onAppWatcherInstalled()做了什么？"></a>onAppWatcherInstalled()做了什么？</h2><p>会调用InternalLeakCanary.invoke(application)</p>
+<h1 id="如何判断一个对象无法被GC机制回收？"><a href="#如何判断一个对象无法被GC机制回收？" class="headerlink" title="如何判断一个对象无法被GC机制回收？"></a>如何判断一个对象无法被GC机制回收？</h1><p>创建一个持有要检测对象的WeakReference，然后主动触发一次GC，如果这个对象能被回收，则WeakReference.get()会为null，并且这个WeakReference实例会被放到创建WeakReference对象时给构造函数传的ReferenceQueue中。</p>
+<p>WeakReference的特点就是，只要发生垃圾回收，WeakReference持有的对象引用就为null，并且ReferenceQueue中会存入这个WeakReference；没有发生垃圾回收，ReferenceQueue中不会存入WeakReference对象。</p>
+<p>如果主动触发GC后，ReferenceQueue中没有监测的对象对应的WeakReference，说明该对象发生了内存泄漏。</p>
+<h1 id="AppWatcher-objectWatcher-watch-watchedObject-Any-description-String-做了什么？"><a href="#AppWatcher-objectWatcher-watch-watchedObject-Any-description-String-做了什么？" class="headerlink" title="AppWatcher.objectWatcher.watch(watchedObject: Any, description: String)做了什么？"></a>AppWatcher.objectWatcher.watch(watchedObject: Any, description: String)做了什么？</h1><ol>
+<li><p> 创建了一个KeyedWeakReference对象，存入一个名为watchedObjects，map，key就是UUID.randomUUID()随机生成的，唯一标识watchedObject，value类型是KeyedWeakReference</p>
+</li>
+<li><p> 主线程中延迟一段时间（AppWatcher.config.watchDurationMillis，默认为5秒）后，然后调用moveToRetained(key)</p>
+</li>
+<li><p> 先通过removeWeaklyReachableObjects()清理掉watchedObjects这个map中已经被垃圾回收的对象</p>
+</li>
+<li><p> 如果再发现map里的这个KeyedWeakReference对象还存在，就标记其为retained状态，具体会赋值KeyedWeakReference的retainedUptimeMillis为当前时间，记录下被认为是retained状态时发生的时间；也就是认为没有被垃圾回收，这里其实有两种情况，一种是垃圾回收还没有发生，一种是垃圾回收发生了但是没有回收掉。</p>
+</li>
+<li><p> 再通知所有的OnObjectRetainedListener有对象没有被回收</p>
+</li>
+</ol>
+<p>KeyedWeakReference是WeakReference子类，多了4个属性</p>
+<ol>
+<li> key：UUID.randomUUID().toString()生成的随机字符串，唯一标识当前引用对象</li>
+<li> description：描述当前对象为什么被观测</li>
+<li> watchUptimeMillis：被watch的时间</li>
+<li> retainedUptimeMillis：当前对象被认为是保留的（retained）状态时所处的时间</li>
+</ol>
+<p>在watch()和moveToRetained()的一开始都会调用removeWeaklyReachableObjects()</p>
+<h2 id="removeWeaklyReachableObjects-是做什么的？"><a href="#removeWeaklyReachableObjects-是做什么的？" class="headerlink" title="removeWeaklyReachableObjects()是做什么的？"></a>removeWeaklyReachableObjects()是做什么的？</h2><p>如果ReferenceQueue存在了某个Reference，说明已经被垃圾回收了，不需要监测内存泄漏了，从watchedObjects中移除这个Reference对象</p>
+<h2 id="ReferenceQueue中的Reference对象什么时候被清理？"><a href="#ReferenceQueue中的Reference对象什么时候被清理？" class="headerlink" title="ReferenceQueue中的Reference对象什么时候被清理？"></a>ReferenceQueue中的Reference对象什么时候被清理？</h2><p>每次从ReferenceQueue调用poll()方法，取出元素就是去除了队首元素</p>
+<h1 id="哪些地方注册了OnObjectRetainedListener，都做了什么"><a href="#哪些地方注册了OnObjectRetainedListener，都做了什么" class="headerlink" title="哪些地方注册了OnObjectRetainedListener，都做了什么?"></a>哪些地方注册了OnObjectRetainedListener，都做了什么?</h1><p>InternalLeakCanary实现了OnObjectRetainedListener接口，在OnObjectRetainedListener.onObjectRetained()被调用时调用了scheduleRetainedObjectCheck()，然后又会调用heapDumpTrigger.scheduleRetainedObjectCheck() -&gt; HeapDumpTrigger.checkRetainedObjects()</p>
+<p>延迟时间为0，立刻调用</p>
+<h1 id="InternalLeakCanary-invoke-application-做了什么？"><a href="#InternalLeakCanary-invoke-application-做了什么？" class="headerlink" title="InternalLeakCanary.invoke(application)做了什么？"></a>InternalLeakCanary.invoke(application)做了什么？</h1><p>主要就是一件事：</p>
+<p>在App可见或不可见时，调用HeapDumpTrigger.onApplicationVisibilityChanged(applicationVisible)</p>
+<p>App可见的定义是：有Activity走了onStart()但还没有走onStop()</p>
+<p>App不可见的定义是：所有Activity走过onStop()</p>
+<p>在App不可见时，调用HeapDumpTrigger.scheduleRetainedObjectCheck() -&gt; HeapDumpTrigger.checkRetainedObjects()</p>
+<p>延迟时间为AppWatcher.config.watchDurationMillis，默认为5秒</p>
+<h1 id="HeapDumpTrigger-checkRetainedObjects-做了什么？"><a href="#HeapDumpTrigger-checkRetainedObjects-做了什么？" class="headerlink" title="HeapDumpTrigger.checkRetainedObjects()做了什么？"></a>HeapDumpTrigger.checkRetainedObjects()做了什么？</h1><p>获取ObjectWatcher.watchedObjects里retained的对象的个数，如果存在retained的对象，也就说明有观察的对象还没有被回收，没有被垃圾回收其实有两种情况，一种是垃圾回收还没有发生，一种是垃圾回收发生了但是没有回收掉；这里就主动调用gcTrigger.runGc()触发一次垃圾回收。</p>
+<p>然后正常情况会调用dumpHeap()</p>
+<h1 id="GcTrigger-runGc-做了什么？"><a href="#GcTrigger-runGc-做了什么？" class="headerlink" title="GcTrigger.runGc()做了什么？"></a>GcTrigger.runGc()做了什么？</h1><p>代码复制了android官方的代码</p>
+<p><a href="https://android.googlesource.com/platform/libcore/+/master/support/src/test/java/libcore/java/lang/ref/FinalizationTester.java">https://android.googlesource.com/platform/libcore/+/master/support/src/test/java/libcore/java/lang/ref/FinalizationTester.java</a></p>
+<ol>
+<li> 先执行Runtime.getRuntime().gc()建议虚拟机发起垃圾回收，可能会执行，可能不会被执行</li>
+<li> 然后Thread.sleep(100)等待100毫秒，让回收了对象进入创建WeakReference时传入的ReferenceQueue</li>
+<li> 调用System.runFinalization()，强制调用已经失去强引用的对象的finalize()方法</li>
+</ol>
+<h1 id="HeapDumpTrigger-scheduleRetainedObjectCheck-有哪些地方调用？"><a href="#HeapDumpTrigger-scheduleRetainedObjectCheck-有哪些地方调用？" class="headerlink" title="HeapDumpTrigger.scheduleRetainedObjectCheck()有哪些地方调用？"></a>HeapDumpTrigger.scheduleRetainedObjectCheck()有哪些地方调用？</h1><p>InternalLeakCanary实现了OnObjectRetainedListener接口，在OnObjectRetainedListener.onObjectRetained()被调用时调用了scheduleRetainedObjectCheck()，然后又会调用heapDumpTrigger.scheduleRetainedObjectCheck() -&gt; HeapDumpTrigger.checkRetainedObjects()</p>
+<p>延迟时间为0，立刻调用</p>
+<p>在App可见或不可见时，调用HeapDumpTrigger.onApplicationVisibilityChanged(applicationVisible)</p>
+<p>在App不可见时，调用HeapDumpTrigger.scheduleRetainedObjectCheck() -&gt; HeapDumpTrigger.checkRetainedObjects()</p>
+<p>延迟时间为AppWatcher.config.watchDurationMillis，默认为5秒</p>
+<p>HeapDumpTrigger.checkRetainedObjects()中会去调用checkRetainedCount(retainedReferenceCount, config.retainedVisibleThreshold)，根据LeakCanary.config.retainedVisibleThreshold的注释可知，dump heap会阻塞UI线程，为了减少对开发者的打扰，内存泄露的对象个数在一定数量之内不触发dump heap，checkRetainedObjects()就是做这个检查的。</p>
+<p>如果内存泄露的对象个数在阈值允许的数量之内，会调用HeapDumpTrigger.scheduleRetainedObjectCheck()，延迟两秒执行，继续调用HeapDumpTrigger.checkRetainedObjects()</p>
+<p>HeapDumpTrigger.checkRetainedObjects()中如果经过了checkRetainedCount()的校验后，决定dump heap了，但是发现距离上次dump heap的时间小于60秒，就不进行dump，延迟到距离上次dump的60秒以后再执行checkRetainedObjects()</p>
+<p>在HeapDumpTrigger.dumpHeap()中，调用heapDumper.dumpHeap()返回NoHeapDump时，也就是dump heap失败时，会再调用scheduleRetainedObjectCheck()尝试再次dump heap，延迟时间5秒</p>
+<h1 id="AndroidHeapDumper-dumpHeap-做了什么？"><a href="#AndroidHeapDumper-dumpHeap-做了什么？" class="headerlink" title="AndroidHeapDumper.dumpHeap()做了什么？"></a>AndroidHeapDumper.dumpHeap()做了什么？</h1><p>按当前时间命名创建一个hprof文件</p>
+<p>调用Debug.dumpHprofData()输出信息到创建的文件</p>
+<h1 id="LeakCanary做内存泄漏检测存在什么不足？"><a href="#LeakCanary做内存泄漏检测存在什么不足？" class="headerlink" title="LeakCanary做内存泄漏检测存在什么不足？"></a>LeakCanary做内存泄漏检测存在什么不足？</h1><p>可见其对Activity是否泄漏的判断依赖VM会将可回收的对象加入WeakReference关联的ReferenceQueue这一特性，在Demo的测试过程中我们发现这中做法在个别系统上可能存在误报，原因大致如下：</p>
+<ul>
+<li>  VM并没有提供强制触发GC的API，通过System.gc()或Runtime.getRuntime().gc()只能“建议”系统进行GC，如果系统忽略了我们的GC请求，可回收的对象就不会被加入ReferenceQueue</li>
+<li>  将可回收对象加入ReferenceQueue需要等待一段时间，LeakCanary采用延时100ms的做法加以规避，但似乎并不绝对管用</li>
+<li>  监测逻辑是异步的，如果判断Activity是否可回收时某个Activity正好还被某个方法的局部变量持有，就会引起误判</li>
+<li>  若反复进入泄漏的Activity，LeakCanary会重复提示该Activity已泄漏</li>
+</ul>
+<p>对此我们做了以下改进：</p>
+<ul>
+<li>  增加一个一定能被回收的“哨兵”对象，用来确认系统确实进行了GC</li>
+<li>  直接通过WeakReference.get()来判断对象是否已被回收，避免因延迟导致误判</li>
+<li>  若发现某个Activity无法被回收，再重复判断3次，且要求从该Activity被记录起有2个以上的Activity被创建才认为是泄漏，以防在判断时该Activity被局部变量持有导致误判</li>
+<li>  对已判断为泄漏的Activity，记录其类名，避免重复提示该Activity已泄漏</li>
+</ul>
+<p>参考：<a href="https://github.com/Tencent/matrix/wiki/Matrix-Android-ResourceCanary">Matrix-Android-ResourceCanary</a></p>
+]]></content>
+      <categories>
+        <category>源码分析</category>
+      </categories>
+      <tags>
+        <tag>内存泄漏</tag>
+        <tag>LeakCanary</tag>
+        <tag>源码分析</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>RecyclerView缓存机制</title>
     <url>/Android/RecyclerView%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/</url>
     <content><![CDATA[<h1 id="RecyclerView的缓存分为四级"><a href="#RecyclerView的缓存分为四级" class="headerlink" title="RecyclerView的缓存分为四级"></a>RecyclerView的缓存分为四级</h1><ul>
@@ -1286,9 +1412,9 @@
         <category>Kotlin</category>
       </categories>
       <tags>
+        <tag>源码分析</tag>
         <tag>Kotlin</tag>
         <tag>协程</tag>
-        <tag>源码分析</tag>
       </tags>
   </entry>
   <entry>
@@ -6819,9 +6945,9 @@
         <category>源码分析</category>
       </categories>
       <tags>
-        <tag>源码分析</tag>
         <tag>内存泄漏</tag>
         <tag>LeakCanary</tag>
+        <tag>源码分析</tag>
       </tags>
   </entry>
   <entry>
@@ -9854,6 +9980,8 @@
 <p>但是对于老代码，有的数据来源还是内存缓存，或者GreenDao存储的，在新的业务模块也需要读取一部分老的数据，这就需要让老的数据源也支持LiveData或Flow的返回模式。</p>
 <p>内存缓存的方式很好实现LiveData机制，只要内存缓存有监听机制，转换为LiveData即可。</p>
 <p>GreenDao由于官方就不支持数据表监听，没办法支持，所以只能自己实现。</p>
+<span id="more"></span>
+
 <h1 id="如何实现GreenDao数据表变化监听？"><a href="#如何实现GreenDao数据表变化监听？" class="headerlink" title="如何实现GreenDao数据表变化监听？"></a>如何实现GreenDao数据表变化监听？</h1><p>既然Room支持监听表变化，那就参考Room源码实现思路，把这个功能也添加到GreenDao中。</p>
 <h1 id="Room源码实现思路"><a href="#Room源码实现思路" class="headerlink" title="Room源码实现思路"></a>Room源码实现思路</h1><p>LiveData或Flow是是Dao对象返回的，所以从Dao对象的源码看起。</p>
 <p>可以以<a href="https://github.com/android/architecture-components-samples/tree/main/GithubBrowserSample">architecture-components-samples的GithubBrowserSample</a>为例分析。</p>
