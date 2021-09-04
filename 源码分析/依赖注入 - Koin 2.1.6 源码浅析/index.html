@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Dagger2 缺点 学习和科普成本极高，API使用非常繁琐。 配置越多，生成的辅助代码越多，会导致： 增加编译时间。 增加Apk体积。    Koin 优势 概念很少，最核心就是理解Scope一个概念，其他看看源码就马上能懂。 在kotlin语法下（如扩展、委托），API使用非常简洁友好。 无反射，无运行时性能损耗。配合Kotlin内联，尽可能降低库的API带来的运行时性能损失。 没有辅助代码生">
+<meta property="og:type" content="article">
+<meta property="og:title" content="依赖注入 - Koin 2.1.6 源码浅析">
+<meta property="og:url" content="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Koin%202.1.6%20%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="Dagger2 缺点 学习和科普成本极高，API使用非常繁琐。 配置越多，生成的辅助代码越多，会导致： 增加编译时间。 增加Apk体积。    Koin 优势 概念很少，最核心就是理解Scope一个概念，其他看看源码就马上能懂。 在kotlin语法下（如扩展、委托），API使用非常简洁友好。 无反射，无运行时性能损耗。配合Kotlin内联，尽可能降低库的API带来的运行时性能损失。 没有辅助代码生">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-05-12T12:53:00.000Z">
+<meta property="article:modified_time" content="2021-09-04T11:03:19.704Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="源码分析">
+<meta property="article:tag" content="Dagger2">
+<meta property="article:tag" content="依赖注入">
+<meta property="article:tag" content="Koin">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Koin%202.1.6%20%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>依赖注入 - Koin 2.1.6 源码浅析 | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Koin%202.1.6%20%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          依赖注入 - Koin 2.1.6 源码浅析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-12 20:53:00" itemprop="dateCreated datePublished" datetime="2020-05-12T20:53:00+08:00">2020-05-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Koin%202.1.6%20%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="源码分析/依赖注入 - Koin 2.1.6 源码浅析/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Dagger2-缺点"><a href="#Dagger2-缺点" class="headerlink" title="Dagger2 缺点"></a>Dagger2 缺点</h1><ol>
+<li>学习和科普成本极高，API使用非常繁琐。</li>
+<li>配置越多，生成的辅助代码越多，会导致：<ul>
+<li>增加编译时间。</li>
+<li>增加Apk体积。</li>
+</ul>
+</li>
+</ol>
+<h1 id="Koin-优势"><a href="#Koin-优势" class="headerlink" title="Koin 优势"></a>Koin 优势</h1><ol>
+<li>概念很少，最核心就是理解Scope一个概念，其他看看源码就马上能懂。</li>
+<li>在kotlin语法下（如扩展、委托），API使用非常简洁友好。</li>
+<li>无反射，无运行时性能损耗。配合Kotlin内联，尽可能降低库的API带来的运行时性能损失。</li>
+<li>没有辅助代码生成，纯粹在代码层配置，所以不会增长编译时间，不会增大APK体积。</li>
+</ol>
+<h1 id="Koin基本原理"><a href="#Koin基本原理" class="headerlink" title="Koin基本原理"></a>Koin基本原理</h1><ul>
+<li>一个Module包含多个对象：要注入的对象都定义在Module对象中。</li>
+<li>一个Scope包含多个Module：所有的Module对象都存储在一个个的Scope对象里。</li>
+<li>一个Koin包含多个Scope：所有的Scope都存储在一个Koin对象里。</li>
+<li>Koin对象就是一个容器，可以保持一个单例，也可以创建多个实例。</li>
+<li>获取对象，就是获取想要的容器里的Scope，然后调用Scope的get()方法即可。</li>
+<li>通过Kotlin的委托、扩展、DSL等语法，可以把对象的注入获取封装成简洁、无感知的形式。</li>
+</ul>
+<span id="more"></span>
+
+<h1 id="怎么获取Koin中挂载的对象？"><a href="#怎么获取Koin中挂载的对象？" class="headerlink" title="怎么获取Koin中挂载的对象？"></a>怎么获取Koin中挂载的对象？</h1><p>在Activity或者Fragment中声明一个类属性，通过调用get()或者by inject()去对属性赋值。</p>
+<p>get()和inject()方法都是ComponentCallbacks的扩展函数，Activity和Fragment都是ComponentCallbacks的子类。</p>
+<p>Koin还提供各种辅助的扩展函数，尽可能的让注入变得非常简单，比如要获取一个Activity生命周期的Scope，都提供好了一个activityScope()扩展函数，跟lifecycle绑定，lifecycle走到destroy的时候，会调用Scope的close方法，就会清理Scope对象中缓存的对象。</p>
+<p>源码看起来也非常简单，比Dagger2繁琐的配置要简单太多了，Dagger里还要配置SubComponent，什么 ContributeActivityInjector之类的注解，很难理解，配置代码量还多。</p>
+<h1 id="Koin项目地址"><a href="#Koin项目地址" class="headerlink" title="Koin项目地址"></a>Koin项目地址</h1><p><a target="_blank" rel="noopener" href="https://github.com/InsertKoinIO/koin">https://github.com/InsertKoinIO/koin</a></p>
+<p>由于每个版本源码变化较大，下面的源码分析基于Koin版本是2.1.6。<br>即基于commit id 为bbf2b7ca84c3dfda6b1894fc0bfcc7ed0fbc4d89的源码进行分析。</p>
+<h1 id="Koin的入口在哪？"><a href="#Koin的入口在哪？" class="headerlink" title="Koin的入口在哪？"></a>Koin的入口在哪？</h1><p>首先需要在Application的onCreate()去初始化Koin配置。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">startKoin &#123;</span><br><span class="line">    <span class="comment">//声明Android上下文</span></span><br><span class="line">    androidContext(<span class="keyword">this</span><span class="symbol">@MyApplication</span>)</span><br><span class="line">    <span class="comment">//声明要使用的模块</span></span><br><span class="line">    modules(myAppModules)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最主要的是要声明使用的Module，Module中提供了要注入的对象。</p>
+<h1 id="startKoin-做了什么？"><a href="#startKoin-做了什么？" class="headerlink" title="startKoin()做了什么？"></a>startKoin()做了什么？</h1><p>先看startKoin()源码，startKoin()代码位于ContextFunctions.kt：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Start a Koin Application as StandAlone</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">startKoin</span><span class="params">(koinContext: <span class="type">KoinContext</span> = GlobalContext()</span></span>, appDeclaration: KoinAppDeclaration): KoinApplication &#123;</span><br><span class="line">    KoinContextHandler.register(koinContext) </span><br><span class="line">    <span class="keyword">val</span> koinApplication = KoinApplication.<span class="keyword">init</span>()</span><br><span class="line">    KoinContextHandler.start(koinApplication)</span><br><span class="line">    appDeclaration(koinApplication)</span><br><span class="line">    koinApplication.createEagerInstances()</span><br><span class="line">    <span class="keyword">return</span> koinApplication</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="KoinAppDeclaration是做什么的？"><a href="#KoinAppDeclaration是做什么的？" class="headerlink" title="KoinAppDeclaration是做什么的？"></a>KoinAppDeclaration是做什么的？</h2><p>KoinAppDeclaration 的定义是：<br><code>typealias KoinAppDeclaration = KoinApplication.() -&gt; Unit</code></p>
+<p>参数KoinAppDeclaration是一个以KoinApplication为接受者的函数，在函数大括号里调用的方法，如androidContext()、modules()等，都是KoinApplication的成员函数或扩展函数。</p>
+<h2 id="KoinContext-是做什么的？"><a href="#KoinContext-是做什么的？" class="headerlink" title="KoinContext 是做什么的？"></a>KoinContext 是做什么的？</h2><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Component that hold the Koin instance</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">KoinContext</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Get Koin instance</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">get</span><span class="params">()</span></span>: Koin</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Get Koin instance or null</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">getOrNull</span><span class="params">()</span></span>: Koin?</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Start a Koin Application</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">setup</span><span class="params">(koinApplication: <span class="type">KoinApplication</span>)</span></span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Stop current Koin instance</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">stop</span><span class="params">()</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据注释，KoinContext是持有Koin实例的。</p>
+<p>startKoin方法中默认实现是GlobalContext，看看GlobalContext的实现：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Global context - current Koin Application available globally</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Support to help inject automatically instances once KoinApp has been started</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Arnaud Giuliani</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GlobalContext</span> : <span class="type">KoinContext &#123;</span></span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _koin: Koin? = <span class="literal">null</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">get</span><span class="params">()</span></span>: Koin = _koin ?: error(<span class="string">&quot;KoinApplication has not been started&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">getOrNull</span><span class="params">()</span></span>: Koin? = _koin</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">setup</span><span class="params">(koinApplication: <span class="type">KoinApplication</span>)</span></span> = synchronized(<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (_koin != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> KoinAppAlreadyStartedException(<span class="string">&quot;A Koin Application has already been started&quot;</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        _koin = koinApplication.koin</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">stop</span><span class="params">()</span></span> = synchronized(<span class="keyword">this</span>) &#123;</span><br><span class="line">        _koin?.close()</span><br><span class="line">        _koin = <span class="literal">null</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>主要就是存储Koin对象存储为<code>_koin</code>成员变量。</p>
+<p>暂时不知道为什么要设计这个，先继续往下看。</p>
+<h2 id="KoinContextHandler-register-koinContext-做了什么？"><a href="#KoinContextHandler-register-koinContext-做了什么？" class="headerlink" title="KoinContextHandler.register(koinContext) 做了什么？"></a>KoinContextHandler.register(koinContext) 做了什么？</h2><p>KoinContextHandler类也很短，看源码很简单，就是持有KoinContext的对象实例。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Help hold any implementation of KoinContext</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">object</span> KoinContextHandler &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> _context: KoinContext? = <span class="literal">null</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">getContext</span><span class="params">()</span></span>: KoinContext &#123;</span><br><span class="line">        <span class="keyword">return</span> _context ?: error(<span class="string">&quot;No Koin Context configured. Please use startKoin or koinApplication DSL. &quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Retrieve current KoinContext</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">get</span><span class="params">()</span></span>: Koin = getContext().<span class="keyword">get</span>()</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Retrieve current KoinContext or null</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">getOrNull</span><span class="params">()</span></span>: Koin? = _context?.getOrNull()</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register new KoinContext</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IllegalStateException if already registered</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">register</span><span class="params">(koinContext: <span class="type">KoinContext</span>)</span></span> = synchronized(<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (_context != <span class="literal">null</span>) &#123;</span><br><span class="line">            error(<span class="string">&quot;A KoinContext is already started&quot;</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        _context = koinContext</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Start a Koin Application on current KoinContext</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">start</span><span class="params">(koinApplication: <span class="type">KoinApplication</span>)</span></span> &#123;</span><br><span class="line">        getContext().setup(koinApplication)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Stop current KoinContext &amp; clear it</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">stop</span><span class="params">()</span></span> &#123;</span><br><span class="line">        _context?.stop()</span><br><span class="line">        _context = <span class="literal">null</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>这么设计有什么好处？</strong></p>
+<p>可以看到KoinContextHandler是object修饰的，是单例。</p>
+<p>我们是可以通过这个单例在任意位置获取到Koin对象的。</p>
+<p><strong>获取Koin对象有什么用？</strong></p>
+<p>这个后面就知道了，因为要注入的对象都在Koin对象里，所以通过Koin对象就可以获取要注入的对象。</p>
+<h2 id="KoinApplication-init-做了什么？"><a href="#KoinApplication-init-做了什么？" class="headerlink" title="KoinApplication.init() 做了什么？"></a>KoinApplication.init() 做了什么？</h2><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Create a new instance of KoinApplication</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@JvmStatic</span></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">init</span><span class="params">()</span></span>: KoinApplication &#123;</span><br><span class="line">    <span class="keyword">val</span> app = KoinApplication()</span><br><span class="line">    app.<span class="keyword">init</span>()</span><br><span class="line">    <span class="keyword">return</span> app</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建一个KoinApplication 对象，调用其init()方法，然后返回KoinApplication 对象。</p>
+<h3 id="KoinApplication的init实例方法做了什么？"><a href="#KoinApplication的init实例方法做了什么？" class="headerlink" title="KoinApplication的init实例方法做了什么？"></a>KoinApplication的init实例方法做了什么？</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Koin Application</span></span><br><span class="line"><span class="comment"> * Help prepare resources for Koin context</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Arnaud Giuliani</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">KoinApplication</span> <span class="keyword">private</span> <span class="keyword">constructor</span></span>() &#123;</span><br><span class="line">    <span class="keyword">val</span> koin = Koin()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">internal</span> <span class="function"><span class="keyword">fun</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">        koin._scopeRegistry.createRootScopeDefinition()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>KoinApplication 中创建了一个Koin类型的属性。</li>
+<li>init()方法调用<code>koin._scopeRegistry.createRootScopeDefinition()</code>。</li>
+</ul>
+<h4 id="Koin-scopeRegistry是干什么的？"><a href="#Koin-scopeRegistry是干什么的？" class="headerlink" title="Koin._scopeRegistry是干什么的？"></a>Koin._scopeRegistry是干什么的？</h4><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Koin</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">val</span> _scopeRegistry = ScopeRegistry(<span class="keyword">this</span>)</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Koin 创建时就创建了ScopeRegistry。</p>
+<p>ScopeRegistry顾名思义就是一个Scope花名册，汇总所有Scope的地方。</p>
+<p>因为内部有一个Map，Key是Scope的唯一标识，Value是Scope的定义（即ScopeDefinition对象）。</p>
+<p>一个Koin对象对应一个ScopeRegistry对象，管理所有Scope。</p>
+<p>一个KoinApplication 对象对应一个Koin对象。</p>
+<h4 id="ScopeRegistry-createRootScopeDefinition-干了什么？"><a href="#ScopeRegistry-createRootScopeDefinition-干了什么？" class="headerlink" title="ScopeRegistry.createRootScopeDefinition()干了什么？"></a>ScopeRegistry.createRootScopeDefinition()干了什么？</h4><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Scope Registry</span></span><br><span class="line"><span class="comment"> * create/find scopes for Koin</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Arnaud Giuliani</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ScopeRegistry</span></span>(<span class="keyword">private</span> <span class="keyword">val</span> _koin: Koin) &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">val</span> _scopeDefinitions = HashMap&lt;QualifierValue, ScopeDefinition&gt;()</span><br><span class="line">	<span class="keyword">var</span> _rootScopeDefinition: ScopeDefinition? = <span class="literal">null</span></span><br><span class="line">	</span><br><span class="line">    <span class="keyword">internal</span> <span class="function"><span class="keyword">fun</span> <span class="title">createRootScopeDefinition</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> scopeDefinition = ScopeDefinition.rootDefinition()</span><br><span class="line">        _scopeDefinitions[ScopeDefinition.ROOT_SCOPE_QUALIFIER.value] =</span><br><span class="line">            scopeDefinition</span><br><span class="line">        _rootScopeDefinition = scopeDefinition</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ScopeDefinition</span> </span>&#123;</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">companion</span> <span class="keyword">object</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">val</span> ROOT_SCOPE_ID = <span class="string">&quot;-Root-&quot;</span></span><br><span class="line">        <span class="keyword">val</span> ROOT_SCOPE_QUALIFIER = _q(ROOT_SCOPE_ID)</span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">rootDefinition</span><span class="params">()</span></span> = ScopeDefinition(ROOT_SCOPE_QUALIFIER, isRoot = <span class="literal">true</span>)</span><br><span class="line">    &#125;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">_q</span><span class="params">(name: <span class="type">String</span>)</span></span> = StringQualifier(name)</span><br><span class="line"></span><br><span class="line"><span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">StringQualifier</span></span>(<span class="keyword">override</span> <span class="keyword">val</span> value: QualifierValue) : Qualifier &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">toString</span><span class="params">()</span></span>: String &#123;</span><br><span class="line">        <span class="keyword">return</span> value</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建了一个ScopeDefinition对象，名字叫<code>-Root-</code>，</li>
+<li>把Root ScopeDefinition存储到 _scopeDefinitions 这个map中。</li>
+<li>把Root ScopeDefinition存储到 _rootScopeDefinition 变量中。</li>
+</ul>
+<p>也就是把RootScope和普通的Scope分开存储，为什么要分开存储呢？</p>
+<p>到后面才知道，因为如果规定对象是在某一个作用域Scope下面，那么这个对象的存储都放在Scope对象里管理，但是没有声明Scope的对象，那么它其实也可以被一个默认的Scope管理，这样代码就统一了，不用多写重复的逻辑，这就是Root Scope。</p>
+<h2 id="KoinContextHandler-start-koinApplication-做了什么？"><a href="#KoinContextHandler-start-koinApplication-做了什么？" class="headerlink" title="KoinContextHandler.start(koinApplication)做了什么？"></a>KoinContextHandler.start(koinApplication)做了什么？</h2><p>根据上面KoinContextHandler和GlobalContext源码，就是把koinApplication对象里的Koin对象保存在GlobalContext的_koin属性里。</p>
+<h2 id="appDeclaration-koinApplication-做了什么？"><a href="#appDeclaration-koinApplication-做了什么？" class="headerlink" title="appDeclaration(koinApplication)做了什么？"></a>appDeclaration(koinApplication)做了什么？</h2><p>appDeclaration就是调用startKoin方法时传的大括号lambda表达式，koinApplication对象是lambda表达式的接受者。</p>
+<p>就是执行大括号内部的逻辑，在上面的例子就是执行：</p>
+<ul>
+<li>KoinApplication.androidContext(this@MyApplication)</li>
+<li>KoinApplication.modules(myAppModules)</li>
+</ul>
+<h2 id="koinApplication-createEagerInstances-做了什么？"><a href="#koinApplication-createEagerInstances-做了什么？" class="headerlink" title="koinApplication.createEagerInstances()做了什么？"></a>koinApplication.createEagerInstances()做了什么？</h2><p>结论：</p>
+<ul>
+<li>立刻创建Root Scope下在Module中声明了isCreatedAtStart = true的并且要保持单例的对象。</li>
+</ul>
+<p>内部调用了Koin的createEagerInstances()：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="function"><span class="keyword">fun</span> <span class="title">createEagerInstances</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    createContextIfNeeded()  </span><br><span class="line">    _scopeRegistry.rootScope.createEagerInstances()  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">internal</span> <span class="function"><span class="keyword">fun</span> <span class="title">createContextIfNeeded</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    <span class="keyword">if</span> (_scopeRegistry._rootScope == <span class="literal">null</span>) &#123;  </span><br><span class="line">        _scopeRegistry.createRootScope()  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ScopeRegistry-createRootScope"><a href="#ScopeRegistry-createRootScope" class="headerlink" title="ScopeRegistry.createRootScope()"></a>ScopeRegistry.createRootScope()</h3><p>刚开始_scopeRegistry._rootScope是为null的，所以会执行_scopeRegistry.createRootScope()：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="function"><span class="keyword">fun</span> <span class="title">createRootScope</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (_rootScope == <span class="literal">null</span>) &#123;</span><br><span class="line">        _rootScope =</span><br><span class="line">            createScope(ScopeDefinition.ROOT_SCOPE_ID, ScopeDefinition.ROOT_SCOPE_QUALIFIER, <span class="literal">null</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">createScope</span><span class="params">(scopeId: <span class="type">ScopeID</span>, qualifier: <span class="type">Qualifier</span>, source: <span class="type">Any</span>? = <span class="literal">null</span>)</span></span>: Scope &#123;</span><br><span class="line">    <span class="keyword">if</span> (scopes.contains(scopeId)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> ScopeAlreadyCreatedException(<span class="string">&quot;Scope with id &#x27;<span class="variable">$scopeId</span>&#x27; is already created&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> scopeDefinition = scopeDefinitions[qualifier.value]</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">if</span> (scopeDefinition != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">val</span> createdScope: Scope = createScope(scopeId, scopeDefinition, source)</span><br><span class="line">        _scopes[scopeId] = createdScope</span><br><span class="line">        createdScope</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> NoScopeDefFoundException(<span class="string">&quot;No Scope Definition found for qualifer &#x27;<span class="subst">$&#123;qualifier.value&#125;</span>&#x27;&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> _scopeDefinitions = HashMap&lt;QualifierValue, ScopeDefinition&gt;()</span><br><span class="line"><span class="keyword">val</span> scopeDefinitions: Map&lt;QualifierValue, ScopeDefinition&gt;</span><br><span class="line">        <span class="keyword">get</span>() = _scopeDefinitions</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">createScope</span><span class="params">(scopeId: <span class="type">ScopeID</span>, scopeDefinition: <span class="type">ScopeDefinition</span>, source: <span class="type">Any</span>?)</span></span>: Scope &#123;</span><br><span class="line">    <span class="keyword">val</span> scope = Scope(scopeId, scopeDefinition, _koin, source)</span><br><span class="line">    <span class="keyword">val</span> links = _rootScope?.let &#123; listOf(it) &#125; ?: emptyList()</span><br><span class="line">    scope.create(links)</span><br><span class="line">    <span class="keyword">return</span> scope</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>从ScopeRegistry的_scopeDefinitions这个Map中，取出之前创建过的Root ScopeDefinition对象。</li>
+<li>创建Scope对象，把ScopeDefinition对象通过Scope构造函数传入。</li>
+<li>调用scope.create(links)</li>
+</ul>
+<p>links这里是做什么的暂时不管，因为不是主线。</p>
+<p>Scope对象内部逻辑，之后再梳理，会比较连贯，这里先不具体分析。</p>
+<h3 id="Scope-createEagerInstances"><a href="#Scope-createEagerInstances" class="headerlink" title="Scope.createEagerInstances()"></a>Scope.createEagerInstances()</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="function"><span class="keyword">fun</span> <span class="title">createEagerInstances</span><span class="params">()</span></span> &#123;</span><br><span class="line">    instances.values.filterIsInstance&lt;SingleInstanceFactory&lt;*&gt;&gt;()</span><br><span class="line">            .filter &#123; instance -&gt; instance.beanDefinition.options.isCreatedAtStart &#125;</span><br><span class="line">            .forEach &#123; instance -&gt;</span><br><span class="line">                instance.<span class="keyword">get</span>(</span><br><span class="line">                        InstanceContext(_koin, _scope)</span><br><span class="line">                )</span><br><span class="line">            &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段代码要到完全解析Scope源码的时候才能看懂。</p>
+<p>简单的结论就是：<br>如果对象声明的时候标记了isCreatedAtStart = true，并且是要求单例，就创建它。</p>
+<p>也就是说进可能早的去创建对象，而不是用到时延迟创建。</p>
+<p>为什么会有这个需求？</p>
+<p>因为可能需要在App启动时触发某些逻辑的运行。</p>
+<h1 id="Koin总结"><a href="#Koin总结" class="headerlink" title="Koin总结"></a>Koin总结</h1>
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Koin%202.1.6%20%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/" title="依赖注入 - Koin 2.1.6 源码浅析">http://rickyqliu.github.io/源码分析/依赖注入 - Koin 2.1.6 源码浅析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag"># 源码分析</a>
+              <a href="/tags/Dagger2/" rel="tag"># Dagger2</a>
+              <a href="/tags/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5/" rel="tag"># 依赖注入</a>
+              <a href="/tags/Koin/" rel="tag"># Koin</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Android/LeakCanary%E6%B5%85%E6%9E%90/" rel="prev" title="内存泄漏检测 - LeakCanary浅析">
+      <i class="fa fa-chevron-left"></i> 内存泄漏检测 - LeakCanary浅析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/LeetCode/LeetCode.343.%E6%95%B4%E6%95%B0%E6%8B%86%E5%88%86%EF%BC%88%E4%B8%AD%E7%AD%89%EF%BC%89/" rel="next" title="LeetCode.343.整数拆分（中等）">
+      LeetCode.343.整数拆分（中等） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Dagger2-%E7%BC%BA%E7%82%B9"><span class="nav-number">1.</span> <span class="nav-text">Dagger2 缺点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Koin-%E4%BC%98%E5%8A%BF"><span class="nav-number">2.</span> <span class="nav-text">Koin 优势</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Koin%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">Koin基本原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E8%8E%B7%E5%8F%96Koin%E4%B8%AD%E6%8C%82%E8%BD%BD%E7%9A%84%E5%AF%B9%E8%B1%A1%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">怎么获取Koin中挂载的对象？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Koin%E9%A1%B9%E7%9B%AE%E5%9C%B0%E5%9D%80"><span class="nav-number">5.</span> <span class="nav-text">Koin项目地址</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Koin%E7%9A%84%E5%85%A5%E5%8F%A3%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">Koin的入口在哪？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#startKoin-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">7.</span> <span class="nav-text">startKoin()做了什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#KoinAppDeclaration%E6%98%AF%E5%81%9A%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F"><span class="nav-number">7.1.</span> <span class="nav-text">KoinAppDeclaration是做什么的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KoinContext-%E6%98%AF%E5%81%9A%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F"><span class="nav-number">7.2.</span> <span class="nav-text">KoinContext 是做什么的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KoinContextHandler-register-koinContext-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">7.3.</span> <span class="nav-text">KoinContextHandler.register(koinContext) 做了什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KoinApplication-init-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">7.4.</span> <span class="nav-text">KoinApplication.init() 做了什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#KoinApplication%E7%9A%84init%E5%AE%9E%E4%BE%8B%E6%96%B9%E6%B3%95%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">7.4.1.</span> <span class="nav-text">KoinApplication的init实例方法做了什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Koin-scopeRegistry%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F"><span class="nav-number">7.4.1.1.</span> <span class="nav-text">Koin._scopeRegistry是干什么的？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ScopeRegistry-createRootScopeDefinition-%E5%B9%B2%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">7.4.1.2.</span> <span class="nav-text">ScopeRegistry.createRootScopeDefinition()干了什么？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KoinContextHandler-start-koinApplication-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">7.5.</span> <span class="nav-text">KoinContextHandler.start(koinApplication)做了什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#appDeclaration-koinApplication-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">7.6.</span> <span class="nav-text">appDeclaration(koinApplication)做了什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#koinApplication-createEagerInstances-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">7.7.</span> <span class="nav-text">koinApplication.createEagerInstances()做了什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ScopeRegistry-createRootScope"><span class="nav-number">7.7.1.</span> <span class="nav-text">ScopeRegistry.createRootScope()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Scope-createEagerInstances"><span class="nav-number">7.7.2.</span> <span class="nav-text">Scope.createEagerInstances()</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Koin%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">Koin总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">Follow your heart</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">190</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">258</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu-blog.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Koin%202.1.6%20%E6%BA%90%E7%A0%81%E6%B5%85%E6%9E%90/";
+    this.page.identifier = "源码分析/依赖注入 - Koin 2.1.6 源码浅析/";
+    this.page.title = "依赖注入 - Koin 2.1.6 源码浅析";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu-blog.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

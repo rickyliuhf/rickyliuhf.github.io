@@ -186,6 +186,110 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanary%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanary%E6%B5%85%E6%9E%90/" class="post-title-link" itemprop="url">卡顿检测 - BlockCanary浅析</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-15 21:32:00" itemprop="dateCreated datePublished" datetime="2019-08-15T21:32:00+08:00">2019-08-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanary%E6%B5%85%E6%9E%90/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="源码分析/卡顿检测 - BlockCanary浅析/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="BlockCanary检测卡顿基本原理"><a href="#BlockCanary检测卡顿基本原理" class="headerlink" title="BlockCanary检测卡顿基本原理"></a>BlockCanary检测卡顿基本原理</h1><ul>
+<li>利用Looper.setMessageLogging()设置自定义的Printer。</li>
+<li>主Handler一条消息处理前后会分别调用Printer的方法。</li>
+<li>在消息处理前做线程堆栈采样，消息处理完时结束采样。</li>
+<li>如果一条消息处理时间过长，就认为是卡顿，上报采样结果</li>
+</ul>
+<h1 id="BlockCanary缺点？"><a href="#BlockCanary缺点？" class="headerlink" title="BlockCanary缺点？"></a>BlockCanary缺点？</h1><ul>
+<li>采样数据占用一定CPU资源。</li>
+<li>采样的堆栈并不准确，有可能遗漏真正发生卡顿的代码堆栈。</li>
+</ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8D%A1%E9%A1%BF%E6%A3%80%E6%B5%8B%20-%20BlockCanary%E6%B5%85%E6%9E%90/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/ASM%E5%AD%97%E8%8A%82%E7%A0%81%E6%8F%92%E6%A1%A9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +321,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -454,7 +558,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -566,7 +670,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -702,7 +806,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -957,7 +1061,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1072,7 +1176,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1187,7 +1291,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1367,7 +1471,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1468,7 +1572,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 19:03:19" itemprop="dateModified" datetime="2021-09-04T19:03:19+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1579,134 +1683,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Kotlin/Gson%E5%9C%A8Kotlin%E4%B8%8B%E7%9A%84%E5%B4%A9%E6%BA%83/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Kotlin/Gson%E5%9C%A8Kotlin%E4%B8%8B%E7%9A%84%E5%B4%A9%E6%BA%83/" class="post-title-link" itemprop="url">Gson在Kotlin下的崩溃</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-03-12 20:13:00" itemprop="dateCreated datePublished" datetime="2019-03-12T20:13:00+08:00">2019-03-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 14:11:19" itemprop="dateModified" datetime="2021-09-04T14:11:19+08:00">2021-09-04</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Kotlin/" itemprop="url" rel="index"><span itemprop="name">Kotlin</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Kotlin/Gson%E5%9C%A8Kotlin%E4%B8%8B%E7%9A%84%E5%B4%A9%E6%BA%83/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Kotlin/Gson在Kotlin下的崩溃/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Gson解析在Kotlin下有什么问题？"><a href="#Gson解析在Kotlin下有什么问题？" class="headerlink" title="Gson解析在Kotlin下有什么问题？"></a>Gson解析在Kotlin下有什么问题？</h1><p>忽略了data class的null safty检查和默认值。</p>
-<h1 id="为什么Gson会忽略data-class的null-safty检查和默认值？"><a href="#为什么Gson会忽略data-class的null-safty检查和默认值？" class="headerlink" title="为什么Gson会忽略data class的null safty检查和默认值？"></a>为什么Gson会忽略data class的null safty检查和默认值？</h1><p>在Gson的ReflectiveTypeAdapterFactory中调用了ConstructorConstructor.get()。</p>
-<p>在这里Gson 实例化对象分为四种情况：</p>
-<ol>
-<li> 使用我们自定义的 InstanceCreator，可以在初始化时加入它；</li>
-<li> 使用默认构造器，也就是无参构造函数；</li>
-<li> 如果是 Collection 或 Map，则返回对应的对象；</li>
-<li> 使用 UnSafe。</li>
-</ol>
-<p>如果没有无参构造函数就用UnSafe去构造对象。</p>
-<p>UnSafe去构造对象，会绕过构造函数，只会在堆中去分配一个对象实例。</p>
-<p>如果仅对data class的部分字段设置了默认值，而不是所有字段设置默认，是不会生成无参构造函数的。</p>
-<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>想办法提供一个无参构造函数。</p>
-<ol>
-<li> 构造函数中的所有变量都设置默认值</li>
-<li> 手动写一个无参构造函数。</li>
-<li> 字段声明在类的内部，就会自动无参构造函数了。</li>
-</ol>
-<p>改写data class不太合适，这样的方式不够自动化，无法做出客观的保证。</p>
-<p>最好的方式是对Gson做改进，因为引入新的库可能所有序列化的地方都要改。</p>
-<p>有哪些库解析data class没有问题？<br>moshi和kotlinx.serialization。</p>
-<p>moshi的解决方案有两种：</p>
-<ul>
-<li>引入kotlin反射库，包体积会增大2.5MB。</li>
-<li>编译时通过注解处理器为每个data class生成JsonAdapter去解析Json数据。</li>
-</ul>
-<p>kotlinx.serialization解决方案：</p>
-<ul>
-<li>通过在data class上添加注解，编译时通过注解处理器来处理。</li>
-</ul>
-<p>Gson可以解决这些问题吗？<br>可以把moshi的解决方案在gson里实现一下是比较适合的，改造需要动用不少代码。如果改动太大就是直接用moshi了。</p>
-<p>Moshi 和 Kotlin.serialization 的对比：</p>
-<p>两者对 Kotlin 的支持差异不大。</p>
-<ol>
-<li> KS 的优势是支持 Kotlin 的 Multiplatform，对于需要多平台移植的 Kotlin 代码，使用 KS 更合适，但不兼容Java。</li>
-<li> Moshi 的优势是兼容 Java 。</li>
-</ol>
-<p>所以如果是 Kotlin 与 Java 混编，考虑使用 Moshi。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903704278073357">新一代Json解析库Moshi使用及原理解析（性能對比，源码解析）</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1778,7 +1754,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">189</span>
+          <span class="site-state-item-count">190</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1791,7 +1767,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">257</span>
+        <span class="site-state-item-count">258</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
