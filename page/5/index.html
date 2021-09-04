@@ -217,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -323,7 +323,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -420,7 +420,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -517,7 +517,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -620,7 +620,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -716,7 +716,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -762,17 +762,17 @@
 </li>
 </ol>
 <h1 id="Koin-优势"><a href="#Koin-优势" class="headerlink" title="Koin 优势"></a>Koin 优势</h1><ol>
-<li>概念很少，最核心就是理解Scope一个概念，其他看看源码就马上能懂。</li>
-<li>在kotlin语法下（如扩展、委托），API使用非常简洁友好。</li>
-<li>无反射，无运行时性能损耗。配合Kotlin内联，尽可能降低库的API带来的运行时性能损失。</li>
-<li>没有辅助代码生成，纯粹在代码层配置，所以不会增长编译时间，不会增大APK体积。</li>
+<li>开发者需要理解的概念很少，最核心就是理解Scope一个概念，其他看看文档个和源码可以秒懂。</li>
+<li>在kotlin语法下（如扩展、委托），API极度简洁、无感、易用。</li>
+<li>无反射，无运行时性能损耗。</li>
+<li>没有辅助代码生成，纯粹在代码层做配置，所以不会增长编译时间，不会增大APK体积。</li>
 </ol>
 <h1 id="Koin基本原理"><a href="#Koin基本原理" class="headerlink" title="Koin基本原理"></a>Koin基本原理</h1><ul>
-<li>一个Module包含多个对象：要注入的对象都定义在Module对象中。</li>
-<li>一个Scope包含多个Module：所有的Module对象都存储在一个个的Scope对象里。</li>
-<li>一个Koin包含多个Scope：所有的Scope都存储在一个Koin对象里。</li>
-<li>Koin对象就是一个容器，可以保持一个单例，也可以创建多个实例。</li>
-<li>获取对象，就是获取想要的容器里的Scope，然后调用Scope的get()方法即可。</li>
+<li>要注入的对象都定义在Module对象中，一个Module包含多个对象。</li>
+<li>Module对象都存储在一个的Scope对象里，一个Scope包含多个Module实例。</li>
+<li>所有的Scope都存储在一个Koin对象里，一个Koin包含多个Scope实例。</li>
+<li>Koin对象就是一个容器，可以保持一个单例，也可以创建多个Koin实例。</li>
+<li>获取要注入的对象，先获取容器，再查找目标Scope，最后调用Scope的get()方法获取对象。</li>
 <li>通过Kotlin的委托、扩展、DSL等语法，可以把对象的注入获取封装成简洁、无感知的形式。</li>
 </ul>
           <!--noindex-->
@@ -832,7 +832,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1032,7 +1032,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1128,7 +1128,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1224,7 +1224,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-04 22:30:03" itemprop="dateModified" datetime="2021-09-04T22:30:03+08:00">2021-09-04</time>
+                <time title="修改时间：2021-09-04 22:57:16" itemprop="dateModified" datetime="2021-09-04T22:57:16+08:00">2021-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
