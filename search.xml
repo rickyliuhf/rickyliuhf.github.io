@@ -6605,6 +6605,177 @@
       </tags>
   </entry>
   <entry>
+    <title>Okhttp 原理纪要</title>
+    <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okhttp%20%E5%8E%9F%E7%90%86%E7%BA%AA%E8%A6%81/</url>
+    <content><![CDATA[<h1 id="okhttp解决了什么问题？优势在哪？"><a href="#okhttp解决了什么问题？优势在哪？" class="headerlink" title="okhttp解决了什么问题？优势在哪？"></a>okhttp解决了什么问题？优势在哪？</h1><p>官网说法：</p>
+<ol>
+<li> 支持HTTP/2，允许所有相同host的请求复用一个socket。</li>
+<li> 连接池降低请求延迟（如果HTTP/2不可用）。</li>
+<li> 透明的GZIP支持，压缩下载体积。</li>
+<li> 支持响应体的缓存，避免重复请求。</li>
+</ol>
+<p>除此之外：</p>
+<ul>
+<li>支持部分异常情况重试请求，支持HTTP协议的重定向（OkHttp在网络不良的情况下，他能够静默从常见连接问题中恢复，支持多IP自动重试等）。</li>
+<li>检验了很多非法的细节处理。</li>
+<li>支持DNS 扩展。</li>
+</ul>
+<h1 id="http2多路复用机制是怎么回事？"><a href="#http2多路复用机制是怎么回事？" class="headerlink" title="http2多路复用机制是怎么回事？"></a>http2多路复用机制是怎么回事？</h1><p>http1的请求存在对头阻塞的问题，因为http请求没有编号，只能顺序的等待响应后，才好发送第二个请求，如果同时发送多个http请求，没有编号的情况下，每个请求处理速度不一样，返回顺序不一样，就不知道响应对应的是哪个请求了，只能顺序等待。</p>
+<p>http2对http请求做了报文分片，给每个分片编号了，可以理解tcp层的报文编号机制，在http层又实现了一下，这样就可以同时发送多个http请求，不用串行做http请求了。速度当然提升了。</p>
+<h1 id="一个OkHttp请求和响应的的过程？"><a href="#一个OkHttp请求和响应的的过程？" class="headerlink" title="一个OkHttp请求和响应的的过程？"></a>一个OkHttp请求和响应的的过程？</h1><p>Okhttp的整个请求与响应的流程就是Dispatcher不断从Request Queue里取出请求（Call），根据是否已经存存缓存，从内存缓存或者服务器获取请求的数据。</p>
+<p>请求分为同步和异步两种：</p>
+<ol>
+<li> 同步请求通过 调用Call.exectute()方法直接返回当前请求的Response</li>
+<li> 异步请求调用Call.enqueue()方法将请求（AsyncCall）添加到请求队列中去，并通过回调（Callback）获取服务器返回的结果。</li>
+</ol>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210905152314.png"></p>
+<p>请求用一个RealCall对象表示。</p>
+<p>同步请求</p>
+<p>调用client.dispatcher().executed(this);做请求，把RealCall对象添加到Dispatcher的runningSyncCalls双端队列里去</p>
+<p>调用getResponseWithInterceptorChain();，内部调用chain.proceed(originalRequest);获取响应结果</p>
+<p>异步请求  比同步请求多一个Callback</p>
+<p>请求会调用client.dispatcher().enqueue(new AsyncCall(responseCallback));</p>
+<p>创建一个AsyncCall封装一下Callback对象，然后放入Dispatcher的任务队列，分两种情况：</p>
+<p>如果正在运行的异步请求不超过64，而且同一个host下的异步请求不得超过5个则将请求添加到正在运行的同步请求队列中runningAsyncCalls并开始 执行请求，否则就添加到readyAsyncCalls继续等待。</p>
+<p>线程池执行的时候会调用AsyncCall的run()，再执行execute()，再执行getResponseWithInterceptorChain()。</p>
+<p>getResponseWithInterceptorChain()做了什么？</p>
+<p>通过责任链，先执行自定义的拦截器，再执行OkHttp内部的各个拦截器，包括重定向、缓存、连接、获取响应。</p>
+<h1 id="Dispatcher机制"><a href="#Dispatcher机制" class="headerlink" title="Dispatcher机制"></a>Dispatcher机制</h1><p>Dispatcher是一个任务调度器，它内部维护了三个双端队列：</p>
+<ol>
+<li> readyAsyncCalls：准备运行的异步请求</li>
+<li> runningAsyncCalls：正在运行的异步请求</li>
+<li> runningSyncCalls：正在运行的同步请求</li>
+</ol>
+<p>同步请求：直接把请求添加到正在运行的同步请求队列runningSyncCalls中</p>
+<p>异步请求会做个判断：</p>
+<p>如果正在运行的异步请求不超过64，而且同一个host下的异步请求不得超过5个则将请求添加到正在运行的同步请求队列中runningAsyncCalls并开始 执行请求，否则就添加到readyAsyncCalls继续等待。</p>
+<h2 id="为什么队列都用ArrayDeque，不用LinkedList"><a href="#为什么队列都用ArrayDeque，不用LinkedList" class="headerlink" title="为什么队列都用ArrayDeque，不用LinkedList?"></a>为什么队列都用ArrayDeque，不用LinkedList?</h2><p>ArrayDeque对局部性原理友好，数组存储的数据在物理内存上是连续的</p>
+<p>LinkedList在物理内存上是不连续的</p>
+<h2 id="Dispatcher中的线程池是什么？"><a href="#Dispatcher中的线程池是什么？" class="headerlink" title="Dispatcher中的线程池是什么？"></a>Dispatcher中的线程池是什么？</h2><p><code>new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS, new SynchronousQueue&lt;Runnable&gt;(), Util.threadFactory(&quot;OkHttp Dispatcher&quot;, false));</code></p>
+<p>特点：</p>
+<ol>
+<li> 无核心线程，创建的线程会保活60秒</li>
+<li>只要线程池提交了任务，就立刻执行<ol>
+<li> 有空闲存活的线程就用空闲线程执行</li>
+<li> 没有就创建新的线程执行，执行完任务后等待60秒再销毁</li>
+</ol>
+</li>
+</ol>
+<h2 id="为什么异步请求要限制一个数量？"><a href="#为什么异步请求要限制一个数量？" class="headerlink" title="为什么异步请求要限制一个数量？"></a>为什么异步请求要限制一个数量？</h2><p>异步请求每个请求都会开一个线程，创建一个线程是要消耗内存的，虚拟机栈和本地方法栈会占用1到2MB，创建过多的线程可能会引发内存溢出。所以多余的请求应该放到等待队列里。</p>
+<h2 id="为什么是64个？"><a href="#为什么是64个？" class="headerlink" title="为什么是64个？"></a>为什么是64个？</h2><p>参考：<br><a href="https://github.com/square/okhttp/issues/4354">https://github.com/square/okhttp/issues/4354</a></p>
+<h2 id="为什么要限制同一个host下的异步请求数量不得超过5个？"><a href="#为什么要限制同一个host下的异步请求数量不得超过5个？" class="headerlink" title="为什么要限制同一个host下的异步请求数量不得超过5个？"></a>为什么要限制同一个host下的异步请求数量不得超过5个？</h2><p>防止其他host下的请求得不到响应，让每个host都有机会获得执行</p>
+<h1 id="重定向与重试"><a href="#重定向与重试" class="headerlink" title="重定向与重试"></a>重定向与重试</h1><p>Okhttp对重定向和重新请求这块是怎么优化的？</p>
+<p>RetryAndFollowUpInterceptor里处理请求时，用一个无限循环来执行请求。</p>
+<p>请求失败，符合重新请求的请求，就会重新执行请求，最多重新请求20次。</p>
+<ol>
+<li> 当抛出RouteException或者发生IOException时，拦截器会根据用户的设置和异常分析，决定当前请求是否可以重连</li>
+<li> 当发送网络请求完成并获取到Response后，对响应码进行判断是否需要身份验证、重定向、是否超时，如果需要就构建新的Request重新发起请求</li>
+</ol>
+<p>RetryAndFollowUpInterceptor优势：</p>
+<p>对各种通用细节情况做了处理，还是比较方便的，直接拿来用还是比较好的</p>
+<p>比如：</p>
+<ol>
+<li> 抛异常对连接池做了释放</li>
+<li> 重定向，发现Location头部指定的值不是http协议，就不支持重定向</li>
+</ol>
+<p>这里有两种需要重新请求的情况</p>
+<ol>
+<li> 网络请求失败抛出了异常，有些异常不是致命的，比如SocketTimeoutException这类的超时，是可以重试的</li>
+<li>网络请求完成了，但并不说明这个请求是成功的，需要通过followUpRequest方法对响应码进行判断，是否需要进行身份验证或者重定向，如果需要就构建新的Request，如下：<ol>
+<li> 407/401：未进行身份认证，需要对请求头进行处理后再发起新的请求</li>
+<li> 408：客户端请求超时，如果 Request 的请求体没有被 UnrepeatableRequestBody 标记，会继续发起新的请求</li>
+<li> 308/307/303/302/301/300：需要进行重定向，发起新的请求</li>
+</ol>
+</li>
+</ol>
+<p>抛出异常，则检测连接是否还可以继续，以下情况不会重试：</p>
+<ol>
+<li> OkHttpClient里配置请求出错不可以再重试</li>
+<li> 出错后，request body不能再次发送（request的body是UnrepeatableRequestBody的子类）</li>
+<li>发生以下致命异常也无法恢复连接：<ol>
+<li> ProtocolException：协议异常</li>
+<li> InterruptedIOException：中断异常</li>
+<li> SSLHandshakeException：SSL握手异常</li>
+<li> SSLPeerUnverifiedException：SSL握手未授权异常</li>
+</ol>
+</li>
+<li> 没有更多线路可以选择（streamAllocation.hasMoreRoutes()为false）</li>
+</ol>
+<p>根据响应码处理请求，返回Request不为空时则进行重定向处理，重定向的次数不能超过20次。</p>
+<p>比如401需要身份认证，调用配置的验证器重新创建一个请求。</p>
+<h2 id="RouteException是怎么抛出来的？"><a href="#RouteException是怎么抛出来的？" class="headerlink" title="RouteException是怎么抛出来的？"></a>RouteException是怎么抛出来的？</h2><p>该异常最终是由RealConnection.connect和StreamAllocation.newStream这两个方法抛出的，而newStream方法又是由ConnectInterceptor的intercept方法内部调用的（newStream方法最终会调用connect方法）；connect()方法是与服务器建立连接，newStream()是获取流，所以在连接拦截器中抛出也是正常的。</p>
+<p>要注意抛出这个异常意味着请求还没有发出去，只在连接阶段出问题了，就是打开Socket失败了，比如连接超时抛出的 SocketTimeoutException，包裹在 RouteException 中。</p>
+<p>RouteException 是 OkHttp 自定义的异常，是一个包裹类，包裹住了建连失败中发生的各种 Exception</p>
+<h1 id="GZIP这块是怎么支持的？"><a href="#GZIP这块是怎么支持的？" class="headerlink" title="GZIP这块是怎么支持的？"></a>GZIP这块是怎么支持的？</h1><p>BridgeInterceptor里支持。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">boolean</span> transparentGzip = <span class="keyword">false</span>;</span><br><span class="line"><span class="keyword">if</span> (userRequest.header(<span class="string">&quot;Accept-Encoding&quot;</span>) == <span class="keyword">null</span> &amp;&amp; userRequest.header(<span class="string">&quot;Range&quot;</span>) == <span class="keyword">null</span>) &#123;</span><br><span class="line">  transparentGzip = <span class="keyword">true</span>;</span><br><span class="line">  requestBuilder.header(<span class="string">&quot;Accept-Encoding&quot;</span>, <span class="string">&quot;gzip&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断服务器是否支持gzip压缩，如果支持，则将压缩提交给Okio库来处理</span></span><br><span class="line"><span class="keyword">if</span> (transparentGzip</span><br><span class="line">    &amp;&amp; <span class="string">&quot;gzip&quot;</span>.equalsIgnoreCase(networkResponse.header(<span class="string">&quot;Content-Encoding&quot;</span>))</span><br><span class="line">    &amp;&amp; HttpHeaders.hasBody(networkResponse)) &#123;</span><br><span class="line">  GzipSource responseBody = <span class="keyword">new</span> GzipSource(networkResponse.body().source());</span><br><span class="line">  Headers strippedHeaders = networkResponse.headers().newBuilder()</span><br><span class="line">      .removeAll(<span class="string">&quot;Content-Encoding&quot;</span>)</span><br><span class="line">      .removeAll(<span class="string">&quot;Content-Length&quot;</span>)</span><br><span class="line">      .build();</span><br><span class="line">  responseBuilder.headers(strippedHeaders);</span><br><span class="line">  responseBuilder.body(<span class="keyword">new</span> RealResponseBody(strippedHeaders, Okio.buffer(responseBody)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h1><h2 id="OKHttp对缓存这一块有什么处理和优化？"><a href="#OKHttp对缓存这一块有什么处理和优化？" class="headerlink" title="OKHttp对缓存这一块有什么处理和优化？"></a>OKHttp对缓存这一块有什么处理和优化？</h2><p>通过CacheInterceptor来支持，对http的缓存机制做出实现，按照http协议的RFC文档标准来实现。</p>
+<p>HTTP的缓存可以分为两种：</p>
+<ul>
+<li>  强制缓存：需要服务端参与判断是否继续使用缓存，当客户端第一次请求数据是，服务端返回了缓存的过期时间（Expires与Cache-Control），没有过期就可以继续使用缓存，否则则不适用，无需再向服务端询问。</li>
+<li>  对比缓存：需要服务端参与判断是否继续使用缓存，当客户端第一次请求数据时，服务端会将缓存标识（Last-Modified/If-Modified-Since与Etag/If-None-Match）与数据一起返回给客户端，客户端将两者都备份到缓存中 ，再次请求数据时，客户端将上次备份的缓存 标识发送给服务端，服务端根据缓存标识进行判断，如果返回304，则表示通知客户端可以继续使用缓存。</li>
+</ul>
+<p>强制缓存优先于对比缓存。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210905152023.png"></p>
+<p>上面提到强制缓存使用的的两个标识：</p>
+<ul>
+<li>  Expires：Expires的值为服务端返回的到期时间，即下一次请求时，请求时间小于服务端返回的到期时间，直接使用缓存数据。到期时间是服务端生成的，客户端和服务端的时间可能有误差。</li>
+<li>  Cache-Control：Expires有个时间校验的问题，所有HTTP1.1采用Cache-Control替代Expires。</li>
+</ul>
+<p>Cache-Control的取值有以下几种：</p>
+<ul>
+<li>  private: 客户端可以缓存。</li>
+<li>  public: 客户端和代理服务器都可缓存。</li>
+<li>  max-age=xxx: 缓存的内容将在 xxx 秒后失效</li>
+<li>  no-cache: 需要使用对比缓存来验证缓存数据。</li>
+<li>  no-store: 所有内容都不会缓存，强制缓存，对比缓存都不会触发。</li>
+</ul>
+<p>底层缓存机制是LRU缓存，key是请求中url的md5，value是文件中查询到的缓存</p>
+<p>Okhttp的缓存策略就是根据上述流程图实现的，具体的实现类是CacheStrategy，CacheStrategy的构造函数里有两个参数：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">CacheStrategy(Request networkRequest, Response cacheResponse) &#123;  </span><br><span class="line">	<span class="keyword">this</span>.networkRequest = networkRequest;  </span><br><span class="line">	<span class="keyword">this</span>.cacheResponse = cacheResponse;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这两个参数参数的含义如下：</p>
+<ol>
+<li> networkRequest：网络请求。</li>
+<li> cacheResponse：缓存响应，基于DiskLruCache实现的文件缓存，可以是请求中url的md5，value是文件中查询到的缓存，这个我们下面会说。</li>
+</ol>
+<p>CacheStrategy就是利用这两个参数生成最终的策略，有点像map操作，将networkRequest与cacheResponse这两个值输入，处理之后再将这两个值输出，们的组合结果如下所示：</p>
+<ol>
+<li> 如果networkRequest为null，cacheResponse为null：only-if-cached(表明不进行网络请求，且缓存不存在或者过期，一定会返回503错误)。</li>
+<li> 如果networkRequest为null，cacheResponse为non-null：不进行网络请求，而且缓存可以使用，直接返回缓存，不用请求网络。</li>
+<li> 如果networkRequest为non-null，cacheResponse为null：需要进行网络请求，而且缓存不存在或者过期，直接访问网络。</li>
+<li> 如果networkRequest为non-null，cacheResponse为non-null：Header中含有ETag/Last-Modified标签，需要在条件请求下使用，还是需要访问网络。</li>
+</ol>
+<h1 id="连接池"><a href="#连接池" class="headerlink" title="连接池"></a>连接池</h1><h2 id="OKHttp对TCP连接这块有什么优化？具体怎么实现的？"><a href="#OKHttp对TCP连接这块有什么优化？具体怎么实现的？" class="headerlink" title="OKHttp对TCP连接这块有什么优化？具体怎么实现的？"></a>OKHttp对TCP连接这块有什么优化？具体怎么实现的？</h2><p>连接池复用</p>
+<p>每次网络请求都会创建一个StreamAllocation，代表一个请求。</p>
+<p>会先去ConnectionPool连接池寻找有没有可用的Connection，有就直接用</p>
+<h3 id="怎么判断一个Connection可不可以用？"><a href="#怎么判断一个Connection可不可以用？" class="headerlink" title="怎么判断一个Connection可不可以用？"></a>怎么判断一个Connection可不可以用？</h3><p>连接里没有正在运行的请求，也就是看RealConnection里有没有StreamAllocation对象</p>
+<p>没有就创建一个RealConnection，然后调用connect方法，内部会通过SSLSocketFactory创建一个Socket，调用Socket的connect方法进行TCP+TLS握手。然后把RealConnection放入连接池。</p>
+<p>在RealConnection里有个StreamAllocation虚引用列表，每创建一个StreamAllocation，就会把它添加进该列表中，如果留关闭以后就将StreamAllocation 对象从该列表中移除，正是利用利用这种引用计数的方式判定一个连接是否为空闲连接，</p>
+<h3 id="连接池里的连接什么时候清理？"><a href="#连接池里的连接什么时候清理？" class="headerlink" title="连接池里的连接什么时候清理？"></a>连接池里的连接什么时候清理？</h3><p>在第一次往ConnectionPool添加Connection的时候，就用线程池启动一个线程执行一个清理任务，任务是无限循环的。</p>
+<p>规定的是连接池最多保 持5个地址的连接能够keep-alive，每个keep-alive时长为5分钟，如果发现当前空闲的连接数大于5个，就会清理掉空闲的一个连接。</p>
+<p>每个Connection连接对象里会存一个StreamAllocation的弱引用，通过判断这个引用的个数来判断当前连接是否有正在执行的请求，http1协议下一个连接只有一个请求，http2中一个连接有多个请求。</p>
+<p>如果一个Connection连接对象里没有StreamAllocation的引用了，就会记录一个空闲的时间戳，在清理连接的线程中会判断Connection的空闲时间是否超过最大空闲时间，超过了就回收，没超过计算一个要等待的时间，然后通过synchronize加锁，再调用锁对象的wait()方法等待一段时间。</p>
+<p>如果不存在空闲连接就结束清理线程，等到有新的连接放入连接池，再启动清理线程。</p>
+<h1 id="Okhttp底层如何建立连接的？"><a href="#Okhttp底层如何建立连接的？" class="headerlink" title="Okhttp底层如何建立连接的？"></a>Okhttp底层如何建立连接的？</h1><p>通过Socket的connect()方法做TCP和TLS握手。</p>
+<p>通过Okio的Source和Sink对Socket的输入输出流做代理。</p>
+<p>发送请求就是往Socket的outputStream写入数据，读响应结果就是从Socket的inputStream读入数据</p>
+<p>Okio自己实现的缓存共享机制，可以避免在读输入流然后写输出流时的一次中间拷贝，因为常规读入输入流会读到一个字节数组里，再从字节数组写入到输出流。</p>
+<h1 id="OkHttp对DNS这块有什么优化吗？"><a href="#OkHttp对DNS这块有什么优化吗？" class="headerlink" title="OkHttp对DNS这块有什么优化吗？"></a>OkHttp对DNS这块有什么优化吗？</h1><p>提供DNS接口，可以自定义域名解析。</p>
+<p>默认用InetAddress.getAllByName()做域名解析。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a href="https://github.com/sucese/android-open-framework-analysis/blob/master/doc/Android%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E6%BA%90%E7%A0%81%E9%89%B4%E8%B5%8F%EF%BC%9AOkhttp.md">OkHttp源码鉴赏</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>源码分析</category>
+      </categories>
+      <tags>
+        <tag>源码分析</tag>
+        <tag>Okhttp</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Okio解决了什么？</title>
     <url>/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okio%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/</url>
     <content><![CDATA[<h1 id="传统Blocking-IO存在什么问题？"><a href="#传统Blocking-IO存在什么问题？" class="headerlink" title="传统Blocking IO存在什么问题？"></a>传统Blocking IO存在什么问题？</h1><p>传统BIO不管是读入还是写出，缓冲区的存在必然涉及copy的过程，而如果涉及双流操作，比如从一个输入流读入，再写入到一个输出流，那么这种情况下，在缓冲存在的情况下，数据走向是：</p>
