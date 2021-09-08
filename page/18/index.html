@@ -186,6 +186,122 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/" class="post-title-link" itemprop="url">Java并发-ReadWriteLock、StampedLock</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-17 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-17T20:00:00+08:00">2017-10-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-ReadWriteLock、StampedLock/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读写锁存在的意义？解决了什么问题？"><a href="#读写锁存在的意义？解决了什么问题？" class="headerlink" title="读写锁存在的意义？解决了什么问题？"></a>读写锁存在的意义？解决了什么问题？</h1><p>synchronzied和ReentraintLock的锁是排他锁，同一时刻只允许一个线程访问同一个资源。</p>
+<p>然而在读多写少的情况下，排他锁会让多个并发的读之间互斥，但多个线程同时读不会影响数据的一致性，写的时候保证获取的是排他锁保证数据一致性即可。</p>
+<p>也就是读与读之间不互斥，写与读、写与写之间互斥。</p>
+<p>这样的话就提高了系统整体的吞吐量。</p>
+<h1 id="ReentraintReadWriteLock实现原理是什么？"><a href="#ReentraintReadWriteLock实现原理是什么？" class="headerlink" title="ReentraintReadWriteLock实现原理是什么？"></a>ReentraintReadWriteLock实现原理是什么？</h1><p>内部有ReadLock和WriteLock两个类，分别实现读锁和写锁。</p>
+<p>两个Lock类里是通过Sync来实现锁的语义，Sync类继承AQS，并且分为非公平实现和公平的实现。</p>
+<p>由于AQS的state是int类型的变量，在内存中占用4个字节，也就是32位。将其拆分为两部分：高16位和低16位，其中高16位用来表示读锁的个数，低16位用来表示写锁重入次数。</p>
+<p>当设置读锁成功时，就将高16位加1，释放读锁时，将高16位减1；当设置写锁成功时，就将低16位加1，释放写锁时，将第16位减1。如下图所示。</p>
+<p>这样读锁和写锁就可以都通过CAS去操作同一个state变量，实现读和写之间的互斥。</p>
+<h1 id="读写锁适用场景？"><a href="#读写锁适用场景？" class="headerlink" title="读写锁适用场景？"></a>读写锁适用场景？</h1><p>读多写少，又需要保持线程安全，可以有效提高吞吐量。</p>
+<h1 id="StampedLock解决了什么问题？"><a href="#StampedLock解决了什么问题？" class="headerlink" title="StampedLock解决了什么问题？"></a>StampedLock解决了什么问题？</h1><p>ReentraintReadWriteLock读写锁在读多写少的情况下，必须要等待所有读锁释放才能获取写锁，可能会导致写饥饿，写可能要等待很久，这是一种悲观的读锁。</p>
+<p>正确的做法应该是，如果检测到有写入，已经获取读锁的线程不应该继续读了，把读锁让出来，给写入线程优先执行，写入完成了再读，这样就不会写饥饿了。</p>
+<p>StampedLock做的就是，先不加锁的读数据，读完了检测一下是否有线程写过数据了，有写过数据则需要重新读最新的数据，并且要加悲观读锁读，以阻止新的写入锁获取，确保读的数据一定是最新修改的。</p>
+<p>更通俗的讲就是在读锁没有释放的时候是可以获取到一个写锁，获取到写锁之后，读锁阻塞，这一点和读写锁一致，唯一的区别在于读写锁不支持在没有释放读锁的时候获取写锁。</p>
+<h1 id="StampedLock如何检测是否有数据写入？"><a href="#StampedLock如何检测是否有数据写入？" class="headerlink" title="StampedLock如何检测是否有数据写入？"></a>StampedLock如何检测是否有数据写入？</h1><p>在第一次读数据之前先从StampedLock获取一个stamp，如果有数据写入，StampedLock里的stamp就会变，然后第一次读数据后，检测stamp变了说明有写入。</p>
+<h1 id="StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？"><a href="#StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？" class="headerlink" title="StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？"></a>StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？</h1><p>确实面临同样的问题，但这种情况发生的概率很小，因为StampedLock使用场景就是读多写少，检测到有写操作后，可以认为大概率之后的一段时间是不会有写操作发生的。</p>
+<h1 id="StampedLock如何解决ABA问题？"><a href="#StampedLock如何解决ABA问题？" class="headerlink" title="StampedLock如何解决ABA问题？"></a>StampedLock如何解决ABA问题？</h1><p>StampedLock用一个long类型的state变量保存锁的状态，其中state的低7位存储读锁的个数，第8位存储写锁的标志，第8位为0表示没有获取到写锁，第8位为1表示已获取到写锁。</p>
+<p>每次获取和释放写锁，都会给state加上1000 0000，也就是在state的第8位上加1，这样在高位就产生了进位，每次获取写锁后state的值都不一样，这样就可以知道发生了ABA。</p>
+<p>long总共有64位，高位一共有64-8=56位，一共可以记录2的55次方种状态。</p>
+<h1 id="StampedLock为什么不设计为可重入？"><a href="#StampedLock为什么不设计为可重入？" class="headerlink" title="StampedLock为什么不设计为可重入？"></a>StampedLock为什么不设计为可重入？</h1><p>StampedLock为了解决ABA问题，state变量低7位记录读锁个数，第8位记录是否获取了写锁，第9位到第64位记录了写锁的状态，没有地方存储写锁的重入次数。</p>
+<p>对比ReentraintReadWriteLock的实现原理，其实也可以在state的高位中划分一部分区域记录写锁的重入次数。</p>
+<h1 id="StampedLock的锁升级是为了解决什么问题？"><a href="#StampedLock的锁升级是为了解决什么问题？" class="headerlink" title="StampedLock的锁升级是为了解决什么问题？"></a>StampedLock的锁升级是为了解决什么问题？</h1><p>有时候写数据只在数据处于特定的条件下才去更改，也就是有可能不修改数据，那如果一开始先获取写锁就会阻碍读锁的获取，吞吐量降低，所以得先获取读锁，判断符合特定条件后，确定需要写入了，再获取写锁，此时就是锁的升级，把读锁释放升级为写锁，前提是当前只有一个读锁；</p>
+<p>如果有多个读锁，升级就失败，转为获取正常的写锁，获取不到就阻塞当前线程。</p>
+<h1 id="StampedLock有什么缺点？"><a href="#StampedLock有什么缺点？" class="headerlink" title="StampedLock有什么缺点？"></a>StampedLock有什么缺点？</h1><ol>
+<li> 不可重入</li>
+<li> 不支持Condition</li>
+<li> 不支持公平竞争</li>
+</ol>
+<p>所以也不能完全替代synchronized和ReentrantLock。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -217,7 +333,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -332,7 +448,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -503,7 +619,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -609,7 +725,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -729,7 +845,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -862,7 +978,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -994,7 +1110,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1101,7 +1217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1200,7 +1316,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
+                <time title="修改时间：2021-09-08 17:40:51" itemprop="dateModified" datetime="2021-09-08T17:40:51+08:00">2021-09-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1298,219 +1414,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E4%BA%8B%E5%8A%A1%E3%80%81%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E3%80%81WAL/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E4%BA%8B%E5%8A%A1%E3%80%81%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E3%80%81WAL/" class="post-title-link" itemprop="url">SQLite事务、回滚日志、WAL</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-03-18 20:56:00" itemprop="dateCreated datePublished" datetime="2017-03-18T20:56:00+08:00">2017-03-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-05 15:24:13" itemprop="dateModified" datetime="2021-09-05T15:24:13+08:00">2021-09-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E4%BA%8B%E5%8A%A1%E3%80%81%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E3%80%81WAL/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="数据库/SQLite事务、回滚日志、WAL/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <span id="more"></span>
-
-<h1 id="事务是什么？"><a href="#事务是什么？" class="headerlink" title="事务是什么？"></a>事务是什么？</h1><p>事务定义了一组数据库操作的边界，这组操作要么全部执行，要么全部不执行，这也是事务的原子性特征</p>
-<h1 id="为什么要发明事务？事务存在的价值是什么？"><a href="#为什么要发明事务？事务存在的价值是什么？" class="headerlink" title="为什么要发明事务？事务存在的价值是什么？"></a>为什么要发明事务？事务存在的价值是什么？</h1><p>在操作数据库的情况下，需要考虑的特别的场景处理特别多，例如并发操作、系统崩溃等，发明事务这个模型，就可以用来简化讨论，把复杂的场景归类为少数的几个特定类型的场景，降低处理成本。</p>
-<p>数据库操作例如增删改查、建立索引、建立约束等。</p>
-<h1 id="事务有哪些特性？"><a href="#事务有哪些特性？" class="headerlink" title="事务有哪些特性？"></a>事务有哪些特性？</h1><p>ACID</p>
-<h2 id="Atomicity-原子性"><a href="#Atomicity-原子性" class="headerlink" title="Atomicity 原子性"></a>Atomicity 原子性</h2><p>事务内的操作要么全部执行，要么全部不执行，不可再拆分</p>
-<h2 id="Consistency-一致性"><a href="#Consistency-一致性" class="headerlink" title="Consistency 一致性"></a>Consistency 一致性</h2><p>保证数据库从一个正确的状态转变到另一个正确的状态，正确的状态指的是当前数据库中的数据都满足预定的约束条件。</p>
-<p>AID是保证一致性的必要条件，但不是充分条件，因为数据库作为通用的技术，不可能知道具体业务场景的正确逻辑，所以正确的逻辑需要由用户决定应该使用怎样的约束</p>
-<h2 id="Isolation-隔离性"><a href="#Isolation-隔离性" class="headerlink" title="Isolation 隔离性"></a>Isolation 隔离性</h2><p>事务的执行不受其他事务的干扰，事务之间的操作只能串行的执行，保证任何事务都不可能读取到其他任何事务内部执行的中间状态，否则会产生数据混乱</p>
-<h2 id="Durability-持久性"><a href="#Durability-持久性" class="headerlink" title="Durability 持久性"></a>Durability 持久性</h2><p>事务一旦提交，它对数据库中的数据改变就是永久性的，接下来的其他操作或故障都不会影响本次事务提交的结果</p>
-<h2 id="事务的原子性是如何实现的？"><a href="#事务的原子性是如何实现的？" class="headerlink" title="事务的原子性是如何实现的？"></a>事务的原子性是如何实现的？</h2><p>SQLite事务的实现是依赖于名为rollback journal文件，借助这个临时文件来完成原子操作和回滚功能。</p>
-<p>回滚日志文件，用于实现数据库的原子提交和回滚。 此文件和数据库文件总是在同一个目录，并且有相同的文件名，但是在文件名中添加了一个-journal 字符串。此文件一般在transaction开始时创建，transaction结束时删除。</p>
-<p>如果系统crash，Rollback journals文件将被保留，下次打开数据库文件时，系统会检查有没有Rollback journals文件存在，如果有就用它来恢复数据库。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828092550.png"></p>
-<h1 id="创建回滚日志详细过程是怎样的？"><a href="#创建回滚日志详细过程是怎样的？" class="headerlink" title="创建回滚日志详细过程是怎样的？"></a>创建回滚日志详细过程是怎样的？</h1><ol>
-<li> 写数据库前获取保留锁</li>
-<li> 创建回滚日志文件，将要修改的页的原始数据写到缓存中</li>
-<li> 在用户空间修改页数据</li>
-<li> 回滚日志的缓存刷盘到回滚日志文件中</li>
-<li> 获取未决锁，等待共享锁都释放后，提升为排它锁</li>
-<li> 将用户空间修改过的数据写入数据库文件，会先写到操作系统的缓存中，再刷盘到磁盘上</li>
-<li> 删除rollback journal文件</li>
-<li> 释放排它锁</li>
-</ol>
-<h2 id="创建rollback-journal-file"><a href="#创建rollback-journal-file" class="headerlink" title="创建rollback journal file"></a>创建rollback journal file</h2><p>将要修改的pages的原始数据写入rollback journal file，以page为单位写入。</p>
-<p>rollback journal file中绿色的部分是header,header中会包括数据库文件的原始大小(即包括多少个page)。每一个page保存到rollback journal中时前边四字节会保存该page的page number。</p>
-<ul>
-<li>  rollback journal创建之后并没有实际落盘,只是保存在操作系统的缓存中</li>
-<li>  rollback journal以page为单位,但每个page前四字节会有一个page number的记录,后四字节有一个checksum</li>
-</ul>
-<h2 id="在用户空间修改数据库文件"><a href="#在用户空间修改数据库文件" class="headerlink" title="在用户空间修改数据库文件"></a>在用户空间修改数据库文件</h2><p>修改用户进程空间内的数据库文件,注意不同的用户进程有自己的私有内存空间,因此此时的修改并不影响其他进程的读取操作。</p>
-<h2 id="将rollback-journal落盘"><a href="#将rollback-journal落盘" class="headerlink" title="将rollback journal落盘"></a>将rollback journal落盘</h2><p>该步骤是保持原子性很关键的一步,保证即使掉电或者操作系统crash,Sqlite也能恢复到原来的状态。</p>
-<p>(进行到该步也能看出reserved lock的作用,这种锁是一个中间状态,既能为即将写入做准备,又不影响其他进程的读取操作,提高并行度)。</p>
-<p>该步需要刷两次盘,第一次将rollback journal的内容刷到磁盘,第二次在header中记录第一步中刷到磁盘的page个数,然后将header刷盘。</p>
-<h2 id="获取排他锁"><a href="#获取排他锁" class="headerlink" title="获取排他锁"></a>获取排他锁</h2><p>在实际写入数据库文件之前,需要获取一个排他锁.获取过程分两步<br>    • 获取一个pending lock<br>    • 将pending lock升级为排他锁<br>获取到pending lock之后,在数据库文件上已经获取到共享锁的进程可以继续读取,但不允许其他进程继续获取共享锁.该锁存在的意义在于防止write starvation(即有大量的读取连接时,一直有新的共享锁产生,导致获取不到排他锁).当所有已经存在的共享锁都释放后,此时该pending lock即可以升级为排他锁。</p>
-<h2 id="写入数据库文件"><a href="#写入数据库文件" class="headerlink" title="写入数据库文件"></a>写入数据库文件</h2><p>获取到排他锁后,说明已经没有其他进程在读取该数据库文件.此时可以安全的写入数据库文件.注意也只是写入操作系统的缓存中,并没有落盘。</p>
-<h2 id="删除rollback-journal"><a href="#删除rollback-journal" class="headerlink" title="删除rollback journal"></a>删除rollback journal</h2><p>因为数据库文件已经安全落盘,此时可以删除掉rollback journal.若删除之前系统crash或者掉电,则重启后会恢复到事务开始前的状态,如果删除之后系统crash或者掉电,因为数据库文件已经落盘,相当于事务已经执行完成.(那么会不会在删除一半时系统crash或者掉电呢?注意上文中关于硬件的一些假设,删除操作必须是原子性的,即不会发生这种情况)</p>
-<p>因为删除一个文件也是一个耗时的操作,因此Sqlite提供了两种方式减少删除过程的耗时.</p>
-<ul>
-<li>  将一个文件truncate为0</li>
-<li>  将journal file header清0.清0操作并不是原子性的,但只要header中有一个byte被清0,该文件就会被识别为无效的格式</li>
-</ul>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.sqlite.org/lockingv3.html#rollback">The Rollback Journal</a></li>
-</ul>
-<h1 id="热日志是什么意思？"><a href="#热日志是什么意思？" class="headerlink" title="热日志是什么意思？"></a>热日志是什么意思？</h1><p>每次打开数据库文件，或者从数据库读取页时，都要简单的做一致性检查。</p>
-<p>如果发现存在回滚日志文件，但是数据库中没有保留锁，那么创建日志文件的肯定崩溃了或者系统死机了，因为正常情况下，获得保留锁后才会创建回滚日志。</p>
-<p>这种情况下日志被称为“热日志”，数据库可能处于不一致的状态（不满足约束条件），要让一切正常需要回滚日志，将数据库还原到初始的被中断的事务之前的状态。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828092653.png"></p>
-<p>参考《SQL权威指南（第2版）》159页  第5章 SQLite设计与概念 - 写事务</p>
-<h1 id="SQLite中事务为什么还要分不同的类型？分别有什么作用？"><a href="#SQLite中事务为什么还要分不同的类型？分别有什么作用？" class="headerlink" title="SQLite中事务为什么还要分不同的类型？分别有什么作用？"></a>SQLite中事务为什么还要分不同的类型？分别有什么作用？</h1><p>是为了解决死锁</p>
-<p>SQLite的事务分为</p>
-<ol>
-<li> deferred</li>
-<li> immediate</li>
-<li> exclusive</li>
-</ol>
-<p>begin [ deferred | immediate | exclusive ] transaction</p>
-<p>deferred</p>
-<ol>
-<li> 未指定事务模式时默认的选择</li>
-<li> 开始事务时处于未锁定状态</li>
-<li> 实际访问数据库时才试图加锁</li>
-<li> 第一个读数据库操作试图获取共享锁</li>
-<li> 第一个写数据库操作试图获取预留锁</li>
-</ol>
-<p>immediate</p>
-<ol>
-<li> 事务开始时试图获取预留锁</li>
-<li> 获取预留锁成功后，其他连接中已执行的事务无法再获取到预留锁</li>
-<li> 新的连接开始immediate和exclusive的事务也会失败，并返回SQLITE_BUSY错误</li>
-<li> 最后提交事务时，预留锁会提升到未决锁</li>
-<li> 等待其他连接中的事务释放共享锁</li>
-<li> 阻止新的连接获取共享锁</li>
-<li> 如果其他事务一直没释放共享锁，会返回SQLITE_BUSY错误</li>
-</ol>
-<p>exclusive</p>
-<ol>
-<li> 开始事务时尝试获取排它锁</li>
-<li> 获取成功后阻止所有的读写操作</li>
-<li> 在事务内可以对数据库进行任意的读写</li>
-</ol>
-<p>参考《SQLite权威指南（第2版）》118页  第4章 SQLite中的高级SQL - 事务的类型</p>
-<h1 id="SQLite-WAL是什么？"><a href="#SQLite-WAL是什么？" class="headerlink" title="SQLite WAL是什么？"></a>SQLite WAL是什么？</h1><p>SQLite在3.7.0开始引入了WAL技术</p>
-<p>Write-Ahead Log</p>
-<p>预先写日志</p>
-<p>默认的 rollback journal 模式工作原理大致为：写操作进行前进行数据库文件拷贝，然后对数据库进行写操作。如果发生 Crash 或者 rallback 则将日志中的原始内容回滚到数据库中进行恢复操作，否则在 Commit 完成时删除日志文件。</p>
-<p>WAL模式采用了相反的的做法，</p>
-<p>在准备写数据库文件前，会先复制数据库文件的中的原始数据到日志文件，写操作也只更新日志文件，原有数据库文件不变动；</p>
-<p>如果事务失败，WAL中的数据被忽略；</p>
-<p>如果事务成功，在随后的某个时间点，将WAL中的数据写回到数据库文件，这个时间点称为checkpoint。</p>
-<p>WAL使用检查点将修改写回数据库，默认情况下，当WAL文件发现有1000页修改时，将自动调用检查点。这个页数大小可以自行配置。</p>
-<p>读数据时，SQLite在WAL中搜索，找到最后一个写入点，并记录，读时忽略这个写入点后面的信息，如果读取在WAL中读取不到数据，则去数据库文件中读取；写数据时继续往记录点后追加写入数据，这样保证了读和写可以同时进行；由于同一时刻只能有一个连接写数据库，写与写之间是互斥的，所以不会产生写入点后面写数据时指针冲突。</p>
-<p>由于每个读操作都会搜索整个WAL文件，所以在共享内存加建立了一个wal-index索引，加速查找，避免扫描整个WAL文件。</p>
-<h1 id="WAL提升了哪方面的性能？优点是什么？解决了什么问题？"><a href="#WAL提升了哪方面的性能？优点是什么？解决了什么问题？" class="headerlink" title="WAL提升了哪方面的性能？优点是什么？解决了什么问题？"></a>WAL提升了哪方面的性能？优点是什么？解决了什么问题？</h1><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828093052.png"></p>
-<p>参考：《SQLite权威指南（第2版）》第11章 sqlite内部机制及新特性 - wal的优缺点</p>
-<hr>
-<ol>
-<li> WAL is significantly faster in most scenarios.</li>
-<li> WAL provides more concurrency as readers do not block writers and a writer does not block readers. Reading and writing can proceed concurrently.</li>
-<li> Disk I/O operations tends to be more sequential using WAL.</li>
-<li> WAL uses many fewer fsync() operations and is thus less vulnerable to problems on systems where the fsync() system call is broken.</li>
-</ol>
-<p>参考：<a target="_blank" rel="noopener" href="https://sqlite.org/wal.html">https://sqlite.org/wal.html</a></p>
-<h1 id="WAL的缺点是什么？"><a href="#WAL的缺点是什么？" class="headerlink" title="WAL的缺点是什么？"></a>WAL的缺点是什么？</h1><ol>
-<li> 所有的数据库操作必须都在同一台机器上进行，并且该机器的操作系统需要支持 VFS 特性。</li>
-<li> 当连接处于 WAL 模式中时我们无法修改页大小</li>
-<li> 为满足 Wal 和相关共享内存的需要，使用 WAL 引入了两个额外的半持久性文件 -wal 和 -shm 该文件需要占用一定的存储空间。</li>
-<li> 数据库读性能会比 rollback journal 模式略差 （大概慢 1% ～ 2% ），另外写操作也会间歇性的性能下降。</li>
-<li> 读操作的性能会比 rollback journal 模式出现部分下降，因为它需要额外对 -wal 文件进行一次检索，而且 Checkpoint 本身就比较耗时且会对读操作进行阻塞。</li>
-<li> 频繁 Checkpoint 变得频繁又会影响写操作的性能指标，而且频繁的同步操作也会增加数据库损坏的概率</li>
-</ol>
-<hr>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210828093220.png"><br>参考：《SQLite权威指南（第2版）》第11章 sqlite内部机制及新特性 - wal的优缺点</p>
-<hr>
-<ol>
-<li> All processes using a database must be on the same host computer; WAL does not work over a network filesystem.</li>
-<li> Transactions that involve changes against multiple <a target="_blank" rel="noopener" href="https://sqlite.org/lang_attach.html">ATTACHed</a> databases are atomic for each individual database, but are not atomic across all databases as a set.</li>
-<li> WAL might be very slightly slower (perhaps 1% or 2% slower) than the traditional rollback-journal approach in applications that do mostly reads and seldom write.</li>
-<li> There is an additional quasi-persistent “-wal” file and “-shm” shared memory file associated with each database, which can make SQLite less appealing for use as an <a target="_blank" rel="noopener" href="https://sqlite.org/appfileformat.html">application file-format</a>.</li>
-</ol>
-<p>参考：<a target="_blank" rel="noopener" href="https://sqlite.org/wal.html">https://sqlite.org/wal.html</a></p>
-<h1 id="Android中如何开启WAL？"><a href="#Android中如何开启WAL？" class="headerlink" title="Android中如何开启WAL？"></a>Android中如何开启WAL？</h1><p>SQLiteDatabase.enableWriteAheadLogging()</p>
-<p>根据注释描述，Android默认没有开启WAL。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1582,20 +1485,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">191</span>
+          <span class="site-state-item-count">192</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">260</span>
+        <span class="site-state-item-count">263</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
