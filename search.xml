@@ -6697,12 +6697,13 @@
 <p>对插件ContentProvider的所有调用都会转发给占坑的ContentProvider。</p>
 ]]></content>
       <categories>
-        <category>系统设计</category>
+        <category>源码分析</category>
       </categories>
       <tags>
         <tag>Android</tag>
         <tag>ClassLoader</tag>
         <tag>Context</tag>
+        <tag>源码分析</tag>
         <tag>插件化</tag>
         <tag>系统设计</tag>
         <tag>Resources</tag>
