@@ -186,7 +186,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Java/Java8%20Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F/">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95/%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E7%9A%84%E4%BB%B7%E5%80%BC/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpg">
@@ -200,7 +200,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/Java/Java8%20Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F/" class="post-title-link" itemprop="url">Java8 Lambda表达式</a>
+            <a href="/%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95/%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E7%9A%84%E4%BB%B7%E5%80%BC/" class="post-title-link" itemprop="url">单元测试的价值</a>
         </h2>
 
         <div class="post-meta">
@@ -210,14 +210,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-10-25 22:05:00" itemprop="dateCreated datePublished" datetime="2019-10-25T22:05:00+08:00">2019-10-25</time>
+              <time title="创建时间：2019-09-15 20:36:00" itemprop="dateCreated datePublished" datetime="2019-09-15T20:36:00+08:00">2019-09-15</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -225,7 +225,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                  <a href="/categories/%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95/" itemprop="url" rel="index"><span itemprop="name">软件测试</span></a>
                 </span>
             </span>
 
@@ -238,8 +238,8 @@
       </span>
       <span class="post-meta-item-text">Disqus：</span>
     
-    <a title="disqus" href="/Java/Java8%20Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Java/Java8 Lambda表达式/" itemprop="commentCount"></span>
+    <a title="disqus" href="/%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95/%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E7%9A%84%E4%BB%B7%E5%80%BC/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="软件测试/单元测试的价值/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -254,49 +254,152 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="Java8-Lambda表达式有什么限制？"><a href="#Java8-Lambda表达式有什么限制？" class="headerlink" title="Java8 Lambda表达式有什么限制？"></a>Java8 Lambda表达式有什么限制？</h1><p>Java8的lambda和匿名类可以实现类似闭包的功能：它们可以作为参数传递给方法，并且可以访问其作用域之外的变量。</p>
-<p>但有一个限制：它们不能修改定义Lambda方法的局部变量的内容。这些变量必须是隐式final的。</p>
-<p>之所以会有这些限制，主要是由于局部变量是保存在栈上的，如果Lambda可以直接访问局部变量，且Lambda是在另一个线程使用的，那么使用Lambda的线程可能会在分配该变量的线程将这个变量收回之后，去访问该变量。因此，Java在访问自由局部变量时，实际上访问的是它的副本，而如果局部变量仅会赋值一次那就没什么区别了。</p>
-<p>如果允许捕获可变的局部变量，就会引发造成线程不安全的可能性，而这是我们极力希望避免的。基于种种考虑，Java直接在语法层面做出限制，这其实也是不鼓励程序员使用改变外部变量的典型的命令式编程模式。</p>
-<h1 id="Java8-Lambda表达式是怎么实现的？"><a href="#Java8-Lambda表达式是怎么实现的？" class="headerlink" title="Java8 Lambda表达式是怎么实现的？"></a>Java8 Lambda表达式是怎么实现的？</h1><p>对lambda表达式里的代码，生成静态私有方法，创建一个函数式接口类的实例来调用这个私有静态方法。</p>
-<p>这种方式实现的好处在于：</p>
-<ol>
-<li> 使用预定义的函数式接口类，不用新增类，避免新类的加载、验证、解析、初始化的耗时。</li>
-<li> lambda表达式代码翻译到字节码的过程，可以动态的改变，方便做统一的优化。</li>
-</ol>
-<h1 id="为什么Java-8的Lambda表达式的字节码指令要使用invokedynamic指令？"><a href="#为什么Java-8的Lambda表达式的字节码指令要使用invokedynamic指令？" class="headerlink" title="为什么Java 8的Lambda表达式的字节码指令要使用invokedynamic指令？"></a>为什么Java 8的Lambda表达式的字节码指令要使用invokedynamic指令？</h1><p>Java8的设计者之一Brian Goetz对于lambda表达式的设计文档中所提到的方案选择：</p>
+          <p>衡量一个东西的价值，要看它解决了什么问题。</p>
+<h1 id="测试驱动开发的价值"><a href="#测试驱动开发的价值" class="headerlink" title="测试驱动开发的价值"></a>测试驱动开发的价值</h1><p>对于项目结果而言，TDD消除了不确定性，保证项目能比较准确的按照预期推进。</p>
+<p>对于开发而言，会有更少的调试时间、更少的回归错误、可以更放心的修改代码，编码效率指数级提升，因为只需要理解最少的信息就可以迅速完成任务。</p>
+<p>对于测试而言，从低效率手工重复测试工作中解放出来，把精力放在更专业化的兼容性测试、压力测试、性能测试等工作上。</p>
+<p>对于产品而言，可以很快看到结果，快速验证想法，迅速得到反馈做出调整。</p>
+<h1 id="测试过程的沉淀"><a href="#测试过程的沉淀" class="headerlink" title="测试过程的沉淀"></a>测试过程的沉淀</h1><p>对于个人而言，单元测试相当于通过编写代码对功能逻辑进行自测，可以做到：</p>
 <ul>
-<li>一是转换策略要足够灵活以能够应对将来的优化。</li>
-<li>二是要维持现有class文件标准的稳定性。</li>
+<li>  及时的测试反馈，通过mock数据环境，快速验证逻辑正确性。</li>
+<li>  测试代码即文档。</li>
+<li>  可自动化执行。</li>
 </ul>
-<p>用invokedynamic指令干了什么？</p>
-<p>invokedynamic调用JDK里的LambdaMetafactory类的方法来把Lambda表达式翻译为字节码。</p>
-<p>不用invokedynamic的坏处？</p>
-<p>如果把Lambda表达式的翻译方式写死在类的字节码，以后不方便统一修改翻译策略了。</p>
-<h1 id="Java8-Lambda表达式为什么不用匿名内部类实现？"><a href="#Java8-Lambda表达式为什么不用匿名内部类实现？" class="headerlink" title="Java8 Lambda表达式为什么不用匿名内部类实现？"></a>Java8 Lambda表达式为什么不用匿名内部类实现？</h1><p>Lambda表达式在语法上看起来就跟匿名内部类一样。</p>
-<p>但是对于匿名内部类：</p>
-<ol>
-<li> 编译器会为每个匿名类生成一个新的class文件。由于每个class文件在使用前都需要经过一系列的加载、验证、解析、初始化的过程，大量的类文件会直接影响应用的启动性能。</li>
-<li> 每个新的匿名类都会为类或者接口产生一个新的子类型。如果你为了实现一个比较器，使用了一百多个不同的lambda表达式，这意味着该比较器会有一百多种不同的子类型。这种情况下，JVM的运行时性能调优会变得更加困难。</li>
-</ol>
-<h1 id="为什么Java8的特性需要Android-Gradle插件特定版本才能支持？"><a href="#为什么Java8的特性需要Android-Gradle插件特定版本才能支持？" class="headerlink" title="为什么Java8的特性需要Android Gradle插件特定版本才能支持？"></a>为什么Java8的特性需要Android Gradle插件特定版本才能支持？</h1><p>Android系统上，Java-Bytecode（JVM字节码）是不能直接运行在Android系统上的，需要转换成Android-Bytecode（Dalvik/ART 字节码）。</p>
-<p>为什么呢？比如Java 8的Lambda表达式是通过invokedynamic指令实现的，Android的dex编译器不支持invokedynamic指令，导致Android不能直接支持Java 8。</p>
-<p>既然不能直接支持，那就只能在Java-Bytecode转换到Android-Bytecode这一过程中想办法，间接支持。这个间接支持的过程我们统称为Desugar（脱糖）过程。</p>
-<p>具体是怎么实现的呢？比如Java 8的Lambda表达式，javac编译过后，Lambda表达式里的逻辑会被编译为私有静态方法，然后用invokedynamic去在运行时动态创建一个类实例，每个Lambda表达式都会对应一个函数式类接口的，在类方法里调用静态方法。脱糖的过程，就是把invokedynamic指令去除，直接调用静态方法。</p>
-<h1 id="脱糖"><a href="#脱糖" class="headerlink" title="脱糖"></a>脱糖</h1><p>脱糖即在编译阶段将在语法层面一些底层字节码不支持的特性转换为基础的字节码结构，(比如 List 上的泛型脱糖后在字节码层面实际为 Object)； Android 工具链对 Java8 语法特性脱糖的过程可谓丰富多彩，当然他们的最终目的是一致的：使新的语法可以在所有的设备上运行。</p>
-<p>D8编译器 已经支持脱糖，让 Java 8 提供的特性（如 lambdas）可以转换成 Java 7 特性。</p>
-<h1 id="D8、R8编译器有什么特别？"><a href="#D8、R8编译器有什么特别？" class="headerlink" title="D8、R8编译器有什么特别？"></a>D8、R8编译器有什么特别？</h1><p>D8 编译器作为默认的 DEX 字节码文件编译器，具有更好的性能；</p>
-<p>R8 作为 ProGuard 的替代工具，用于代码的压缩（shrinking）和混淆（obfuscation）；</p>
-<p>Java 7-8-9 等等新引入的语言特性并不能直接就能用在 Android 开发中，基本上现在的所有的 Android 开发者还在被困在 Java 6 SE 上。</p>
-<p>为了让我们能使用上 Java 8 的特性，Google 使用了 Transformation 来增加了一步编译过程叫 desugaring，其实就是将我们代码里使用的 java 8 新特性翻译为 Dalvik/ART 能够识别的 java 6 字节码。这不可避免会导致一个问题 - 更长的编译时间。</p>
-<p>为了解决这个问题，在 Android Studio 3.2 中，Google 使用 D8 替换了旧的 dx 编译器。D8 的主要改进是消除 desuguaring 的过程，让其成为 dex 编译的一部分，从而加快编译速度。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://always-less.github.io/2017/java-8-lambda/">Java 8 Lambda表达式的一点研究</a></li>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2019/10/17/android-java-8.html">Android 兼容 Java 8 语法特性的原理分析</a></li>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/30002380/why-are-java-8-lambdas-invoked-using-invokedynamic">Why are Java 8 lambdas invoked using invokedynamic?</a></li>
-<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903936227278861">Android CPU, Compilers, D8 &amp; R8</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/39462935/answer/81449619">Java 8的Lambda表达式为什么要基于invokedynamic？ - RednaxelaFX的回答 - 知乎</a></li>
+<p>接下来如果尝试给现有的业务代码编写单元测试，会发现测试代码会有大量的冗余和重复，不得不复制粘贴很多重复的测试代码。</p>
+<h1 id="为什么会产生大量重复的测试代码？"><a href="#为什么会产生大量重复的测试代码？" class="headerlink" title="为什么会产生大量重复的测试代码？"></a>为什么会产生大量重复的测试代码？</h1><p>因为原来的业务代码，本身就是重复冗余的，没有抽象复用，设计不合理，甚至往往产品需求都没有梳理完整，边界情况都没有考虑全，测试代码自然就没办法写好。</p>
+<p>那就把原来的业务代码，重写为可复用的、标准化、模块化的组织形式。</p>
+<p>与其每次重写代码，为什么不在一开始就设计好代码结构？</p>
+<h1 id="源头上的诉求"><a href="#源头上的诉求" class="headerlink" title="源头上的诉求"></a>源头上的诉求</h1><p>为什么一开始的业务代码没有做到标准化、模块化？</p>
+<p>代码是产品设计的实现，如果是因为产品需求、UI设计就没有标准化、模块化、可复用，那么代码就无法标准化。每个功能的开发人员就会按照各自理解封装自己的一套逻辑，都是重复劳动。再加上Android、iOS这种多端开发都是同一套UI和需求，重复劳动的损耗又要多一倍。</p>
+<p>要想效率最高，产品设计一开始就要标准化、模块化，明确业务的每个细节，用便于下游理解和处理的形式文档化，比如用测试用例的形式描述需求和设计细节。 在理想情况下，可以通过工具把需求文档生成测试代码模板，多端信息就同步了，CI也可以做强制约束了。</p>
+<p>把源头的问题解决好后，接下来可以观察：</p>
+<h1 id="业务代码将会如何演变？"><a href="#业务代码将会如何演变？" class="headerlink" title="业务代码将会如何演变？"></a>业务代码将会如何演变？</h1><p>为了不让测试代码重复，最终会倒逼业务代码要符合开闭原则，自然遵循所有的设计模式。</p>
+<h2 id="分层架构"><a href="#分层架构" class="headerlink" title="分层架构"></a>分层架构</h2><p>代码不分层就不能复用，一点小改动就会影响到很多其他模块。</p>
+<p>一个常见的例子是，很多人习惯把UI要用的实体类、数据库用的实体类、网络用的实体类使用同一个类，因为三种场景下属性含义有重复，定义三个类麻烦了，但这样定义对于模块化是不方便的：</p>
+<ul>
+<li>  一旦要把网络、数据库、UI的代码独立出来，这一个实体类还要再复制两份。</li>
+<li>  对于单独的模块，这个总的实体类中大概率都会有用不到的属性代码，不删除就只会增加理解成本、增加程序体积。</li>
+<li>  实体类里往往还有一堆注解，一般是序列化框架和ORM框架的注解，所以你复制完实体类后，还要去掉注解，否则就得引入对应框架的依赖才能解决编译报错。</li>
 </ul>
+<p>如果有几百个实体类都是这样，重构代价就放大了，所以一开始写业务就要考虑分层模块化。</p>
+<p>带UI的页面要用MVVM架构，因为VM和V自动映射，映射的过程是框架写好的、是标准化的，不需要自己手写；如果是MVP结构，就要手写UI和数据的映射代码，只要手写了，你就得写测试代码覆盖这些逻辑，所以MVVM是比MVP少一些模板化的测试代码的。</p>
+<p>MVVM只是一个分层的基本思想，也不是说就只分三层，如果只是单纯的把Activity、Fragment的逻辑处理代码换个位置放到ViewModel层，测试代码还是很难写。</p>
+<p>实际可以有无数层嵌套，每一个功能职责都是一层，每一层之间有交互，跨层之间无感知。每一层不管是叫UserCase、Domain、Model、Repository还是什么，只要复用性强，不会产生重复测试代码，就是好的分层。</p>
+<h2 id="单一职责与依赖注入"><a href="#单一职责与依赖注入" class="headerlink" title="单一职责与依赖注入"></a>单一职责与依赖注入</h2><p>类之间的职责必须单一。</p>
+<p>比如有2个类A和B，A的方法如果要使用到B方法，如果在A里直接创建B的实例是不好做测试的，因为要替换B的实例就要修改A的代码，怎么样能不修改代码又能模拟B的行为呢？那就是不要在A里创建B，把创建B的过程放在其他地方，把B的实例直接传给A使用，这样模拟B的行为就不用修改A的代码了。</p>
+<p>这就是依赖注入，通过set函数或构造函数等方式传递依赖的对象。</p>
+<p>如果有生命周期管理、状态共享的复杂注入需求，注入的逻辑就有重复了，就需要借助依赖注入框架来完成。</p>
+<p>可以看到，为了方便测试，强迫了类的隔离和复用。</p>
+<p>代码复用性越高，所有人每次写功能就要找有没有可以复用的代码，所以就要给代码加很多注释和文档，API也要语义化、简单化，不然信息检索成本和沟通成本就高了。</p>
+<h2 id="壳化平台代码"><a href="#壳化平台代码" class="headerlink" title="壳化平台代码"></a>壳化平台代码</h2><p>在Android中，为了能在JVM上快速运行测试，还会把所有Android相关的类访问都做一层代理封装，这样又强化了代码隔离，Android代码就壳化了。</p>
+<p>这有点跨端框架的味道。非平台相关的代码如果能够统一，就能节约开发成本。</p>
+<h1 id="如何加速测试代码的编写？"><a href="#如何加速测试代码的编写？" class="headerlink" title="如何加速测试代码的编写？"></a>如何加速测试代码的编写？</h1><p>反过来思考，阻碍测试代码编写的原因还有哪些？把这些影响因素都解决了就好了。</p>
+<h2 id="代码隔离"><a href="#代码隔离" class="headerlink" title="代码隔离"></a>代码隔离</h2><p>如果已经在一个烂摊子上推进模块化，只能先把代码边界从物理上隔离，避免后续再有任何代码耦合的可能性，模块之间互相用接口或协议互通访问，在新业务上把新的流程走起来，老业务等到需求迭代时再重写。</p>
+<h2 id="函数式编程"><a href="#函数式编程" class="headerlink" title="函数式编程"></a>函数式编程</h2><p>函数式编程的核心特点是组合，通过一系列函数的组合运算得到目标结果。</p>
+<p>函数组合的前提是，函数得是纯的，即可以从确定的输入得到确定的输出，也就是无副作用、没有状态，纯函数是最容易测试的。</p>
+<p>组合的诉求必然导致代码的模块化，代码复用性强才能组合，没有必要存在冗余。</p>
+<p>模块化的粒度越小，组合的可能性越多，可以表达的内容更丰富，这样代码就越精简。</p>
+<p>业务代码量也少了，测试代码也就少了，测试代码编写速度会提升。</p>
+<p>业务代码量也少了，要理解的代码量也就少了，并且到处都是原子化的纯函数，接近于数学函数的表达，非常语义化，业务代码可读性也变强了，业务编码速度也会提升。</p>
+<p>函数式编程的诉求与单元测试的目标是一致的，所以尽可能用函数式的思想来编写业务代码。</p>
+<h2 id="降低信息流通成本"><a href="#降低信息流通成本" class="headerlink" title="降低信息流通成本"></a>降低信息流通成本</h2><p>代码复用性增强后，要保证每块代码的理解成本尽可能的低，才能加速复用的过程。比如：</p>
+<ul>
+<li>  注释要简洁、完整，复杂的可以配套简单示例。</li>
+<li>  git原子化提交，对每一个代码改动都有清晰直白的描述，积累代码知识库。</li>
+<li>  Code Review严格规范，传递最佳实践。</li>
+</ul>
+<h2 id="减少测试代码量"><a href="#减少测试代码量" class="headerlink" title="减少测试代码量"></a>减少测试代码量</h2><p>对于Android、iOS多端开发，功能需求几乎相同的情况下，可以：</p>
+<ul>
+<li>  业务代码跨平台共用，测试代码只需要写一份，考虑使用Flutter、React Native，或把代码沉降到C层。</li>
+<li>  测试代码跨平台共用，这种情况一般是黑盒UI测试，考虑使用Appium之类的框架。</li>
+</ul>
+<h2 id="测试代码简单化"><a href="#测试代码简单化" class="headerlink" title="测试代码简单化"></a>测试代码简单化</h2><p>如果测试代码是能DSL化的，接近自然语言，对于编写和阅读都是友好快速的。</p>
+<h1 id="单元测试的成本会随着测试代码的增多而降低吗？"><a href="#单元测试的成本会随着测试代码的增多而降低吗？" class="headerlink" title="单元测试的成本会随着测试代码的增多而降低吗？"></a>单元测试的成本会随着测试代码的增多而降低吗？</h1><p>会降低。</p>
+<p>随着测试代码积累的越来越多，业务代码的复用性越来越好，信息流通效率也加强了，大家的写测试也越来越熟练了，针对每个特定业务场景都有了最佳代码测试实践，再写测试代码就是按照模板写了。</p>
+<h1 id="单元测试可以测试出所有的问题吗？"><a href="#单元测试可以测试出所有的问题吗？" class="headerlink" title="单元测试可以测试出所有的问题吗？"></a>单元测试可以测试出所有的问题吗？</h1><p>不能。</p>
+<p>所有的测试用例都是罗列已知的问题，对于未知的问题只有事后发现了再补充到测试用例集里。</p>
+<p>如果本身对于需求理解就是错的，写的测试也是错的。所以还需其他测试方法来发现未考虑到的问题。</p>
+<h1 id="能不能写先好代码再补充测试？"><a href="#能不能写先好代码再补充测试？" class="headerlink" title="能不能写先好代码再补充测试？"></a>能不能写先好代码再补充测试？</h1><p>理论上可行，前提是你必须已经知道怎么写测试了，时刻保持代码能可测就行，但这没有客观约束，写到不熟悉的业务的时候容易因为赶工而跑偏。</p>
+<h1 id="如何在团队中推广单元测试？"><a href="#如何在团队中推广单元测试？" class="headerlink" title="如何在团队中推广单元测试？"></a>如何在团队中推广单元测试？</h1><p>两个方向：降低阻碍、放大价值。</p>
+<h2 id="降低阻碍"><a href="#降低阻碍" class="headerlink" title="降低阻碍"></a>降低阻碍</h2><p>软件开发中，每个人都掌握着特定的上下文信息，项目整体是依赖于每个人的贡献，所以新的方法论和思想理念需要低成本、完整的传达到每个人，让每个人都能迅速掌握。</p>
+<p>这需要无障碍的交流环境，把问题暴露出来，别人才能快速响应解决，加强互助协作的氛围。</p>
+<h2 id="放大价值"><a href="#放大价值" class="headerlink" title="放大价值"></a>放大价值</h2><p>先让几个强人在小范围以最低成本把流程跑起来，解决各种公共基本问题，带来显著收益后，在逐步推广到其他更复杂的业务中，拉入新的人参与，通过规范约束、Code Review等形式普及最佳实践，让每个人感受到确实可以用很低的学习成本带来很大的收益，学习新东西的意愿就强了，有价值的东西会逐渐形成口碑传播出去。</p>
+<h1 id="依赖注入框架选型"><a href="#依赖注入框架选型" class="headerlink" title="依赖注入框架选型"></a>依赖注入框架选型</h1><p>动态注入：</p>
+<ul>
+<li>  JDK内置SPI机制，配合AutoService库可以简化配置。</li>
+</ul>
+<p>静态注入：</p>
+<ul>
+<li>  自己手写，通过构造函数、set函数等方式注入。</li>
+<li>有作用域、状态共享等复杂需求采用依赖注入框架：<ul>
+<li>  在Java可以使用Dagger2。无运行时反射、遵循jsr-330标准。</li>
+<li>  在Kotlin可以使用Koin。无辅助代码生成、概念少、API易用。</li>
+</ul>
+</li>
+</ul>
+<h1 id="单元测试怎么写？"><a href="#单元测试怎么写？" class="headerlink" title="单元测试怎么写？"></a>单元测试怎么写？</h1><h2 id="三步走"><a href="#三步走" class="headerlink" title="三步走"></a>三步走</h2><ul>
+<li>  模拟输入</li>
+<li>  调用执行</li>
+<li>  验证输出</li>
+</ul>
+<h2 id="确定输入和输出"><a href="#确定输入和输出" class="headerlink" title="确定输入和输出"></a>确定输入和输出</h2><p>对于有参数和有返回值的函数，比较好写，确定好输入和输出，直接断言验证。</p>
+<p>对于没有参数或没有返回值的函数，需要人工界定输入和输出是什么，比如某个函数内部调用了某几个特定的方法传递了特定的参数作为这个函数的输出，Junit就不够用了，需要通过代理要模拟的对象来做验证，但自己写代理逻辑会有不少重复劳动，这就需要标准化的mock框架来做验证。</p>
+<p>mock、stub、spy、verify、参数捕获等概念就应运而生。</p>
+<h2 id="mock框架应该选哪个？"><a href="#mock框架应该选哪个？" class="headerlink" title="mock框架应该选哪个？"></a>mock框架应该选哪个？</h2><p>选取原则：</p>
+<ul>
+<li>  学习成本要低，这样才利于普及，不给开发增加额外负担。</li>
+<li>  API可读性要高，越DSL化越好，接近自然语言越好。</li>
+<li>  功能要全面，最好一个库能满足绝大多数测试的需求，如果要引用多个库更新起来是比较麻烦的，配套使用可能也会存在不兼容。</li>
+</ul>
+<p>Java下的mock框架有EasyMock、JMockit、Mockito、PowerMock等。</p>
+<p>Mockito和EasyMock对比：<a href="%5B%3Chttps://github.com/mockito/mockito/wiki/Mockito-vs-EasyMock%3E%5D(%3Chttps://github.com/mockito/mockito/wiki/Mockito-vs-EasyMock%3E)">Mockito vs EasyMock</a></p>
+<p>Mockito和JMockit对比：<a href="%5B%3Chttps://blog.knoldus.com/difference-between-mockito-and-jmockit/%3E%5D(%3Chttps://blog.knoldus.com/difference-between-mockito-and-jmockit/%3E)">Difference between mockito and jmockit</a></p>
+<p>整体来说，Mockito是最好用的，API简单、易读，JMockit和EasyMock的学习成本比较高。</p>
+<p>Mockito的实现方式是新建一个类继承要mock的类再改写要mock的方法，但是有的方法无法继承，比如final、private、static方法。</p>
+<p>PowerMock通过修改字节码解决Mockito不能mock static、final、private方法的问题，但是API可读性比较差。</p>
+<p>Kotlin下使用mockk做mock会更方便，符合Kotlin语法习惯，可读性也更好。</p>
+<p>参考：</p>
+<ul>
+<li>  <a href="%5B%3Chttps://stackoverflow.com/questions/22697/whats-the-best-mock-framework-for-java%3E%5D(%3Chttps://stackoverflow.com/questions/22697/whats-the-best-mock-framework-for-java%3E)">What’s the best mock framework for java</a></li>
+<li>  <a href="%5B%3Chttps://stackoverflow.com/questions/39310848/what-is-the-difference-between-powermock-easymock-and-mockito-frameworks%3E%5D(%3Chttps://stackoverflow.com/questions/39310848/what-is-the-difference-between-powermock-easymock-and-mockito-frameworks%3E)">What is the difference between PowerMock, EasyMock and Mockito frameworks?</a></li>
+<li>  <a href="%5B%3Chttps://mockk.io/#chinese-guides-and-articles%3E%5D(%3Chttps://mockk.io/#chinese-guides-and-articles%3E)">Mockk</a></li>
+</ul>
+<h2 id="androidTest与test"><a href="#androidTest与test" class="headerlink" title="androidTest与test"></a>androidTest与test</h2><p>Android环境下测试分为运行在android真机的androidTest、运行在本机JVM的test。</p>
+<p>androidTest运行需要真机，不太方便，编译也相对耗时。</p>
+<p>JVM的test的特点是运行速度快，缺点是没有Android环境，运行Android的方法会直接抛异常。</p>
+<p>能在JVM运行所有测试用例效率和方便程度是最高的。所以之前就说到要壳化Android代码，业务代码尽可能的不要接触到Android的类。</p>
+<p>Robolectric在JVM下模拟了Android环境，相当于把Android的API在内存中实现了一遍，这样就可以在JVM运行Android代码了。不过运行速度比普通test要慢，因为每次要准备Shadow Android的环境，但速度依然是比androidTest快的。有一些Android代码需要测试可以考虑使用Robolectric。</p>
+<h2 id="单元测试粒度需要多细？"><a href="#单元测试粒度需要多细？" class="headerlink" title="单元测试粒度需要多细？"></a>单元测试粒度需要多细？</h2><p>没有硬性的标准，原则就是保证关键代码逻辑分支都走到了，测试代码尽可能少的重复冗余。</p>
+<p>什么是关键代码逻辑？</p>
+<p>最少要对主要的public方法做测试，因为public方法会被其他模块使用到，需要保证逻辑的正确性。</p>
+<p>也就是说私有方法不一定要单独写测试，但是不代表私有方法的逻辑不会走到，只是可以不用要求让每个私有方法都单独对应一个测试方法。</p>
+<p>JavaBean中的set、get这些模板的public方法，其实没有必要特意写测试，如果不放心就让模板化的东西让测试也能模板化的生成就行了。</p>
+<p>所有逻辑复杂、可能会产生严重错误的地方都是要测试到的。</p>
+<h2 id="每个测试用例都有重复的初始化代码怎么抽象？"><a href="#每个测试用例都有重复的初始化代码怎么抽象？" class="headerlink" title="每个测试用例都有重复的初始化代码怎么抽象？"></a>每个测试用例都有重复的初始化代码怎么抽象？</h2><p>Junit支持@Before、@After、@BeforeClass、@AfterClass等注解，用于case执行前后公共逻辑的执行。</p>
+<p>跨测试类的公共逻辑可以封装为自定义的Junit Rule。</p>
+<h2 id="输入参数有很多种组合怎么办？"><a href="#输入参数有很多种组合怎么办？" class="headerlink" title="输入参数有很多种组合怎么办？"></a>输入参数有很多种组合怎么办？</h2><p>用参数化测试。</p>
+<h2 id="多线程逻辑怎么写单元测试？"><a href="#多线程逻辑怎么写单元测试？" class="headerlink" title="多线程逻辑怎么写单元测试？"></a>多线程逻辑怎么写单元测试？</h2><p>每个线程的逻辑需要先单独测试。</p>
+<p>多线程只测试线程调度逻辑是否正确，如果涉及到内部细节的测试，测试代码的复杂度会爆炸。</p>
+<p>比如通过线程池调度某些方法，那么线程池最好是通过注入接口的形式给调用处使用，这样就可以在测试时模拟线程池调度，测试会很方便。</p>
+<p>由于多线程会读取共享状态，并且每一次执行的过程不可重现，所以只能把所有可能出现的情况做分类讨论。</p>
+<p>再利用锁、CountDownLatch、CyclicBarrier等线程同步工具，让多线程执行逻辑符合特定的预期。</p>
+<h2 id="网络请求如何测试？"><a href="#网络请求如何测试？" class="headerlink" title="网络请求如何测试？"></a>网络请求如何测试？</h2><p>保证让网络请求逻辑的API真实的运行过，可以通过代码拦截或Mock Server模拟数据返回，并且这种模拟一定要固定下来，可重复操作，不要每次都搭环境。</p>
+<h2 id="数据库如何测试？"><a href="#数据库如何测试？" class="headerlink" title="数据库如何测试？"></a>数据库如何测试？</h2><p>模拟数据库环境，再执行数据库操作。</p>
+<p>比如Android的JetPack Room提供memory db，Robolectric提供虚拟的SQLite API Shadow环境来模拟所有数据库操作。</p>
+<h2 id="断言库如何选择？"><a href="#断言库如何选择？" class="headerlink" title="断言库如何选择？"></a>断言库如何选择？</h2><p>对测试代码最大的要求就是API可读性强，学习成本低，这样才能加强工具普及和信息流通。</p>
+<p>Java的断言库有Hamcrest、Truth等，符合逻辑推理习惯、语义化的API。</p>
+<p>Kolint的断言库有Kluent，借助Kotlin对DSL的支持把API写的跟自然语言一样。</p>
+<h2 id="Android的UI怎么测试？"><a href="#Android的UI怎么测试？" class="headerlink" title="Android的UI怎么测试？"></a>Android的UI怎么测试？</h2><p>白盒测试框架有Espresso，只能针对有源码的App进行测试，并且只能写在androidTest，要真机运行。</p>
+<p>也可以用Robolectric在JVM上测UI。</p>
+<p>具体选择哪个看应用场景。</p>
+<p>黑盒测试框架有UIAutomator，可以测任意多个App，但是只能Android下使用。</p>
+<p>黑盒测试最好是Android和iOS统一使用同一套框架，降低学习成本，Appium可以用在多平台的黑盒UI测试。</p>
+<p>黑盒测试可让非开发人员去写测试。</p>
+<h2 id="单元测试覆盖率达到多少才算合适？"><a href="#单元测试覆盖率达到多少才算合适？" class="headerlink" title="单元测试覆盖率达到多少才算合适？"></a>单元测试覆盖率达到多少才算合适？</h2><p>即使覆盖率100%，也不能保证没有错误，因为还是有可能遗漏掉正确的逻辑。</p>
+<p>覆盖率100%也不能代表代码就设计的很好，可以存在大量不合理的代码也能让覆盖率100%。</p>
+<p>可读性、模块化都无法从覆盖率角度衡量，其他手段也无法准确衡量。</p>
+<p>只能尽可能的遵循一些原则来保证测试性，也就是上面讨论的所有影响代码不可测的情况都要消除掉，即使没有一行测试代码，代码架构也可以是非常好的，这需要依赖人来判断，所以要在团队想办法形成共识。</p>
+<p>最好还是写出测试，把脑子里的知识沉淀下来，传播分享出去放大它的价值，具体写多少，看实际收益比。</p>
 
       
     </div>
@@ -347,7 +450,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -443,7 +546,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -547,7 +650,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -784,7 +887,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -896,7 +999,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1032,7 +1135,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1287,7 +1390,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1402,7 +1505,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1517,7 +1620,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-21 18:33:23" itemprop="dateModified" datetime="2021-09-21T18:33:23+08:00">2021-09-21</time>
+                <time title="修改时间：2021-09-21 19:04:44" itemprop="dateModified" datetime="2021-09-21T19:04:44+08:00">2021-09-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1740,13 +1843,13 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">266</span>
+        <span class="site-state-item-count">264</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
