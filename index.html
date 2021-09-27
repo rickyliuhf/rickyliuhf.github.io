@@ -217,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -315,7 +315,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -410,7 +410,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -506,7 +506,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -603,7 +603,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -700,7 +700,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -749,16 +749,18 @@
 <li>  单元测试覆盖率有强制要求吗？</li>
 <li>  单元测试框架用的是哪些？</li>
 <li>  黑盒测试用的什么框架？</li>
+<li>  App内网络请求是怎么运行调试的？</li>
+<li>  数据库操作是怎么运行调试的？</li>
 <li>  编译完整的项目的时间会超过5分钟吗？</li>
 <li>  git push代码后，CI会做编译校验吗？会做增量lint检查吗？</li>
 <li>  git push代码后，会有工具自动检测编译时间和Apk体积的变化吗？</li>
 <li>  每引入新的依赖库，会要求对性能和体积进行评估记录吗？</li>
 <li>  对App有权限申请的监控吗？可以追查到权限申请的代码位置吗？</li>
-<li>  统计、日志等基础SDK存储在外存的数据有加密吗？存储文件的大小有限制吗？</li>
+<li>  统计、日志等基础SDK存储在外存的数据有压缩和加密吗？什么时候触发写文件的？</li>
 <li>  开发人员在代码里手动添加打点统计的点之后是怎么自测的？怎么保证每次发版时这些手动埋点都正确？</li>
 <li>  View的点击事件和Fragment的页面访问事件是无埋点全自动统计吗？</li>
 <li>  客户端会经常做A/B test吗？</li>
-<li>  APK体积和用户留存率有量化指标监控吗？</li>
+<li>  APK体积和用户新增数量有量化指标监控吗？</li>
 <li>  怎么避免打印无效日志的？调试看信息的日志在功能开发完成后会删除吗？</li>
 <li>  产线包里输出的每一个error或warning的日志是否都有自定义的错误码？是否能直接定位到问题？</li>
 <li>  日志内容对于测试、客服等不懂开发的人是否可读？</li>
@@ -777,31 +779,34 @@
 <li>  git要求原子化提交吗？</li>
 <li>  git message要求写出每一个代码改动的原因吗？</li>
 <li>  CI对git message有强制的格式检查约束吗？</li>
-<li>  同一个commit要在多个分支上手动cherry-pick吗？</li>
+<li>  同一个commit要在多个分支上手动cherry-pick好几次吗？</li>
 </ul>
 <h1 id="团队"><a href="#团队" class="headerlink" title="团队"></a>团队</h1><ul>
-<li>  产品经理会对功能需求描述给出具体的测试用例说明吗？</li>
-<li>  每个人可以看到所有仓库的代码吗？发现别的仓库的问题可以对别的仓库提交修改吗？</li>
 <li>  组里有多少人有独立开发的App作品？日活有多少？累计下载量有多少？</li>
 <li>  组里有多少人做过开源项目？做的是哪方面的内容？</li>
-<li>  组里同时掌握Android和iOS有多少人？</li>
-<li>  组里同时掌握5门以上编程语言有多少人？</li>
-<li>  DevOps团队里的人能熟练掌握Gradle和Groovy吗？</li>
+<li>  组里有多少人同时掌握Android和iOS？</li>
+<li>  组里有多少人同时掌握5门以上编程语言？</li>
 <li>  部门领导会定期参与一线开发的Code Review吗？</li>
 <li>  您认为Kotlin、Groovy、JavaScript主要的区别是什么？</li>
+<li>  您认为用Groovy做Android开发会有什么问题？</li>
 <li>  您认为在组内推广Kotlin的困难在哪？</li>
 <li>  您认为在组内推广单元测试的困难在哪？</li>
+<li>  产品经理会对功能需求描述给出具体的测试用例说明吗？</li>
+<li>  DevOps团队里的人能熟练掌握Gradle和Groovy吗？</li>
+<li>  每个人可以看到所有仓库的代码吗？</li>
+<li>  发现别的仓库有问题可以对别的仓库提交修改吗？</li>
 <li>  对于一线员工的意见反馈，怎么收集和解决落实的？</li>
-<li>  加班多吗？加班的原因是什么？是否可以通过改善工作内容或流程来避免加班？</li>
+<li>  加班多吗？加班的原因是什么？</li>
 </ul>
 <h1 id="办公环境"><a href="#办公环境" class="headerlink" title="办公环境"></a>办公环境</h1><ul>
+<li>  办公椅有靠枕吗？</li>
 <li>  工位之间有隔板吗？</li>
 <li>  业务相关的上下游部门员工是否坐在同一个区域？</li>
 <li>  工位附近的白板多吗？</li>
-<li>  每一层办公区是一个大开间吗？从座位上站起来是不是可以看到任何一个人？</li>
+<li>  每一层办公区是一个大开间吗？从座位上站起来是否可以看到任何一个人？</li>
 <li>  每一层只有一个卫生间吗？</li>
-<li>  每一层办公区是否只有一两条长走道？</li>
-<li>  领导有单独的办公室吗？</li>
+<li>  每一层办公区只有一两条长走道吗？</li>
+<li>  部门领导有单独的办公室吗？</li>
 </ul>
 
       
@@ -853,7 +858,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -952,7 +957,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1047,7 +1052,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1144,7 +1149,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-26 18:03:31" itemprop="dateModified" datetime="2021-09-26T18:03:31+08:00">2021-09-26</time>
+                <time title="修改时间：2021-09-27 11:28:00" itemprop="dateModified" datetime="2021-09-27T11:28:00+08:00">2021-09-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
