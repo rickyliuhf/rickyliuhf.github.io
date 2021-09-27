@@ -5304,42 +5304,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Java并发-CyclicBarrier</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/</url>
-    <content><![CDATA[<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><ul>
-<li>CyclicBarrier构造函数传入一个数字N。</li>
-<li>线程调用CyclicBarrier.await()会阻塞等待，直到有第N个线程调用CyclicBarrier.await()，所有线程一起执行await()方法后续逻辑。</li>
-<li>再次调用await()可以继续这一波操作，循环使用。</li>
-</ul>
-<p>比喻：</p>
-<ul>
-<li>人到齐了一起走，没到齐每个人都一直等着不走。</li>
-<li>走完了过后，下一波人来了继续这个流程。</li>
-</ul>
-<p>可循环利用的屏障。</p>
-<p>举例：</p>
-<p>CyclicBarrier barrier = new CyclicBarrier(5);</p>
-<p>然后各个线程调用barrier.await();</p>
-<p>当有5个线程await()过后，会继续执行await()后续代码</p>
-<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
-<p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
-<p>然后重新计数，继续同样的过程。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dowait(<span class="keyword">false</span>, <span class="number">0L</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (TimeoutException toe) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> Error(toe); <span class="comment">// cannot happen</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Main barrier code, covering the various policies.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">dowait</span><span class="params">(<span class="keyword">boolean</span> timed, <span class="keyword">long</span> nanos)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> InterruptedException, BrokenBarrierException,</span></span><br><span class="line"><span class="function">           TimeoutException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> Generation g = generation;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (g.broken)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">            breakBarrier();</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> index = --count;</span><br><span class="line">        <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;  <span class="comment">// tripped</span></span><br><span class="line">            <span class="keyword">boolean</span> ranAction = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> Runnable command = barrierCommand;</span><br><span class="line">                <span class="keyword">if</span> (command != <span class="keyword">null</span>)</span><br><span class="line">                    command.run();</span><br><span class="line">                ranAction = <span class="keyword">true</span>;</span><br><span class="line">                nextGeneration();</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!ranAction)</span><br><span class="line">                    breakBarrier();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// loop until tripped, broken, interrupted, or timed out</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!timed)</span><br><span class="line">                    trip.await();</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (nanos &gt; <span class="number">0L</span>)</span><br><span class="line">                    nanos = trip.awaitNanos(nanos);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">                <span class="keyword">if</span> (g == generation &amp;&amp; ! g.broken) &#123;</span><br><span class="line">                    breakBarrier();</span><br><span class="line">                    <span class="keyword">throw</span> ie;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// We&#x27;re about to finish waiting even if we had not</span></span><br><span class="line">                    <span class="comment">// been interrupted, so this interrupt is deemed to</span></span><br><span class="line">                    <span class="comment">// &quot;belong&quot; to subsequent execution.</span></span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g.broken)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g != generation)</span><br><span class="line">                <span class="keyword">return</span> index;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (timed &amp;&amp; nanos &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                breakBarrier();</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
-<p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
-<p>CountDownLatch是一次性的，而CyclicBarrier则可以被重置而重复使用。</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>CyclicBarrier</tag>
-        <tag>AQS</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Java并发-ReadWriteLock、StampedLock</title>
     <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/</url>
     <content><![CDATA[<h1 id="读写锁存在的意义？解决了什么问题？"><a href="#读写锁存在的意义？解决了什么问题？" class="headerlink" title="读写锁存在的意义？解决了什么问题？"></a>读写锁存在的意义？解决了什么问题？</h1><p>synchronzied和ReentraintLock的锁是排他锁，同一时刻只允许一个线程访问同一个资源。</p>
@@ -5377,9 +5341,45 @@
       </categories>
       <tags>
         <tag>并发</tag>
-        <tag>AQS</tag>
         <tag>ReadWriteLock</tag>
         <tag>StampedLock</tag>
+        <tag>AQS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-CyclicBarrier</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/</url>
+    <content><![CDATA[<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><ul>
+<li>CyclicBarrier构造函数传入一个数字N。</li>
+<li>线程调用CyclicBarrier.await()会阻塞等待，直到有第N个线程调用CyclicBarrier.await()，所有线程一起执行await()方法后续逻辑。</li>
+<li>再次调用await()可以继续这一波操作，循环使用。</li>
+</ul>
+<p>比喻：</p>
+<ul>
+<li>人到齐了一起走，没到齐每个人都一直等着不走。</li>
+<li>走完了过后，下一波人来了继续这个流程。</li>
+</ul>
+<p>可循环利用的屏障。</p>
+<p>举例：</p>
+<p>CyclicBarrier barrier = new CyclicBarrier(5);</p>
+<p>然后各个线程调用barrier.await();</p>
+<p>当有5个线程await()过后，会继续执行await()后续代码</p>
+<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
+<p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
+<p>然后重新计数，继续同样的过程。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dowait(<span class="keyword">false</span>, <span class="number">0L</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (TimeoutException toe) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> Error(toe); <span class="comment">// cannot happen</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Main barrier code, covering the various policies.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">dowait</span><span class="params">(<span class="keyword">boolean</span> timed, <span class="keyword">long</span> nanos)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> InterruptedException, BrokenBarrierException,</span></span><br><span class="line"><span class="function">           TimeoutException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> Generation g = generation;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (g.broken)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">            breakBarrier();</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> index = --count;</span><br><span class="line">        <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;  <span class="comment">// tripped</span></span><br><span class="line">            <span class="keyword">boolean</span> ranAction = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> Runnable command = barrierCommand;</span><br><span class="line">                <span class="keyword">if</span> (command != <span class="keyword">null</span>)</span><br><span class="line">                    command.run();</span><br><span class="line">                ranAction = <span class="keyword">true</span>;</span><br><span class="line">                nextGeneration();</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!ranAction)</span><br><span class="line">                    breakBarrier();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// loop until tripped, broken, interrupted, or timed out</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!timed)</span><br><span class="line">                    trip.await();</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (nanos &gt; <span class="number">0L</span>)</span><br><span class="line">                    nanos = trip.awaitNanos(nanos);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">                <span class="keyword">if</span> (g == generation &amp;&amp; ! g.broken) &#123;</span><br><span class="line">                    breakBarrier();</span><br><span class="line">                    <span class="keyword">throw</span> ie;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// We&#x27;re about to finish waiting even if we had not</span></span><br><span class="line">                    <span class="comment">// been interrupted, so this interrupt is deemed to</span></span><br><span class="line">                    <span class="comment">// &quot;belong&quot; to subsequent execution.</span></span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g.broken)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g != generation)</span><br><span class="line">                <span class="keyword">return</span> index;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (timed &amp;&amp; nanos &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                breakBarrier();</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
+<p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
+<p>CountDownLatch是一次性的，而CyclicBarrier则可以被重置而重复使用。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>AQS</tag>
+        <tag>CyclicBarrier</tag>
       </tags>
   </entry>
   <entry>
@@ -10184,14 +10184,15 @@
 <li>  主工程和多个子工程依赖相同的库时，如何同时在不同工程升级这个库？</li>
 <li>  多个人在同一个子工程发布aar怎么保证发布时是最新代码？并且版本号没有冲突？</li>
 <li>  有搭建自己的maven服务器缓存mavenCenter里的依赖库吗？</li>
+<li>  子工程网络请求操作是怎么调试验证的？</li>
 <li>  UI实体类、网络请求序列化实体类、数据库ORM实体类是同一个类吗？</li>
 <li>  Activity里是纯数据绑定，还是会有数据处理逻辑？</li>
+<li>  获取当前系统时间是怎么封装调用的？</li>
+<li>  怎么统一限制App总线程数的？</li>
 <li>  依赖注入框架用的是什么？</li>
 <li>  单元测试覆盖率有强制要求吗？</li>
 <li>  单元测试框架用的是哪些？</li>
 <li>  黑盒测试用的什么框架？</li>
-<li>  App内网络请求是怎么运行调试的？</li>
-<li>  数据库操作是怎么运行调试的？</li>
 <li>  编译完整的项目的时间会超过5分钟吗？</li>
 <li>  git push代码后，CI会做编译校验吗？会做增量lint检查吗？</li>
 <li>  git push代码后，会有工具自动检测编译时间和Apk体积的变化吗？</li>
@@ -10203,15 +10204,15 @@
 <li>  客户端会经常做A/B test吗？测试的都是什么内容？</li>
 <li>  APK体积和用户新增数量有量化指标监控吗？</li>
 <li>  怎么避免打印无效日志的？调试看信息的日志在功能开发完成后会删除吗？</li>
-<li>  产线包里输出的每一个error或warning的日志是否都有自定义的错误码？是否能直接定位到问题？</li>
+<li>  产线包里输出的每一个error或warning的日志是否能直接定位到问题？是否都有自定义的错误码？</li>
 <li>  日志内容对于测试、客服等不懂开发的人是否可读？</li>
 <li>  怎么避免把隐私信息写到日志里去的？</li>
-<li>  多渠道打包是通过productFlavor实现还是修改apk实现的？</li>
+<li>  项目的多渠道打包是怎么实现的？</li>
 <li>  项目有在用热修复吗？用的是哪个方案？</li>
 <li>  ConstraintLayout用的人多吗？</li>
 <li>  自定义View会考虑从右到左的布局吗？</li>
 <li>  多语言下字符串长度过长，会针对不同语言设计多个布局吗？</li>
-<li>  给TextView设置纯数字内容，是直接调用数字类的toString()方法转字符串吗？</li>
+<li>  给TextView设置纯数字内容，是调用数字类的toString()方法转字符串吗？</li>
 <li>  设计图中UI控件的样式在代码中有主题样式逐一对应吗？</li>
 <li>  每个类名有@author的注释吗，author名称是邮箱地址吗？</li>
 <li>  Jetpack Paging在用吗？</li>
@@ -10227,17 +10228,19 @@
 <li>  组里有多少人做过开源项目？做的是哪方面的内容？</li>
 <li>  组里有多少人同时掌握Android和iOS？</li>
 <li>  组里有多少人同时掌握5门以上编程语言？</li>
-<li>  部门领导会定期参与一线开发的Code Review吗？</li>
+<li>  部门领导或技术总监会定期参与一线开发的Code Review吗？</li>
 <li>  您认为Kotlin、Groovy、JavaScript主要的区别是什么？</li>
 <li>  您认为用Groovy做Android开发会有什么问题？</li>
 <li>  您认为在组内推广Kotlin的困难在哪？</li>
 <li>  您认为在组内推广单元测试的困难在哪？</li>
-<li>  产品经理会对功能需求描述给出具体的测试用例说明吗？</li>
+<li>  产品经理会对功能需求描述给出详细的测试用例文档吗？</li>
 <li>  DevOps团队里的人能熟练掌握Gradle和Groovy吗？</li>
 <li>  每个人可以看到所有仓库的代码吗？</li>
 <li>  发现别的仓库有问题可以对别的仓库提交修改吗？</li>
 <li>  对于一线员工的意见反馈，怎么收集和解决落实的？</li>
 <li>  加班多吗？加班的原因是什么？</li>
+<li>  组里一到两年内职级晋升的人数比例是多少？</li>
+<li>  组里一到两年内涨薪的人数比例是多少？最低和最高薪资涨幅是多少？</li>
 </ul>
 <h1 id="办公环境"><a href="#办公环境" class="headerlink" title="办公环境"></a>办公环境</h1><ul>
 <li>  办公椅有靠枕吗？</li>
