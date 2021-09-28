@@ -7514,6 +7514,352 @@
       </tags>
   </entry>
   <entry>
+    <title>B树、B+树</title>
+    <url>/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/</url>
+    <content><![CDATA[<h1 id="B和B-里的B是什么意思"><a href="#B和B-里的B是什么意思" class="headerlink" title="B和B+里的B是什么意思?"></a>B和B+里的B是什么意思?</h1><p>B是Balanced的缩写，平衡的意思。</p>
+<p>全称可以叫多路（多叉）平衡查找（搜索）树。</p>
+<h2 id="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"><a href="#多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？" class="headerlink" title="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"></a>多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？</h2><p>由于平衡二叉查找树只有两个分叉，查询叶子结点需要访问$log_2{n}$次节点，即树的高度。</p>
+<p>如果要减少查找次数，就要让树变矮一点。</p>
+<p>那么一个节点有多个分叉，同时让一个节点存储多个值，就可以降低树的高度，进而减少节点平均的访问次数。</p>
+<h2 id="减少节点的访问次数有什么好处？"><a href="#减少节点的访问次数有什么好处？" class="headerlink" title="减少节点的访问次数有什么好处？"></a>减少节点的访问次数有什么好处？</h2><p>访问节点的成本可能非常大，减少访问节点的次数，就可以降低总的访问成本。</p>
+<p>例如访问IO比访问内存要慢的多，文件系统中普遍采用多路平衡查找树作为存储数据的结构。</p>
+<h2 id="B树与B-的区别？"><a href="#B树与B-的区别？" class="headerlink" title="B树与B+的区别？"></a>B树与B+的区别？</h2><p>B树与B+共同点：</p>
+<ol>
+<li> 都是一个节点按顺序存储多个值</li>
+<li> 每个节点可以有多个分叉</li>
+</ol>
+<p>B树独有：</p>
+<ol>
+<li> 非叶子节点存储了数据，非叶子节点占用空间更大</li>
+</ol>
+<p>B+树独有：</p>
+<ol>
+<li> 非叶子节点不存数据只存索引信息，数据全部在叶子节点，非叶子节点占用空间更小</li>
+<li> 叶子结点用双向链表相连，便于顺序查找</li>
+</ol>
+<h2 id="B-树作为数据库索引有什么优势？"><a href="#B-树作为数据库索引有什么优势？" class="headerlink" title="B+树作为数据库索引有什么优势？"></a>B+树作为数据库索引有什么优势？</h2><p>非叶子结点的大小可以设置为一页，内存从外存读取数据是按页读取的，这样就减少了IO访问次数。</p>
+<p>结点内部是有序的，可以再用二分查找去查找元素。</p>
+<p>B+树的非叶子结点不存储数据，只存键，这样同样空间大小可以存的键就更多，非叶子结点的数量就会减少，IO访问次数也就变少了。</p>
+<p>B+树的叶子结点用双链表链接，这样对区间查询友好，只需要通过非叶结点查找到区间范围，然后顺序遍历即可，可以减少对非叶结点的访问，进而减少IO访问次数。因为由于虚拟内存机制，非叶结点加载到内存后，可能也会被置换到外存，减少对非叶结点的访问次数，也就降低了置换次数，置换是需要IO访问的。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a href="https://draveness.me/whys-the-design-mysql-b-plus-tree/">为什么 MySQL 使用 B+ 树</a></li>
+<li><a href="https://blog.csdn.net/v_july_v/article/details/6530142">从B树、B+树、B*树谈到R 树</a></li>
+<li><a href="https://mp.weixin.qq.com/s/svL_yNmNJ-wj9aGjtO_Yww">拜托，别再问我什么是B+树 了</a></li>
+<li><a href="https://blog.csdn.net/qq_21993785/java/article/details/80580679">B+Tree在数据库索引上拥有独特优势的原因（为什么比红黑树更合适）</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>B+树</tag>
+        <tag>数据结构</tag>
+        <tag>算法</tag>
+        <tag>B树</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LZ77算法</title>
+    <url>/%E7%AE%97%E6%B3%95/LZ77%E7%AE%97%E6%B3%95/</url>
+    <content><![CDATA[<h2 id="LZ77和哈夫曼编码区别？适用场景上有有什么不同？"><a href="#LZ77和哈夫曼编码区别？适用场景上有有什么不同？" class="headerlink" title="LZ77和哈夫曼编码区别？适用场景上有有什么不同？"></a>LZ77和哈夫曼编码区别？适用场景上有有什么不同？</h2><p>哈夫曼编码是基于统计的数据压缩编码，需要先获得信息源的字符出现频率，然后再进行压缩。</p>
+<p>但是，如果信息源是流式传输的，就没办法预先做统计，需要换一种思路。</p>
+<p>LZ77利用数据的重复结构信息来进行数据压缩，是基于字典的压缩算法，可以做流逝压缩。</p>
+<p>GZIP压缩的过程就是先用LZ77算法进行流式压缩，再对结果做哈夫曼编码压缩。</p>
+<h2 id="为什么叫LZ77"><a href="#为什么叫LZ77" class="headerlink" title="为什么叫LZ77?"></a>为什么叫LZ77?</h2><p>由以色列的两位大神Jacob Ziv与Abraham Lempel在1977年发表的论文《A Universal Algorithm for Sequential Data Compression》中提出。</p>
+<h2 id="LZ77算法思想概述"><a href="#LZ77算法思想概述" class="headerlink" title="LZ77算法思想概述"></a>LZ77算法思想概述</h2><p>核心思想：利用短语表示数据的重复结构信息来进行数据压缩。</p>
+<p>LZ77算法一般称为“滑动窗口压缩”，算法的核心是在前面的历史数据中寻找重复字符串。</p>
+<p>通过滑动窗口实现动态字典，用前面出现过的字符串作为字典通过映射（与前一个字符串的距离和字符串长度）替代后面重复出现的字符串。</p>
+<p>重复现象是具有局部性的，它的基本假设是，如果一个字符串要重复，那么也是在附近重复，远的地方就不用找了，因此设置了一个滑动窗口。</p>
+<p>其方式就是把数据中一些可以组织成短语(最长字符)的字符加入字典，然后再有相同字符出现采用标记来代替字典中的短语，如此通过标记代替多数重复出现的方式以进行压缩。</p>
+<p>滑动窗口越大，压缩的效果越好，因为编码的短语越多，但是压缩速度越慢，因为要计算的短语数量越多。</p>
+<h2 id="基于字典是什么意思？"><a href="#基于字典是什么意思？" class="headerlink" title="基于字典是什么意思？"></a>基于字典是什么意思？</h2><p>滑动窗口内的字符都是已经出现过的字符，已经出现过的字符会编码为字典短语，后面前向缓冲窗口中的字符如果和字典中的短语相同，就用距离和字符串长度来表示，以达到压缩的目的。</p>
+<h2 id="LZ77压缩效果"><a href="#LZ77压缩效果" class="headerlink" title="LZ77压缩效果"></a>LZ77压缩效果</h2><p>大多数情况下LZ77压缩算法的压缩比相当高。</p>
+<p>实际压缩率和选择的滑动窗口大小、前向缓冲区大小、数据熵有关系。</p>
+<h2 id="LZ77缺点"><a href="#LZ77缺点" class="headerlink" title="LZ77缺点"></a>LZ77缺点</h2><p>压缩过程是比较耗时，因为要花费很多时间寻找滑动窗口中的短语匹配。</p>
+<p>不过解压过程很快，因为每个标记都明确告知在哪个位置可以读取了。</p>
+<h2 id="什么特征的文本用LZ77压缩效果好？"><a href="#什么特征的文本用LZ77压缩效果好？" class="headerlink" title="什么特征的文本用LZ77压缩效果好？"></a>什么特征的文本用LZ77压缩效果好？</h2><p>压缩就是用更短的符号来表示重复出现的字符串。</p>
+<p>压缩就是寻找文本的内容分布概率，将出现频率高的部分代替成更短的形式。</p>
+<p>内容越是重复，就可以压缩的更小。</p>
+<p>内容如果毫无重复，就很难压缩。</p>
+<h2 id="LZ77详细原理"><a href="#LZ77详细原理" class="headerlink" title="LZ77详细原理"></a>LZ77详细原理</h2><p>参见： <a href="https://www.codenong.com/cs106685915/">Linux(程序设计):28—数据流压缩原理（Deflate压缩算法、gzip、zlib）</a></p>
+<h2 id="为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？"><a href="#为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？" class="headerlink" title="为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？"></a>为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？</h2><p>LZ77编码后得到的是，距离（distance）和长度（length），还有未匹配到短语字典的原始字符（literal）。</p>
+<p>比较短的距离和长度可能是频繁出现的，就可以用变长编码来压缩，且文本已经确定下来不会变动，可以做词频统计，就可以用到哈夫曼编码了。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a href="https://www.codenong.com/cs106685915/">Linux(程序设计):28—数据流压缩原理（Deflate压缩算法、gzip、zlib）</a></li>
+<li><a href="https://www.cnblogs.com/en-heng/p/4992916.html">【数据压缩】LZ77算法原理及实现</a></li>
+<li><a href="https://www.cnblogs.com/en-heng/p/4992916.html">LZ77算法原理以及实现</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>LZ77</tag>
+        <tag>GZIP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>哈夫曼编码</title>
+    <url>/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/</url>
+    <content><![CDATA[<h2 id="什么是哈夫曼编码"><a href="#什么是哈夫曼编码" class="headerlink" title="什么是哈夫曼编码"></a>什么是哈夫曼编码</h2><p>出现频次越高的字符，编码长度越小。</p>
+<h2 id="哈夫曼编码的价值"><a href="#哈夫曼编码的价值" class="headerlink" title="哈夫曼编码的价值"></a>哈夫曼编码的价值</h2><p>变长编码，使得编码的平均长度最短，实现压缩率大的无损压缩。</p>
+<p>因为哈夫曼树是最优的，每次的选择都是贪心选择，这个局部最优也是全局最优。</p>
+<h2 id="哈夫曼编码过程"><a href="#哈夫曼编码过程" class="headerlink" title="哈夫曼编码过程"></a>哈夫曼编码过程</h2><ul>
+<li>把文本中字符按出现的频次排序。</li>
+<li>每个字符作为一个结点放入一个集合。</li>
+<li>取集合最小的两个频次的结点，为左右子结点，生成一个父结点，父结点的频次是两个子结点频次之和，把父结点再加入到集合中。</li>
+<li>重复这个构造过程，生成一个最优二叉树。</li>
+<li>给二叉树所有左边设置0，所有右边设置1。</li>
+<li>字符都在叶子结点。</li>
+<li>根结点到叶子结点路径上的0和1组成的码字就是该字符的编码。</li>
+</ul>
+<p>因为所有字符都出现在叶子结点，保证了哈夫曼编码当中的任何一个字符的编码都不能是另一个字符编码的前缀。也就是说哈夫曼编码是一种前缀编码。</p>
+<hr>
+<h2 id="如何证明哈夫曼编码是最优的？"><a href="#如何证明哈夫曼编码是最优的？" class="headerlink" title="如何证明哈夫曼编码是最优的？"></a>如何证明哈夫曼编码是最优的？</h2><p>哈夫曼编码过程每次的选择都是贪心选择，这个局部最优也是全局最优。</p>
+<p>其正确性证明依赖于贪心选择性质和最优子结构。</p>
+<hr>
+<h2 id="哈夫曼编码的特点"><a href="#哈夫曼编码的特点" class="headerlink" title="哈夫曼编码的特点"></a>哈夫曼编码的特点</h2><ol>
+<li> 编码非等长</li>
+<li> 编码前缀不重复</li>
+</ol>
+<h2 id="哈夫曼编码的压缩效果？"><a href="#哈夫曼编码的压缩效果？" class="headerlink" title="哈夫曼编码的压缩效果？"></a>哈夫曼编码的压缩效果？</h2><p>哈夫曼编码可以很有效的压缩数据，具体压缩率依赖于数据本身的特性。</p>
+<p>齐夫定律：</p>
+<p>发现某一单词出现的频率与其在频率表里名次的常数次幂成反比，也就是说极少数的单词会被经常使用，而绝大多数单词很少被提及，这种20/80法则在很多领域都被逐步发现，这种幂律分布被称为“齐夫定律”（Zipf’s law）</p>
+<p>一般信息的分配都是幂率分布。</p>
+<p>所以用哈夫曼编码压缩的比例一般都挺高的，70%以上。</p>
+<h2 id="信息压缩的极限在哪？"><a href="#信息压缩的极限在哪？" class="headerlink" title="信息压缩的极限在哪？"></a>信息压缩的极限在哪？</h2><p>香农第一定理给出了无损的情况下数据压缩的临界值。</p>
+<p>参考：<a href="https://www.ruanyifeng.com/blog/2019/08/information-theory.html">信息论入门教程</a></p>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>哈夫曼编码</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>字典树</title>
+    <url>/%E7%AE%97%E6%B3%95/%E5%AD%97%E5%85%B8%E6%A0%91/</url>
+    <content><![CDATA[<h2 id="字典树特点"><a href="#字典树特点" class="headerlink" title="字典树特点"></a>字典树特点</h2><ul>
+<li>查询快</li>
+<li>存储少</li>
+</ul>
+<p>对相同前缀的字符串进行了压缩存储，存储空间少，访问一个字符串最多也只需要访问字符串的长度。</p>
+<p>利用字符串的公共前缀来减少查询时间，最大限度的减少无谓的字符串比较，查询效率比哈希树高。</p>
+<h2 id="字典树有什么应用场景？"><a href="#字典树有什么应用场景？" class="headerlink" title="字典树有什么应用场景？"></a>字典树有什么应用场景？</h2><h3 id="单词联想预测、单词纠错。"><a href="#单词联想预测、单词纠错。" class="headerlink" title="单词联想预测、单词纠错。"></a>单词联想预测、单词纠错。</h3><p>在搜索引擎中关键词提示，引擎会自动弹出匹配关键词的下拉框。</p>
+<h3 id="字符串检索"><a href="#字符串检索" class="headerlink" title="字符串检索"></a>字符串检索</h3><p>事先将已知的一些字符串（字典）的有关信息保存到trie树里，查找另外一些未知字符串是否出现过或者出现频率。</p>
+<p>例如：</p>
+<ul>
+<li>  1000万字符串，其中有些是重复的，需要把重复的全部去掉，保留没有重复的字符串。</li>
+<li>  给出N 个单词组成的熟词表，以及一篇全用小写英文书写的文章，请你按最早出现的顺序写出所有不在熟词表中的生词。</li>
+</ul>
+<p>这样一方面可以节约存储空间，另一方面先用字典树预处理了海量文本，之后进行字符串查找时，不用在整个文本中查找特定字符串</p>
+<h3 id="词频统计"><a href="#词频统计" class="headerlink" title="词频统计"></a>词频统计</h3><p>给定很长的一个串，统计频数出现次数最多情况。</p>
+<p>例如：</p>
+<ul>
+<li>  有一个1G大小的一个文件，里面每一行是一个词，词的大小不超过16字节，内存限制大小是1M。返回频数最高的100个词。</li>
+<li>  一个文本文件，大约有一万行，每行一个词，要求统计出其中最频繁出现的前10个词，请给出思想，给出时间复杂度分析。</li>
+</ul>
+<h3 id="字符串最长公共前缀"><a href="#字符串最长公共前缀" class="headerlink" title="字符串最长公共前缀"></a>字符串最长公共前缀</h3><p>Trie树利用多个字符串的公共前缀来节省存储空间，当我们把大量字符串存储到一棵trie树上时，我们可以快速得到某些字符串的公共前缀，所以可以利用这个特点来解决一些前缀问题。</p>
+<p>例如：</p>
+<ul>
+<li>  给出N 个小写英文字母串，以及Q 个询问，即询问某两个串的最长公共前缀的长度是多少？</li>
+</ul>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>字典树</tag>
+        <tag>数据结构</tag>
+        <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>红黑树、AVL树</title>
+    <url>/%E7%AE%97%E6%B3%95/%E9%BB%91%E6%A0%91%E3%80%81AVL%E6%A0%91/</url>
+    <content><![CDATA[<h2 id="普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？"><a href="#普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？" class="headerlink" title="普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？"></a>普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？</h2><p>普通的二叉查找树最坏情况下会退化为一个链表，查找元素的时间复杂度由log_2{n}退化到n。</p>
+<p>解决时间复杂度退化，就是要让树的高度始终保持尽可能的小，平衡二叉查找树就是让任意节点的左右子树高度都平衡（差的不多）的二叉查找树，这样查找元素的平均时间复杂度可以保持在log_2{n}，</p>
+<h2 id="有哪些平衡二叉查找树？"><a href="#有哪些平衡二叉查找树？" class="headerlink" title="有哪些平衡二叉查找树？"></a>有哪些平衡二叉查找树？</h2><p>AVL树、2-3树、红黑树</p>
+<h2 id="为什么流行的主要是这几个树？"><a href="#为什么流行的主要是这几个树？" class="headerlink" title="为什么流行的主要是这几个树？"></a>为什么流行的主要是这几个树？</h2><p>因为逻辑比较简单，易于实现，效率也就高。</p>
+<h2 id="AVL树特点"><a href="#AVL树特点" class="headerlink" title="AVL树特点"></a>AVL树特点</h2><p>任意结点左右子树高度差小于或等于1。</p>
+<p>由Adelson-Velskii 以及 Landis发明，故而叫AVL。</p>
+<h2 id="2-3树"><a href="#2-3树" class="headerlink" title="2-3树"></a>2-3树</h2><p>定义：</p>
+<ul>
+<li>在满足二叉查找树的性质基础上，一个结点最多可以存储2个键，可以有3个孩子结点。</li>
+<li>2结点里存储1个键，可以有2个孩子结点</li>
+<li>3结点里存储2个键，可以有3个孩子结点</li>
+</ul>
+<p>特点</p>
+<ul>
+<li>2-3树是完美平衡的，任意结点的左右子树高度相等，这可以分析所有插入的情况来证明。</li>
+</ul>
+<p>自下而上生长：</p>
+<ul>
+<li>插入位置在2结点中，直接插入，变为3结点。</li>
+<li>插入位置在3结点中，先插入键变成4结点，再把中间的键提升到父结点中，当前结点就变成了两个2结点（不直接把键插入父结点是因为插入的键和提升到父结点的键不一定是同一个）。<ul>
+<li>如果父结点本来是2结点，现在就变成了3结点。</li>
+<li>如果父结点本来是3结点，现在就变成了4结点，继续提升的过程。</li>
+<li>如果没有父结点，当前即为根结点，那么就把临时的4结点分解为3个2结点，中间的键提升为2结点作为新的根结点。</li>
+</ul>
+</li>
+</ul>
+<p>在根结点为3结点时，插入新键变为4结点，再拆分为3个2结点后，树的高度才会加1。</p>
+<p>一颗含有n个节点的2-3树的高度在log_3{n}（全是3结点）到log_2{n}（全是2结点）之间。</p>
+<p>每次插入后调整结点都是局部的，最坏情况下，一条路径上都是3结点，从叶结点插入新键后，会从叶结点一直调整到根结点，调整次数不会超过对数级别。</p>
+<p>10亿个结点的2-3树高度仅在19到30之间，性能较高。</p>
+<p>各种操作实现较为复杂。</p>
+<h2 id="为什么2-3树可以保持完美平衡？"><a href="#为什么2-3树可以保持完美平衡？" class="headerlink" title="为什么2-3树可以保持完美平衡？"></a>为什么2-3树可以保持完美平衡？</h2><p>这可以分析所有插入的情况来证明。</p>
+<p>自下而上生长</p>
+<ol>
+<li><p> 插入位置在2结点中，直接插入，变为3结点</p>
+</li>
+<li><p> 插入位置在3结点中，先插入键变成4结点，再把中间的键提升到父结点中，当前结点就变成了两个2结点（不直接把键插入父结点是因为插入的键和提升到父结点的键不一定是同一个）</p>
+</li>
+<li><p> 如果父结点本来是2结点，现在就变成了3结点</p>
+</li>
+<li><p> 如果父结点本来是3结点，现在就变成了4结点，继续提升的过程</p>
+</li>
+<li><p> 如果没有父结点，当前即为根结点，那么就把临时的4结点分解为3个2结点，中间的键提升为2结点作为新的根结点</p>
+</li>
+</ol>
+<p>在根结点为3结点时，插入新键变为4结点，再拆分为3个2结点后，树的高度才会加1</p>
+<h2 id="红黑树"><a href="#红黑树" class="headerlink" title="红黑树"></a>红黑树</h2><p>实现较为简单，综合性能好。</p>
+<p>把2-3树的3结点表示为左斜的红色链接相连的两个2结点，其中一个结点是另一个结点的左子结点，其他链接为黑色链接。</p>
+<p>红黑树既是二叉查找树也是2-3树。</p>
+<p>等价定义（《算法》第4版 275页 3.3.2.1）：</p>
+<ol>
+<li> 红色链接均为左链接</li>
+<li> 没有任何一个结点同时和两条红链接相连</li>
+<li> 该树是完美黑色平衡的，即任意空链接到根结点的路径上的黑链接数量相同</li>
+</ol>
+<p>红黑树的几条定义都是为了让红黑树满足2-3树的结构。</p>
+<p>如果让2-3树中所有链接都为黑色，由于2-3树是完美平衡的，红黑树中红色链接代表3结点，所以红黑树中的黑色链接是完美平衡的。</p>
+<p>再把2-3树中的3结点都分解为两个用红色链接相连的2结点，那么不会存在一个结点同时与两条红色链接相连，这一点保证了红色链接是3结点。</p>
+<p>对红黑树插入、删除元素后，不满足红黑树的定义，都要通过旋转操作来修正。</p>
+<p>红黑树的旋转操作修正，都是符合2-3树的修正的规则的，理解记住了2-3树的各种调整规则，就知道了红黑树各种操作的意义。</p>
+<h2 id="红黑树是怎么发明出来的？"><a href="#红黑树是怎么发明出来的？" class="headerlink" title="红黑树是怎么发明出来的？"></a>红黑树是怎么发明出来的？</h2><p>它在1972年由<a href="https://zh.wikipedia.org/wiki/%E9%B2%81%E9%81%93%E5%A4%AB%C2%B7%E8%B4%9D%E5%B0%94">鲁道夫·贝尔</a>发明，被称为”对称二叉B树”，它现代的名字源于Leo J. Guibas和<a href="https://zh.wikipedia.org/wiki/Robert_Sedgewick">Robert Sedgewick</a>于<a href="https://zh.wikipedia.org/wiki/1978%E5%B9%B4">1978年</a>写的一篇论文。</p>
+<p>红黑树等同于2-3-4树，是2-3-4树的二叉表现形式。</p>
+<p>2-3-4树是B树的一种情况。</p>
+<p>红黑树结点的颜色表明了当前结点是否属于2-3-4树中的3结点或4结点。</p>
+<p>2-3-4树的情况讨论比较复杂，  用2-3树讨论情况较少，可以方便理解。</p>
+<hr>
+<h2 id="红黑树定义"><a href="#红黑树定义" class="headerlink" title="红黑树定义"></a>红黑树定义</h2><p>《算法》第4版 275页 3.3.2.1 定义：</p>
+<ol>
+<li> 红色链接均为左链接</li>
+<li> 没有任何一个结点同时和两条红链接相连</li>
+<li> 该树是完美黑色平衡的，即任意空链接到根结点的路径上的黑链接数量相同</li>
+</ol>
+<p>《算法导论》273页  第13章  红黑树  定义：</p>
+<ol>
+<li> 节点是红色或黑色</li>
+<li> 根节点是黑色</li>
+<li> 叶节点是黑色</li>
+<li> 红节点的两个子节点都是黑色</li>
+<li> 任意节点到叶节点的所有路径上的黑色节点数相同</li>
+</ol>
+<h2 id="红黑树为什么要这样定义？"><a href="#红黑树为什么要这样定义？" class="headerlink" title="红黑树为什么要这样定义？"></a>红黑树为什么要这样定义？</h2><p>红黑树的几条定义都是为了让红黑树满足2-3树的结构，红黑树是2-3树的一种表示形式，而2-3树是完美平衡的，这样红黑树也是黑色平衡的，2-3树比较难以实现，红黑树比较方便实现。</p>
+<h2 id="为什么要用红黑树表示2-3树？"><a href="#为什么要用红黑树表示2-3树？" class="headerlink" title="为什么要用红黑树表示2-3树？"></a>为什么要用红黑树表示2-3树？</h2><ul>
+<li>因为2-3树是完美平衡的，任意结点的子树没有高度差。</li>
+<li>2-3树的实现较为复杂，红黑树的实现较为简单。</li>
+</ul>
+<h2 id="红黑树的数据结构如何定义？"><a href="#红黑树的数据结构如何定义？" class="headerlink" title="红黑树的数据结构如何定义？"></a>红黑树的数据结构如何定义？</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 树的结点</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="type">Key : Comparable&lt;Key</span>&gt;, <span class="type">Value&gt;</span></span>(</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 父结点指向本结点的链接颜色，用以标明本结点对应2-3树中的2结点还是3结点</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> color: Color,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 关键字。用于比较来确定数据的顺序</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">val</span> key: Key,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 关联的数据</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> value: Value,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 左子结点</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> left: Node&lt;Key, Value&gt;? = <span class="literal">null</span>,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 右子结点</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> right: Node&lt;Key, Value&gt;? = <span class="literal">null</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 链接颜色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span> <span class="title">Color</span> </span>&#123;</span><br><span class="line">    BLACK, RED</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="红黑树插入新元素后调整结点的操作规则是怎样的？"><a href="#红黑树插入新元素后调整结点的操作规则是怎样的？" class="headerlink" title="红黑树插入新元素后调整结点的操作规则是怎样的？"></a>红黑树插入新元素后调整结点的操作规则是怎样的？</h2><p>原则：所有操作跟2-3树能逐一对应，保证树的有序性和完美平衡性。</p>
+<p>插入新结点先按普通的二叉查找树插入新结点那样进行插入。</p>
+<p>普通的二叉查找树插入新元素有三种情况：</p>
+<ol>
+<li> 树中没有结点，插入的新结点作为根结点</li>
+<li> 树中有结点，插入的新结点一定是某个结点h的左子结点</li>
+<li> 树中有结点，插入的新结点一定是某个结点h的右子结点</li>
+</ol>
+<p>在红黑树中，结点h又可以分为两种情况</p>
+<ol>
+<li> 结点h是2结点</li>
+<li>结点h位于3结点中<ol>
+<li> 结点h是红链接左下的结点</li>
+<li> 结点h是红链接右上的结点</li>
+</ol>
+</li>
+</ol>
+<p>插入新结点要默认新结点的颜色是红色，表示新结点到父节点的链接是红色，这样与2-3树的插入就可以对应上。</p>
+<p>在2-3树中如果插入在2结点中，2结点变为3结点，就不再调整；如果插入的在3结点中，3结点临时变为4结点，再把4结点的中间键放入父结点中，左右两边的键分解为两个2结点与父结点相连。</p>
+<p>处理这些情况的组合，就是所有的插入情况，针对不符合2-3树的结构的情况进行调整。</p>
+<ul>
+<li>结点h是2结点<ul>
+<li>新结点是h的左子结点，相当于新结点和结点h组成了2-3树中的3结点，符合2-3树的结构，无需调整</li>
+<li>新结点是h的右子结点，相当于新结点和结点h组成了2-3树中的3结点，但我们规定红链接要保持左斜，以减少考虑的情况数量，所以要进行左旋转</li>
+</ul>
+</li>
+<li>结点h位于3结点中，新结点的位置有三种情况：左、中、右<ul>
+<li>结点h是红链接左下的结点<ul>
+<li>新结点是h的左子结点，此时有了两条连续的红链接，连接的3个结点对应2-3树中临时的4结点，需要把中间的键放入父结点，再把两边的键拆为两个2结点分别与父结点相连，所以操作是先右旋，再变换颜色</li>
+<li>新结点是h的右子结点</li>
+</ul>
+</li>
+<li>结点h是红链接右上的结点<ul>
+<li>新结点是h的右子结点</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>有三种标准操作：左旋、右旋、颜色转换</p>
+<h2 id="为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？"><a href="#为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？" class="headerlink" title="为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？"></a>为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？</h2><p>只允许红色的左链接可以减少讨论的情景数量，进而简化代码的实现。</p>
+<h2 id="红黑树最坏情况下高度是多少？"><a href="#红黑树最坏情况下高度是多少？" class="headerlink" title="红黑树最坏情况下高度是多少？"></a>红黑树最坏情况下高度是多少？</h2><p>有n个结点的红黑树高度最多为 $2 * log_2{n}$</p>
+<p>由于2-3树中的3结点是由左斜红链接连接的两个结点表示的，最坏情况下最左侧路径全部都是红链接，对应2-3树中最左侧都是3结点，其他结点都是2结点。</p>
+<p>参考《算法导论》中的证明：<br><a href="https://blog.csdn.net/lanchunhui/java/article/details/75905478">红黑树相关定理及其证明
+</a></p>
+<h2 id="红黑树的各种操作的时间复杂度是多少？"><a href="#红黑树的各种操作的时间复杂度是多少？" class="headerlink" title="红黑树的各种操作的时间复杂度是多少？"></a>红黑树的各种操作的时间复杂度是多少？</h2><p>设红黑树有n个结点，查找、插入、修改、删除操作的时间复杂度均为O(log n)</p>
+<p>查找：</p>
+<ul>
+<li>最长路径长度不会超过最短路径长度的2倍，查找仍然是对数级别</li>
+</ul>
+<p>插入：</p>
+<ul>
+<li>最坏情况下待插入的位置在叶结点，需要从根结点遍历到叶结点，同时最坏情况下遍历的路径都是红链接（路径上都是3结点），此时会从叶结点一直回溯调整结点到根结点，访问次数是2倍的树的高度，而树的高度为log_2{n}</li>
+</ul>
+<h2 id="红黑树较于AVL树有什么优点？"><a href="#红黑树较于AVL树有什么优点？" class="headerlink" title="红黑树较于AVL树有什么优点？"></a>红黑树较于AVL树有什么优点？</h2><p>单次操作：</p>
+<ul>
+<li>单次插入数据，红黑树和AVL树平均都只需要几次旋转即可完成。</li>
+<li>单次删除元素，红黑树大多数只需要几次旋转调整，AVL树需要调整查找路径上所有结点。</li>
+</ul>
+<p>大量的插入和删除操作：</p>
+<ul>
+<li>红黑树由于是基于2-3树，3结点的存在可以吸纳一部分不平衡性，不用做频繁的旋转调整。</li>
+<li>AVL树需要始终保持平衡，在大量插入或删除元素后，AVL树的调整的次数多于红黑树。</li>
+</ul>
+<p>在大量数据的统计意义上，红黑树的插入和删除次数相对于AVL树较少，适合插入和删除频繁的场景。</p>
+<p>AVL树由于是高度平衡的，红黑树不是高度平衡，AVL树的查找次数比红黑树更少，适合对查询效率非常敏感，插入和删除不频繁的场景。</p>
+<p>红黑树的查询跟AVL树仍然是同一个数量级，所以综合查询、插入、删除的性能，红黑树表现较好。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://www.zhihu.com/question/20545708/answer/58717264">为什么STL和linux都使用红黑树作为平衡树的实现？ - Acjx的回答 - 知乎 </a></li>
+<li><a href="https://www.zhihu.com/question/19856999/answer/944180969">红黑树比 AVL 树具体更高效在哪里？ - 伍亦勤的回答 - 知乎 </a></li>
+</ul>
+<h2 id="什么时候用AVL树？"><a href="#什么时候用AVL树？" class="headerlink" title="什么时候用AVL树？"></a>什么时候用AVL树？</h2><p>AVL树平衡性非常好，左右子树高度差不超过1，所以查找次数少。</p>
+<p>对于查找非常频繁，插入、修改、删除不频繁的场景，可以使用AVL树。</p>
+<h2 id="并发下的问题"><a href="#并发下的问题" class="headerlink" title="并发下的问题"></a>并发下的问题</h2><p>并发情况下，由于平衡搜索树的调整可能要锁整个树。</p>
+<p>用跳表这种性能接近于平衡树的数据结构，操作更加局部性，不会锁住太多结点，有利于并发的性能。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a href="https://www.cnblogs.com/wuchanming/p/4444961.html">面试题——轻松搞定面试中的红黑树问题</a></li>
+<li><a href="https://www.cnblogs.com/nullzx/p/6111175.html">从2-3-4树到红黑树（上）</a></li>
+<li><a href="https://www.zhihu.com/question/30527705/answer/259948086">AVL树，红黑树，B树，B+树，Trie树都分别应用在哪些现实场景中？ - 韦易笑的回答 - 知乎 </a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>数据结构</tag>
+        <tag>算法</tag>
+        <tag>红黑树</tag>
+        <tag>AVL树</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>TCP三次握手</title>
     <url>/%E7%BD%91%E7%BB%9C/TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B/</url>
     <content><![CDATA[<h1 id="TCP为什么要三次握手？为什么不能两次握手或四次握手？"><a href="#TCP为什么要三次握手？为什么不能两次握手或四次握手？" class="headerlink" title="TCP为什么要三次握手？为什么不能两次握手或四次握手？"></a>TCP为什么要三次握手？为什么不能两次握手或四次握手？</h1><ol>
@@ -8056,352 +8402,6 @@
       </categories>
       <tags>
         <tag>网络</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>B树、B+树</title>
-    <url>/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/</url>
-    <content><![CDATA[<h1 id="B和B-里的B是什么意思"><a href="#B和B-里的B是什么意思" class="headerlink" title="B和B+里的B是什么意思?"></a>B和B+里的B是什么意思?</h1><p>B是Balanced的缩写，平衡的意思。</p>
-<p>全称可以叫多路（多叉）平衡查找（搜索）树。</p>
-<h2 id="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"><a href="#多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？" class="headerlink" title="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"></a>多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？</h2><p>由于平衡二叉查找树只有两个分叉，查询叶子结点需要访问$log_2{n}$次节点，即树的高度。</p>
-<p>如果要减少查找次数，就要让树变矮一点。</p>
-<p>那么一个节点有多个分叉，同时让一个节点存储多个值，就可以降低树的高度，进而减少节点平均的访问次数。</p>
-<h2 id="减少节点的访问次数有什么好处？"><a href="#减少节点的访问次数有什么好处？" class="headerlink" title="减少节点的访问次数有什么好处？"></a>减少节点的访问次数有什么好处？</h2><p>访问节点的成本可能非常大，减少访问节点的次数，就可以降低总的访问成本。</p>
-<p>例如访问IO比访问内存要慢的多，文件系统中普遍采用多路平衡查找树作为存储数据的结构。</p>
-<h2 id="B树与B-的区别？"><a href="#B树与B-的区别？" class="headerlink" title="B树与B+的区别？"></a>B树与B+的区别？</h2><p>B树与B+共同点：</p>
-<ol>
-<li> 都是一个节点按顺序存储多个值</li>
-<li> 每个节点可以有多个分叉</li>
-</ol>
-<p>B树独有：</p>
-<ol>
-<li> 非叶子节点存储了数据，非叶子节点占用空间更大</li>
-</ol>
-<p>B+树独有：</p>
-<ol>
-<li> 非叶子节点不存数据只存索引信息，数据全部在叶子节点，非叶子节点占用空间更小</li>
-<li> 叶子结点用双向链表相连，便于顺序查找</li>
-</ol>
-<h2 id="B-树作为数据库索引有什么优势？"><a href="#B-树作为数据库索引有什么优势？" class="headerlink" title="B+树作为数据库索引有什么优势？"></a>B+树作为数据库索引有什么优势？</h2><p>非叶子结点的大小可以设置为一页，内存从外存读取数据是按页读取的，这样就减少了IO访问次数。</p>
-<p>结点内部是有序的，可以再用二分查找去查找元素。</p>
-<p>B+树的非叶子结点不存储数据，只存键，这样同样空间大小可以存的键就更多，非叶子结点的数量就会减少，IO访问次数也就变少了。</p>
-<p>B+树的叶子结点用双链表链接，这样对区间查询友好，只需要通过非叶结点查找到区间范围，然后顺序遍历即可，可以减少对非叶结点的访问，进而减少IO访问次数。因为由于虚拟内存机制，非叶结点加载到内存后，可能也会被置换到外存，减少对非叶结点的访问次数，也就降低了置换次数，置换是需要IO访问的。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a href="https://draveness.me/whys-the-design-mysql-b-plus-tree/">为什么 MySQL 使用 B+ 树</a></li>
-<li><a href="https://blog.csdn.net/v_july_v/article/details/6530142">从B树、B+树、B*树谈到R 树</a></li>
-<li><a href="https://mp.weixin.qq.com/s/svL_yNmNJ-wj9aGjtO_Yww">拜托，别再问我什么是B+树 了</a></li>
-<li><a href="https://blog.csdn.net/qq_21993785/java/article/details/80580679">B+Tree在数据库索引上拥有独特优势的原因（为什么比红黑树更合适）</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>B+树</tag>
-        <tag>数据结构</tag>
-        <tag>算法</tag>
-        <tag>B树</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LZ77算法</title>
-    <url>/%E7%AE%97%E6%B3%95/LZ77%E7%AE%97%E6%B3%95/</url>
-    <content><![CDATA[<h2 id="LZ77和哈夫曼编码区别？适用场景上有有什么不同？"><a href="#LZ77和哈夫曼编码区别？适用场景上有有什么不同？" class="headerlink" title="LZ77和哈夫曼编码区别？适用场景上有有什么不同？"></a>LZ77和哈夫曼编码区别？适用场景上有有什么不同？</h2><p>哈夫曼编码是基于统计的数据压缩编码，需要先获得信息源的字符出现频率，然后再进行压缩。</p>
-<p>但是，如果信息源是流式传输的，就没办法预先做统计，需要换一种思路。</p>
-<p>LZ77利用数据的重复结构信息来进行数据压缩，是基于字典的压缩算法，可以做流逝压缩。</p>
-<p>GZIP压缩的过程就是先用LZ77算法进行流式压缩，再对结果做哈夫曼编码压缩。</p>
-<h2 id="为什么叫LZ77"><a href="#为什么叫LZ77" class="headerlink" title="为什么叫LZ77?"></a>为什么叫LZ77?</h2><p>由以色列的两位大神Jacob Ziv与Abraham Lempel在1977年发表的论文《A Universal Algorithm for Sequential Data Compression》中提出。</p>
-<h2 id="LZ77算法思想概述"><a href="#LZ77算法思想概述" class="headerlink" title="LZ77算法思想概述"></a>LZ77算法思想概述</h2><p>核心思想：利用短语表示数据的重复结构信息来进行数据压缩。</p>
-<p>LZ77算法一般称为“滑动窗口压缩”，算法的核心是在前面的历史数据中寻找重复字符串。</p>
-<p>通过滑动窗口实现动态字典，用前面出现过的字符串作为字典通过映射（与前一个字符串的距离和字符串长度）替代后面重复出现的字符串。</p>
-<p>重复现象是具有局部性的，它的基本假设是，如果一个字符串要重复，那么也是在附近重复，远的地方就不用找了，因此设置了一个滑动窗口。</p>
-<p>其方式就是把数据中一些可以组织成短语(最长字符)的字符加入字典，然后再有相同字符出现采用标记来代替字典中的短语，如此通过标记代替多数重复出现的方式以进行压缩。</p>
-<p>滑动窗口越大，压缩的效果越好，因为编码的短语越多，但是压缩速度越慢，因为要计算的短语数量越多。</p>
-<h2 id="基于字典是什么意思？"><a href="#基于字典是什么意思？" class="headerlink" title="基于字典是什么意思？"></a>基于字典是什么意思？</h2><p>滑动窗口内的字符都是已经出现过的字符，已经出现过的字符会编码为字典短语，后面前向缓冲窗口中的字符如果和字典中的短语相同，就用距离和字符串长度来表示，以达到压缩的目的。</p>
-<h2 id="LZ77压缩效果"><a href="#LZ77压缩效果" class="headerlink" title="LZ77压缩效果"></a>LZ77压缩效果</h2><p>大多数情况下LZ77压缩算法的压缩比相当高。</p>
-<p>实际压缩率和选择的滑动窗口大小、前向缓冲区大小、数据熵有关系。</p>
-<h2 id="LZ77缺点"><a href="#LZ77缺点" class="headerlink" title="LZ77缺点"></a>LZ77缺点</h2><p>压缩过程是比较耗时，因为要花费很多时间寻找滑动窗口中的短语匹配。</p>
-<p>不过解压过程很快，因为每个标记都明确告知在哪个位置可以读取了。</p>
-<h2 id="什么特征的文本用LZ77压缩效果好？"><a href="#什么特征的文本用LZ77压缩效果好？" class="headerlink" title="什么特征的文本用LZ77压缩效果好？"></a>什么特征的文本用LZ77压缩效果好？</h2><p>压缩就是用更短的符号来表示重复出现的字符串。</p>
-<p>压缩就是寻找文本的内容分布概率，将出现频率高的部分代替成更短的形式。</p>
-<p>内容越是重复，就可以压缩的更小。</p>
-<p>内容如果毫无重复，就很难压缩。</p>
-<h2 id="LZ77详细原理"><a href="#LZ77详细原理" class="headerlink" title="LZ77详细原理"></a>LZ77详细原理</h2><p>参见： <a href="https://www.codenong.com/cs106685915/">Linux(程序设计):28—数据流压缩原理（Deflate压缩算法、gzip、zlib）</a></p>
-<h2 id="为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？"><a href="#为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？" class="headerlink" title="为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？"></a>为什么GZIP在用LZ77压缩过后还要进行哈夫曼编码？</h2><p>LZ77编码后得到的是，距离（distance）和长度（length），还有未匹配到短语字典的原始字符（literal）。</p>
-<p>比较短的距离和长度可能是频繁出现的，就可以用变长编码来压缩，且文本已经确定下来不会变动，可以做词频统计，就可以用到哈夫曼编码了。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a href="https://www.codenong.com/cs106685915/">Linux(程序设计):28—数据流压缩原理（Deflate压缩算法、gzip、zlib）</a></li>
-<li><a href="https://www.cnblogs.com/en-heng/p/4992916.html">【数据压缩】LZ77算法原理及实现</a></li>
-<li><a href="https://www.cnblogs.com/en-heng/p/4992916.html">LZ77算法原理以及实现</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>LZ77</tag>
-        <tag>GZIP</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>哈夫曼编码</title>
-    <url>/%E7%AE%97%E6%B3%95/%E5%93%88%E5%A4%AB%E6%9B%BC%E7%BC%96%E7%A0%81/</url>
-    <content><![CDATA[<h2 id="什么是哈夫曼编码"><a href="#什么是哈夫曼编码" class="headerlink" title="什么是哈夫曼编码"></a>什么是哈夫曼编码</h2><p>出现频次越高的字符，编码长度越小。</p>
-<h2 id="哈夫曼编码的价值"><a href="#哈夫曼编码的价值" class="headerlink" title="哈夫曼编码的价值"></a>哈夫曼编码的价值</h2><p>变长编码，使得编码的平均长度最短，实现压缩率大的无损压缩。</p>
-<p>因为哈夫曼树是最优的，每次的选择都是贪心选择，这个局部最优也是全局最优。</p>
-<h2 id="哈夫曼编码过程"><a href="#哈夫曼编码过程" class="headerlink" title="哈夫曼编码过程"></a>哈夫曼编码过程</h2><ul>
-<li>把文本中字符按出现的频次排序。</li>
-<li>每个字符作为一个结点放入一个集合。</li>
-<li>取集合最小的两个频次的结点，为左右子结点，生成一个父结点，父结点的频次是两个子结点频次之和，把父结点再加入到集合中。</li>
-<li>重复这个构造过程，生成一个最优二叉树。</li>
-<li>给二叉树所有左边设置0，所有右边设置1。</li>
-<li>字符都在叶子结点。</li>
-<li>根结点到叶子结点路径上的0和1组成的码字就是该字符的编码。</li>
-</ul>
-<p>因为所有字符都出现在叶子结点，保证了哈夫曼编码当中的任何一个字符的编码都不能是另一个字符编码的前缀。也就是说哈夫曼编码是一种前缀编码。</p>
-<hr>
-<h2 id="如何证明哈夫曼编码是最优的？"><a href="#如何证明哈夫曼编码是最优的？" class="headerlink" title="如何证明哈夫曼编码是最优的？"></a>如何证明哈夫曼编码是最优的？</h2><p>哈夫曼编码过程每次的选择都是贪心选择，这个局部最优也是全局最优。</p>
-<p>其正确性证明依赖于贪心选择性质和最优子结构。</p>
-<hr>
-<h2 id="哈夫曼编码的特点"><a href="#哈夫曼编码的特点" class="headerlink" title="哈夫曼编码的特点"></a>哈夫曼编码的特点</h2><ol>
-<li> 编码非等长</li>
-<li> 编码前缀不重复</li>
-</ol>
-<h2 id="哈夫曼编码的压缩效果？"><a href="#哈夫曼编码的压缩效果？" class="headerlink" title="哈夫曼编码的压缩效果？"></a>哈夫曼编码的压缩效果？</h2><p>哈夫曼编码可以很有效的压缩数据，具体压缩率依赖于数据本身的特性。</p>
-<p>齐夫定律：</p>
-<p>发现某一单词出现的频率与其在频率表里名次的常数次幂成反比，也就是说极少数的单词会被经常使用，而绝大多数单词很少被提及，这种20/80法则在很多领域都被逐步发现，这种幂律分布被称为“齐夫定律”（Zipf’s law）</p>
-<p>一般信息的分配都是幂率分布。</p>
-<p>所以用哈夫曼编码压缩的比例一般都挺高的，70%以上。</p>
-<h2 id="信息压缩的极限在哪？"><a href="#信息压缩的极限在哪？" class="headerlink" title="信息压缩的极限在哪？"></a>信息压缩的极限在哪？</h2><p>香农第一定理给出了无损的情况下数据压缩的临界值。</p>
-<p>参考：<a href="https://www.ruanyifeng.com/blog/2019/08/information-theory.html">信息论入门教程</a></p>
-]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>哈夫曼编码</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>字典树</title>
-    <url>/%E7%AE%97%E6%B3%95/%E5%AD%97%E5%85%B8%E6%A0%91/</url>
-    <content><![CDATA[<h2 id="字典树特点"><a href="#字典树特点" class="headerlink" title="字典树特点"></a>字典树特点</h2><ul>
-<li>查询快</li>
-<li>存储少</li>
-</ul>
-<p>对相同前缀的字符串进行了压缩存储，存储空间少，访问一个字符串最多也只需要访问字符串的长度。</p>
-<p>利用字符串的公共前缀来减少查询时间，最大限度的减少无谓的字符串比较，查询效率比哈希树高。</p>
-<h2 id="字典树有什么应用场景？"><a href="#字典树有什么应用场景？" class="headerlink" title="字典树有什么应用场景？"></a>字典树有什么应用场景？</h2><h3 id="单词联想预测、单词纠错。"><a href="#单词联想预测、单词纠错。" class="headerlink" title="单词联想预测、单词纠错。"></a>单词联想预测、单词纠错。</h3><p>在搜索引擎中关键词提示，引擎会自动弹出匹配关键词的下拉框。</p>
-<h3 id="字符串检索"><a href="#字符串检索" class="headerlink" title="字符串检索"></a>字符串检索</h3><p>事先将已知的一些字符串（字典）的有关信息保存到trie树里，查找另外一些未知字符串是否出现过或者出现频率。</p>
-<p>例如：</p>
-<ul>
-<li>  1000万字符串，其中有些是重复的，需要把重复的全部去掉，保留没有重复的字符串。</li>
-<li>  给出N 个单词组成的熟词表，以及一篇全用小写英文书写的文章，请你按最早出现的顺序写出所有不在熟词表中的生词。</li>
-</ul>
-<p>这样一方面可以节约存储空间，另一方面先用字典树预处理了海量文本，之后进行字符串查找时，不用在整个文本中查找特定字符串</p>
-<h3 id="词频统计"><a href="#词频统计" class="headerlink" title="词频统计"></a>词频统计</h3><p>给定很长的一个串，统计频数出现次数最多情况。</p>
-<p>例如：</p>
-<ul>
-<li>  有一个1G大小的一个文件，里面每一行是一个词，词的大小不超过16字节，内存限制大小是1M。返回频数最高的100个词。</li>
-<li>  一个文本文件，大约有一万行，每行一个词，要求统计出其中最频繁出现的前10个词，请给出思想，给出时间复杂度分析。</li>
-</ul>
-<h3 id="字符串最长公共前缀"><a href="#字符串最长公共前缀" class="headerlink" title="字符串最长公共前缀"></a>字符串最长公共前缀</h3><p>Trie树利用多个字符串的公共前缀来节省存储空间，当我们把大量字符串存储到一棵trie树上时，我们可以快速得到某些字符串的公共前缀，所以可以利用这个特点来解决一些前缀问题。</p>
-<p>例如：</p>
-<ul>
-<li>  给出N 个小写英文字母串，以及Q 个询问，即询问某两个串的最长公共前缀的长度是多少？</li>
-</ul>
-]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>字典树</tag>
-        <tag>数据结构</tag>
-        <tag>算法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>红黑树、AVL树</title>
-    <url>/%E7%AE%97%E6%B3%95/%E9%BB%91%E6%A0%91%E3%80%81AVL%E6%A0%91/</url>
-    <content><![CDATA[<h2 id="普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？"><a href="#普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？" class="headerlink" title="普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？"></a>普通的二叉查找树存在什么问题？平衡二叉查找树解决了什么问题？</h2><p>普通的二叉查找树最坏情况下会退化为一个链表，查找元素的时间复杂度由log_2{n}退化到n。</p>
-<p>解决时间复杂度退化，就是要让树的高度始终保持尽可能的小，平衡二叉查找树就是让任意节点的左右子树高度都平衡（差的不多）的二叉查找树，这样查找元素的平均时间复杂度可以保持在log_2{n}，</p>
-<h2 id="有哪些平衡二叉查找树？"><a href="#有哪些平衡二叉查找树？" class="headerlink" title="有哪些平衡二叉查找树？"></a>有哪些平衡二叉查找树？</h2><p>AVL树、2-3树、红黑树</p>
-<h2 id="为什么流行的主要是这几个树？"><a href="#为什么流行的主要是这几个树？" class="headerlink" title="为什么流行的主要是这几个树？"></a>为什么流行的主要是这几个树？</h2><p>因为逻辑比较简单，易于实现，效率也就高。</p>
-<h2 id="AVL树特点"><a href="#AVL树特点" class="headerlink" title="AVL树特点"></a>AVL树特点</h2><p>任意结点左右子树高度差小于或等于1。</p>
-<p>由Adelson-Velskii 以及 Landis发明，故而叫AVL。</p>
-<h2 id="2-3树"><a href="#2-3树" class="headerlink" title="2-3树"></a>2-3树</h2><p>定义：</p>
-<ul>
-<li>在满足二叉查找树的性质基础上，一个结点最多可以存储2个键，可以有3个孩子结点。</li>
-<li>2结点里存储1个键，可以有2个孩子结点</li>
-<li>3结点里存储2个键，可以有3个孩子结点</li>
-</ul>
-<p>特点</p>
-<ul>
-<li>2-3树是完美平衡的，任意结点的左右子树高度相等，这可以分析所有插入的情况来证明。</li>
-</ul>
-<p>自下而上生长：</p>
-<ul>
-<li>插入位置在2结点中，直接插入，变为3结点。</li>
-<li>插入位置在3结点中，先插入键变成4结点，再把中间的键提升到父结点中，当前结点就变成了两个2结点（不直接把键插入父结点是因为插入的键和提升到父结点的键不一定是同一个）。<ul>
-<li>如果父结点本来是2结点，现在就变成了3结点。</li>
-<li>如果父结点本来是3结点，现在就变成了4结点，继续提升的过程。</li>
-<li>如果没有父结点，当前即为根结点，那么就把临时的4结点分解为3个2结点，中间的键提升为2结点作为新的根结点。</li>
-</ul>
-</li>
-</ul>
-<p>在根结点为3结点时，插入新键变为4结点，再拆分为3个2结点后，树的高度才会加1。</p>
-<p>一颗含有n个节点的2-3树的高度在log_3{n}（全是3结点）到log_2{n}（全是2结点）之间。</p>
-<p>每次插入后调整结点都是局部的，最坏情况下，一条路径上都是3结点，从叶结点插入新键后，会从叶结点一直调整到根结点，调整次数不会超过对数级别。</p>
-<p>10亿个结点的2-3树高度仅在19到30之间，性能较高。</p>
-<p>各种操作实现较为复杂。</p>
-<h2 id="为什么2-3树可以保持完美平衡？"><a href="#为什么2-3树可以保持完美平衡？" class="headerlink" title="为什么2-3树可以保持完美平衡？"></a>为什么2-3树可以保持完美平衡？</h2><p>这可以分析所有插入的情况来证明。</p>
-<p>自下而上生长</p>
-<ol>
-<li><p> 插入位置在2结点中，直接插入，变为3结点</p>
-</li>
-<li><p> 插入位置在3结点中，先插入键变成4结点，再把中间的键提升到父结点中，当前结点就变成了两个2结点（不直接把键插入父结点是因为插入的键和提升到父结点的键不一定是同一个）</p>
-</li>
-<li><p> 如果父结点本来是2结点，现在就变成了3结点</p>
-</li>
-<li><p> 如果父结点本来是3结点，现在就变成了4结点，继续提升的过程</p>
-</li>
-<li><p> 如果没有父结点，当前即为根结点，那么就把临时的4结点分解为3个2结点，中间的键提升为2结点作为新的根结点</p>
-</li>
-</ol>
-<p>在根结点为3结点时，插入新键变为4结点，再拆分为3个2结点后，树的高度才会加1</p>
-<h2 id="红黑树"><a href="#红黑树" class="headerlink" title="红黑树"></a>红黑树</h2><p>实现较为简单，综合性能好。</p>
-<p>把2-3树的3结点表示为左斜的红色链接相连的两个2结点，其中一个结点是另一个结点的左子结点，其他链接为黑色链接。</p>
-<p>红黑树既是二叉查找树也是2-3树。</p>
-<p>等价定义（《算法》第4版 275页 3.3.2.1）：</p>
-<ol>
-<li> 红色链接均为左链接</li>
-<li> 没有任何一个结点同时和两条红链接相连</li>
-<li> 该树是完美黑色平衡的，即任意空链接到根结点的路径上的黑链接数量相同</li>
-</ol>
-<p>红黑树的几条定义都是为了让红黑树满足2-3树的结构。</p>
-<p>如果让2-3树中所有链接都为黑色，由于2-3树是完美平衡的，红黑树中红色链接代表3结点，所以红黑树中的黑色链接是完美平衡的。</p>
-<p>再把2-3树中的3结点都分解为两个用红色链接相连的2结点，那么不会存在一个结点同时与两条红色链接相连，这一点保证了红色链接是3结点。</p>
-<p>对红黑树插入、删除元素后，不满足红黑树的定义，都要通过旋转操作来修正。</p>
-<p>红黑树的旋转操作修正，都是符合2-3树的修正的规则的，理解记住了2-3树的各种调整规则，就知道了红黑树各种操作的意义。</p>
-<h2 id="红黑树是怎么发明出来的？"><a href="#红黑树是怎么发明出来的？" class="headerlink" title="红黑树是怎么发明出来的？"></a>红黑树是怎么发明出来的？</h2><p>它在1972年由<a href="https://zh.wikipedia.org/wiki/%E9%B2%81%E9%81%93%E5%A4%AB%C2%B7%E8%B4%9D%E5%B0%94">鲁道夫·贝尔</a>发明，被称为”对称二叉B树”，它现代的名字源于Leo J. Guibas和<a href="https://zh.wikipedia.org/wiki/Robert_Sedgewick">Robert Sedgewick</a>于<a href="https://zh.wikipedia.org/wiki/1978%E5%B9%B4">1978年</a>写的一篇论文。</p>
-<p>红黑树等同于2-3-4树，是2-3-4树的二叉表现形式。</p>
-<p>2-3-4树是B树的一种情况。</p>
-<p>红黑树结点的颜色表明了当前结点是否属于2-3-4树中的3结点或4结点。</p>
-<p>2-3-4树的情况讨论比较复杂，  用2-3树讨论情况较少，可以方便理解。</p>
-<hr>
-<h2 id="红黑树定义"><a href="#红黑树定义" class="headerlink" title="红黑树定义"></a>红黑树定义</h2><p>《算法》第4版 275页 3.3.2.1 定义：</p>
-<ol>
-<li> 红色链接均为左链接</li>
-<li> 没有任何一个结点同时和两条红链接相连</li>
-<li> 该树是完美黑色平衡的，即任意空链接到根结点的路径上的黑链接数量相同</li>
-</ol>
-<p>《算法导论》273页  第13章  红黑树  定义：</p>
-<ol>
-<li> 节点是红色或黑色</li>
-<li> 根节点是黑色</li>
-<li> 叶节点是黑色</li>
-<li> 红节点的两个子节点都是黑色</li>
-<li> 任意节点到叶节点的所有路径上的黑色节点数相同</li>
-</ol>
-<h2 id="红黑树为什么要这样定义？"><a href="#红黑树为什么要这样定义？" class="headerlink" title="红黑树为什么要这样定义？"></a>红黑树为什么要这样定义？</h2><p>红黑树的几条定义都是为了让红黑树满足2-3树的结构，红黑树是2-3树的一种表示形式，而2-3树是完美平衡的，这样红黑树也是黑色平衡的，2-3树比较难以实现，红黑树比较方便实现。</p>
-<h2 id="为什么要用红黑树表示2-3树？"><a href="#为什么要用红黑树表示2-3树？" class="headerlink" title="为什么要用红黑树表示2-3树？"></a>为什么要用红黑树表示2-3树？</h2><ul>
-<li>因为2-3树是完美平衡的，任意结点的子树没有高度差。</li>
-<li>2-3树的实现较为复杂，红黑树的实现较为简单。</li>
-</ul>
-<h2 id="红黑树的数据结构如何定义？"><a href="#红黑树的数据结构如何定义？" class="headerlink" title="红黑树的数据结构如何定义？"></a>红黑树的数据结构如何定义？</h2><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 树的结点</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="type">Key : Comparable&lt;Key</span>&gt;, <span class="type">Value&gt;</span></span>(</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 父结点指向本结点的链接颜色，用以标明本结点对应2-3树中的2结点还是3结点</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> color: Color,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 关键字。用于比较来确定数据的顺序</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">val</span> key: Key,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 关联的数据</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> value: Value,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 左子结点</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> left: Node&lt;Key, Value&gt;? = <span class="literal">null</span>,</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 右子结点</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">var</span> right: Node&lt;Key, Value&gt;? = <span class="literal">null</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 链接颜色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span> <span class="title">Color</span> </span>&#123;</span><br><span class="line">    BLACK, RED</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="红黑树插入新元素后调整结点的操作规则是怎样的？"><a href="#红黑树插入新元素后调整结点的操作规则是怎样的？" class="headerlink" title="红黑树插入新元素后调整结点的操作规则是怎样的？"></a>红黑树插入新元素后调整结点的操作规则是怎样的？</h2><p>原则：所有操作跟2-3树能逐一对应，保证树的有序性和完美平衡性。</p>
-<p>插入新结点先按普通的二叉查找树插入新结点那样进行插入。</p>
-<p>普通的二叉查找树插入新元素有三种情况：</p>
-<ol>
-<li> 树中没有结点，插入的新结点作为根结点</li>
-<li> 树中有结点，插入的新结点一定是某个结点h的左子结点</li>
-<li> 树中有结点，插入的新结点一定是某个结点h的右子结点</li>
-</ol>
-<p>在红黑树中，结点h又可以分为两种情况</p>
-<ol>
-<li> 结点h是2结点</li>
-<li>结点h位于3结点中<ol>
-<li> 结点h是红链接左下的结点</li>
-<li> 结点h是红链接右上的结点</li>
-</ol>
-</li>
-</ol>
-<p>插入新结点要默认新结点的颜色是红色，表示新结点到父节点的链接是红色，这样与2-3树的插入就可以对应上。</p>
-<p>在2-3树中如果插入在2结点中，2结点变为3结点，就不再调整；如果插入的在3结点中，3结点临时变为4结点，再把4结点的中间键放入父结点中，左右两边的键分解为两个2结点与父结点相连。</p>
-<p>处理这些情况的组合，就是所有的插入情况，针对不符合2-3树的结构的情况进行调整。</p>
-<ul>
-<li>结点h是2结点<ul>
-<li>新结点是h的左子结点，相当于新结点和结点h组成了2-3树中的3结点，符合2-3树的结构，无需调整</li>
-<li>新结点是h的右子结点，相当于新结点和结点h组成了2-3树中的3结点，但我们规定红链接要保持左斜，以减少考虑的情况数量，所以要进行左旋转</li>
-</ul>
-</li>
-<li>结点h位于3结点中，新结点的位置有三种情况：左、中、右<ul>
-<li>结点h是红链接左下的结点<ul>
-<li>新结点是h的左子结点，此时有了两条连续的红链接，连接的3个结点对应2-3树中临时的4结点，需要把中间的键放入父结点，再把两边的键拆为两个2结点分别与父结点相连，所以操作是先右旋，再变换颜色</li>
-<li>新结点是h的右子结点</li>
-</ul>
-</li>
-<li>结点h是红链接右上的结点<ul>
-<li>新结点是h的右子结点</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p>有三种标准操作：左旋、右旋、颜色转换</p>
-<h2 id="为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？"><a href="#为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？" class="headerlink" title="为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？"></a>为什么红黑树中红链接只能保持左斜？为什么不能有右斜的红链接？</h2><p>只允许红色的左链接可以减少讨论的情景数量，进而简化代码的实现。</p>
-<h2 id="红黑树最坏情况下高度是多少？"><a href="#红黑树最坏情况下高度是多少？" class="headerlink" title="红黑树最坏情况下高度是多少？"></a>红黑树最坏情况下高度是多少？</h2><p>有n个结点的红黑树高度最多为 $2 * log_2{n}$</p>
-<p>由于2-3树中的3结点是由左斜红链接连接的两个结点表示的，最坏情况下最左侧路径全部都是红链接，对应2-3树中最左侧都是3结点，其他结点都是2结点。</p>
-<p>参考《算法导论》中的证明：<br><a href="https://blog.csdn.net/lanchunhui/java/article/details/75905478">红黑树相关定理及其证明
-</a></p>
-<h2 id="红黑树的各种操作的时间复杂度是多少？"><a href="#红黑树的各种操作的时间复杂度是多少？" class="headerlink" title="红黑树的各种操作的时间复杂度是多少？"></a>红黑树的各种操作的时间复杂度是多少？</h2><p>设红黑树有n个结点，查找、插入、修改、删除操作的时间复杂度均为O(log n)</p>
-<p>查找：</p>
-<ul>
-<li>最长路径长度不会超过最短路径长度的2倍，查找仍然是对数级别</li>
-</ul>
-<p>插入：</p>
-<ul>
-<li>最坏情况下待插入的位置在叶结点，需要从根结点遍历到叶结点，同时最坏情况下遍历的路径都是红链接（路径上都是3结点），此时会从叶结点一直回溯调整结点到根结点，访问次数是2倍的树的高度，而树的高度为log_2{n}</li>
-</ul>
-<h2 id="红黑树较于AVL树有什么优点？"><a href="#红黑树较于AVL树有什么优点？" class="headerlink" title="红黑树较于AVL树有什么优点？"></a>红黑树较于AVL树有什么优点？</h2><p>单次操作：</p>
-<ul>
-<li>单次插入数据，红黑树和AVL树平均都只需要几次旋转即可完成。</li>
-<li>单次删除元素，红黑树大多数只需要几次旋转调整，AVL树需要调整查找路径上所有结点。</li>
-</ul>
-<p>大量的插入和删除操作：</p>
-<ul>
-<li>红黑树由于是基于2-3树，3结点的存在可以吸纳一部分不平衡性，不用做频繁的旋转调整。</li>
-<li>AVL树需要始终保持平衡，在大量插入或删除元素后，AVL树的调整的次数多于红黑树。</li>
-</ul>
-<p>在大量数据的统计意义上，红黑树的插入和删除次数相对于AVL树较少，适合插入和删除频繁的场景。</p>
-<p>AVL树由于是高度平衡的，红黑树不是高度平衡，AVL树的查找次数比红黑树更少，适合对查询效率非常敏感，插入和删除不频繁的场景。</p>
-<p>红黑树的查询跟AVL树仍然是同一个数量级，所以综合查询、插入、删除的性能，红黑树表现较好。</p>
-<p>参考：</p>
-<ul>
-<li><a href="https://www.zhihu.com/question/20545708/answer/58717264">为什么STL和linux都使用红黑树作为平衡树的实现？ - Acjx的回答 - 知乎 </a></li>
-<li><a href="https://www.zhihu.com/question/19856999/answer/944180969">红黑树比 AVL 树具体更高效在哪里？ - 伍亦勤的回答 - 知乎 </a></li>
-</ul>
-<h2 id="什么时候用AVL树？"><a href="#什么时候用AVL树？" class="headerlink" title="什么时候用AVL树？"></a>什么时候用AVL树？</h2><p>AVL树平衡性非常好，左右子树高度差不超过1，所以查找次数少。</p>
-<p>对于查找非常频繁，插入、修改、删除不频繁的场景，可以使用AVL树。</p>
-<h2 id="并发下的问题"><a href="#并发下的问题" class="headerlink" title="并发下的问题"></a>并发下的问题</h2><p>并发情况下，由于平衡搜索树的调整可能要锁整个树。</p>
-<p>用跳表这种性能接近于平衡树的数据结构，操作更加局部性，不会锁住太多结点，有利于并发的性能。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a href="https://www.cnblogs.com/wuchanming/p/4444961.html">面试题——轻松搞定面试中的红黑树问题</a></li>
-<li><a href="https://www.cnblogs.com/nullzx/p/6111175.html">从2-3-4树到红黑树（上）</a></li>
-<li><a href="https://www.zhihu.com/question/30527705/answer/259948086">AVL树，红黑树，B树，B+树，Trie树都分别应用在哪些现实场景中？ - 韦易笑的回答 - 知乎 </a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>数据结构</tag>
-        <tag>算法</tag>
-        <tag>红黑树</tag>
-        <tag>AVL树</tag>
       </tags>
   </entry>
   <entry>
@@ -10183,7 +10183,7 @@
 <li>  单元测试覆盖率有强制要求吗？</li>
 <li>  单元测试框架用的是哪些？</li>
 <li>  只运行指定的几个功能模块的单元测试集是怎么做的？</li>
-<li>  UI是怎么做白盒测试的？</li>
+<li>  UI是怎么做测试的？</li>
 <li>  黑盒测试用的什么框架？</li>
 <li>  每引入新的依赖库，会要求对性能和体积进行评估记录吗？</li>
 <li>  客户端会经常做A/B test吗？测试的都是什么内容？</li>
