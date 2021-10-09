@@ -1471,677 +1471,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Java并发-CAS</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CAS/</url>
-    <content><![CDATA[<h1 id="悲观锁"><a href="#悲观锁" class="headerlink" title="悲观锁"></a>悲观锁</h1><p>悲观锁更新的方式认为：在更新数据的时候大概率会有其他线程去争夺共享资源</p>
-<p>所以悲观锁的做法是：第一个获取资源的线程会将资源锁定起来，其他没争夺到资源的线程只能进入阻塞队列，等第一个获取资源的线程释放锁之后，这些线程才能有机会重新争夺资源。</p>
-<h1 id="乐观锁"><a href="#乐观锁" class="headerlink" title="乐观锁"></a>乐观锁</h1><p>乐观锁更新方式认为：在更新数据的时候其他线程争抢这个共享变量的概率非常小，所以更新数据的时候不会对共享数据加锁。</p>
-<p>但是在正式更新数据之前会检查数据是否被其他线程改变过，如果未被其他线程改变过就将共享变量更新成最新值，如果发现共享变量已经被其他线程更新过了，就重试，直到成功为止。</p>
-<p>CAS机制就是乐观锁的典型实现。</p>
-<h1 id="CAS"><a href="#CAS" class="headerlink" title="CAS"></a>CAS</h1><p>CAS，是Compare and Swap的简称，在这个机制中有三个核心的参数：</p>
-<ul>
-<li>  主内存中存放的共享变量的值：V（一般情况下这个V是内存的地址值，通过这个地址可以获得内存中的值）</li>
-<li>  工作内存中共享变量的副本值，也叫预期值：A</li>
-<li>  需要将共享变量更新到的最新值：B</li>
-</ul>
-<h1 id="CAS优点"><a href="#CAS优点" class="headerlink" title="CAS优点"></a>CAS优点</h1><ol>
-<li> 可以保证变量操作的原子性；</li>
-<li> 并发量不是很高的情况下，使用CAS机制比使用锁机制效率更高；</li>
-<li> 在线程对共享资源占用时间较短的情况下，使用CAS机制效率也会较高。</li>
-</ol>
-<h1 id="CAS缺点"><a href="#CAS缺点" class="headerlink" title="CAS缺点"></a>CAS缺点</h1><h2 id="ABA问题"><a href="#ABA问题" class="headerlink" title="ABA问题"></a>ABA问题</h2><p>ABA问题：CAS在操作的时候会检查变量的值是否被更改过，如果没有则更新值，但是带来一个问题，最开始的值是A，接着变成B，最后又变成了A。经过检查这个值确实没有修改过，因为最后的值还是A，但是实际上这个值确实已经被修改过了。为了解决这个问题，在每次进行操作的时候加上一个版本号，每次操作的就是两个值，一个版本号和某个值，A——&gt;B——&gt;A问题就变成了1A——&gt;2B——&gt;3A。在jdk中提供了AtomicStampedReference类解决ABA问题，用Pair这个内部类实现，包含两个属性，分别代表版本号和引用，在compareAndSet中先对当前引用进行检查，再对版本号标志进行检查，只有全部相等才更新值。</p>
-<h2 id="可能会消耗较高的CPU"><a href="#可能会消耗较高的CPU" class="headerlink" title="可能会消耗较高的CPU"></a>可能会消耗较高的CPU</h2><p>看起来CAS比锁的效率高，从阻塞机制变成了非阻塞机制，减少了线程之间等待的时间。每个方法不能绝对的比另一个好，在线程之间竞争程度大的时候，如果使用CAS，每次都有很多的线程在竞争，也就是说CAS机制不能更新成功。这种情况下CAS机制会一直重试，这样就会比较耗费CPU。因此可以看出，如果线程之间竞争程度小，使用CAS是一个很好的选择；但是如果竞争很大，使用锁可能是个更好的选择。在并发量非常高的环境中，如果仍然想通过原子类来更新的话，可以使用AtomicLong的替代类：LongAdder。</p>
-<h2 id="不能保证代码块的原子性"><a href="#不能保证代码块的原子性" class="headerlink" title="不能保证代码块的原子性"></a>不能保证代码块的原子性</h2><p>Java中的CAS机制只能保证共享变量操作的原子性，而不能保证代码块的原子性。</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>CAS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-CyclicBarrier</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/</url>
-    <content><![CDATA[<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><ul>
-<li>CyclicBarrier构造函数传入一个数字N。</li>
-<li>线程调用CyclicBarrier.await()会阻塞等待，直到有第N个线程调用CyclicBarrier.await()，所有线程一起执行await()方法后续逻辑。</li>
-<li>再次调用await()可以继续这一波操作，循环使用。</li>
-</ul>
-<p>比喻：</p>
-<ul>
-<li>人到齐了一起走，没到齐每个人都一直等着不走。</li>
-<li>走完了过后，下一波人来了继续这个流程。</li>
-</ul>
-<p>可循环利用的屏障。</p>
-<p>举例：</p>
-<p>CyclicBarrier barrier = new CyclicBarrier(5);</p>
-<p>然后各个线程调用barrier.await();</p>
-<p>当有5个线程await()过后，会继续执行await()后续代码</p>
-<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
-<p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
-<p>然后重新计数，继续同样的过程。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dowait(<span class="keyword">false</span>, <span class="number">0L</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (TimeoutException toe) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> Error(toe); <span class="comment">// cannot happen</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Main barrier code, covering the various policies.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">dowait</span><span class="params">(<span class="keyword">boolean</span> timed, <span class="keyword">long</span> nanos)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> InterruptedException, BrokenBarrierException,</span></span><br><span class="line"><span class="function">           TimeoutException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> Generation g = generation;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (g.broken)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">            breakBarrier();</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> index = --count;</span><br><span class="line">        <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;  <span class="comment">// tripped</span></span><br><span class="line">            <span class="keyword">boolean</span> ranAction = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> Runnable command = barrierCommand;</span><br><span class="line">                <span class="keyword">if</span> (command != <span class="keyword">null</span>)</span><br><span class="line">                    command.run();</span><br><span class="line">                ranAction = <span class="keyword">true</span>;</span><br><span class="line">                nextGeneration();</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!ranAction)</span><br><span class="line">                    breakBarrier();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// loop until tripped, broken, interrupted, or timed out</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!timed)</span><br><span class="line">                    trip.await();</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (nanos &gt; <span class="number">0L</span>)</span><br><span class="line">                    nanos = trip.awaitNanos(nanos);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">                <span class="keyword">if</span> (g == generation &amp;&amp; ! g.broken) &#123;</span><br><span class="line">                    breakBarrier();</span><br><span class="line">                    <span class="keyword">throw</span> ie;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// We&#x27;re about to finish waiting even if we had not</span></span><br><span class="line">                    <span class="comment">// been interrupted, so this interrupt is deemed to</span></span><br><span class="line">                    <span class="comment">// &quot;belong&quot; to subsequent execution.</span></span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g.broken)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g != generation)</span><br><span class="line">                <span class="keyword">return</span> index;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (timed &amp;&amp; nanos &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                breakBarrier();</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
-<p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
-<p>CountDownLatch是一次性的，而CyclicBarrier则可以被重置而重复使用。</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>CyclicBarrier</tag>
-        <tag>AQS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-ReadWriteLock、StampedLock</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/</url>
-    <content><![CDATA[<h1 id="读写锁存在的意义？解决了什么问题？"><a href="#读写锁存在的意义？解决了什么问题？" class="headerlink" title="读写锁存在的意义？解决了什么问题？"></a>读写锁存在的意义？解决了什么问题？</h1><p>synchronzied和ReentraintLock的锁是排他锁，同一时刻只允许一个线程访问同一个资源。</p>
-<p>然而在读多写少的情况下，排他锁会让多个并发的读之间互斥，但多个线程同时读不会影响数据的一致性，写的时候保证获取的是排他锁保证数据一致性即可。</p>
-<p>也就是读与读之间不互斥，写与读、写与写之间互斥。</p>
-<p>这样的话就提高了系统整体的吞吐量。</p>
-<h1 id="ReentraintReadWriteLock实现原理是什么？"><a href="#ReentraintReadWriteLock实现原理是什么？" class="headerlink" title="ReentraintReadWriteLock实现原理是什么？"></a>ReentraintReadWriteLock实现原理是什么？</h1><p>内部有ReadLock和WriteLock两个类，分别实现读锁和写锁。</p>
-<p>两个Lock类里是通过Sync来实现锁的语义，Sync类继承AQS，并且分为非公平实现和公平的实现。</p>
-<p>由于AQS的state是int类型的变量，在内存中占用4个字节，也就是32位。将其拆分为两部分：高16位和低16位，其中高16位用来表示读锁的个数，低16位用来表示写锁重入次数。</p>
-<p>当设置读锁成功时，就将高16位加1，释放读锁时，将高16位减1；当设置写锁成功时，就将低16位加1，释放写锁时，将第16位减1。如下图所示。</p>
-<p>这样读锁和写锁就可以都通过CAS去操作同一个state变量，实现读和写之间的互斥。</p>
-<h1 id="读写锁适用场景？"><a href="#读写锁适用场景？" class="headerlink" title="读写锁适用场景？"></a>读写锁适用场景？</h1><p>读多写少，又需要保持线程安全，可以有效提高吞吐量。</p>
-<h1 id="StampedLock解决了什么问题？"><a href="#StampedLock解决了什么问题？" class="headerlink" title="StampedLock解决了什么问题？"></a>StampedLock解决了什么问题？</h1><p>ReentraintReadWriteLock读写锁在读多写少的情况下，必须要等待所有读锁释放才能获取写锁，可能会导致写饥饿，写可能要等待很久，这是一种悲观的读锁。</p>
-<p>正确的做法应该是，如果检测到有写入，已经获取读锁的线程不应该继续读了，把读锁让出来，给写入线程优先执行，写入完成了再读，这样就不会写饥饿了。</p>
-<p>StampedLock做的就是，先不加锁的读数据，读完了检测一下是否有线程写过数据了，有写过数据则需要重新读最新的数据，并且要加悲观读锁读，以阻止新的写入锁获取，确保读的数据一定是最新修改的。</p>
-<p>更通俗的讲就是在读锁没有释放的时候是可以获取到一个写锁，获取到写锁之后，读锁阻塞，这一点和读写锁一致，唯一的区别在于读写锁不支持在没有释放读锁的时候获取写锁。</p>
-<h1 id="StampedLock如何检测是否有数据写入？"><a href="#StampedLock如何检测是否有数据写入？" class="headerlink" title="StampedLock如何检测是否有数据写入？"></a>StampedLock如何检测是否有数据写入？</h1><p>在第一次读数据之前先从StampedLock获取一个stamp，如果有数据写入，StampedLock里的stamp就会变，然后第一次读数据后，检测stamp变了说明有写入。</p>
-<h1 id="StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？"><a href="#StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？" class="headerlink" title="StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？"></a>StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？</h1><p>确实面临同样的问题，但这种情况发生的概率很小，因为StampedLock使用场景就是读多写少，检测到有写操作后，可以认为大概率之后的一段时间是不会有写操作发生的。</p>
-<h1 id="StampedLock如何解决ABA问题？"><a href="#StampedLock如何解决ABA问题？" class="headerlink" title="StampedLock如何解决ABA问题？"></a>StampedLock如何解决ABA问题？</h1><p>StampedLock用一个long类型的state变量保存锁的状态，其中state的低7位存储读锁的个数，第8位存储写锁的标志，第8位为0表示没有获取到写锁，第8位为1表示已获取到写锁。</p>
-<p>每次获取和释放写锁，都会给state加上1000 0000，也就是在state的第8位上加1，这样在高位就产生了进位，每次获取写锁后state的值都不一样，这样就可以知道发生了ABA。</p>
-<p>long总共有64位，高位一共有64-8=56位，一共可以记录2的55次方种状态。</p>
-<h1 id="StampedLock为什么不设计为可重入？"><a href="#StampedLock为什么不设计为可重入？" class="headerlink" title="StampedLock为什么不设计为可重入？"></a>StampedLock为什么不设计为可重入？</h1><p>StampedLock为了解决ABA问题，state变量低7位记录读锁个数，第8位记录是否获取了写锁，第9位到第64位记录了写锁的状态，没有地方存储写锁的重入次数。</p>
-<p>对比ReentraintReadWriteLock的实现原理，其实也可以在state的高位中划分一部分区域记录写锁的重入次数。</p>
-<h1 id="StampedLock的锁升级是为了解决什么问题？"><a href="#StampedLock的锁升级是为了解决什么问题？" class="headerlink" title="StampedLock的锁升级是为了解决什么问题？"></a>StampedLock的锁升级是为了解决什么问题？</h1><p>有时候写数据只在数据处于特定的条件下才去更改，也就是有可能不修改数据，那如果一开始先获取写锁就会阻碍读锁的获取，吞吐量降低，所以得先获取读锁，判断符合特定条件后，确定需要写入了，再获取写锁，此时就是锁的升级，把读锁释放升级为写锁，前提是当前只有一个读锁；</p>
-<p>如果有多个读锁，升级就失败，转为获取正常的写锁，获取不到就阻塞当前线程。</p>
-<h1 id="StampedLock有什么缺点？"><a href="#StampedLock有什么缺点？" class="headerlink" title="StampedLock有什么缺点？"></a>StampedLock有什么缺点？</h1><ol>
-<li> 不可重入</li>
-<li> 不支持Condition</li>
-<li> 不支持公平竞争</li>
-</ol>
-<p>所以也不能完全替代synchronized和ReentrantLock。</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>AQS</tag>
-        <tag>ReadWriteLock</tag>
-        <tag>StampedLock</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-Semaphore</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-Semaphore/</url>
-    <content><![CDATA[<h1 id="Semaphore作用"><a href="#Semaphore作用" class="headerlink" title="Semaphore作用"></a>Semaphore作用</h1><p>如果限定某些资源最多有N个线程可以访问，那么超过N个则不允许再有线程来访问。<br>同时当现有线程结束后，就会释放，然后允许新的线程进来。</p>
-<p>类似于锁的lock与 unlock过程 ，区别在于Semaphore多加锁和解锁是计数的。</p>
-<p>示例：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Semaphore semaphore = <span class="keyword">new</span> Semaphore(<span class="number">3</span>);</span><br><span class="line">semaphore.acquire(); <span class="comment">// 获取一个许可</span></span><br><span class="line">semaphore.release(); <span class="comment">// 释放一个许可</span></span><br></pre></td></tr></table></figure>
-<p>Semephore构造函数传入0，也可以release进行+1</p>
-<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>Semaphore构造函数传递的值会保存在AQS的state变量中</p>
-<p>调用acquire方法，尝试给state减1，如果state变为负数，就会阻塞当前线程，把当前线程作为结点插入到AQS队列中。如果state不为负数，则继续执行线程的后续代码。</p>
-<p>调用release方法，会给state加1，如果AQS队列里有等待的线程，就唤醒等待的线程，并把结点移除队列。</p>
-<h1 id="3个线程交替打印123456789…"><a href="#3个线程交替打印123456789…" class="headerlink" title="3个线程交替打印123456789…"></a>3个线程交替打印123456789…</h1><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SemaphoreDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> n = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Semaphore s1 = <span class="keyword">new</span> Semaphore(<span class="number">1</span>);</span><br><span class="line">        Semaphore s2 = <span class="keyword">new</span> Semaphore(<span class="number">0</span>);</span><br><span class="line">        Semaphore s3 = <span class="keyword">new</span> Semaphore(<span class="number">0</span>);</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s1.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T1: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s2.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s2.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T2: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s3.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        Thread t3 = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s3.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T3: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s1.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t3.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>AQS</tag>
-        <tag>Semaphore</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-ThreadLocal原理</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/</url>
-    <content><![CDATA[<h1 id="ThreadLocal作用"><a href="#ThreadLocal作用" class="headerlink" title="ThreadLocal作用"></a>ThreadLocal作用</h1><p>让不同的线程持有相同数据类型的不同的数据副本。</p>
-<h1 id="ThreadLocal使用场景"><a href="#ThreadLocal使用场景" class="headerlink" title="ThreadLocal使用场景"></a>ThreadLocal使用场景</h1><p>如果一个对象在多线程之间通过加锁竞争的共享，会引起较大的性能损失，且对象占用内存不是很大的情况下，就应该考虑用ThreadLocal为每个线程分配单独的对象。比如多线程下产生随机数，可以写代码打印耗时，验证这一点。</p>
-<h1 id="ThreadLocal实现原理简述"><a href="#ThreadLocal实现原理简述" class="headerlink" title="ThreadLocal实现原理简述"></a>ThreadLocal实现原理简述</h1><p>set(value)</p>
-<p>每个线程都有一个ThreadLocalMap，set时会先取当前线程的ThreadLocalMap，以当前的ThreadLocal对象为key，存储value。</p>
-<p>get()</p>
-<p>从当前的线程的TheadLocalMap中取数据，key为ThreadLocal对象。</p>
-<p>ThreadLocalMap是自定义的哈希表，用一个table数组来存储key value，key value被封装在一个Entry对象中，Entry对象是继承WeakReference，WeakReference引用了ThreadLocal对象，ThreadLocal对象没有别的地方引用的时候，在垃圾回收触发时就可以回收了，value是被Entry类强引用的，而Entry类是被ThreadLocalMap中的table数组强引用的，所以value有内存泄露的风险，特别是线程池的核心线程是会一直运行的，线程对象一直存在，ThreadLocalMap也就一直存在，Entry对象中value也就一直不会释放，所以ThreadLocal如果用完了，最好及时remove()掉。</p>
-<p>如果没有手动remove清理，ThreadLocalMap也会在get()和set()的时候去清理掉过期的Entry对象，但如果你不调用set和get就不会回收了。特别的，在set()方法做清理的时候做了一个优化，会以对数级别的时间复杂度跳跃式的扫描整个数组，来去寻找过期的Entry对象，这样避免全表扫描，又保证垃圾不会堆积过多。</p>
-<p>ThreadLocalMap也有扩容机制，当存储元素个数超过数组长度的2/3后，会把数组扩容为原来的2倍。</p>
-<p>table数组的大小始终是2的次方，保持2的次方的大小，是为了计算索引时能够散列的比较均匀。</p>
-<p>key value应该存储在数组的哪个索引位置是怎么计算的呢？</p>
-<p>首先获取Key对象的hashCode，然后与数组容量-1这个数做与操作得到索引，数组容量是2的次方，减1后的数字的二进制低位全部都是1，跟key的hashCode做与操作，相当于截取了hashCode的低位，散列会比较均匀，如果数组容量不是2的次方，容量-1的这个数的二进制数在低位中就会有0，再与key的hashCode做与操作会导致元素堆积也就是是散列冲突。</p>
-<p>在ThreadLocalMap中，key对象hashCode获取并不是调用ThreadLocal对象的hashCode方法，而是使用ThreadLocal中定义的一个静态变量的值，每当创建一个ThreadLocal对象时，这个静态变量就增加固定的值，这个固定的值很特殊，它是一个黄金分割数，带来的效果就是让散列比较均匀。</p>
-<p>如果发生了哈希冲突，采用的是线性探测来解决，就是一个个往数组后面去寻找有没有没有被填充的空位来存储。这里有个特别的地方，就是清理过期的Entry的时候，会重新哈希过期的Entry对象后面的Entry对象，因为后面的这些Entry对象可能是有哈希冲突经过线性探测放在了后面，放在后面后查找次数也就多了，重新rehash计算索引，把Entry对象往前方，也就是尽可能减少线性探测的查找次数，提高访问速度。</p>
-<p>为什么不用拉链法解决散列冲突呢？因为拉链法链表结点中的指针占用额外空间，如果把这些空间用来增大表容量，可以使得装载因子变小，从而减少开放寻址冲突，提高平均查找效率，效果也是类似的。同时ThreadLocal数据量也不会特别大，所以不需要红黑树来处理极端情况。</p>
-<hr>
-<h1 id="ThreadLocalMap是做什么的？"><a href="#ThreadLocalMap是做什么的？" class="headerlink" title="ThreadLocalMap是做什么的？"></a>ThreadLocalMap是做什么的？</h1><p>自定义的简单的哈希表的实现，散列方式是开放定址法之线性探测。</p>
-<h1 id="ThreadLocalMap数据结构"><a href="#ThreadLocalMap数据结构" class="headerlink" title="ThreadLocalMap数据结构"></a>ThreadLocalMap数据结构</h1><p>Entry数组存储数据</p>
-<ol>
-<li> Entry类是一个WeakReference</li>
-<li> Entry类存储了ThreadLocal这个key和对应的value</li>
-<li> 对ThreadLocal持有弱引用，对value持有强引用</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&lt;?&gt;&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">    Object value;</span><br><span class="line"></span><br><span class="line">    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">        <span class="keyword">super</span>(k);</span><br><span class="line">        value = v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="TheadLocal如何保证唯一性？"><a href="#TheadLocal如何保证唯一性？" class="headerlink" title="TheadLocal如何保证唯一性？"></a>TheadLocal如何保证唯一性？</h1><p>ThreadLocal作为映射表的Key，需要具备唯一的标识，每创建一个新的ThreadLocal，这个标识就变的跟之前不一样了。 如何保证每一个ThreadLocal的唯一性呢？</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadLocal</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> HASH_INCREMENT = <span class="number">0x61c88647</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 每一个ThreadLocal对象的HashCode都不一样</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> threadLocalHashCode = nextHashCode();</span><br><span class="line">	</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">nextHashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// 下一个HashCode，是在已有基础上增加0x61c88647</span></span><br><span class="line">        <span class="keyword">return</span> nextHashCode.getAndAdd(HASH_INCREMENT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>ThreadLocal内部有一个名为threadLocalHashCode的变量，每创建一个新的ThreadLocal对象，这个变量的值就会增加0x61c88647。 正是因为有这么一个神奇的数字，它能够保证生成的Hash值可以均匀的分布在0~(2^N-1)之间，N是数组长度。 更多关于数字0x61c88647，可以参考<a href="https://www.javaspecialists.eu/archive/Issue164.html">Why 0x61c88647?</a></p>
-<h1 id="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"><a href="#ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？" class="headerlink" title="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"></a>ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？</h1><p>Map的key是ThreadLocal</p>
-<p>用ThreadLocal的属性threadLocalHashCode跟table数组长度做与运算得到索引位置</p>
-<p>参考ThreadLocalMap的set()方法</p>
-<h1 id="ThreadLocalMap如何解决哈希冲突"><a href="#ThreadLocalMap如何解决哈希冲突" class="headerlink" title="ThreadLocalMap如何解决哈希冲突"></a>ThreadLocalMap如何解决哈希冲突</h1><p>开放定址法之线性探测法</p>
-<p>求得索引后，table数组中当前索引有Entry，并且Entry的key不为null，则继续看数组的下一个位置是不是空的</p>
-<p>参考ThreadLocalMap的set()方法</p>
-<h1 id="ThreadLocalMap的table数组空间不够放了怎么办？"><a href="#ThreadLocalMap的table数组空间不够放了怎么办？" class="headerlink" title="ThreadLocalMap的table数组空间不够放了怎么办？"></a>ThreadLocalMap的table数组空间不够放了怎么办？</h1><p>一句话：</p>
-<p>添加元素时如果已存储的元素个数超过装载因子就扩容为原容量的两倍</p>
-<p>set()方法里会检查当前的存储的对象个数是否已经超出了阈值（threshold的值）大小，如果超出了，需要重新对table数组扩容为原来的2倍长度，并将所有的对象重新计算位置（rehash函数来实现），顺便清理掉Entry.get()为null的Entry，threshold为table数组长度的2/3，threshold相当于是map的装载因子。</p>
-<h1 id="ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？"></a>ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？</h1><p>table数组中staleSlot位置的Entry的get()为null了，value不为null，在expungeStaleEntry()中把它的value置为null，size–</p>
-<p>然后从staleSlot位置的下一个位置线性检查Entry，一直到Entry为null结束，如果</p>
-<ol>
-<li> Entry.get()为null，则把Entry的value置空，防止内存泄露</li>
-<li> Entry.get()不为null，重新计算当前Entry的索引，也就是rehash，放入rehash过后的索引位置，如果有冲突（已经存放了Entry）就线性向后查找空位进行存放。这样做是为了减少哈希冲突时线性查找次数。</li>
-</ol>
-<hr>
-<h1 id="ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？"></a>ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？</h1><p>在新元素添加进来，或清理另一个过期的Entry时调用</p>
-<p>对数级别时间复杂度清理对象，避免添加元素时线性扫描整个table数组，也防止垃圾堆积过多</p>
-<h1 id="TheadLocal存在有什么问题？为什么？如何解决？"><a href="#TheadLocal存在有什么问题？为什么？如何解决？" class="headerlink" title="TheadLocal存在有什么问题？为什么？如何解决？"></a>TheadLocal存在有什么问题？为什么？如何解决？</h1><p>问题：可能会内存泄露</p>
-<p>为什么：因为ThreadLocal存储在ThreadLocalMap是弱引用，ThreadLocal被回收后，Entry还是被ThreadLocalMap的table数组引用，Entry的value是强引用，value可能会内存泄漏</p>
-<p>解决：使用完ThreadLocal手动调用一下remove()</p>
-<h1 id="TheadLocal有哪些典型使用到的地方？"><a href="#TheadLocal有哪些典型使用到的地方？" class="headerlink" title="TheadLocal有哪些典型使用到的地方？"></a>TheadLocal有哪些典型使用到的地方？</h1><ol>
-<li> 每个线程都有一个自己的Looper对象</li>
-<li> Android SQLiteDatabase中数据库连接每个线程都持有一个</li>
-<li> 用户session对话</li>
-</ol>
-<p>ThreadLocal 适用于如下两种场景</p>
-<ol>
-<li> 每个线程需要有自己单独的实例</li>
-<li> 实例需要在多个方法中共享，但不希望被多线程共享</li>
-</ol>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>ThreadLocal</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-happens-before</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/</url>
-    <content><![CDATA[<h1 id="什么是happens-before原则？"><a href="#什么是happens-before原则？" class="headerlink" title="什么是happens-before原则？"></a>什么是happens-before原则？</h1><p>前一个操作的结果对后续操作是可见的</p>
-<h1 id="为什么需要happens-before原则？"><a href="#为什么需要happens-before原则？" class="headerlink" title="为什么需要happens-before原则？"></a>为什么需要happens-before原则？</h1><p>虚拟机会做编译优化，进行指令重排序，以提高CPU利用率，防止CPU出现空等待；但有些情况是不能重排序的，否则并发下会出问题，所以就要规定这些情况，happens-before原则就是这个规定.</p>
-<h1 id="典型场景？"><a href="#典型场景？" class="headerlink" title="典型场景？"></a>典型场景？</h1><p>比如写一个单例，new一个对象，指令执行的步骤是：</p>
-<ol>
-<li> 给对象分配内存</li>
-<li> 对象初始化</li>
-<li> 将对象内存地址关联</li>
-</ol>
-<p>指令重排序，可能会导致对象还没初始化，就会已经被使用了，所以需要volatile来禁止指令重排序</p>
-<h1 id="有哪些happens-before原则？"><a href="#有哪些happens-before原则？" class="headerlink" title="有哪些happens-before原则？"></a>有哪些happens-before原则？</h1><ol>
-<li> 程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作；</li>
-<li> 锁定规则：一个unLock操作先行发生于后面对同一个锁额lock操作；</li>
-<li> volatile变量规则：对一个变量的写操作先行发生于后面对这个变量的读操作；</li>
-<li> 传递规则：如果操作A先行发生于操作B，而操作B又先行发生于操作C，则可以得出操作A先行发生于操作C；</li>
-<li> 线程启动规则：Thread对象的start()方法先行发生于此线程的每个一个动作；</li>
-<li> 线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生；</li>
-<li> 线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结束、Thread.isAlive()的返回值手段检测到线程已经终止执行；</li>
-<li> 对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始；</li>
-</ol>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>happens-before</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-synchronized、ReentrantLock</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/</url>
-    <content><![CDATA[<h1 id="synchronized作用"><a href="#synchronized作用" class="headerlink" title="synchronized作用"></a>synchronized作用</h1><p>让一段代码在多线程之间互斥访问，保证原子性、有序性、可见性，并且是可重入的。</p>
-<h1 id="synchronized使用方式"><a href="#synchronized使用方式" class="headerlink" title="synchronized使用方式"></a>synchronized使用方式</h1><ul>
-<li>synchronized修饰代码块时需要传入一个对象作为锁，这个对象可以是任意的，进入同步代码块前要获取这个锁，没有获得锁的线程就要阻塞等待，同步代码块执行完释放锁。</li>
-<li>修饰成员方法时，锁是对象实例。</li>
-<li>修饰静态方法时，锁是类的class实例。</li>
-</ul>
-<h1 id="synchronized原理综述"><a href="#synchronized原理综述" class="headerlink" title="synchronized原理综述"></a>synchronized原理综述</h1><p>每个Java对象都关联一个监视器锁对象，同步代码块在字节码层面是通过在代码块的指令前后加上monitorenter和monitorexit指令来标识的。</p>
-<p>当线程执行到monitorenter指令时，当前线程试图获取监视器对象所有权，如果未加锁或者已被当前线程持有，就把锁计数加1；执行到monitorexit指令的时候，锁计数减1。锁计数为0时，锁就被释放了。</p>
-<p>如果当前线程获取监视器对象失败，线程会阻塞等待，线程会作为一个结点存入监视器对象的锁池队列中，等待唤醒。</p>
-<p>监视器对象还有一个等待池队列，在同步代码块中调用锁对象的wait方法的时候，线程会阻塞，并被封装为一个结点，进入监视器对象的等待池队列，调用锁对象的notify和notifyAll的时候，会把等待池队列中的线程放入锁池队列中，只有锁池中的线程才能参与竞争锁。</p>
-<p>wait和notify用来线程之间同步过程的，比如实现生产者消费者模型。</p>
-<p>监视器锁底层是通过操作系统的互斥锁实现的，操作系统做线程切换需要从用户态转换到内核态，所以比较消耗性能。这种依赖于操作系统互斥锁而实现的锁叫做重量级锁。</p>
-<p>如果线程竞争并不激烈，切换线程的开销是不划算的，特别是多个线程在不同的时段获取同一把锁，可以用自旋锁，就是CAS+循环，CAS由硬件之间实现，开销比切换线程开销要小，这就是轻量级锁，在JDK6引入。</p>
-<p>锁信息具体存储在对象头的MarkWord里，一个对象在虚拟机的内存布局分为三部分，对象头、实例数据、对齐填充，其中对象头又分为MarkWord、类型指针、数组长度，MarkWord存储了锁相关的信息、hashCode、垃圾回收的分代年龄等。</p>
-<p>轻量级锁的CAS操作具体修改的是锁对象头的mark word，修改为指向当前线程栈帧中的锁记录的指针。虚拟机会为每个线程在当前线程栈帧中创建一块锁记录空间，存储锁对象的对象头中的mark word的拷贝。</p>
-<p>如果CAS修改成功，当前线程就获得了轻量级锁。</p>
-<p>如果更新失败，说明有线程竞争，开始自旋，自旋超过一定次数，升级为重量级锁。避免竞争激烈的情况下自旋空耗CPU。</p>
-<p>如果压根都没有线程竞争，只有单线程访问同步代码块，其实每次进行CAS操作获取轻量级锁也是没有必要的开销，所以JDK6又引入了偏向锁，只在第一次申请锁的时候，对Java对象头的MARK WORD做CAS操作，记录下当前申请锁的线程ID，退出同步代码块后，也不释放锁，锁对象的对象头中记录的还是当前的线程ID，同一个线程再次进入这个锁的同步代码块的时候，检查锁的对象头中记录的线程ID是否还是自己，是的话就直接进入，不用再CAS了。当有多个线程要申请锁的时候，就会升级到轻量级锁。</p>
-<p>轻量级锁是为了在线程交替执行同步块时提高性能，而偏向锁则是在只有一个线程执行同步块时进一步提高性能。</p>
-<h1 id="ReentrantLock与synchronized的区别？"><a href="#ReentrantLock与synchronized的区别？" class="headerlink" title="ReentrantLock与synchronized的区别？"></a>ReentrantLock与synchronized的区别？</h1><p>ReentrantLock与synchronized有相同的功能和语义，添加了更多灵活的功能。<br>synchronized能干的ReentrantLock都能干，ReentrantLock能干synchronized不一定能干。</p>
-<p>最主要区别有三点：支持等待可中断、可实现公平锁、锁可以绑定多个条件。</p>
-<p>详细区别：<br>|   |ReentrantLock|synchronized<br>|—|—|—|<br>|底层实现|继承AQS|监视器模式<br>|灵活性|支持响应中断、超时、尝试获取锁|不灵活<br>|释放锁形式|必须显式调用unlock()释放锁，可跨方法调用|自动释放监视器，不可跨方法释放<br>|锁类型|公平锁和非公平锁|非公平锁<br>|条件队列|可关联多个条件队列|只有一个条件队列<br>|错误排查|没有释放锁，很追溯发生错误的位置，因为没有记录应该释放锁的时间和位置难度|synchronized加锁解锁过程有完整的日志</p>
-<h1 id="该用ReentrantLock还是synchronized？"><a href="#该用ReentrantLock还是synchronized？" class="headerlink" title="该用ReentrantLock还是synchronized？"></a>该用ReentrantLock还是synchronized？</h1><p>除非需要ReentrantLock的特定的功能，否则还是应该优先使用synchronized，因为简单易用，不会忘记释放锁。</p>
-<h1 id="ReentrantLock实现原理"><a href="#ReentrantLock实现原理" class="headerlink" title="ReentrantLock实现原理"></a>ReentrantLock实现原理</h1><p>底层通过继承AbstractQueuedSynchronizer实现。</p>
-<p>大致过程：</p>
-<ul>
-<li>先通过cas修改int类型的state变量，修改成功则获取互斥锁成功。</li>
-<li>cas修改失败则把当前线程生成一个节点，放入一个等待队列中，线程被挂起。<ul>
-<li>等待队列操作也都是通过cas加自旋的方式来完成，避免同步开销。</li>
-</ul>
-</li>
-<li>释放锁后，会唤醒队列去自旋CAS去修改state来获取互斥锁。</li>
-</ul>
-<p>state变量记录锁的重入次数。</p>
-<h1 id="synchronized锁升级"><a href="#synchronized锁升级" class="headerlink" title="synchronized锁升级"></a>synchronized锁升级</h1><ul>
-<li>jdk1.6之前synchronized直接就上重量级锁。</li>
-<li>jdk1.6开始synchronized会先由无锁转为偏向锁，再转为轻量级锁，再转为重量级锁，锁只能升级不能降级。</li>
-</ul>
-<p>偏向锁、轻量级锁是针对synchronized优化。</p>
-<h1 id="对象头"><a href="#对象头" class="headerlink" title="对象头"></a>对象头</h1><p>JVM中，对象在内存中除了存储对象本身的数据，还会额外存储关于对象的一些附加信息。</p>
-<ul>
-<li>普通对象的对象头中存储mark word和类型指针（指向对象所属类的指针）。</li>
-<li>数组对象还会存储数组长度。</li>
-</ul>
-<p>mark word存储对象的hashcode、GC分代年龄、锁状态等信息。</p>
-<p>mark word长度在32位系统上为32位，64位系统上长度为64位。</p>
-<p>为了在有限的空间存储较多的信息，其数据格式不固定，数据位共享复用。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826195541.png"></p>
-<p>当对象状态为偏向锁（biasable）时，mark word存储的是偏向的线程ID；</p>
-<p>当状态为轻量级锁（lightweight locked）时，mark word存储的是指向线程栈中Lock Record的指针；</p>
-<p>当状态为重量级锁（inflated）时，为指向堆中的monitor对象的指针。</p>
-<h1 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h1><p>研究发现，大多数情况下不仅不存在锁竞争，而且总是由同一个线程多次重入，为了让同一个线程多次重入获取锁的代价更低，就引入了偏向锁的概念。</p>
-<p>偏向锁获取过程：</p>
-<ol>
-<li> 当前线程访问Mark Word中偏向锁的标识是否设置成1，锁标志位是否为01，确认是否为可偏向状态。</li>
-<li> 如果为可偏向状态，则测试线程ID是否指向当前线程，如果是，进入步骤5，否则进入步骤3。</li>
-<li> 如果线程ID并未指向当前线程，则通过CAS操作竞争锁。如果竞争成功，则将Mark Word中线程ID设置为当前线程ID，然后执行5；如果竞争失败，执行4。</li>
-<li> 如果CAS获取偏向锁失败，则表示有竞争。当到达全局安全点（safepoint）时获得偏向锁的线程被挂起，偏向锁升级为轻量级锁，然后被阻塞在安全点的线程继续往下执行同步代码。（撤销偏向锁的时候会导致当前获得偏向锁的线程被暂停）</li>
-<li> 执行同步代码。</li>
-</ol>
-<p>偏向锁的释放：</p>
-<p>偏向锁只有当遇到其他线程也尝试获取偏向锁时，持有偏向锁的线程才会释放锁，线程不会主动去释放偏向锁。（也就是对于获取偏向锁的线程 只有lock的动作，没有unlock的动作，这是因偏向的需要，即使可能这个线程已经死亡。）偏向锁的撤销步骤如下：</p>
-<ol>
-<li> 等到全局安全点（在这个时间点上没有正在执行的字节码）。</li>
-<li> 暂停持有偏向锁的线程，然后检查持有偏向锁的线程是否还活着，如果线程不处于活动状态，则将对象头设置为无锁状态。争抢锁的线程会再走生成偏向锁的过程，然后成为偏向锁的拥有者。</li>
-<li> 如果持有偏向锁的线程还处于活动状态，则将锁升级为轻量级锁。</li>
-</ol>
-<h1 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h1><p>轻量级锁实现是自旋锁，没有抢到锁的线程将自旋，即不停的循环判断是否能获取到锁，不会让线程阻塞。获取锁的操作就是通过CAS修改对象头的锁标记位。</p>
-<p>长时间的循环是很占用CPU的，一个线程持有锁，其他线程只能原地空耗CPU，不执行任何有效的任务，这种现象称为busy-waiting。</p>
-<p>利用短时间的busy-waiting换取线程的阻塞和唤醒在用户态和内核态切换的开销。</p>
-<p>busy-waiting是有限度的（JVM可以设置参数调节循环次数上限），如果锁竞争激烈，自旋超过一定次数，就升级为重量级锁。</p>
-<p>具体的CAS过程：</p>
-<ul>
-<li>  当线程请求锁时，若该锁对象的Mark Word中标志位为01（未锁定状态），则在该线程的栈帧中创建一块名为『锁记录』的空间，然后将锁对象的Mark Word拷贝至该空间；最后通过CAS操作将锁对象的Mark Word指向该锁记录；</li>
-<li>  若CAS操作成功，则轻量级锁的上锁过程成功；</li>
-<li>  若CAS操作失败，再判断当前线程是否已经持有了该轻量级锁；若已经持有，则直接进入同步块；若尚未持有，则表示该锁已经被其他线程占用，此时轻量级锁就要膨胀成重量级锁。</li>
-</ul>
-<p>轻量级锁比重量级锁性能更高的前提是：</p>
-<ul>
-<li>在轻量级锁被占用的整个同步周期内，不存在其他线程的竞争。若在该过程中一旦有其他线程竞争，那么就会膨胀成重量级锁，从而除了使用互斥量以外，还额外发生了CAS操作，因此更慢！</li>
-</ul>
-<p>轻量级锁是为了在线程交替执行同步块时提高性能。</p>
-<h1 id="重量级锁"><a href="#重量级锁" class="headerlink" title="重量级锁"></a>重量级锁</h1><p>阻塞所有竞争锁但未获得锁的线程。</p>
-<p>实现依赖于操作系统的同步函数，在linux上使用mutex互斥锁，涉及到用户态和内核态的切换、进程线程上下文的切换，成本较高。</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>AQS</tag>
-        <tag>synchronized</tag>
-        <tag>ReentrantLock</tag>
-        <tag>偏向锁</tag>
-        <tag>轻量级锁</tag>
-        <tag>重量级锁</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-volatile</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-volatile/</url>
-    <content><![CDATA[<h1 id="volatile综述"><a href="#volatile综述" class="headerlink" title="volatile综述"></a>volatile综述</h1><p>volatile主要保证两点</p>
-<ol>
-<li> 变量的值在多线程之间是可见的</li>
-<li> 阻止指令重排序，间接的保证变量值的可见性</li>
-</ol>
-<p>但不保证原子性，所以开销比synchronized加锁要小</p>
-<p>可见性的解释涉及到java内存模型，每个线程都有自己的私有内存，对应堆中的虚拟机栈中，当多个线程访问主存上同一个变量时，会拷贝变量到各自私有线程中，线程对变量做出修改都是在私有内存中的修改，线程并不知道各自的修改值，也就是所谓的不可见。</p>
-<p>用volatile修饰变量后，对变量的修改会立刻刷新到主存，读volatile变量也会从主存去读取，保证可见性，但这让缓存失效，牺牲了一定的访问速度。</p>
-<p>指令重排序有好几个层面的，有CPU层面和编译器层面的。</p>
-<p>为什么要进行指令重排序呢？是为了提高CPU利用率。</p>
-<p>CPU层面的指令重排序是因为防止CPU指令流水线的停顿，指令流水线是做什么的呢？一条指令可以分为多个执行步骤，每个执行步骤可以由多个功能单元的硬件来执行，这样就不用串行的执行指令了，可以让多个功能单元并行的执行指令的不同的步骤，多个指令的执行速度一下提升好几倍。但是如果指令之间存在数据依赖，流水线就只能停顿等待，但是如果把没有依赖的指令重排序一下，就不用停顿等待了，这样CPU利用率就提高了。</p>
-<p>编译器的重排序要达到的目的也是提高CPU利用率。</p>
-<p>检查编译器有没有做重排序，可以开两个线程做验证，给两个变量a1、a2赋初始值0，线程1执行两条语句，先给a1赋值1，然后打印a2，线程2也执行两条语句，先给a2赋值1，然后打印a1，正常执行结果是打印1和1，执行很多次过后会发现有一次打印出来的两个结果是10、01甚至00，打印语句被重排序到前面去先执行了。</p>
-<p>既然指令重排序这么好，为什么还要阻止呢？</p>
-<p>因为指令重排序虽然不会影响单线程的代码语义，但是在多线程下会影响程序运行的正确性，有时候需要手动阻止。这个可以写代码验证的。</p>
-<p>volatile阻止指令重排序具体是通过内存屏障来实现的。</p>
-<p>内存屏障分为读屏障和写屏障，读屏障将内存数据拷贝到缓存，写屏障将缓存数据刷新到内存。</p>
-<p>volatile写操作之前插入StoreStore屏障，之后插入StoreLoad屏障</p>
-<p>volatile写操作volatile读操作之后插入LoadLoad屏障和LoadStore屏障</p>
-<p>内存屏障有两个作用：</p>
-<ol>
-<li> 阻止内存屏障两侧的指令重排序</li>
-<li> 强制把缓存数据回写到主内存，对所有线程可见</li>
-</ol>
-<p>但也不能总是用volatile来保证有序性，那样太麻烦了。所有Java内存模型规定了一个happens-before原则，保证前一个操作的结果对后续操作是可见的，来帮助开发者辅助判断代码是否有线程安全的问题。</p>
-<p>比如</p>
-<ol>
-<li> 一个线程内必须保持语义的串行，按照代码顺序执行</li>
-<li> 解锁操作要发生在对这个锁的加锁操作之前</li>
-<li> 线程start()方法先于线程的每个动作</li>
-</ol>
-<p>在多线程中需要修改和读取的变量，不需要保证原子性的，但要保证可见性的，就要用volatile修饰</p>
-<p>一个典型的使用场景是双重检查锁定的单例模式，对单例对象加volatile修饰，以防止new对象的时候发生指令重排序，进而导致得到了一个对象的引用但是对象还没有初始化。</p>
-<h1 id="volatile解决了什么问题？"><a href="#volatile解决了什么问题？" class="headerlink" title="volatile解决了什么问题？"></a>volatile解决了什么问题？</h1><ol>
-<li> 保证变量的可见性，多线程可读取到变量最新修改值</li>
-<li> 保证变量的有序性，阻止指令重排序</li>
-</ol>
-<h1 id="可见性是什么意思？"><a href="#可见性是什么意思？" class="headerlink" title="可见性是什么意思？"></a>可见性是什么意思？</h1><p>首先要介绍Java内存模型，Java的数据都存储在主存中，每个线程读写主存的数据时，都会把数据拷贝到线程自己的工作内存中再进行读写，工作内存可以理解为线程自己的缓存，多个线程对同一个数据修改时，修改的都是线程自己工作内存的数据拷贝，多个线程的工作内存之间是非共享的，对数据做出修改后互相不可见。</p>
-<h1 id="volatile是如何保证可见性的？"><a href="#volatile是如何保证可见性的？" class="headerlink" title="volatile是如何保证可见性的？"></a>volatile是如何保证可见性的？</h1><p>多线程读写主存中存储的某个volatile变量时，会把这个变量所在的内存块都复制到线程的工作内存，当某个线程修改了工作内存中的volatile变量，会立即将新数据写入共享内存，其他线程的工作内存中这一缓存块会被标记失效，被要求重新从共享内存读取数据，保证读取到的是最新的值。</p>
-<p>可以参考缓存一致性协议来理解。</p>
-<h1 id="为什么要有指令重排序，指令重排序有什么好处？"><a href="#为什么要有指令重排序，指令重排序有什么好处？" class="headerlink" title="为什么要有指令重排序，指令重排序有什么好处？"></a>为什么要有指令重排序，指令重排序有什么好处？</h1><p>减少CPU空等，提高CPU整体的吞吐量。</p>
-<p>编译器层面有编译器对指令顺序的优化。</p>
-<p>CPU层面有指令流水线对指令执行的优化。</p>
-<h1 id="虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？"><a href="#虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？" class="headerlink" title="虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？"></a>虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？</h1><p>通过内存屏障来实现。</p>
-<p>内存屏障之前所有的写操作都要回写到主存，内存屏障之后的所有读操作都能获取内存屏障之前的所有写操作的最新结果，这样就保证了可见性。</p>
-<p>因此也就禁止把内存屏障之后的指令重排序到内存屏障之前。</p>
-<p>先简单了解两个指令：</p>
-<ul>
-<li>Store：将处理器缓存的数据刷新到内存中。</li>
-<li>Load：将内存存储的数据拷贝到处理器的缓存中。</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th><strong>屏障类型</strong></th>
-<th><strong>指令示例</strong></th>
-<th><strong>说明</strong></th>
-</tr>
-</thead>
-<tbody><tr>
-<td>LoadLoad  Barriers</td>
-<td>Load1;LoadLoad;Load2</td>
-<td>该屏障确保Load1数据的装载先于Load2及其后所有装载指令的的操作</td>
-</tr>
-<tr>
-<td>StoreStore  Barriers</td>
-<td>Store1;StoreStore;Store2</td>
-<td>该屏障确保Store1立刻刷新数据到内存(使其对其他处理器可见)的操作先于Store2及其后所有存储指令的操作</td>
-</tr>
-<tr>
-<td>LoadStore  Barriers</td>
-<td>Load1;LoadStore;Store2</td>
-<td>确保Load1的数据装载先于Store2及其后所有的存储指令刷新数据到内存的操作</td>
-</tr>
-<tr>
-<td>StoreLoad  Barriers</td>
-<td>Store1;StoreLoad;Load2</td>
-<td>该屏障确保Store1立刻刷新数据到内存的操作先于Load2及其后所有装载装载指令的操作。它会使该屏障之前的所有内存访问指令(存储指令和访问指令)完成之后,才执行该屏障之后的内存访问指令</td>
-</tr>
-</tbody></table>
-<h1 id="volatile为什么不能保证原子性？"><a href="#volatile为什么不能保证原子性？" class="headerlink" title="volatile为什么不能保证原子性？"></a>volatile为什么不能保证原子性？</h1><p>因为一个volatile变量的操作，比如i++，本身多个字节码指令，并且每条指令也不一定是原子化的，所以volatile变量的操作也不可能是原子化的。</p>
-<p>这个可以用程序验证，volatile变量初始值为0，两个线程分别对其自增一万次，最后变量的值是小于两万的。</p>
-<p>可以从字节码指令看出来</p>
-<p>如下的代码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileDemo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> value = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">increament</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        value++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>编译后value++的字节码指令如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GETFIELD VolatileDemo.value : I</span><br><span class="line">ICONST_1</span><br><span class="line">IADD</span><br><span class="line">PUTFIELD VolatileDemo.value : I</span><br></pre></td></tr></table></figure>
-<p>GETFIELD指令是获取对象的字段值，将值压入栈顶<br>ICONST_1指令是int型常量1入栈，因为要加1，所以就入栈1<br>IADD指令是弹出栈顶的两个数字进行相加，相加的和再压入栈<br>PUTFIELD指令是给对象的变量赋值栈顶的值</p>
-<p>volatile可以保证GETFIELD时可以读取到value的最新值，但是iconst_1和add时，其他线程可能已经把value值也改变了，最后PUTFIELD是过期的值，所以多线程调用increament时，最终的值会变小。</p>
-<p>一个volatile变量自增操作有4个指令，一条字节码指令也不一定是原子的，可能还会转换为若干条本地机器码指令，所以volatile不能保证原子性。</p>
-<p>需要通过synchronized或java.util.concurrent包下的锁或原子类来保证原子性。</p>
-<h1 id="volatile使用案例"><a href="#volatile使用案例" class="headerlink" title="volatile使用案例"></a>volatile使用案例</h1><ol>
-<li>volatile可以使得long和double的赋值是原子的</li>
-<li>多线程需要实时读取的值，例如：<br> a. AtomicInteger里的value都是volatile的<br> b. AQS里的state变量也是volatile</li>
-<li>CopyOnWriteArrayList里的数组也是volatile的，保证数组拷贝过后，对其他读线程立即可见</li>
-<li>阻止if或while中条件变量的重排序，防止出现不符合预期的结果。if或while语句内部的变量，跟条件变量的赋值，如果在同一个方法中执行，因为没有依赖关系，可能会发生重排序。比如方法a里会读取先通过if判断flag变量是否为true，为true就打印变量c的值，然后在方法b中，先对c赋值，再对flag赋值true，b方法中两个语句可能会重排序的，在多线程执行的时候，就会导致flag先为true，但是c还没赋值，另外一个线程已经执行方法a了，</li>
-<li>双重检查锁定的单例</li>
-</ol>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>volatile</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-条件变量、wait()与notify()、await()与signal()</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/</url>
-    <content><![CDATA[<h1 id="Object-wait-为什么要配合while使用？"><a href="#Object-wait-为什么要配合while使用？" class="headerlink" title="Object.wait()为什么要配合while使用？"></a>Object.wait()为什么要配合while使用？</h1><p>wait之前一般都是要判断某个条件成立才会wait，这个判断条件需要写成while：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">while (check pass) &#123;</span><br><span class="line">	wait();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果写成if，wait过后当前线程交出锁，等当前线程重新被唤起后，条件是否满足是不知道的，其他线程可能修改了条件的状态，要重新判断一下，否则可能条件未满足就继续执行了。</p>
-<p>以生产者消费者模型为例。</p>
-<ul>
-<li>有1个生产者往缓冲区加数据，有2个消费者从缓冲区取数据。</li>
-<li>消费者取数据前会检查缓冲区是否为空，不为空才能取数据，为空的话要等待。</li>
-<li>假设两个消费者线程都等待了。</li>
-<li>然后生产者往缓冲区添加数据后做notifyAll唤醒所有消费者，会唤醒两个等待的消费者线程，让消费者线程从监视器的等待队列移动到锁竞争队列，两者竞争锁。</li>
-<li>其中一个线程竞争到锁后，消费了缓冲区数据，缓冲区没有数据了，释放锁后另外一个消费者获得到了锁，开始取从缓冲区取数据，而没有再做条件检查了。</li>
-</ul>
-<p>这种现象叫做虚假唤醒。</p>
-<h1 id="Object的notify-和notifyAll-有什么区别？"><a href="#Object的notify-和notifyAll-有什么区别？" class="headerlink" title="Object的notify()和notifyAll()有什么区别？"></a>Object的notify()和notifyAll()有什么区别？</h1><p>每一个对象都有一个内部锁，即监视器（Monitor），虚拟机会给每个对象维护两个线程集合（可能是队列），一个叫Entry Set（入口集），另外一个叫Wait Set（等待集），对于任意对象object，object的Entry Set用于存储等待获取object内部锁的所有线程，object的Wait Set存储执行了object.wait()和object.wait(long timeout)的线程。</p>
-<ul>
-<li>notify()会唤醒Wait Set里的一个线程。</li>
-<li>notifyAll()会唤醒Wait Set里的所有线程，线程被唤醒后去竞争获取锁，没有获取锁的线程进入Entry Set。</li>
-</ul>
-<h1 id="什么时候用notify-？什么时候用notifyAll"><a href="#什么时候用notify-？什么时候用notifyAll" class="headerlink" title="什么时候用notify()？什么时候用notifyAll()?"></a>什么时候用notify()？什么时候用notifyAll()?</h1><p>如果所有线程都在等待相同的条件，并且一次只有一个线程可以从条件变为true，则可以使用notify。</p>
-<p>在这种情况下，notify是优于notifyAll 因为唤醒所有这些因为我们知道只有一个线程会受益而所有其他线程将再次等待，所以调用notifyAll方法只是浪费CPU。</p>
-<p>虽然这看起来很合理，但仍有一个警告，即无意中的接收者吞下了关键通知。通过使用notifyAll，我们确保所有收件人都会收到通知。</p>
-<h1 id="Object的wait-notifyAll-和Condition的await-signalAll-的区别？"><a href="#Object的wait-notifyAll-和Condition的await-signalAll-的区别？" class="headerlink" title="Object的wait()/notifyAll()和Condition的await()/signalAll()的区别？"></a>Object的wait()/notifyAll()和Condition的await()/signalAll()的区别？</h1><p>以生产者消费者模型为例。</p>
-<ul>
-<li>使用wait()、notify()/notifyAll()的缺点在于在生产者唤醒消费者、或者消费者唤醒生产者时，由于生产者和消费者使用同一个锁，所以生产者也会将生产者唤醒，消费者也会将消费者唤醒。</li>
-<li>如果能让消费者只唤醒生产者，或者生产者只唤醒消费者，就没有性能浪费了。</li>
-<li>所以一个ReentrantLock支持创建多个Condition，以应对这种场景。</li>
-<li>synchronized的锁对象没有提供多条件唤醒。</li>
-</ul>
-<p>ArrayBlockingQueue是典型的生产者消费者的例子，源码是很好的参考。</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>synchronized</tag>
-        <tag>Object.wait()</tag>
-        <tag>Object.notify()</tag>
-        <tag>Object.notifyAll()</tag>
-        <tag>Condition.await()</tag>
-        <tag>Condition.signal()</tag>
-        <tag>虚假唤醒</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-伪共享</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E4%BC%AA%E5%85%B1%E4%BA%AB/</url>
-    <content><![CDATA[<h1 id="计算机结构"><a href="#计算机结构" class="headerlink" title="计算机结构"></a>计算机结构</h1><p>计算机可分为两种结构</p>
-<ol>
-<li> 冯诺依曼结构</li>
-<li> 哈佛结构</li>
-</ol>
-<p>冯诺依曼结构提出计算机由运算器、控制器、存储器、输入设备、输出设备5个部分组成。</p>
-<p>冯诺依曼结构特点是指令存储和数据存储合并在一起的存储结构，指令和数据统一编址，使用同一条总线传输，CPU读取指令和数据的操作是互斥的，同一时间只能做一件事，只能分时复用，无法并行，速度慢，CPU吞吐量低。</p>
-<p>哈佛结构特点是指令存储和数据存储分开的存储结构，指令和数据独立独立编址，使用两条独立的总线传输，CPU读取指令和数据操作可以并行，速度快，CPU吞吐量高。</p>
-<p>因为cpu速度快，而总线速度慢。冯诺依曼结构中，数据存储器和指令存储器使用同一总线，总线繁忙，cpu需要停下来等待总线读取数据。在哈佛结构中，数据存储器和指令存储器使用不同总线，减少了cpu停止工作等待数据读取的时间，因此提升了效率。</p>
-<p>冯诺依曼结构由于指令和数据共用总线，速度慢、效率低、吞吐量低，但因为指令存储区域和数据存储区域大小可以动态调整，存储器利用率高，适用场景更通用，所以也便宜。</p>
-<p>哈佛结构由于指令和数据分开存储，速度快、效率高、吞吐量大，但不能灵活调整存储区，适用比较做单一的功能，针对不同的功能要做单独的设计，成本也提高了。</p>
-<h1 id="冯诺依曼瓶颈"><a href="#冯诺依曼瓶颈" class="headerlink" title="冯诺依曼瓶颈"></a>冯诺依曼瓶颈</h1><p>指令和数据存储在一起，导致指令读取和数据处理不能同时进行，而CPU运算速度远远超过主存储器读写的速度，CPU就会浪费时间等待主存数据读写，CPU吞吐量低。</p>
-<p>解决瓶颈途径之一：</p>
-<p>CPU访问主存数据具有时间局部性和空间局部性特点，在CPU和主存储器之间增加缓存，缓存的命中率很高，大大减少访问主存的次数。</p>
-<p>同时CPU缓存采用哈佛结构，指令和数据分开存储，以提高存储量。</p>
-<p>数据访问的时间局部性：如果一项信息最近被访问，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
-<p>数据访问的空间局部性：将来马上要用到的信息，很可能与正在使用的信息，在空间存储位置上是临近的</p>
-<p>所以当访问主存中某一个数据的时候，把这个数据相邻的数据都放入缓存中，可以大大减少CPU访问主存消耗的时间。</p>
-<h1 id="CPU缓存和内存为什么要分块？"><a href="#CPU缓存和内存为什么要分块？" class="headerlink" title="CPU缓存和内存为什么要分块？"></a>CPU缓存和内存为什么要分块？</h1><p>CPU访问主存数据具有时间和空间局部性的特点。</p>
-<p>时间局部性：如果一个数据被访问了，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
-<p>空间局部性：访问内存上的一个数据，这个数据邻近位置的数据，最近也很大可能会被访问</p>
-<p>所以应该把该数据邻近的位置的数据都一起读入缓存中，这样可以减少CPU访问主存的次数，CPU直接访问缓存的速度是很快的，这样CPU的吞吐量就提高了。</p>
-<p>虚拟内存机制，也是建立了主存和外存之间的缓存关系，也是利用数据访问的局部性原理，把暂时不用的数据放到访问速度更慢的外存，需要频繁使用的数据按页交换到访问速度更快的主存中。这样内存中可以运行更多的进程。</p>
-<h1 id="缓存行"><a href="#缓存行" class="headerlink" title="缓存行"></a>缓存行</h1><p>为了便于CPU缓存和主存交换数据，CPU缓存和主存都被划分位长度相等的块，缓存块又称为缓存行，大小为2的次方，CPU缓存从主存读入数据一次读一整块，向主存更新数据，也是一次写入一整块。</p>
-<h1 id="伪共享"><a href="#伪共享" class="headerlink" title="伪共享"></a>伪共享</h1><p>多个CPU同时读写主存上某个连续区域的不同变量时，会各自把该该主存块拷贝一份放入自己的CPU缓存中，多个线程在访问缓存行内的不同变量时，由缓存一致性协议可知该缓存行会失效，多个CPU之间互相等待对方先把缓存行写入主存，自己再从主存读入最新的数据块，表现为缓存频繁未命中，CPU演变为直接与主存交互，CPU访问主存速度很慢，CPU吞吐量因此降低。</p>
-<h1 id="伪共享的解决：字节填充"><a href="#伪共享的解决：字节填充" class="headerlink" title="伪共享的解决：字节填充"></a>伪共享的解决：字节填充</h1><p>保证不同的CPU处理的数据位于不同的缓存行中，就不会引发缓存行的频繁失效。</p>
-<p>java里定义类的成员变量时，可以倾向于把不变的遍历放在一起（一组位置），易变的变量放在一起，使它们尽量不在同一个缓存行，这样每次对象的易变变量变化时，不会引起不变的属性所在缓存行失效，从而提高缓存命中率，避免频繁从主存读取数据，提高CPU吞吐量。</p>
-<p>Jdk6中可以通过添加填充变量进行字节填充来解决伪共享，示例如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;  <span class="comment">// 实际数据</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6; <span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>想象PaddingObject里本来只有一个value属性，现在有多个线程需要读写一个PaddingObject数组（修改数组每一项里的value），由于数组的存储空间在内存中是连续的，根据CPU访问数据的空间局部性特点，CPU在访问数组某个元素的时候，会把该元素所在的内存块整个拷贝到CPU缓存中，这个内存块包含了数组中一些相邻的元素，多个线程同时修改数组中相邻的一些元素时，这个缓存行会频繁失效，CPU缓存命中率低，如果数组的每一个元素位于不同的内存块，也就可以位于不同的缓存行，多线程就不会竞争同一个缓存行</p>
-<p>Jdk7中有的版本用上述方式无效，添加的无用变量会被优化去除，需要使用继承的方式组织优化，示例如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6;<span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span> <span class="keyword">extends</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;    <span class="comment">// 实际数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Jdk8开始提供了@sun.misc.Contended 注解进行字节填充，不用再手动声明无用的变量了，同时要开启 JVM 参数：-XX:-RestrictContended=false</p>
-<p>字节填充会增大目标对象的体积，是用空间换时间。</p>
-<h2 id="伪共享应用场景"><a href="#伪共享应用场景" class="headerlink" title="伪共享应用场景"></a>伪共享应用场景</h2><h3 id="数组优于链表"><a href="#数组优于链表" class="headerlink" title="数组优于链表"></a>数组优于链表</h3><p>从伪共享的角度，数据和链表的区别，不仅是结构上的区别，在缓存命中率上是完全不一样的，因为数组的存储空间连续，缓存命中率更高，链表的缓存命中率低，访问速度慢。</p>
-<h3 id="快速排序优于堆排序"><a href="#快速排序优于堆排序" class="headerlink" title="快速排序优于堆排序"></a>快速排序优于堆排序</h3><p>堆排序访问数据时，也不是访问连续内存空间的数据，所以堆排序和快速排序虽然都有相近的时间复杂度，但是常用的还是快速排序</p>
-<h3 id="二维数组横向遍历优于竖向遍历"><a href="#二维数组横向遍历优于竖向遍历" class="headerlink" title="二维数组横向遍历优于竖向遍历"></a>二维数组横向遍历优于竖向遍历</h3><p>横向遍历二维数组，比竖向遍历缓存命中率要高，因为数组在内存中的存储是每行每行的连续存储，先按行遍历再按列遍历，会访问内存空间连续的数据，先按列遍历再按行遍历访问的不是内存存储空间连续的数据，数据不在同一块，缓存的命中率低</p>
-<h3 id="二维数组维数短的写在外层更优"><a href="#二维数组维数短的写在外层更优" class="headerlink" title="二维数组维数短的写在外层更优"></a>二维数组维数短的写在外层更优</h3><p>二维数组，维数短的写在外层，缓存命中率更高，因为会减少跨缓存块访问数据，集中在一个缓存块上访问数据，如果长的一维写在外层，访问二维数组元素时，访问数据的内存地址跨度可能超过一个内存块长度，就要频繁的交换CPU缓存，缓存命中率低</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>伪共享</tag>
-        <tag>False Sharing</tag>
-        <tag>虚拟内存</tag>
-        <tag>冯诺依曼瓶颈</tag>
-        <tag>字节填充</tag>
-        <tag>计算机结构</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-线程池</title>
-    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/</url>
-    <content><![CDATA[<h1 id="为什么要使用线程池？"><a href="#为什么要使用线程池？" class="headerlink" title="为什么要使用线程池？"></a>为什么要使用线程池？</h1><ol>
-<li> 线程的创建和销毁是消耗性能的，如果频繁的开线程执行任务，可以考虑复用已启动的线程，避免无谓的性能开销，提高系统整体吞吐量</li>
-<li> 对任务异步调度进行了抽象，方便统一控制和测试</li>
-</ol>
-<h1 id="线程池的几个参数的作用分别是什么？"><a href="#线程池的几个参数的作用分别是什么？" class="headerlink" title="线程池的几个参数的作用分别是什么？"></a>线程池的几个参数的作用分别是什么？</h1><p>线程池是ThreadPoolExecutor类，构造函数的参数如下：</p>
-<ol>
-<li> int corePoolSize：核心线程数量，除非手动shutdown否则核心线程一直运行</li>
-<li> int maximumPoolSize：最大线程数量，最大线程数减去核心线程数的线程为非核心线程</li>
-<li> long keepAliveTime：非核心线程空闲时的存活时间</li>
-<li> TimeUnit unit：非核心线程空闲时的存活时间单位</li>
-<li> BlockingQueue<Runnable> workQueue：存放任务的工作队列，核心线程全都在执行任务时，没法执行新的任务了，新任务就存放在这里</li>
-<li> ThreadFactory threadFactory：线程创建的工厂，可以给线程设置名字，方便排查问题</li>
-<li> RejectedExecutionHandler handler：存放任务的阻塞队列存不下新的任务时的拒绝策略，做限流保护</li>
-</ol>
-<h1 id="任务拒绝策略有哪些？"><a href="#任务拒绝策略有哪些？" class="headerlink" title="任务拒绝策略有哪些？"></a>任务拒绝策略有哪些？</h1><p>AbortPolicy：抛出一个异常，默认的</p>
-<p>DiscardPolicy：直接丢弃任务</p>
-<p>DiscardOldestPolicy：丢弃队列里最老的任务，将当前这个任务继续提交给线程池）</p>
-<p>CallerRunsPolicy：交给线程池调用所在的线程进行处理</p>
-<h1 id="线程池有哪些工作队列，分别什么场景使用？"><a href="#线程池有哪些工作队列，分别什么场景使用？" class="headerlink" title="线程池有哪些工作队列，分别什么场景使用？"></a>线程池有哪些工作队列，分别什么场景使用？</h1><p>主要三种：无界队列、有界队列、同步移交队列</p>
-<h2 id="无界队列"><a href="#无界队列" class="headerlink" title="无界队列"></a>无界队列</h2><p>LinkedBlockingQueue，队列大小无限。</p>
-<p>Executors.newFixedThreadPool 采用就是 LinkedBlockingQueue。</p>
-<p>当某些任务耗时较长时，可能会导致队列中堆积存储大量任务，进而导致内存溢出。</p>
-<h2 id="有界队列"><a href="#有界队列" class="headerlink" title="有界队列"></a>有界队列</h2><ul>
-<li>ArrayBlockingQueue</li>
-<li>有界的LinkedBlockingQueue</li>
-<li>支持设置优先级的PriorityBlockingQueue</li>
-</ul>
-<p>有界队列的大小要和线程池大小配合，线程池比有界队列大时可以减少内存消耗、降低CPU使用率和上下文切换，但会限制吞吐量。</p>
-<h2 id="同步移交队"><a href="#同步移交队" class="headerlink" title="同步移交队"></a>同步移交队</h2><p>SynchronousQueue</p>
-<p>其并不真正存储任务，当一个放入任务到队列中必须同时有一个线程正在等待取任务，无限数量的线程池可以使用队列，这样每次提交任务都会立刻执行。</p>
-<h2 id="LinkedTransferQueue"><a href="#LinkedTransferQueue" class="headerlink" title="LinkedTransferQueue"></a>LinkedTransferQueue</h2><p>LinkedTransferQueue 是 SynchronousQueue 和 LinkedBlockingQueue 的合体，性能比 LinkedBlockingQueue 更高（没有锁操作），比 SynchronousQueue能存储更多的元素。</p>
-<p>当 put 时，如果有等待的线程，就直接将元素 “交给” 等待者， 否则直接进入队列。</p>
-<p>put 和 transfer 方法的区别是 put 是立即返回的， transfer 是阻塞等待消费者拿到数据才返回。transfer方法和 SynchronousQueue的 put 方法类似。</p>
-<h1 id="往线程池里提交一个任务会发生什么？"><a href="#往线程池里提交一个任务会发生什么？" class="headerlink" title="往线程池里提交一个任务会发生什么？"></a>往线程池里提交一个任务会发生什么？</h1><p>线程池的核心接口是Executor，里面只有一个execute(Runnable)方法，ExecutorService接口继承了Executor，提供了submit、shutdown、invokeAll、invokeyAny等方法。</p>
-<p>提交任务有execute和submit两种方式，execute只能提交无返回值的Runnable，submit可以提交有返回值的Callable和无返回值的Runnable，submit方法会新建一个FutureTask封装传入的Callback和Runnable，Runnable会被适配为Callback对象，FutureTask是集成Runnable的，最终还是执行execute(Runnable)，FutureTask内部只处理Callable</p>
-<p>execute(Runnable)里的逻辑：</p>
-<p>如果运行的线程数少于corePoolSize，则创建新线程执行任务。</p>
-<p>如果运行的线程数大于corePoolSize，则将新任务加入工作队列，而不添加新的线程，核心线程执行完一个任务就从工作队列中取任务继续执行。</p>
-<p>如果队列已满无法再加入，则创建新的线程执行，一直到线程总数超过maximumPoolSize时，对新任务执行拒绝策略。</p>
-<p>execute里addWorker(null, false);，传递空任务，代表新建线程，不为空表示新建线程并添加第一个任务</p>
-<p>submit任务后，任务内抛出的异常会拦截，通过Future获取异常对象，通过execute执行的任务，抛出的异常原封不动的向上抛。</p>
-<h1 id="线程池的大小应该设置多大？"><a href="#线程池的大小应该设置多大？" class="headerlink" title="线程池的大小应该设置多大？"></a>线程池的大小应该设置多大？</h1><p>任务分三类：</p>
-<ol>
-<li> CPU计算密集型</li>
-<li> IO密集型</li>
-<li> 计算和IO混合型</li>
-</ol>
-<p>CPU计算密集型任务大部分时间用来做计算逻辑，消耗CPU资源，这种任务同时执行的数量应该跟CPU数量相等。因为任务同时执行的数量少于CPU数量的话，明明有CPU空闲，任务却得不到执行，就浪费资源了，系统整体吞吐量低；任务同时执行的数量多于CPU数量的话，由于所有的CPU都满载了，要让CPU分时间片给各个任务才能保证多出的人得到执行，而切换任务是有成本的，要保存恢复任务（线程）的上下文环境。</p>
-<p>CPU密集型任务的线程池大小可以设置为CPU数量 + 1，额外多分配一个线程是因为其他线程偶尔会因为故障或其他原因暂停运行了，额外的一个线程可以确保CPU有任务执行不会被浪费。</p>
-<p>IO密集型任务，多数线程处于阻塞状态等待IO完成，让出CPU，不消耗CPU资源，故而应该让线程池多处理一些任务。线程池大小一般设置为 2 * CPU数量 + 1。</p>
-<p>假设有一个任务，计算需要C毫秒，IO操作需要等待W毫秒，整个任务的耗时就是C+W，一个CPU执行这个任务，CPU利用率U=C/(C+W)，很明显0 &lt;= U &lt;=1，也就是说一个CPU一个线程的情况下该线程的CPU利用为U，如果想要使得CPU利用率为1，那就多开几个线程，让几个线程的CPU利用率加起来等于1就完事了，那么总共就需要 1/U=(C+W)/C=1+W/C 个线程，1个CPU利用率100%需要1+W/C个线程，那么N个CPU利用率要100%就再乘以N就好了，所以总线程数就是N*(1+W/C)</p>
-<p>CPU计算密集型，可以认为没有IO操作，W=0，那么公式计算就会得到N</p>
-<p>IO密集型，C应该比较小，W比较大，那么W/C就会大于1，代入公式得到总线程数至少是2N，但是线程数也不能很大，每创建一个线程都会占用内存空间，线程数量过大会内存溢出，还要考虑硬盘和网络带宽等IO资源的限制，线程搞多了IO处理不了也没有意义，只会浪费内存。IO密集型线程池大小一般就设为2N+1，加1也是为了防止有线程因为某种原因故障或暂停了，额外的这个线程确保CPU不会浪费。</p>
-<p>线程等待的时间越长，需要越多的线程数；线程计算的时间越长，需要的线程数越少。</p>
-<p>任务的等待时间和计算时间可以通过基准测试工具测试出来，求一个近似值，再代入公式，即可估算出线程池大小。如果实际不同种类的任务等待时间和计算时间差异较大，只能用一个线程池的情况下，那就取平均值。</p>
-<p>也不是线程越多、CPU越多就可以无限提高运算速度，这是有上限的，可以用Amdahl（阿姆达尔）定律来衡量处理器并行运算之后效率的提升能力和上限，加速比 = 并行前系统耗时 / 并行后的系统耗时，加速比可以看作并行后提升了多少倍的执行速度。</p>
-<p>并行前系统耗时可以分为两个部分，一个是只能串行执行的部分，一个是可以并行执行的部分，设p为可以并行执行的部分的比例，必须串行执行的部分的比例就是1-p，设cpu数量（或线程数）为n，可并行部分执行的时间就是p/n，并行后的执行时间就是 1-p+p/n，并行前执行时间就是1了，加速比即1/(1-p+p/n)</p>
-<p>也可以设f为必须串行执行的部分的比例，可以并行执行的部分的比例就是1-f，设cpu数量（或线程数）为n，可并行部分执行的时间就是(1-f)/n，并行后的执行时间就是 f+(1-f)/n，加速比为1/(f+(1-f)/n)</p>
-<p>必须串行执行的部分越大，加速比就越小，这就是多核（多线程）加速的上限值。</p>
-<h1 id="线程池的非核心线程什么时候会被释放？"><a href="#线程池的非核心线程什么时候会被释放？" class="headerlink" title="线程池的非核心线程什么时候会被释放？"></a>线程池的非核心线程什么时候会被释放？</h1><p>非核心线程的保活借由BlockingQueue的带超时参数的poll()方法实现了，在keepAliveTime时间内没有从队列取到任务，就一直阻塞当前线程。</p>
-<h1 id="核心线程为什么一直可以运行，如何保证不销毁的？"><a href="#核心线程为什么一直可以运行，如何保证不销毁的？" class="headerlink" title="核心线程为什么一直可以运行，如何保证不销毁的？"></a>核心线程为什么一直可以运行，如何保证不销毁的？</h1><p>线程的运行没有停止就不会消耗。</p>
-<p>提交任务的执行路径：execute() -&gt; addWorker() -&gt; Worker.run() -&gt; runWorker() -&gt; getTask()</p>
-<p>核心线程会在getTask()中阻塞的从工作队列中获取任务，即如果工作队列中没有任务，就一直阻塞当前线程，非核心线程从队列取不到任务就立刻返回不阻塞线程，线程逻辑就会走完。</p>
-<p>通过判断当前线程池线程总数是否大于核心线程数来判断当前线程是否应该当做核心线程。</p>
-<h1 id="线程池有哪些坑？"><a href="#线程池有哪些坑？" class="headerlink" title="线程池有哪些坑？"></a>线程池有哪些坑？</h1><p>要注意ThreadLocal的value内存泄漏问题，要及时remove。</p>
-<h1 id="自定义线程池的场景"><a href="#自定义线程池的场景" class="headerlink" title="自定义线程池的场景"></a>自定义线程池的场景</h1><p>追溯调用线程池之前的堆栈，防止线程里报错不知道外面哪里调用的。</p>
-<h1 id="ForkJoinPool解决了什么问题？"><a href="#ForkJoinPool解决了什么问题？" class="headerlink" title="ForkJoinPool解决了什么问题？"></a>ForkJoinPool解决了什么问题？</h1><p>任务窃取机制，避免了取任务的时候多线程竞争一个队列，减少线程间竞争的等待开销，所以更快。</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>线程池</tag>
-        <tag>ForkJoinPool</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java并发-指令重排序、指令流水线</title>
-    <url>/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/</url>
-    <content><![CDATA[<h1 id="如何验证指令发生了重排序？"><a href="#如何验证指令发生了重排序？" class="headerlink" title="如何验证指令发生了重排序？"></a>如何验证指令发生了重排序？</h1><p>定义两个变量设置初始值，在两个线程中分别赋新的值，然后打印在赋值语句后面打印另外一个线程修改的变量。</p>
-<p>执行很多次，如果发生了打印的都是变量的初始值，就是发生重排序了，违反直觉，但是编译器觉得两条语句没有依赖关系，允许指令重排序</p>
-<h1 id="CPU的指令流水线是什么？解决了什么问题？"><a href="#CPU的指令流水线是什么？解决了什么问题？" class="headerlink" title="CPU的指令流水线是什么？解决了什么问题？"></a>CPU的指令流水线是什么？解决了什么问题？</h1><p>一条指令可以分为多个步骤完成，每个步骤可以由不同的硬件功能单元来执行，这样就可以让多个功能单元并行执行指令的不同步骤，不需要等待一个指令执行完再执行执行下一个指令，流水线可以让指令的一个步骤完成了就可以执行下一个指令的同一个步骤</p>
-<h1 id="CPU指令流水线存在什么问题？"><a href="#CPU指令流水线存在什么问题？" class="headerlink" title="CPU指令流水线存在什么问题？"></a>CPU指令流水线存在什么问题？</h1><p>如果指令之间存在数据相关性，导致前一条指令执行完后才能执行后一条指令，指令重叠就会发生冲突，无法并行执行，后面的指令只能等待，这个时候就可以把数据无关的指令重排序，以防止流水线停顿。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215853.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215901.png"></p>
-<h1 id="CPU指令流水线什么情况下会需要指令重排序"><a href="#CPU指令流水线什么情况下会需要指令重排序" class="headerlink" title="CPU指令流水线什么情况下会需要指令重排序?"></a>CPU指令流水线什么情况下会需要指令重排序?</h1><p>一条指令可以分为多个步骤完成，如下:</p>
-<ol>
-<li> 取指 IF</li>
-<li> 译码和取寄存器操作数 ID</li>
-<li> 执行或者有效地址计算 EX</li>
-<li> 存储器访问 MEM</li>
-<li> 写回 WB</li>
-</ol>
-<p>CPU在工作时，需要将上述指令分为多个步骤依次执行</p>
-<p>为了提高硬件利用率，CPU指令是按流水线技术来执行的，如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215936.png"></p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215945.png"></p>
-<ol>
-<li> LW指令 表示 load，其中LW R1,b表示把b的值加载到寄存器R1中</li>
-<li> LW R2,c 表示把c的值加载到寄存器R2中</li>
-<li> ADD 指令表示加法，把R1 、R2的值相加，并存入R3寄存器中。</li>
-<li> SW 表示 store 即将 R3寄存器的值保持到变量a中</li>
-<li> LW R4,e 表示把e的值加载到寄存器R4中</li>
-<li> LW R5,f 表示把f的值加载到寄存器R5中</li>
-<li> SUB 指令表示减法，把R4 、R5的值相减，并存入R6寄存器中。</li>
-<li> SW d,R6 表示将R6寄存器的值保持到变量d中</li>
-</ol>
-<p>上述便是汇编指令的执行过程，在某些指令上存在X的标志，X代表中断的含义，也就是只要有X的地方就会导致指令流水线技术停顿，同时也会影响后续指令的执行，可能需要经过1个或几个指令周期才可能恢复正常，那为什么停顿呢？这是因为部分数据还没准备好，如执行ADD指令时，需要使用到前面指令的数据R1，R2，而此时R2的MEM操作没有完成，即未拷贝到存储器中，这样加法计算就无法进行，必须等到MEM操作完成后才能执行，也就因此而停顿了，其他指令也是类似的情况。前面阐述过，停顿会造成CPU性能下降，因此我们应该想办法消除这些停顿，这时就需要使用到指令重排了，如下图，既然ADD指令需要等待，那我们就利用等待的时间做些别的事情，如把LW R4,e 和 LW R5,f 移动到前面执行，毕竟LW R4,e 和 LW R5,f执行并没有数据依赖关系，对他们有数据依赖关系的SUB R6,R5,R4指令在R4,R5加载完成后才执行的，没有影响</p>
-<p>正如上图所示，所有的停顿都完美消除了，指令流水线也无需中断了，这样CPU的性能也能带来很好的提升，这就是处理器指令重排的作用。</p>
-]]></content>
-      <categories>
-        <category>并发</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>指令重排序</tag>
-        <tag>指令流水线</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LeetCode.10.正则表达式匹配（困难）</title>
     <url>/LeetCode/LeetCode.10.%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%8C%B9%E9%85%8D%EF%BC%88%E5%9B%B0%E9%9A%BE%EF%BC%89/</url>
     <content><![CDATA[<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p><a href="https://leetcode-cn.com/problems/regular-expression-matching/">LeetCode.10.正则表达式匹配（困难）</a></p>
@@ -5941,6 +5270,677 @@
       <tags>
         <tag>动态规划</tag>
         <tag>LeetCode中等</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-CAS</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CAS/</url>
+    <content><![CDATA[<h1 id="悲观锁"><a href="#悲观锁" class="headerlink" title="悲观锁"></a>悲观锁</h1><p>悲观锁更新的方式认为：在更新数据的时候大概率会有其他线程去争夺共享资源</p>
+<p>所以悲观锁的做法是：第一个获取资源的线程会将资源锁定起来，其他没争夺到资源的线程只能进入阻塞队列，等第一个获取资源的线程释放锁之后，这些线程才能有机会重新争夺资源。</p>
+<h1 id="乐观锁"><a href="#乐观锁" class="headerlink" title="乐观锁"></a>乐观锁</h1><p>乐观锁更新方式认为：在更新数据的时候其他线程争抢这个共享变量的概率非常小，所以更新数据的时候不会对共享数据加锁。</p>
+<p>但是在正式更新数据之前会检查数据是否被其他线程改变过，如果未被其他线程改变过就将共享变量更新成最新值，如果发现共享变量已经被其他线程更新过了，就重试，直到成功为止。</p>
+<p>CAS机制就是乐观锁的典型实现。</p>
+<h1 id="CAS"><a href="#CAS" class="headerlink" title="CAS"></a>CAS</h1><p>CAS，是Compare and Swap的简称，在这个机制中有三个核心的参数：</p>
+<ul>
+<li>  主内存中存放的共享变量的值：V（一般情况下这个V是内存的地址值，通过这个地址可以获得内存中的值）</li>
+<li>  工作内存中共享变量的副本值，也叫预期值：A</li>
+<li>  需要将共享变量更新到的最新值：B</li>
+</ul>
+<h1 id="CAS优点"><a href="#CAS优点" class="headerlink" title="CAS优点"></a>CAS优点</h1><ol>
+<li> 可以保证变量操作的原子性；</li>
+<li> 并发量不是很高的情况下，使用CAS机制比使用锁机制效率更高；</li>
+<li> 在线程对共享资源占用时间较短的情况下，使用CAS机制效率也会较高。</li>
+</ol>
+<h1 id="CAS缺点"><a href="#CAS缺点" class="headerlink" title="CAS缺点"></a>CAS缺点</h1><h2 id="ABA问题"><a href="#ABA问题" class="headerlink" title="ABA问题"></a>ABA问题</h2><p>ABA问题：CAS在操作的时候会检查变量的值是否被更改过，如果没有则更新值，但是带来一个问题，最开始的值是A，接着变成B，最后又变成了A。经过检查这个值确实没有修改过，因为最后的值还是A，但是实际上这个值确实已经被修改过了。为了解决这个问题，在每次进行操作的时候加上一个版本号，每次操作的就是两个值，一个版本号和某个值，A——&gt;B——&gt;A问题就变成了1A——&gt;2B——&gt;3A。在jdk中提供了AtomicStampedReference类解决ABA问题，用Pair这个内部类实现，包含两个属性，分别代表版本号和引用，在compareAndSet中先对当前引用进行检查，再对版本号标志进行检查，只有全部相等才更新值。</p>
+<h2 id="可能会消耗较高的CPU"><a href="#可能会消耗较高的CPU" class="headerlink" title="可能会消耗较高的CPU"></a>可能会消耗较高的CPU</h2><p>看起来CAS比锁的效率高，从阻塞机制变成了非阻塞机制，减少了线程之间等待的时间。每个方法不能绝对的比另一个好，在线程之间竞争程度大的时候，如果使用CAS，每次都有很多的线程在竞争，也就是说CAS机制不能更新成功。这种情况下CAS机制会一直重试，这样就会比较耗费CPU。因此可以看出，如果线程之间竞争程度小，使用CAS是一个很好的选择；但是如果竞争很大，使用锁可能是个更好的选择。在并发量非常高的环境中，如果仍然想通过原子类来更新的话，可以使用AtomicLong的替代类：LongAdder。</p>
+<h2 id="不能保证代码块的原子性"><a href="#不能保证代码块的原子性" class="headerlink" title="不能保证代码块的原子性"></a>不能保证代码块的原子性</h2><p>Java中的CAS机制只能保证共享变量操作的原子性，而不能保证代码块的原子性。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>CAS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-CyclicBarrier</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CyclicBarrier/</url>
+    <content><![CDATA[<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><ul>
+<li>CyclicBarrier构造函数传入一个数字N。</li>
+<li>线程调用CyclicBarrier.await()会阻塞等待，直到有第N个线程调用CyclicBarrier.await()，所有线程一起执行await()方法后续逻辑。</li>
+<li>再次调用await()可以继续这一波操作，循环使用。</li>
+</ul>
+<p>比喻：</p>
+<ul>
+<li>人到齐了一起走，没到齐每个人都一直等着不走。</li>
+<li>走完了过后，下一波人来了继续这个流程。</li>
+</ul>
+<p>可循环利用的屏障。</p>
+<p>举例：</p>
+<p>CyclicBarrier barrier = new CyclicBarrier(5);</p>
+<p>然后各个线程调用barrier.await();</p>
+<p>当有5个线程await()过后，会继续执行await()后续代码</p>
+<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
+<p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
+<p>然后重新计数，继续同样的过程。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dowait(<span class="keyword">false</span>, <span class="number">0L</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (TimeoutException toe) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> Error(toe); <span class="comment">// cannot happen</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Main barrier code, covering the various policies.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">dowait</span><span class="params">(<span class="keyword">boolean</span> timed, <span class="keyword">long</span> nanos)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> InterruptedException, BrokenBarrierException,</span></span><br><span class="line"><span class="function">           TimeoutException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> Generation g = generation;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (g.broken)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">            breakBarrier();</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> index = --count;</span><br><span class="line">        <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;  <span class="comment">// tripped</span></span><br><span class="line">            <span class="keyword">boolean</span> ranAction = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> Runnable command = barrierCommand;</span><br><span class="line">                <span class="keyword">if</span> (command != <span class="keyword">null</span>)</span><br><span class="line">                    command.run();</span><br><span class="line">                ranAction = <span class="keyword">true</span>;</span><br><span class="line">                nextGeneration();</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!ranAction)</span><br><span class="line">                    breakBarrier();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// loop until tripped, broken, interrupted, or timed out</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!timed)</span><br><span class="line">                    trip.await();</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (nanos &gt; <span class="number">0L</span>)</span><br><span class="line">                    nanos = trip.awaitNanos(nanos);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">                <span class="keyword">if</span> (g == generation &amp;&amp; ! g.broken) &#123;</span><br><span class="line">                    breakBarrier();</span><br><span class="line">                    <span class="keyword">throw</span> ie;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// We&#x27;re about to finish waiting even if we had not</span></span><br><span class="line">                    <span class="comment">// been interrupted, so this interrupt is deemed to</span></span><br><span class="line">                    <span class="comment">// &quot;belong&quot; to subsequent execution.</span></span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g.broken)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g != generation)</span><br><span class="line">                <span class="keyword">return</span> index;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (timed &amp;&amp; nanos &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                breakBarrier();</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
+<p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
+<p>CountDownLatch是一次性的，而CyclicBarrier则可以被重置而重复使用。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>CyclicBarrier</tag>
+        <tag>AQS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-ReadWriteLock、StampedLock</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ReadWriteLock%E3%80%81StampedLock/</url>
+    <content><![CDATA[<h1 id="读写锁存在的意义？解决了什么问题？"><a href="#读写锁存在的意义？解决了什么问题？" class="headerlink" title="读写锁存在的意义？解决了什么问题？"></a>读写锁存在的意义？解决了什么问题？</h1><p>synchronzied和ReentraintLock的锁是排他锁，同一时刻只允许一个线程访问同一个资源。</p>
+<p>然而在读多写少的情况下，排他锁会让多个并发的读之间互斥，但多个线程同时读不会影响数据的一致性，写的时候保证获取的是排他锁保证数据一致性即可。</p>
+<p>也就是读与读之间不互斥，写与读、写与写之间互斥。</p>
+<p>这样的话就提高了系统整体的吞吐量。</p>
+<h1 id="ReentraintReadWriteLock实现原理是什么？"><a href="#ReentraintReadWriteLock实现原理是什么？" class="headerlink" title="ReentraintReadWriteLock实现原理是什么？"></a>ReentraintReadWriteLock实现原理是什么？</h1><p>内部有ReadLock和WriteLock两个类，分别实现读锁和写锁。</p>
+<p>两个Lock类里是通过Sync来实现锁的语义，Sync类继承AQS，并且分为非公平实现和公平的实现。</p>
+<p>由于AQS的state是int类型的变量，在内存中占用4个字节，也就是32位。将其拆分为两部分：高16位和低16位，其中高16位用来表示读锁的个数，低16位用来表示写锁重入次数。</p>
+<p>当设置读锁成功时，就将高16位加1，释放读锁时，将高16位减1；当设置写锁成功时，就将低16位加1，释放写锁时，将第16位减1。如下图所示。</p>
+<p>这样读锁和写锁就可以都通过CAS去操作同一个state变量，实现读和写之间的互斥。</p>
+<h1 id="读写锁适用场景？"><a href="#读写锁适用场景？" class="headerlink" title="读写锁适用场景？"></a>读写锁适用场景？</h1><p>读多写少，又需要保持线程安全，可以有效提高吞吐量。</p>
+<h1 id="StampedLock解决了什么问题？"><a href="#StampedLock解决了什么问题？" class="headerlink" title="StampedLock解决了什么问题？"></a>StampedLock解决了什么问题？</h1><p>ReentraintReadWriteLock读写锁在读多写少的情况下，必须要等待所有读锁释放才能获取写锁，可能会导致写饥饿，写可能要等待很久，这是一种悲观的读锁。</p>
+<p>正确的做法应该是，如果检测到有写入，已经获取读锁的线程不应该继续读了，把读锁让出来，给写入线程优先执行，写入完成了再读，这样就不会写饥饿了。</p>
+<p>StampedLock做的就是，先不加锁的读数据，读完了检测一下是否有线程写过数据了，有写过数据则需要重新读最新的数据，并且要加悲观读锁读，以阻止新的写入锁获取，确保读的数据一定是最新修改的。</p>
+<p>更通俗的讲就是在读锁没有释放的时候是可以获取到一个写锁，获取到写锁之后，读锁阻塞，这一点和读写锁一致，唯一的区别在于读写锁不支持在没有释放读锁的时候获取写锁。</p>
+<h1 id="StampedLock如何检测是否有数据写入？"><a href="#StampedLock如何检测是否有数据写入？" class="headerlink" title="StampedLock如何检测是否有数据写入？"></a>StampedLock如何检测是否有数据写入？</h1><p>在第一次读数据之前先从StampedLock获取一个stamp，如果有数据写入，StampedLock里的stamp就会变，然后第一次读数据后，检测stamp变了说明有写入。</p>
+<h1 id="StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？"><a href="#StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？" class="headerlink" title="StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？"></a>StampedLock第二次加悲观读锁读数据不还是有同样的写饥饿问题吗？</h1><p>确实面临同样的问题，但这种情况发生的概率很小，因为StampedLock使用场景就是读多写少，检测到有写操作后，可以认为大概率之后的一段时间是不会有写操作发生的。</p>
+<h1 id="StampedLock如何解决ABA问题？"><a href="#StampedLock如何解决ABA问题？" class="headerlink" title="StampedLock如何解决ABA问题？"></a>StampedLock如何解决ABA问题？</h1><p>StampedLock用一个long类型的state变量保存锁的状态，其中state的低7位存储读锁的个数，第8位存储写锁的标志，第8位为0表示没有获取到写锁，第8位为1表示已获取到写锁。</p>
+<p>每次获取和释放写锁，都会给state加上1000 0000，也就是在state的第8位上加1，这样在高位就产生了进位，每次获取写锁后state的值都不一样，这样就可以知道发生了ABA。</p>
+<p>long总共有64位，高位一共有64-8=56位，一共可以记录2的55次方种状态。</p>
+<h1 id="StampedLock为什么不设计为可重入？"><a href="#StampedLock为什么不设计为可重入？" class="headerlink" title="StampedLock为什么不设计为可重入？"></a>StampedLock为什么不设计为可重入？</h1><p>StampedLock为了解决ABA问题，state变量低7位记录读锁个数，第8位记录是否获取了写锁，第9位到第64位记录了写锁的状态，没有地方存储写锁的重入次数。</p>
+<p>对比ReentraintReadWriteLock的实现原理，其实也可以在state的高位中划分一部分区域记录写锁的重入次数。</p>
+<h1 id="StampedLock的锁升级是为了解决什么问题？"><a href="#StampedLock的锁升级是为了解决什么问题？" class="headerlink" title="StampedLock的锁升级是为了解决什么问题？"></a>StampedLock的锁升级是为了解决什么问题？</h1><p>有时候写数据只在数据处于特定的条件下才去更改，也就是有可能不修改数据，那如果一开始先获取写锁就会阻碍读锁的获取，吞吐量降低，所以得先获取读锁，判断符合特定条件后，确定需要写入了，再获取写锁，此时就是锁的升级，把读锁释放升级为写锁，前提是当前只有一个读锁；</p>
+<p>如果有多个读锁，升级就失败，转为获取正常的写锁，获取不到就阻塞当前线程。</p>
+<h1 id="StampedLock有什么缺点？"><a href="#StampedLock有什么缺点？" class="headerlink" title="StampedLock有什么缺点？"></a>StampedLock有什么缺点？</h1><ol>
+<li> 不可重入</li>
+<li> 不支持Condition</li>
+<li> 不支持公平竞争</li>
+</ol>
+<p>所以也不能完全替代synchronized和ReentrantLock。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>AQS</tag>
+        <tag>ReadWriteLock</tag>
+        <tag>StampedLock</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-Semaphore</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-Semaphore/</url>
+    <content><![CDATA[<h1 id="Semaphore作用"><a href="#Semaphore作用" class="headerlink" title="Semaphore作用"></a>Semaphore作用</h1><p>如果限定某些资源最多有N个线程可以访问，那么超过N个则不允许再有线程来访问。<br>同时当现有线程结束后，就会释放，然后允许新的线程进来。</p>
+<p>类似于锁的lock与 unlock过程 ，区别在于Semaphore多加锁和解锁是计数的。</p>
+<p>示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Semaphore semaphore = <span class="keyword">new</span> Semaphore(<span class="number">3</span>);</span><br><span class="line">semaphore.acquire(); <span class="comment">// 获取一个许可</span></span><br><span class="line">semaphore.release(); <span class="comment">// 释放一个许可</span></span><br></pre></td></tr></table></figure>
+<p>Semephore构造函数传入0，也可以release进行+1</p>
+<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>Semaphore构造函数传递的值会保存在AQS的state变量中</p>
+<p>调用acquire方法，尝试给state减1，如果state变为负数，就会阻塞当前线程，把当前线程作为结点插入到AQS队列中。如果state不为负数，则继续执行线程的后续代码。</p>
+<p>调用release方法，会给state加1，如果AQS队列里有等待的线程，就唤醒等待的线程，并把结点移除队列。</p>
+<h1 id="3个线程交替打印123456789…"><a href="#3个线程交替打印123456789…" class="headerlink" title="3个线程交替打印123456789…"></a>3个线程交替打印123456789…</h1><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SemaphoreDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> n = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Semaphore s1 = <span class="keyword">new</span> Semaphore(<span class="number">1</span>);</span><br><span class="line">        Semaphore s2 = <span class="keyword">new</span> Semaphore(<span class="number">0</span>);</span><br><span class="line">        Semaphore s3 = <span class="keyword">new</span> Semaphore(<span class="number">0</span>);</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s1.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T1: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s2.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s2.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T2: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s3.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        Thread t3 = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s3.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T3: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s1.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t3.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>AQS</tag>
+        <tag>Semaphore</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-ThreadLocal原理</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-ThreadLocal%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[<h1 id="ThreadLocal作用"><a href="#ThreadLocal作用" class="headerlink" title="ThreadLocal作用"></a>ThreadLocal作用</h1><p>让不同的线程持有相同数据类型的不同的数据副本。</p>
+<h1 id="ThreadLocal使用场景"><a href="#ThreadLocal使用场景" class="headerlink" title="ThreadLocal使用场景"></a>ThreadLocal使用场景</h1><p>如果一个对象在多线程之间通过加锁竞争的共享，会引起较大的性能损失，且对象占用内存不是很大的情况下，就应该考虑用ThreadLocal为每个线程分配单独的对象。比如多线程下产生随机数，可以写代码打印耗时，验证这一点。</p>
+<h1 id="ThreadLocal实现原理简述"><a href="#ThreadLocal实现原理简述" class="headerlink" title="ThreadLocal实现原理简述"></a>ThreadLocal实现原理简述</h1><p>set(value)</p>
+<p>每个线程都有一个ThreadLocalMap，set时会先取当前线程的ThreadLocalMap，以当前的ThreadLocal对象为key，存储value。</p>
+<p>get()</p>
+<p>从当前的线程的TheadLocalMap中取数据，key为ThreadLocal对象。</p>
+<p>ThreadLocalMap是自定义的哈希表，用一个table数组来存储key value，key value被封装在一个Entry对象中，Entry对象是继承WeakReference，WeakReference引用了ThreadLocal对象，ThreadLocal对象没有别的地方引用的时候，在垃圾回收触发时就可以回收了，value是被Entry类强引用的，而Entry类是被ThreadLocalMap中的table数组强引用的，所以value有内存泄露的风险，特别是线程池的核心线程是会一直运行的，线程对象一直存在，ThreadLocalMap也就一直存在，Entry对象中value也就一直不会释放，所以ThreadLocal如果用完了，最好及时remove()掉。</p>
+<p>如果没有手动remove清理，ThreadLocalMap也会在get()和set()的时候去清理掉过期的Entry对象，但如果你不调用set和get就不会回收了。特别的，在set()方法做清理的时候做了一个优化，会以对数级别的时间复杂度跳跃式的扫描整个数组，来去寻找过期的Entry对象，这样避免全表扫描，又保证垃圾不会堆积过多。</p>
+<p>ThreadLocalMap也有扩容机制，当存储元素个数超过数组长度的2/3后，会把数组扩容为原来的2倍。</p>
+<p>table数组的大小始终是2的次方，保持2的次方的大小，是为了计算索引时能够散列的比较均匀。</p>
+<p>key value应该存储在数组的哪个索引位置是怎么计算的呢？</p>
+<p>首先获取Key对象的hashCode，然后与数组容量-1这个数做与操作得到索引，数组容量是2的次方，减1后的数字的二进制低位全部都是1，跟key的hashCode做与操作，相当于截取了hashCode的低位，散列会比较均匀，如果数组容量不是2的次方，容量-1的这个数的二进制数在低位中就会有0，再与key的hashCode做与操作会导致元素堆积也就是是散列冲突。</p>
+<p>在ThreadLocalMap中，key对象hashCode获取并不是调用ThreadLocal对象的hashCode方法，而是使用ThreadLocal中定义的一个静态变量的值，每当创建一个ThreadLocal对象时，这个静态变量就增加固定的值，这个固定的值很特殊，它是一个黄金分割数，带来的效果就是让散列比较均匀。</p>
+<p>如果发生了哈希冲突，采用的是线性探测来解决，就是一个个往数组后面去寻找有没有没有被填充的空位来存储。这里有个特别的地方，就是清理过期的Entry的时候，会重新哈希过期的Entry对象后面的Entry对象，因为后面的这些Entry对象可能是有哈希冲突经过线性探测放在了后面，放在后面后查找次数也就多了，重新rehash计算索引，把Entry对象往前方，也就是尽可能减少线性探测的查找次数，提高访问速度。</p>
+<p>为什么不用拉链法解决散列冲突呢？因为拉链法链表结点中的指针占用额外空间，如果把这些空间用来增大表容量，可以使得装载因子变小，从而减少开放寻址冲突，提高平均查找效率，效果也是类似的。同时ThreadLocal数据量也不会特别大，所以不需要红黑树来处理极端情况。</p>
+<hr>
+<h1 id="ThreadLocalMap是做什么的？"><a href="#ThreadLocalMap是做什么的？" class="headerlink" title="ThreadLocalMap是做什么的？"></a>ThreadLocalMap是做什么的？</h1><p>自定义的简单的哈希表的实现，散列方式是开放定址法之线性探测。</p>
+<h1 id="ThreadLocalMap数据结构"><a href="#ThreadLocalMap数据结构" class="headerlink" title="ThreadLocalMap数据结构"></a>ThreadLocalMap数据结构</h1><p>Entry数组存储数据</p>
+<ol>
+<li> Entry类是一个WeakReference</li>
+<li> Entry类存储了ThreadLocal这个key和对应的value</li>
+<li> 对ThreadLocal持有弱引用，对value持有强引用</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&lt;?&gt;&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">    Object value;</span><br><span class="line"></span><br><span class="line">    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">        <span class="keyword">super</span>(k);</span><br><span class="line">        value = v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="TheadLocal如何保证唯一性？"><a href="#TheadLocal如何保证唯一性？" class="headerlink" title="TheadLocal如何保证唯一性？"></a>TheadLocal如何保证唯一性？</h1><p>ThreadLocal作为映射表的Key，需要具备唯一的标识，每创建一个新的ThreadLocal，这个标识就变的跟之前不一样了。 如何保证每一个ThreadLocal的唯一性呢？</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadLocal</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> HASH_INCREMENT = <span class="number">0x61c88647</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 每一个ThreadLocal对象的HashCode都不一样</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> threadLocalHashCode = nextHashCode();</span><br><span class="line">	</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">nextHashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// 下一个HashCode，是在已有基础上增加0x61c88647</span></span><br><span class="line">        <span class="keyword">return</span> nextHashCode.getAndAdd(HASH_INCREMENT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ThreadLocal内部有一个名为threadLocalHashCode的变量，每创建一个新的ThreadLocal对象，这个变量的值就会增加0x61c88647。 正是因为有这么一个神奇的数字，它能够保证生成的Hash值可以均匀的分布在0~(2^N-1)之间，N是数组长度。 更多关于数字0x61c88647，可以参考<a href="https://www.javaspecialists.eu/archive/Issue164.html">Why 0x61c88647?</a></p>
+<h1 id="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"><a href="#ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？" class="headerlink" title="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"></a>ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？</h1><p>Map的key是ThreadLocal</p>
+<p>用ThreadLocal的属性threadLocalHashCode跟table数组长度做与运算得到索引位置</p>
+<p>参考ThreadLocalMap的set()方法</p>
+<h1 id="ThreadLocalMap如何解决哈希冲突"><a href="#ThreadLocalMap如何解决哈希冲突" class="headerlink" title="ThreadLocalMap如何解决哈希冲突"></a>ThreadLocalMap如何解决哈希冲突</h1><p>开放定址法之线性探测法</p>
+<p>求得索引后，table数组中当前索引有Entry，并且Entry的key不为null，则继续看数组的下一个位置是不是空的</p>
+<p>参考ThreadLocalMap的set()方法</p>
+<h1 id="ThreadLocalMap的table数组空间不够放了怎么办？"><a href="#ThreadLocalMap的table数组空间不够放了怎么办？" class="headerlink" title="ThreadLocalMap的table数组空间不够放了怎么办？"></a>ThreadLocalMap的table数组空间不够放了怎么办？</h1><p>一句话：</p>
+<p>添加元素时如果已存储的元素个数超过装载因子就扩容为原容量的两倍</p>
+<p>set()方法里会检查当前的存储的对象个数是否已经超出了阈值（threshold的值）大小，如果超出了，需要重新对table数组扩容为原来的2倍长度，并将所有的对象重新计算位置（rehash函数来实现），顺便清理掉Entry.get()为null的Entry，threshold为table数组长度的2/3，threshold相当于是map的装载因子。</p>
+<h1 id="ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-expungeStaleEntry-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？"></a>ThreadLocalMap.expungeStaleEntry(int staleSlot)做了什么？</h1><p>table数组中staleSlot位置的Entry的get()为null了，value不为null，在expungeStaleEntry()中把它的value置为null，size–</p>
+<p>然后从staleSlot位置的下一个位置线性检查Entry，一直到Entry为null结束，如果</p>
+<ol>
+<li> Entry.get()为null，则把Entry的value置空，防止内存泄露</li>
+<li> Entry.get()不为null，重新计算当前Entry的索引，也就是rehash，放入rehash过后的索引位置，如果有冲突（已经存放了Entry）就线性向后查找空位进行存放。这样做是为了减少哈希冲突时线性查找次数。</li>
+</ol>
+<hr>
+<h1 id="ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？"><a href="#ThreadLocalMap-cleanSomeSlots-int-staleSlot-做了什么？" class="headerlink" title="ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？"></a>ThreadLocalMap.cleanSomeSlots(int staleSlot)做了什么？</h1><p>在新元素添加进来，或清理另一个过期的Entry时调用</p>
+<p>对数级别时间复杂度清理对象，避免添加元素时线性扫描整个table数组，也防止垃圾堆积过多</p>
+<h1 id="TheadLocal存在有什么问题？为什么？如何解决？"><a href="#TheadLocal存在有什么问题？为什么？如何解决？" class="headerlink" title="TheadLocal存在有什么问题？为什么？如何解决？"></a>TheadLocal存在有什么问题？为什么？如何解决？</h1><p>问题：可能会内存泄露</p>
+<p>为什么：因为ThreadLocal存储在ThreadLocalMap是弱引用，ThreadLocal被回收后，Entry还是被ThreadLocalMap的table数组引用，Entry的value是强引用，value可能会内存泄漏</p>
+<p>解决：使用完ThreadLocal手动调用一下remove()</p>
+<h1 id="TheadLocal有哪些典型使用到的地方？"><a href="#TheadLocal有哪些典型使用到的地方？" class="headerlink" title="TheadLocal有哪些典型使用到的地方？"></a>TheadLocal有哪些典型使用到的地方？</h1><ol>
+<li> 每个线程都有一个自己的Looper对象</li>
+<li> Android SQLiteDatabase中数据库连接每个线程都持有一个</li>
+<li> 用户session对话</li>
+</ol>
+<p>ThreadLocal 适用于如下两种场景</p>
+<ol>
+<li> 每个线程需要有自己单独的实例</li>
+<li> 实例需要在多个方法中共享，但不希望被多线程共享</li>
+</ol>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>ThreadLocal</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-happens-before</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/</url>
+    <content><![CDATA[<h1 id="什么是happens-before原则？"><a href="#什么是happens-before原则？" class="headerlink" title="什么是happens-before原则？"></a>什么是happens-before原则？</h1><p>前一个操作的结果对后续操作是可见的</p>
+<h1 id="为什么需要happens-before原则？"><a href="#为什么需要happens-before原则？" class="headerlink" title="为什么需要happens-before原则？"></a>为什么需要happens-before原则？</h1><p>虚拟机会做编译优化，进行指令重排序，以提高CPU利用率，防止CPU出现空等待；但有些情况是不能重排序的，否则并发下会出问题，所以就要规定这些情况，happens-before原则就是这个规定.</p>
+<h1 id="典型场景？"><a href="#典型场景？" class="headerlink" title="典型场景？"></a>典型场景？</h1><p>比如写一个单例，new一个对象，指令执行的步骤是：</p>
+<ol>
+<li> 给对象分配内存</li>
+<li> 对象初始化</li>
+<li> 将对象内存地址关联</li>
+</ol>
+<p>指令重排序，可能会导致对象还没初始化，就会已经被使用了，所以需要volatile来禁止指令重排序</p>
+<h1 id="有哪些happens-before原则？"><a href="#有哪些happens-before原则？" class="headerlink" title="有哪些happens-before原则？"></a>有哪些happens-before原则？</h1><ol>
+<li> 程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作；</li>
+<li> 锁定规则：一个unLock操作先行发生于后面对同一个锁额lock操作；</li>
+<li> volatile变量规则：对一个变量的写操作先行发生于后面对这个变量的读操作；</li>
+<li> 传递规则：如果操作A先行发生于操作B，而操作B又先行发生于操作C，则可以得出操作A先行发生于操作C；</li>
+<li> 线程启动规则：Thread对象的start()方法先行发生于此线程的每个一个动作；</li>
+<li> 线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生；</li>
+<li> 线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结束、Thread.isAlive()的返回值手段检测到线程已经终止执行；</li>
+<li> 对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始；</li>
+</ol>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>happens-before</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-synchronized、ReentrantLock</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/</url>
+    <content><![CDATA[<h1 id="synchronized作用"><a href="#synchronized作用" class="headerlink" title="synchronized作用"></a>synchronized作用</h1><p>让一段代码在多线程之间互斥访问，保证原子性、有序性、可见性，并且是可重入的。</p>
+<h1 id="synchronized使用方式"><a href="#synchronized使用方式" class="headerlink" title="synchronized使用方式"></a>synchronized使用方式</h1><ul>
+<li>synchronized修饰代码块时需要传入一个对象作为锁，这个对象可以是任意的，进入同步代码块前要获取这个锁，没有获得锁的线程就要阻塞等待，同步代码块执行完释放锁。</li>
+<li>修饰成员方法时，锁是对象实例。</li>
+<li>修饰静态方法时，锁是类的class实例。</li>
+</ul>
+<h1 id="synchronized原理综述"><a href="#synchronized原理综述" class="headerlink" title="synchronized原理综述"></a>synchronized原理综述</h1><p>每个Java对象都关联一个监视器锁对象，同步代码块在字节码层面是通过在代码块的指令前后加上monitorenter和monitorexit指令来标识的。</p>
+<p>当线程执行到monitorenter指令时，当前线程试图获取监视器对象所有权，如果未加锁或者已被当前线程持有，就把锁计数加1；执行到monitorexit指令的时候，锁计数减1。锁计数为0时，锁就被释放了。</p>
+<p>如果当前线程获取监视器对象失败，线程会阻塞等待，线程会作为一个结点存入监视器对象的锁池队列中，等待唤醒。</p>
+<p>监视器对象还有一个等待池队列，在同步代码块中调用锁对象的wait方法的时候，线程会阻塞，并被封装为一个结点，进入监视器对象的等待池队列，调用锁对象的notify和notifyAll的时候，会把等待池队列中的线程放入锁池队列中，只有锁池中的线程才能参与竞争锁。</p>
+<p>wait和notify用来线程之间同步过程的，比如实现生产者消费者模型。</p>
+<p>监视器锁底层是通过操作系统的互斥锁实现的，操作系统做线程切换需要从用户态转换到内核态，所以比较消耗性能。这种依赖于操作系统互斥锁而实现的锁叫做重量级锁。</p>
+<p>如果线程竞争并不激烈，切换线程的开销是不划算的，特别是多个线程在不同的时段获取同一把锁，可以用自旋锁，就是CAS+循环，CAS由硬件之间实现，开销比切换线程开销要小，这就是轻量级锁，在JDK6引入。</p>
+<p>锁信息具体存储在对象头的MarkWord里，一个对象在虚拟机的内存布局分为三部分，对象头、实例数据、对齐填充，其中对象头又分为MarkWord、类型指针、数组长度，MarkWord存储了锁相关的信息、hashCode、垃圾回收的分代年龄等。</p>
+<p>轻量级锁的CAS操作具体修改的是锁对象头的mark word，修改为指向当前线程栈帧中的锁记录的指针。虚拟机会为每个线程在当前线程栈帧中创建一块锁记录空间，存储锁对象的对象头中的mark word的拷贝。</p>
+<p>如果CAS修改成功，当前线程就获得了轻量级锁。</p>
+<p>如果更新失败，说明有线程竞争，开始自旋，自旋超过一定次数，升级为重量级锁。避免竞争激烈的情况下自旋空耗CPU。</p>
+<p>如果压根都没有线程竞争，只有单线程访问同步代码块，其实每次进行CAS操作获取轻量级锁也是没有必要的开销，所以JDK6又引入了偏向锁，只在第一次申请锁的时候，对Java对象头的MARK WORD做CAS操作，记录下当前申请锁的线程ID，退出同步代码块后，也不释放锁，锁对象的对象头中记录的还是当前的线程ID，同一个线程再次进入这个锁的同步代码块的时候，检查锁的对象头中记录的线程ID是否还是自己，是的话就直接进入，不用再CAS了。当有多个线程要申请锁的时候，就会升级到轻量级锁。</p>
+<p>轻量级锁是为了在线程交替执行同步块时提高性能，而偏向锁则是在只有一个线程执行同步块时进一步提高性能。</p>
+<h1 id="ReentrantLock与synchronized的区别？"><a href="#ReentrantLock与synchronized的区别？" class="headerlink" title="ReentrantLock与synchronized的区别？"></a>ReentrantLock与synchronized的区别？</h1><p>ReentrantLock与synchronized有相同的功能和语义，添加了更多灵活的功能。<br>synchronized能干的ReentrantLock都能干，ReentrantLock能干synchronized不一定能干。</p>
+<p>最主要区别有三点：支持等待可中断、可实现公平锁、锁可以绑定多个条件。</p>
+<p>详细区别：<br>|   |ReentrantLock|synchronized<br>|—|—|—|<br>|底层实现|继承AQS|监视器模式<br>|灵活性|支持响应中断、超时、尝试获取锁|不灵活<br>|释放锁形式|必须显式调用unlock()释放锁，可跨方法调用|自动释放监视器，不可跨方法释放<br>|锁类型|公平锁和非公平锁|非公平锁<br>|条件队列|可关联多个条件队列|只有一个条件队列<br>|错误排查|没有释放锁，很追溯发生错误的位置，因为没有记录应该释放锁的时间和位置难度|synchronized加锁解锁过程有完整的日志</p>
+<h1 id="该用ReentrantLock还是synchronized？"><a href="#该用ReentrantLock还是synchronized？" class="headerlink" title="该用ReentrantLock还是synchronized？"></a>该用ReentrantLock还是synchronized？</h1><p>除非需要ReentrantLock的特定的功能，否则还是应该优先使用synchronized，因为简单易用，不会忘记释放锁。</p>
+<h1 id="ReentrantLock实现原理"><a href="#ReentrantLock实现原理" class="headerlink" title="ReentrantLock实现原理"></a>ReentrantLock实现原理</h1><p>底层通过继承AbstractQueuedSynchronizer实现。</p>
+<p>大致过程：</p>
+<ul>
+<li>先通过cas修改int类型的state变量，修改成功则获取互斥锁成功。</li>
+<li>cas修改失败则把当前线程生成一个节点，放入一个等待队列中，线程被挂起。<ul>
+<li>等待队列操作也都是通过cas加自旋的方式来完成，避免同步开销。</li>
+</ul>
+</li>
+<li>释放锁后，会唤醒队列去自旋CAS去修改state来获取互斥锁。</li>
+</ul>
+<p>state变量记录锁的重入次数。</p>
+<h1 id="synchronized锁升级"><a href="#synchronized锁升级" class="headerlink" title="synchronized锁升级"></a>synchronized锁升级</h1><ul>
+<li>jdk1.6之前synchronized直接就上重量级锁。</li>
+<li>jdk1.6开始synchronized会先由无锁转为偏向锁，再转为轻量级锁，再转为重量级锁，锁只能升级不能降级。</li>
+</ul>
+<p>偏向锁、轻量级锁是针对synchronized优化。</p>
+<h1 id="对象头"><a href="#对象头" class="headerlink" title="对象头"></a>对象头</h1><p>JVM中，对象在内存中除了存储对象本身的数据，还会额外存储关于对象的一些附加信息。</p>
+<ul>
+<li>普通对象的对象头中存储mark word和类型指针（指向对象所属类的指针）。</li>
+<li>数组对象还会存储数组长度。</li>
+</ul>
+<p>mark word存储对象的hashcode、GC分代年龄、锁状态等信息。</p>
+<p>mark word长度在32位系统上为32位，64位系统上长度为64位。</p>
+<p>为了在有限的空间存储较多的信息，其数据格式不固定，数据位共享复用。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826195541.png"></p>
+<p>当对象状态为偏向锁（biasable）时，mark word存储的是偏向的线程ID；</p>
+<p>当状态为轻量级锁（lightweight locked）时，mark word存储的是指向线程栈中Lock Record的指针；</p>
+<p>当状态为重量级锁（inflated）时，为指向堆中的monitor对象的指针。</p>
+<h1 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h1><p>研究发现，大多数情况下不仅不存在锁竞争，而且总是由同一个线程多次重入，为了让同一个线程多次重入获取锁的代价更低，就引入了偏向锁的概念。</p>
+<p>偏向锁获取过程：</p>
+<ol>
+<li> 当前线程访问Mark Word中偏向锁的标识是否设置成1，锁标志位是否为01，确认是否为可偏向状态。</li>
+<li> 如果为可偏向状态，则测试线程ID是否指向当前线程，如果是，进入步骤5，否则进入步骤3。</li>
+<li> 如果线程ID并未指向当前线程，则通过CAS操作竞争锁。如果竞争成功，则将Mark Word中线程ID设置为当前线程ID，然后执行5；如果竞争失败，执行4。</li>
+<li> 如果CAS获取偏向锁失败，则表示有竞争。当到达全局安全点（safepoint）时获得偏向锁的线程被挂起，偏向锁升级为轻量级锁，然后被阻塞在安全点的线程继续往下执行同步代码。（撤销偏向锁的时候会导致当前获得偏向锁的线程被暂停）</li>
+<li> 执行同步代码。</li>
+</ol>
+<p>偏向锁的释放：</p>
+<p>偏向锁只有当遇到其他线程也尝试获取偏向锁时，持有偏向锁的线程才会释放锁，线程不会主动去释放偏向锁。（也就是对于获取偏向锁的线程 只有lock的动作，没有unlock的动作，这是因偏向的需要，即使可能这个线程已经死亡。）偏向锁的撤销步骤如下：</p>
+<ol>
+<li> 等到全局安全点（在这个时间点上没有正在执行的字节码）。</li>
+<li> 暂停持有偏向锁的线程，然后检查持有偏向锁的线程是否还活着，如果线程不处于活动状态，则将对象头设置为无锁状态。争抢锁的线程会再走生成偏向锁的过程，然后成为偏向锁的拥有者。</li>
+<li> 如果持有偏向锁的线程还处于活动状态，则将锁升级为轻量级锁。</li>
+</ol>
+<h1 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h1><p>轻量级锁实现是自旋锁，没有抢到锁的线程将自旋，即不停的循环判断是否能获取到锁，不会让线程阻塞。获取锁的操作就是通过CAS修改对象头的锁标记位。</p>
+<p>长时间的循环是很占用CPU的，一个线程持有锁，其他线程只能原地空耗CPU，不执行任何有效的任务，这种现象称为busy-waiting。</p>
+<p>利用短时间的busy-waiting换取线程的阻塞和唤醒在用户态和内核态切换的开销。</p>
+<p>busy-waiting是有限度的（JVM可以设置参数调节循环次数上限），如果锁竞争激烈，自旋超过一定次数，就升级为重量级锁。</p>
+<p>具体的CAS过程：</p>
+<ul>
+<li>  当线程请求锁时，若该锁对象的Mark Word中标志位为01（未锁定状态），则在该线程的栈帧中创建一块名为『锁记录』的空间，然后将锁对象的Mark Word拷贝至该空间；最后通过CAS操作将锁对象的Mark Word指向该锁记录；</li>
+<li>  若CAS操作成功，则轻量级锁的上锁过程成功；</li>
+<li>  若CAS操作失败，再判断当前线程是否已经持有了该轻量级锁；若已经持有，则直接进入同步块；若尚未持有，则表示该锁已经被其他线程占用，此时轻量级锁就要膨胀成重量级锁。</li>
+</ul>
+<p>轻量级锁比重量级锁性能更高的前提是：</p>
+<ul>
+<li>在轻量级锁被占用的整个同步周期内，不存在其他线程的竞争。若在该过程中一旦有其他线程竞争，那么就会膨胀成重量级锁，从而除了使用互斥量以外，还额外发生了CAS操作，因此更慢！</li>
+</ul>
+<p>轻量级锁是为了在线程交替执行同步块时提高性能。</p>
+<h1 id="重量级锁"><a href="#重量级锁" class="headerlink" title="重量级锁"></a>重量级锁</h1><p>阻塞所有竞争锁但未获得锁的线程。</p>
+<p>实现依赖于操作系统的同步函数，在linux上使用mutex互斥锁，涉及到用户态和内核态的切换、进程线程上下文的切换，成本较高。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>AQS</tag>
+        <tag>synchronized</tag>
+        <tag>ReentrantLock</tag>
+        <tag>偏向锁</tag>
+        <tag>轻量级锁</tag>
+        <tag>重量级锁</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-volatile</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-volatile/</url>
+    <content><![CDATA[<h1 id="volatile综述"><a href="#volatile综述" class="headerlink" title="volatile综述"></a>volatile综述</h1><p>volatile主要保证两点</p>
+<ol>
+<li> 变量的值在多线程之间是可见的</li>
+<li> 阻止指令重排序，间接的保证变量值的可见性</li>
+</ol>
+<p>但不保证原子性，所以开销比synchronized加锁要小</p>
+<p>可见性的解释涉及到java内存模型，每个线程都有自己的私有内存，对应堆中的虚拟机栈中，当多个线程访问主存上同一个变量时，会拷贝变量到各自私有线程中，线程对变量做出修改都是在私有内存中的修改，线程并不知道各自的修改值，也就是所谓的不可见。</p>
+<p>用volatile修饰变量后，对变量的修改会立刻刷新到主存，读volatile变量也会从主存去读取，保证可见性，但这让缓存失效，牺牲了一定的访问速度。</p>
+<p>指令重排序有好几个层面的，有CPU层面和编译器层面的。</p>
+<p>为什么要进行指令重排序呢？是为了提高CPU利用率。</p>
+<p>CPU层面的指令重排序是因为防止CPU指令流水线的停顿，指令流水线是做什么的呢？一条指令可以分为多个执行步骤，每个执行步骤可以由多个功能单元的硬件来执行，这样就不用串行的执行指令了，可以让多个功能单元并行的执行指令的不同的步骤，多个指令的执行速度一下提升好几倍。但是如果指令之间存在数据依赖，流水线就只能停顿等待，但是如果把没有依赖的指令重排序一下，就不用停顿等待了，这样CPU利用率就提高了。</p>
+<p>编译器的重排序要达到的目的也是提高CPU利用率。</p>
+<p>检查编译器有没有做重排序，可以开两个线程做验证，给两个变量a1、a2赋初始值0，线程1执行两条语句，先给a1赋值1，然后打印a2，线程2也执行两条语句，先给a2赋值1，然后打印a1，正常执行结果是打印1和1，执行很多次过后会发现有一次打印出来的两个结果是10、01甚至00，打印语句被重排序到前面去先执行了。</p>
+<p>既然指令重排序这么好，为什么还要阻止呢？</p>
+<p>因为指令重排序虽然不会影响单线程的代码语义，但是在多线程下会影响程序运行的正确性，有时候需要手动阻止。这个可以写代码验证的。</p>
+<p>volatile阻止指令重排序具体是通过内存屏障来实现的。</p>
+<p>内存屏障分为读屏障和写屏障，读屏障将内存数据拷贝到缓存，写屏障将缓存数据刷新到内存。</p>
+<p>volatile写操作之前插入StoreStore屏障，之后插入StoreLoad屏障</p>
+<p>volatile写操作volatile读操作之后插入LoadLoad屏障和LoadStore屏障</p>
+<p>内存屏障有两个作用：</p>
+<ol>
+<li> 阻止内存屏障两侧的指令重排序</li>
+<li> 强制把缓存数据回写到主内存，对所有线程可见</li>
+</ol>
+<p>但也不能总是用volatile来保证有序性，那样太麻烦了。所有Java内存模型规定了一个happens-before原则，保证前一个操作的结果对后续操作是可见的，来帮助开发者辅助判断代码是否有线程安全的问题。</p>
+<p>比如</p>
+<ol>
+<li> 一个线程内必须保持语义的串行，按照代码顺序执行</li>
+<li> 解锁操作要发生在对这个锁的加锁操作之前</li>
+<li> 线程start()方法先于线程的每个动作</li>
+</ol>
+<p>在多线程中需要修改和读取的变量，不需要保证原子性的，但要保证可见性的，就要用volatile修饰</p>
+<p>一个典型的使用场景是双重检查锁定的单例模式，对单例对象加volatile修饰，以防止new对象的时候发生指令重排序，进而导致得到了一个对象的引用但是对象还没有初始化。</p>
+<h1 id="volatile解决了什么问题？"><a href="#volatile解决了什么问题？" class="headerlink" title="volatile解决了什么问题？"></a>volatile解决了什么问题？</h1><ol>
+<li> 保证变量的可见性，多线程可读取到变量最新修改值</li>
+<li> 保证变量的有序性，阻止指令重排序</li>
+</ol>
+<h1 id="可见性是什么意思？"><a href="#可见性是什么意思？" class="headerlink" title="可见性是什么意思？"></a>可见性是什么意思？</h1><p>首先要介绍Java内存模型，Java的数据都存储在主存中，每个线程读写主存的数据时，都会把数据拷贝到线程自己的工作内存中再进行读写，工作内存可以理解为线程自己的缓存，多个线程对同一个数据修改时，修改的都是线程自己工作内存的数据拷贝，多个线程的工作内存之间是非共享的，对数据做出修改后互相不可见。</p>
+<h1 id="volatile是如何保证可见性的？"><a href="#volatile是如何保证可见性的？" class="headerlink" title="volatile是如何保证可见性的？"></a>volatile是如何保证可见性的？</h1><p>多线程读写主存中存储的某个volatile变量时，会把这个变量所在的内存块都复制到线程的工作内存，当某个线程修改了工作内存中的volatile变量，会立即将新数据写入共享内存，其他线程的工作内存中这一缓存块会被标记失效，被要求重新从共享内存读取数据，保证读取到的是最新的值。</p>
+<p>可以参考缓存一致性协议来理解。</p>
+<h1 id="为什么要有指令重排序，指令重排序有什么好处？"><a href="#为什么要有指令重排序，指令重排序有什么好处？" class="headerlink" title="为什么要有指令重排序，指令重排序有什么好处？"></a>为什么要有指令重排序，指令重排序有什么好处？</h1><p>减少CPU空等，提高CPU整体的吞吐量。</p>
+<p>编译器层面有编译器对指令顺序的优化。</p>
+<p>CPU层面有指令流水线对指令执行的优化。</p>
+<h1 id="虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？"><a href="#虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？" class="headerlink" title="虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？"></a>虚拟机是如何为volatile实现可见性和有序性？如何防止指令重排序？</h1><p>通过内存屏障来实现。</p>
+<p>内存屏障之前所有的写操作都要回写到主存，内存屏障之后的所有读操作都能获取内存屏障之前的所有写操作的最新结果，这样就保证了可见性。</p>
+<p>因此也就禁止把内存屏障之后的指令重排序到内存屏障之前。</p>
+<p>先简单了解两个指令：</p>
+<ul>
+<li>Store：将处理器缓存的数据刷新到内存中。</li>
+<li>Load：将内存存储的数据拷贝到处理器的缓存中。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><strong>屏障类型</strong></th>
+<th><strong>指令示例</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LoadLoad  Barriers</td>
+<td>Load1;LoadLoad;Load2</td>
+<td>该屏障确保Load1数据的装载先于Load2及其后所有装载指令的的操作</td>
+</tr>
+<tr>
+<td>StoreStore  Barriers</td>
+<td>Store1;StoreStore;Store2</td>
+<td>该屏障确保Store1立刻刷新数据到内存(使其对其他处理器可见)的操作先于Store2及其后所有存储指令的操作</td>
+</tr>
+<tr>
+<td>LoadStore  Barriers</td>
+<td>Load1;LoadStore;Store2</td>
+<td>确保Load1的数据装载先于Store2及其后所有的存储指令刷新数据到内存的操作</td>
+</tr>
+<tr>
+<td>StoreLoad  Barriers</td>
+<td>Store1;StoreLoad;Load2</td>
+<td>该屏障确保Store1立刻刷新数据到内存的操作先于Load2及其后所有装载装载指令的操作。它会使该屏障之前的所有内存访问指令(存储指令和访问指令)完成之后,才执行该屏障之后的内存访问指令</td>
+</tr>
+</tbody></table>
+<h1 id="volatile为什么不能保证原子性？"><a href="#volatile为什么不能保证原子性？" class="headerlink" title="volatile为什么不能保证原子性？"></a>volatile为什么不能保证原子性？</h1><p>因为一个volatile变量的操作，比如i++，本身多个字节码指令，并且每条指令也不一定是原子化的，所以volatile变量的操作也不可能是原子化的。</p>
+<p>这个可以用程序验证，volatile变量初始值为0，两个线程分别对其自增一万次，最后变量的值是小于两万的。</p>
+<p>可以从字节码指令看出来</p>
+<p>如下的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileDemo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> value = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">increament</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        value++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后value++的字节码指令如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GETFIELD VolatileDemo.value : I</span><br><span class="line">ICONST_1</span><br><span class="line">IADD</span><br><span class="line">PUTFIELD VolatileDemo.value : I</span><br></pre></td></tr></table></figure>
+<p>GETFIELD指令是获取对象的字段值，将值压入栈顶<br>ICONST_1指令是int型常量1入栈，因为要加1，所以就入栈1<br>IADD指令是弹出栈顶的两个数字进行相加，相加的和再压入栈<br>PUTFIELD指令是给对象的变量赋值栈顶的值</p>
+<p>volatile可以保证GETFIELD时可以读取到value的最新值，但是iconst_1和add时，其他线程可能已经把value值也改变了，最后PUTFIELD是过期的值，所以多线程调用increament时，最终的值会变小。</p>
+<p>一个volatile变量自增操作有4个指令，一条字节码指令也不一定是原子的，可能还会转换为若干条本地机器码指令，所以volatile不能保证原子性。</p>
+<p>需要通过synchronized或java.util.concurrent包下的锁或原子类来保证原子性。</p>
+<h1 id="volatile使用案例"><a href="#volatile使用案例" class="headerlink" title="volatile使用案例"></a>volatile使用案例</h1><ol>
+<li>volatile可以使得long和double的赋值是原子的</li>
+<li>多线程需要实时读取的值，例如：<br> a. AtomicInteger里的value都是volatile的<br> b. AQS里的state变量也是volatile</li>
+<li>CopyOnWriteArrayList里的数组也是volatile的，保证数组拷贝过后，对其他读线程立即可见</li>
+<li>阻止if或while中条件变量的重排序，防止出现不符合预期的结果。if或while语句内部的变量，跟条件变量的赋值，如果在同一个方法中执行，因为没有依赖关系，可能会发生重排序。比如方法a里会读取先通过if判断flag变量是否为true，为true就打印变量c的值，然后在方法b中，先对c赋值，再对flag赋值true，b方法中两个语句可能会重排序的，在多线程执行的时候，就会导致flag先为true，但是c还没赋值，另外一个线程已经执行方法a了，</li>
+<li>双重检查锁定的单例</li>
+</ol>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>volatile</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-条件变量、wait()与notify()、await()与signal()</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/</url>
+    <content><![CDATA[<h1 id="Object-wait-为什么要配合while使用？"><a href="#Object-wait-为什么要配合while使用？" class="headerlink" title="Object.wait()为什么要配合while使用？"></a>Object.wait()为什么要配合while使用？</h1><p>wait之前一般都是要判断某个条件成立才会wait，这个判断条件需要写成while：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">while (check pass) &#123;</span><br><span class="line">	wait();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果写成if，wait过后当前线程交出锁，等当前线程重新被唤起后，条件是否满足是不知道的，其他线程可能修改了条件的状态，要重新判断一下，否则可能条件未满足就继续执行了。</p>
+<p>以生产者消费者模型为例。</p>
+<ul>
+<li>有1个生产者往缓冲区加数据，有2个消费者从缓冲区取数据。</li>
+<li>消费者取数据前会检查缓冲区是否为空，不为空才能取数据，为空的话要等待。</li>
+<li>假设两个消费者线程都等待了。</li>
+<li>然后生产者往缓冲区添加数据后做notifyAll唤醒所有消费者，会唤醒两个等待的消费者线程，让消费者线程从监视器的等待队列移动到锁竞争队列，两者竞争锁。</li>
+<li>其中一个线程竞争到锁后，消费了缓冲区数据，缓冲区没有数据了，释放锁后另外一个消费者获得到了锁，开始取从缓冲区取数据，而没有再做条件检查了。</li>
+</ul>
+<p>这种现象叫做虚假唤醒。</p>
+<h1 id="Object的notify-和notifyAll-有什么区别？"><a href="#Object的notify-和notifyAll-有什么区别？" class="headerlink" title="Object的notify()和notifyAll()有什么区别？"></a>Object的notify()和notifyAll()有什么区别？</h1><p>每一个对象都有一个内部锁，即监视器（Monitor），虚拟机会给每个对象维护两个线程集合（可能是队列），一个叫Entry Set（入口集），另外一个叫Wait Set（等待集），对于任意对象object，object的Entry Set用于存储等待获取object内部锁的所有线程，object的Wait Set存储执行了object.wait()和object.wait(long timeout)的线程。</p>
+<ul>
+<li>notify()会唤醒Wait Set里的一个线程。</li>
+<li>notifyAll()会唤醒Wait Set里的所有线程，线程被唤醒后去竞争获取锁，没有获取锁的线程进入Entry Set。</li>
+</ul>
+<h1 id="什么时候用notify-？什么时候用notifyAll"><a href="#什么时候用notify-？什么时候用notifyAll" class="headerlink" title="什么时候用notify()？什么时候用notifyAll()?"></a>什么时候用notify()？什么时候用notifyAll()?</h1><p>如果所有线程都在等待相同的条件，并且一次只有一个线程可以从条件变为true，则可以使用notify。</p>
+<p>在这种情况下，notify是优于notifyAll 因为唤醒所有这些因为我们知道只有一个线程会受益而所有其他线程将再次等待，所以调用notifyAll方法只是浪费CPU。</p>
+<p>虽然这看起来很合理，但仍有一个警告，即无意中的接收者吞下了关键通知。通过使用notifyAll，我们确保所有收件人都会收到通知。</p>
+<h1 id="Object的wait-notifyAll-和Condition的await-signalAll-的区别？"><a href="#Object的wait-notifyAll-和Condition的await-signalAll-的区别？" class="headerlink" title="Object的wait()/notifyAll()和Condition的await()/signalAll()的区别？"></a>Object的wait()/notifyAll()和Condition的await()/signalAll()的区别？</h1><p>以生产者消费者模型为例。</p>
+<ul>
+<li>使用wait()、notify()/notifyAll()的缺点在于在生产者唤醒消费者、或者消费者唤醒生产者时，由于生产者和消费者使用同一个锁，所以生产者也会将生产者唤醒，消费者也会将消费者唤醒。</li>
+<li>如果能让消费者只唤醒生产者，或者生产者只唤醒消费者，就没有性能浪费了。</li>
+<li>所以一个ReentrantLock支持创建多个Condition，以应对这种场景。</li>
+<li>synchronized的锁对象没有提供多条件唤醒。</li>
+</ul>
+<p>ArrayBlockingQueue是典型的生产者消费者的例子，源码是很好的参考。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>synchronized</tag>
+        <tag>Object.wait()</tag>
+        <tag>Object.notify()</tag>
+        <tag>Object.notifyAll()</tag>
+        <tag>Condition.await()</tag>
+        <tag>Condition.signal()</tag>
+        <tag>虚假唤醒</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-伪共享</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E4%BC%AA%E5%85%B1%E4%BA%AB/</url>
+    <content><![CDATA[<h1 id="计算机结构"><a href="#计算机结构" class="headerlink" title="计算机结构"></a>计算机结构</h1><p>计算机可分为两种结构</p>
+<ol>
+<li> 冯诺依曼结构</li>
+<li> 哈佛结构</li>
+</ol>
+<p>冯诺依曼结构提出计算机由运算器、控制器、存储器、输入设备、输出设备5个部分组成。</p>
+<p>冯诺依曼结构特点是指令存储和数据存储合并在一起的存储结构，指令和数据统一编址，使用同一条总线传输，CPU读取指令和数据的操作是互斥的，同一时间只能做一件事，只能分时复用，无法并行，速度慢，CPU吞吐量低。</p>
+<p>哈佛结构特点是指令存储和数据存储分开的存储结构，指令和数据独立独立编址，使用两条独立的总线传输，CPU读取指令和数据操作可以并行，速度快，CPU吞吐量高。</p>
+<p>因为cpu速度快，而总线速度慢。冯诺依曼结构中，数据存储器和指令存储器使用同一总线，总线繁忙，cpu需要停下来等待总线读取数据。在哈佛结构中，数据存储器和指令存储器使用不同总线，减少了cpu停止工作等待数据读取的时间，因此提升了效率。</p>
+<p>冯诺依曼结构由于指令和数据共用总线，速度慢、效率低、吞吐量低，但因为指令存储区域和数据存储区域大小可以动态调整，存储器利用率高，适用场景更通用，所以也便宜。</p>
+<p>哈佛结构由于指令和数据分开存储，速度快、效率高、吞吐量大，但不能灵活调整存储区，适用比较做单一的功能，针对不同的功能要做单独的设计，成本也提高了。</p>
+<h1 id="冯诺依曼瓶颈"><a href="#冯诺依曼瓶颈" class="headerlink" title="冯诺依曼瓶颈"></a>冯诺依曼瓶颈</h1><p>指令和数据存储在一起，导致指令读取和数据处理不能同时进行，而CPU运算速度远远超过主存储器读写的速度，CPU就会浪费时间等待主存数据读写，CPU吞吐量低。</p>
+<p>解决瓶颈途径之一：</p>
+<p>CPU访问主存数据具有时间局部性和空间局部性特点，在CPU和主存储器之间增加缓存，缓存的命中率很高，大大减少访问主存的次数。</p>
+<p>同时CPU缓存采用哈佛结构，指令和数据分开存储，以提高存储量。</p>
+<p>数据访问的时间局部性：如果一项信息最近被访问，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
+<p>数据访问的空间局部性：将来马上要用到的信息，很可能与正在使用的信息，在空间存储位置上是临近的</p>
+<p>所以当访问主存中某一个数据的时候，把这个数据相邻的数据都放入缓存中，可以大大减少CPU访问主存消耗的时间。</p>
+<h1 id="CPU缓存和内存为什么要分块？"><a href="#CPU缓存和内存为什么要分块？" class="headerlink" title="CPU缓存和内存为什么要分块？"></a>CPU缓存和内存为什么要分块？</h1><p>CPU访问主存数据具有时间和空间局部性的特点。</p>
+<p>时间局部性：如果一个数据被访问了，那么近期很可能被再次访问。产生这个效果的典型原因是代码存在大量循环操作。</p>
+<p>空间局部性：访问内存上的一个数据，这个数据邻近位置的数据，最近也很大可能会被访问</p>
+<p>所以应该把该数据邻近的位置的数据都一起读入缓存中，这样可以减少CPU访问主存的次数，CPU直接访问缓存的速度是很快的，这样CPU的吞吐量就提高了。</p>
+<p>虚拟内存机制，也是建立了主存和外存之间的缓存关系，也是利用数据访问的局部性原理，把暂时不用的数据放到访问速度更慢的外存，需要频繁使用的数据按页交换到访问速度更快的主存中。这样内存中可以运行更多的进程。</p>
+<h1 id="缓存行"><a href="#缓存行" class="headerlink" title="缓存行"></a>缓存行</h1><p>为了便于CPU缓存和主存交换数据，CPU缓存和主存都被划分位长度相等的块，缓存块又称为缓存行，大小为2的次方，CPU缓存从主存读入数据一次读一整块，向主存更新数据，也是一次写入一整块。</p>
+<h1 id="伪共享"><a href="#伪共享" class="headerlink" title="伪共享"></a>伪共享</h1><p>多个CPU同时读写主存上某个连续区域的不同变量时，会各自把该该主存块拷贝一份放入自己的CPU缓存中，多个线程在访问缓存行内的不同变量时，由缓存一致性协议可知该缓存行会失效，多个CPU之间互相等待对方先把缓存行写入主存，自己再从主存读入最新的数据块，表现为缓存频繁未命中，CPU演变为直接与主存交互，CPU访问主存速度很慢，CPU吞吐量因此降低。</p>
+<h1 id="伪共享的解决：字节填充"><a href="#伪共享的解决：字节填充" class="headerlink" title="伪共享的解决：字节填充"></a>伪共享的解决：字节填充</h1><p>保证不同的CPU处理的数据位于不同的缓存行中，就不会引发缓存行的频繁失效。</p>
+<p>java里定义类的成员变量时，可以倾向于把不变的遍历放在一起（一组位置），易变的变量放在一起，使它们尽量不在同一个缓存行，这样每次对象的易变变量变化时，不会引起不变的属性所在缓存行失效，从而提高缓存命中率，避免频繁从主存读取数据，提高CPU吞吐量。</p>
+<p>Jdk6中可以通过添加填充变量进行字节填充来解决伪共享，示例如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;  <span class="comment">// 实际数据</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6; <span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>想象PaddingObject里本来只有一个value属性，现在有多个线程需要读写一个PaddingObject数组（修改数组每一项里的value），由于数组的存储空间在内存中是连续的，根据CPU访问数据的空间局部性特点，CPU在访问数组某个元素的时候，会把该元素所在的内存块整个拷贝到CPU缓存中，这个内存块包含了数组中一些相邻的元素，多个线程同时修改数组中相邻的一些元素时，这个缓存行会频繁失效，CPU缓存命中率低，如果数组的每一个元素位于不同的内存块，也就可以位于不同的缓存行，多线程就不会竞争同一个缓存行</p>
+<p>Jdk7中有的版本用上述方式无效，添加的无用变量会被优化去除，需要使用继承的方式组织优化，示例如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6;<span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span> <span class="keyword">extends</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;    <span class="comment">// 实际数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Jdk8开始提供了@sun.misc.Contended 注解进行字节填充，不用再手动声明无用的变量了，同时要开启 JVM 参数：-XX:-RestrictContended=false</p>
+<p>字节填充会增大目标对象的体积，是用空间换时间。</p>
+<h2 id="伪共享应用场景"><a href="#伪共享应用场景" class="headerlink" title="伪共享应用场景"></a>伪共享应用场景</h2><h3 id="数组优于链表"><a href="#数组优于链表" class="headerlink" title="数组优于链表"></a>数组优于链表</h3><p>从伪共享的角度，数据和链表的区别，不仅是结构上的区别，在缓存命中率上是完全不一样的，因为数组的存储空间连续，缓存命中率更高，链表的缓存命中率低，访问速度慢。</p>
+<h3 id="快速排序优于堆排序"><a href="#快速排序优于堆排序" class="headerlink" title="快速排序优于堆排序"></a>快速排序优于堆排序</h3><p>堆排序访问数据时，也不是访问连续内存空间的数据，所以堆排序和快速排序虽然都有相近的时间复杂度，但是常用的还是快速排序</p>
+<h3 id="二维数组横向遍历优于竖向遍历"><a href="#二维数组横向遍历优于竖向遍历" class="headerlink" title="二维数组横向遍历优于竖向遍历"></a>二维数组横向遍历优于竖向遍历</h3><p>横向遍历二维数组，比竖向遍历缓存命中率要高，因为数组在内存中的存储是每行每行的连续存储，先按行遍历再按列遍历，会访问内存空间连续的数据，先按列遍历再按行遍历访问的不是内存存储空间连续的数据，数据不在同一块，缓存的命中率低</p>
+<h3 id="二维数组维数短的写在外层更优"><a href="#二维数组维数短的写在外层更优" class="headerlink" title="二维数组维数短的写在外层更优"></a>二维数组维数短的写在外层更优</h3><p>二维数组，维数短的写在外层，缓存命中率更高，因为会减少跨缓存块访问数据，集中在一个缓存块上访问数据，如果长的一维写在外层，访问二维数组元素时，访问数据的内存地址跨度可能超过一个内存块长度，就要频繁的交换CPU缓存，缓存命中率低</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>伪共享</tag>
+        <tag>False Sharing</tag>
+        <tag>虚拟内存</tag>
+        <tag>冯诺依曼瓶颈</tag>
+        <tag>字节填充</tag>
+        <tag>计算机结构</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-线程池</title>
+    <url>/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/</url>
+    <content><![CDATA[<h1 id="为什么要使用线程池？"><a href="#为什么要使用线程池？" class="headerlink" title="为什么要使用线程池？"></a>为什么要使用线程池？</h1><ol>
+<li> 线程的创建和销毁是消耗性能的，如果频繁的开线程执行任务，可以考虑复用已启动的线程，避免无谓的性能开销，提高系统整体吞吐量</li>
+<li> 对任务异步调度进行了抽象，方便统一控制和测试</li>
+</ol>
+<h1 id="线程池的几个参数的作用分别是什么？"><a href="#线程池的几个参数的作用分别是什么？" class="headerlink" title="线程池的几个参数的作用分别是什么？"></a>线程池的几个参数的作用分别是什么？</h1><p>线程池是ThreadPoolExecutor类，构造函数的参数如下：</p>
+<ol>
+<li> int corePoolSize：核心线程数量，除非手动shutdown否则核心线程一直运行</li>
+<li> int maximumPoolSize：最大线程数量，最大线程数减去核心线程数的线程为非核心线程</li>
+<li> long keepAliveTime：非核心线程空闲时的存活时间</li>
+<li> TimeUnit unit：非核心线程空闲时的存活时间单位</li>
+<li> BlockingQueue<Runnable> workQueue：存放任务的工作队列，核心线程全都在执行任务时，没法执行新的任务了，新任务就存放在这里</li>
+<li> ThreadFactory threadFactory：线程创建的工厂，可以给线程设置名字，方便排查问题</li>
+<li> RejectedExecutionHandler handler：存放任务的阻塞队列存不下新的任务时的拒绝策略，做限流保护</li>
+</ol>
+<h1 id="任务拒绝策略有哪些？"><a href="#任务拒绝策略有哪些？" class="headerlink" title="任务拒绝策略有哪些？"></a>任务拒绝策略有哪些？</h1><p>AbortPolicy：抛出一个异常，默认的</p>
+<p>DiscardPolicy：直接丢弃任务</p>
+<p>DiscardOldestPolicy：丢弃队列里最老的任务，将当前这个任务继续提交给线程池）</p>
+<p>CallerRunsPolicy：交给线程池调用所在的线程进行处理</p>
+<h1 id="线程池有哪些工作队列，分别什么场景使用？"><a href="#线程池有哪些工作队列，分别什么场景使用？" class="headerlink" title="线程池有哪些工作队列，分别什么场景使用？"></a>线程池有哪些工作队列，分别什么场景使用？</h1><p>主要三种：无界队列、有界队列、同步移交队列</p>
+<h2 id="无界队列"><a href="#无界队列" class="headerlink" title="无界队列"></a>无界队列</h2><p>LinkedBlockingQueue，队列大小无限。</p>
+<p>Executors.newFixedThreadPool 采用就是 LinkedBlockingQueue。</p>
+<p>当某些任务耗时较长时，可能会导致队列中堆积存储大量任务，进而导致内存溢出。</p>
+<h2 id="有界队列"><a href="#有界队列" class="headerlink" title="有界队列"></a>有界队列</h2><ul>
+<li>ArrayBlockingQueue</li>
+<li>有界的LinkedBlockingQueue</li>
+<li>支持设置优先级的PriorityBlockingQueue</li>
+</ul>
+<p>有界队列的大小要和线程池大小配合，线程池比有界队列大时可以减少内存消耗、降低CPU使用率和上下文切换，但会限制吞吐量。</p>
+<h2 id="同步移交队"><a href="#同步移交队" class="headerlink" title="同步移交队"></a>同步移交队</h2><p>SynchronousQueue</p>
+<p>其并不真正存储任务，当一个放入任务到队列中必须同时有一个线程正在等待取任务，无限数量的线程池可以使用队列，这样每次提交任务都会立刻执行。</p>
+<h2 id="LinkedTransferQueue"><a href="#LinkedTransferQueue" class="headerlink" title="LinkedTransferQueue"></a>LinkedTransferQueue</h2><p>LinkedTransferQueue 是 SynchronousQueue 和 LinkedBlockingQueue 的合体，性能比 LinkedBlockingQueue 更高（没有锁操作），比 SynchronousQueue能存储更多的元素。</p>
+<p>当 put 时，如果有等待的线程，就直接将元素 “交给” 等待者， 否则直接进入队列。</p>
+<p>put 和 transfer 方法的区别是 put 是立即返回的， transfer 是阻塞等待消费者拿到数据才返回。transfer方法和 SynchronousQueue的 put 方法类似。</p>
+<h1 id="往线程池里提交一个任务会发生什么？"><a href="#往线程池里提交一个任务会发生什么？" class="headerlink" title="往线程池里提交一个任务会发生什么？"></a>往线程池里提交一个任务会发生什么？</h1><p>线程池的核心接口是Executor，里面只有一个execute(Runnable)方法，ExecutorService接口继承了Executor，提供了submit、shutdown、invokeAll、invokeyAny等方法。</p>
+<p>提交任务有execute和submit两种方式，execute只能提交无返回值的Runnable，submit可以提交有返回值的Callable和无返回值的Runnable，submit方法会新建一个FutureTask封装传入的Callback和Runnable，Runnable会被适配为Callback对象，FutureTask是集成Runnable的，最终还是执行execute(Runnable)，FutureTask内部只处理Callable</p>
+<p>execute(Runnable)里的逻辑：</p>
+<p>如果运行的线程数少于corePoolSize，则创建新线程执行任务。</p>
+<p>如果运行的线程数大于corePoolSize，则将新任务加入工作队列，而不添加新的线程，核心线程执行完一个任务就从工作队列中取任务继续执行。</p>
+<p>如果队列已满无法再加入，则创建新的线程执行，一直到线程总数超过maximumPoolSize时，对新任务执行拒绝策略。</p>
+<p>execute里addWorker(null, false);，传递空任务，代表新建线程，不为空表示新建线程并添加第一个任务</p>
+<p>submit任务后，任务内抛出的异常会拦截，通过Future获取异常对象，通过execute执行的任务，抛出的异常原封不动的向上抛。</p>
+<h1 id="线程池的大小应该设置多大？"><a href="#线程池的大小应该设置多大？" class="headerlink" title="线程池的大小应该设置多大？"></a>线程池的大小应该设置多大？</h1><p>任务分三类：</p>
+<ol>
+<li> CPU计算密集型</li>
+<li> IO密集型</li>
+<li> 计算和IO混合型</li>
+</ol>
+<p>CPU计算密集型任务大部分时间用来做计算逻辑，消耗CPU资源，这种任务同时执行的数量应该跟CPU数量相等。因为任务同时执行的数量少于CPU数量的话，明明有CPU空闲，任务却得不到执行，就浪费资源了，系统整体吞吐量低；任务同时执行的数量多于CPU数量的话，由于所有的CPU都满载了，要让CPU分时间片给各个任务才能保证多出的人得到执行，而切换任务是有成本的，要保存恢复任务（线程）的上下文环境。</p>
+<p>CPU密集型任务的线程池大小可以设置为CPU数量 + 1，额外多分配一个线程是因为其他线程偶尔会因为故障或其他原因暂停运行了，额外的一个线程可以确保CPU有任务执行不会被浪费。</p>
+<p>IO密集型任务，多数线程处于阻塞状态等待IO完成，让出CPU，不消耗CPU资源，故而应该让线程池多处理一些任务。线程池大小一般设置为 2 * CPU数量 + 1。</p>
+<p>假设有一个任务，计算需要C毫秒，IO操作需要等待W毫秒，整个任务的耗时就是C+W，一个CPU执行这个任务，CPU利用率U=C/(C+W)，很明显0 &lt;= U &lt;=1，也就是说一个CPU一个线程的情况下该线程的CPU利用为U，如果想要使得CPU利用率为1，那就多开几个线程，让几个线程的CPU利用率加起来等于1就完事了，那么总共就需要 1/U=(C+W)/C=1+W/C 个线程，1个CPU利用率100%需要1+W/C个线程，那么N个CPU利用率要100%就再乘以N就好了，所以总线程数就是N*(1+W/C)</p>
+<p>CPU计算密集型，可以认为没有IO操作，W=0，那么公式计算就会得到N</p>
+<p>IO密集型，C应该比较小，W比较大，那么W/C就会大于1，代入公式得到总线程数至少是2N，但是线程数也不能很大，每创建一个线程都会占用内存空间，线程数量过大会内存溢出，还要考虑硬盘和网络带宽等IO资源的限制，线程搞多了IO处理不了也没有意义，只会浪费内存。IO密集型线程池大小一般就设为2N+1，加1也是为了防止有线程因为某种原因故障或暂停了，额外的这个线程确保CPU不会浪费。</p>
+<p>线程等待的时间越长，需要越多的线程数；线程计算的时间越长，需要的线程数越少。</p>
+<p>任务的等待时间和计算时间可以通过基准测试工具测试出来，求一个近似值，再代入公式，即可估算出线程池大小。如果实际不同种类的任务等待时间和计算时间差异较大，只能用一个线程池的情况下，那就取平均值。</p>
+<p>也不是线程越多、CPU越多就可以无限提高运算速度，这是有上限的，可以用Amdahl（阿姆达尔）定律来衡量处理器并行运算之后效率的提升能力和上限，加速比 = 并行前系统耗时 / 并行后的系统耗时，加速比可以看作并行后提升了多少倍的执行速度。</p>
+<p>并行前系统耗时可以分为两个部分，一个是只能串行执行的部分，一个是可以并行执行的部分，设p为可以并行执行的部分的比例，必须串行执行的部分的比例就是1-p，设cpu数量（或线程数）为n，可并行部分执行的时间就是p/n，并行后的执行时间就是 1-p+p/n，并行前执行时间就是1了，加速比即1/(1-p+p/n)</p>
+<p>也可以设f为必须串行执行的部分的比例，可以并行执行的部分的比例就是1-f，设cpu数量（或线程数）为n，可并行部分执行的时间就是(1-f)/n，并行后的执行时间就是 f+(1-f)/n，加速比为1/(f+(1-f)/n)</p>
+<p>必须串行执行的部分越大，加速比就越小，这就是多核（多线程）加速的上限值。</p>
+<h1 id="线程池的非核心线程什么时候会被释放？"><a href="#线程池的非核心线程什么时候会被释放？" class="headerlink" title="线程池的非核心线程什么时候会被释放？"></a>线程池的非核心线程什么时候会被释放？</h1><p>非核心线程的保活借由BlockingQueue的带超时参数的poll()方法实现了，在keepAliveTime时间内没有从队列取到任务，就一直阻塞当前线程。</p>
+<h1 id="核心线程为什么一直可以运行，如何保证不销毁的？"><a href="#核心线程为什么一直可以运行，如何保证不销毁的？" class="headerlink" title="核心线程为什么一直可以运行，如何保证不销毁的？"></a>核心线程为什么一直可以运行，如何保证不销毁的？</h1><p>线程的运行没有停止就不会消耗。</p>
+<p>提交任务的执行路径：execute() -&gt; addWorker() -&gt; Worker.run() -&gt; runWorker() -&gt; getTask()</p>
+<p>核心线程会在getTask()中阻塞的从工作队列中获取任务，即如果工作队列中没有任务，就一直阻塞当前线程，非核心线程从队列取不到任务就立刻返回不阻塞线程，线程逻辑就会走完。</p>
+<p>通过判断当前线程池线程总数是否大于核心线程数来判断当前线程是否应该当做核心线程。</p>
+<h1 id="线程池有哪些坑？"><a href="#线程池有哪些坑？" class="headerlink" title="线程池有哪些坑？"></a>线程池有哪些坑？</h1><p>要注意ThreadLocal的value内存泄漏问题，要及时remove。</p>
+<h1 id="自定义线程池的场景"><a href="#自定义线程池的场景" class="headerlink" title="自定义线程池的场景"></a>自定义线程池的场景</h1><p>追溯调用线程池之前的堆栈，防止线程里报错不知道外面哪里调用的。</p>
+<h1 id="ForkJoinPool解决了什么问题？"><a href="#ForkJoinPool解决了什么问题？" class="headerlink" title="ForkJoinPool解决了什么问题？"></a>ForkJoinPool解决了什么问题？</h1><p>任务窃取机制，避免了取任务的时候多线程竞争一个队列，减少线程间竞争的等待开销，所以更快。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>线程池</tag>
+        <tag>ForkJoinPool</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java并发-指令重排序、指令流水线</title>
+    <url>/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/</url>
+    <content><![CDATA[<h1 id="如何验证指令发生了重排序？"><a href="#如何验证指令发生了重排序？" class="headerlink" title="如何验证指令发生了重排序？"></a>如何验证指令发生了重排序？</h1><p>定义两个变量设置初始值，在两个线程中分别赋新的值，然后打印在赋值语句后面打印另外一个线程修改的变量。</p>
+<p>执行很多次，如果发生了打印的都是变量的初始值，就是发生重排序了，违反直觉，但是编译器觉得两条语句没有依赖关系，允许指令重排序</p>
+<h1 id="CPU的指令流水线是什么？解决了什么问题？"><a href="#CPU的指令流水线是什么？解决了什么问题？" class="headerlink" title="CPU的指令流水线是什么？解决了什么问题？"></a>CPU的指令流水线是什么？解决了什么问题？</h1><p>一条指令可以分为多个步骤完成，每个步骤可以由不同的硬件功能单元来执行，这样就可以让多个功能单元并行执行指令的不同步骤，不需要等待一个指令执行完再执行执行下一个指令，流水线可以让指令的一个步骤完成了就可以执行下一个指令的同一个步骤</p>
+<h1 id="CPU指令流水线存在什么问题？"><a href="#CPU指令流水线存在什么问题？" class="headerlink" title="CPU指令流水线存在什么问题？"></a>CPU指令流水线存在什么问题？</h1><p>如果指令之间存在数据相关性，导致前一条指令执行完后才能执行后一条指令，指令重叠就会发生冲突，无法并行执行，后面的指令只能等待，这个时候就可以把数据无关的指令重排序，以防止流水线停顿。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215853.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215901.png"></p>
+<h1 id="CPU指令流水线什么情况下会需要指令重排序"><a href="#CPU指令流水线什么情况下会需要指令重排序" class="headerlink" title="CPU指令流水线什么情况下会需要指令重排序?"></a>CPU指令流水线什么情况下会需要指令重排序?</h1><p>一条指令可以分为多个步骤完成，如下:</p>
+<ol>
+<li> 取指 IF</li>
+<li> 译码和取寄存器操作数 ID</li>
+<li> 执行或者有效地址计算 EX</li>
+<li> 存储器访问 MEM</li>
+<li> 写回 WB</li>
+</ol>
+<p>CPU在工作时，需要将上述指令分为多个步骤依次执行</p>
+<p>为了提高硬件利用率，CPU指令是按流水线技术来执行的，如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215936.png"></p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215945.png"></p>
+<ol>
+<li> LW指令 表示 load，其中LW R1,b表示把b的值加载到寄存器R1中</li>
+<li> LW R2,c 表示把c的值加载到寄存器R2中</li>
+<li> ADD 指令表示加法，把R1 、R2的值相加，并存入R3寄存器中。</li>
+<li> SW 表示 store 即将 R3寄存器的值保持到变量a中</li>
+<li> LW R4,e 表示把e的值加载到寄存器R4中</li>
+<li> LW R5,f 表示把f的值加载到寄存器R5中</li>
+<li> SUB 指令表示减法，把R4 、R5的值相减，并存入R6寄存器中。</li>
+<li> SW d,R6 表示将R6寄存器的值保持到变量d中</li>
+</ol>
+<p>上述便是汇编指令的执行过程，在某些指令上存在X的标志，X代表中断的含义，也就是只要有X的地方就会导致指令流水线技术停顿，同时也会影响后续指令的执行，可能需要经过1个或几个指令周期才可能恢复正常，那为什么停顿呢？这是因为部分数据还没准备好，如执行ADD指令时，需要使用到前面指令的数据R1，R2，而此时R2的MEM操作没有完成，即未拷贝到存储器中，这样加法计算就无法进行，必须等到MEM操作完成后才能执行，也就因此而停顿了，其他指令也是类似的情况。前面阐述过，停顿会造成CPU性能下降，因此我们应该想办法消除这些停顿，这时就需要使用到指令重排了，如下图，既然ADD指令需要等待，那我们就利用等待的时间做些别的事情，如把LW R4,e 和 LW R5,f 移动到前面执行，毕竟LW R4,e 和 LW R5,f执行并没有数据依赖关系，对他们有数据依赖关系的SUB R6,R5,R4指令在R4,R5加载完成后才执行的，没有影响</p>
+<p>正如上图所示，所有的停顿都完美消除了，指令流水线也无需中断了，这样CPU的性能也能带来很好的提升，这就是处理器指令重排的作用。</p>
+]]></content>
+      <categories>
+        <category>并发</category>
+      </categories>
+      <tags>
+        <tag>并发</tag>
+        <tag>指令重排序</tag>
+        <tag>指令流水线</tag>
       </tags>
   </entry>
   <entry>
@@ -12161,6 +12161,600 @@
         <tag>Android</tag>
         <tag>源码分析</tag>
         <tag>ViewDragHelper</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android埋点统计SDK设计思路</title>
+    <url>/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Android%E5%9F%8B%E7%82%B9%E7%BB%9F%E8%AE%A1SDK%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/</url>
+    <content><![CDATA[<h1 id="整体思路"><a href="#整体思路" class="headerlink" title="整体思路"></a>整体思路</h1><p>数据埋点系统至少有两个基本步骤：</p>
+<ul>
+<li>  数据收集。</li>
+<li>  数据上传。</li>
+</ul>
+<p>由于数据并不是要求实时上传的，所以数据上传时可能没有网络，或者网络条件比较差容易上传失败，就需要把数据先存储到本地，再根据某些策略在随后的某个时间进行上传。</p>
+<p>这里就涉及到四个方面的工作：</p>
+<ul>
+<li>  怎么收集数据？</li>
+<li>  怎么存储数据？</li>
+<li>  数据上传策略是什么？</li>
+<li>  怎么进行网络上传？</li>
+</ul>
+<p>这一套流程走下来，基本功能就实现了。</p>
+<p>但还有一些问题要穿插着考虑：</p>
+<ul>
+<li>  怎么保证数据收集的准确性？</li>
+<li>  怎么保证数据及时上传？</li>
+<li>  怎么保证数据的安全性？</li>
+<li>  怎么避免收集隐私数据？</li>
+<li>  怎么避免影响App性能？</li>
+<li>  统计口径怎么制定和统一？</li>
+</ul>
+<h1 id="数据收集"><a href="#数据收集" class="headerlink" title="数据收集"></a>数据收集</h1><h2 id="埋点方式"><a href="#埋点方式" class="headerlink" title="埋点方式"></a>埋点方式</h2><p>埋点方式可以分为</p>
+<ul>
+<li>  手动埋点。</li>
+<li>  自动埋点。</li>
+</ul>
+<h3 id="手动埋点"><a href="#手动埋点" class="headerlink" title="手动埋点"></a>手动埋点</h3><ul>
+<li>优点<ul>
+<li>  传自定义参数比较方便。</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>  标准化、重复动作埋点代码冗余了。</li>
+<li>  正确性依赖手动埋点人员，重构代码时也容易出错。</li>
+<li>  修改埋点代价大。</li>
+</ul>
+</li>
+</ul>
+<h3 id="自动埋点"><a href="#自动埋点" class="headerlink" title="自动埋点"></a>自动埋点</h3><ul>
+<li>优点<ul>
+<li>  避免标准化的埋点的重复，减少人力消耗。</li>
+<li>  方便统一测试、修改埋点，减少人工错误。</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>  传自定义参数不方便，因为业务参数在运行时才可知。</li>
+</ul>
+</li>
+</ul>
+<h2 id="哪些场景适合自动埋点？"><a href="#哪些场景适合自动埋点？" class="headerlink" title="哪些场景适合自动埋点？"></a>哪些场景适合自动埋点？</h2><p>具有重复结构特征的埋点，如：</p>
+<ul>
+<li>  页面访问事件</li>
+<li>  View点击事件</li>
+</ul>
+<h2 id="自动埋点如何实现？"><a href="#自动埋点如何实现？" class="headerlink" title="自动埋点如何实现？"></a>自动埋点如何实现？</h2><p>这个需要对每一个场景分别讨论。</p>
+<h3 id="页面访问事件"><a href="#页面访问事件" class="headerlink" title="页面访问事件"></a>页面访问事件</h3><p>对于页面访问事件，分为Activity、Fragment、View，看要统计的粒度。</p>
+<h4 id="Activity"><a href="#Activity" class="headerlink" title="Activity"></a>Activity</h4><p>Activity.onResume()可以作为Activity访问开始。</p>
+<p>Activity.onPause()可以作为Activity访问结束。</p>
+<p>Activity页面访问官方已经提供了API，调用Application.registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks)，ActivityLifecycleCallbacks的onActivityXXX系列方法中对Activity做埋点处理。此方式也适用于SDK里所有的Activity。</p>
+<h4 id="Fragment"><a href="#Fragment" class="headerlink" title="Fragment"></a>Fragment</h4><p>按照常规：</p>
+<p>Fragment.onResume()可以作为Fragment访问开始。</p>
+<p>Fragment.onPause()可以作为Fragment访问结束。</p>
+<p>Activity里的FragmentManager.registerFragmentLifecycleCallbacks(FragmentLifecycleCallbacks)可以监听到所有Fragment的onResume和onPause。</p>
+<p>但是Fragment有几个特殊使用场景，导致在Fragment处于onResume()时也可能是不展示的：</p>
+<ul>
+<li>  通过FragmentTransaction的hide方法隐藏了Fragment。</li>
+<li>  Fragment处于ViewPager中不显示的位置，此时getUserVisibleHint()为false。</li>
+</ul>
+<h5 id="怎么解决Fragment访问入口不统一的问题？"><a href="#怎么解决Fragment访问入口不统一的问题？" class="headerlink" title="怎么解决Fragment访问入口不统一的问题？"></a>怎么解决Fragment访问入口不统一的问题？</h5><p>两种办法：</p>
+<ul>
+<li>  在Fragment的onResume、onPause、onHiddenChanged、setUserVisibleHint几个生命周期变化方法里做Fragment是否显示的判断。</li>
+<li>  统一把业务代码里所有Fragment替换为androidx扩展包里的Fragment，使用setMaxLifecycle控制Fragment的生命周期。</li>
+</ul>
+<p>如果不是自己能主导的项目，修改业务代码往往比较困难，只能采用第一种方式。但第二种方式确实是最省事的方式，也是基础组件倒逼治理项目优化的很好的切入点。</p>
+<h5 id="如何判断一个Fragment是处于显示还是隐藏呢？"><a href="#如何判断一个Fragment是处于显示还是隐藏呢？" class="headerlink" title="如何判断一个Fragment是处于显示还是隐藏呢？"></a>如何判断一个Fragment是处于显示还是隐藏呢？</h5><p>观察Fragment源码可以发现，getUserVisibleHint()默认是true，mUserVisibleHint在FragmentPagerAdapter中会设为false。</p>
+<p>所以可以用<code>isResumed() &amp;&amp; !isHidden() &amp;&amp; getUserVisibleHint()</code>来判断Fragment是否是展示还是隐藏。</p>
+<h5 id="什么时候算Fragment访问开始和结束？"><a href="#什么时候算Fragment访问开始和结束？" class="headerlink" title="什么时候算Fragment访问开始和结束？"></a>什么时候算Fragment访问开始和结束？</h5><p>在onResume、onHiddenChanged、setUserVisibleHint三个方法调用时，<code>isResumed() &amp;&amp; !isHidden() &amp;&amp; getUserVisibleHint()</code>为true就是Fragment页面访问开始，为false就是Fragment页面访问结束。</p>
+<h5 id="FragmentTransaction-setMaxLifecycle-有什么效果？"><a href="#FragmentTransaction-setMaxLifecycle-有什么效果？" class="headerlink" title="FragmentTransaction.setMaxLifecycle()有什么效果？"></a>FragmentTransaction.setMaxLifecycle()有什么效果？</h5><p>在正常情况下，在 Activity 中 add 一个 Fragment 后其生命周期流程是会直接执行到 onResume 方法的。如果在add Fragment的时候同时设置setMaxLifecycle(fragment, Lifecycle.State.CREATED)的话，就会发现 Fragment 只会执行到 onCreate 方法。</p>
+<p>这样就可以通过FragmentManager.registerFragmentLifecycleCallbacks(FragmentLifecycleCallbacks)来监听到所有Fragment生命周期变化了。</p>
+<p>但是setMaxLifecycle这种方式需要修改业务代码，即使自己的代码可以修改，第三方SDK里的业务代码没办法修改，只能用传统的方式来监听Fragment页面访问。</p>
+<h5 id="怎么自动监听Fragment生命周期变化？"><a href="#怎么自动监听Fragment生命周期变化？" class="headerlink" title="怎么自动监听Fragment生命周期变化？"></a>怎么自动监听Fragment生命周期变化？</h5><p>onHiddenChanged、setUserVisibleHint是Fragment的方法，只能覆写，可以在Gradle编译时通过Transform拦截dex处理过程，给业务代码中所有Fragment子类做字节码插桩，按照上面总结的Fragment访问开始和结束的过程来做记录。</p>
+<h5 id="应该选用哪个字节码插桩工具？"><a href="#应该选用哪个字节码插桩工具？" class="headerlink" title="应该选用哪个字节码插桩工具？"></a>应该选用哪个字节码插桩工具？</h5><p>字节码插桩工具有ASM、AspectJ、Javassist等框架，选取原则应该是：</p>
+<ul>
+<li>  对于原函数性能影响小</li>
+<li>  对于APK体积影响小</li>
+<li>  对于APK编译速度影响小</li>
+</ul>
+<p>综合起来，选用ASM最能满足上述条件，因为ASM是比较底层的，插桩需要了解虚拟机字节码指令，没有多余的功能，自然体积也会比较小；AspectJ、Javassist的API更友好，所以会有一些冗余，但是性能就不如ASM了。</p>
+<h5 id="Fragment嵌套时子Fragment生命周期怎么处理？"><a href="#Fragment嵌套时子Fragment生命周期怎么处理？" class="headerlink" title="Fragment嵌套时子Fragment生命周期怎么处理？"></a>Fragment嵌套时子Fragment生命周期怎么处理？</h5><p>什么情况下会产生Fragment嵌套？</p>
+<p>在Fragment中通过getChildFragmentManager()添加的Fragment就是子Fragment。</p>
+<p>子Fragment生命周期存在什么问题？</p>
+<p>父Fragment的setUserVisibleHint和onHiddenChanged调用时，子Fragment的setUserVisibleHint和onHiddenChanged没有得到同步调用。</p>
+<p>怎么解决子Fragment生命周期方法不同步调用？</p>
+<p>父Fragment的setUserVisibleHint和onHiddenChanged调用时，手动调用子Fragment的setUserVisibleHint和onHiddenChanged，同步传递状态。</p>
+<p>所以最好让所有自定义的Fragment都继承一个BaseFragment，把这个处理代码封装在BaseFragment的setUserVisibleHint和onHiddenChanged中。</p>
+<p>但是第三方SDK的Fragment无法修改其代码，可以通过字节码插桩在每个自定义的Fragment里插入这段代码。</p>
+<h4 id="View"><a href="#View" class="headerlink" title="View"></a>View</h4><p>对View的曝光事件往往也是需要统计的。</p>
+<h5 id="怎么样才算有效的View曝光？"><a href="#怎么样才算有效的View曝光？" class="headerlink" title="怎么样才算有效的View曝光？"></a>怎么样才算有效的View曝光？</h5><p>比如在View屏幕停留事件超过2秒，且可见区域大于一半。</p>
+<p>需要明确的定义，是因为可能View处于滚动容器中，在快速滑动中曝光不应该算有效的曝光，未展示完整的View也不会被用户注意到，也不应该算有效的曝光。统计无效的曝光只会造成干扰。</p>
+<h5 id="View可见区域大于一半怎么判断？"><a href="#View可见区域大于一半怎么判断？" class="headerlink" title="View可见区域大于一半怎么判断？"></a>View可见区域大于一半怎么判断？</h5><p>怎么求View可见区域？</p>
+<p>只能去View类里去找是否有相关API。</p>
+<ul>
+<li>  View可见时，View.getGlobalVisibleRect(Rect)返回true，rect参数为屏幕作为坐标系的View可见区域的坐标。</li>
+<li>  View可见时，View.getLocalVisibileRect(Rect)返回true，rect参数的坐标系的原点是View自己的左上角。</li>
+</ul>
+<p>两者都可以来计算View可见区域，View可见区域大于一半的判断代码如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">isViewVisibleOverHalf</span><span class="params">(view: <span class="type">View</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> visibleRect = Rect()</span><br><span class="line">    <span class="keyword">val</span> partialVisible = view.getGlobalVisibleRect(visibleRect)</span><br><span class="line">    <span class="keyword">if</span> (!partialVisible) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    <span class="keyword">val</span> halfWidthVisible = visibleRect.width() &gt;= view.measuredWidth / <span class="number">2</span></span><br><span class="line">    <span class="keyword">val</span> halfHeightVisible = visibleRect.height() &gt;= view.measuredHeight / <span class="number">2</span></span><br><span class="line">    <span class="keyword">return</span> halfWidthVisible &amp;&amp; halfHeightVisible</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h6 id="限制：View绘制完成后调用"><a href="#限制：View绘制完成后调用" class="headerlink" title="限制：View绘制完成后调用"></a>限制：View绘制完成后调用</h6><p>使用getGlobalVisibleRect()和getLocalVisibleRect()判断View的可见性时，一定要等View绘制完成后，再去调用这两个方法，否则无法得到对的结果，返回值的rect值都是0，visibility为false。</p>
+<p>这和获取View的宽高原理是一样的，如果View没有被绘制完成，那么View.getWidth和View.getHeight一定是等于0的。</p>
+<p>View绘制完成是在Activity的onResume之后的，因为在Activity.onResume时才会创建ViewRootImpl，才会触发整个View树的measure、layout、draw。</p>
+<h5 id="怎么监听View在屏幕中停留时间？"><a href="#怎么监听View在屏幕中停留时间？" class="headerlink" title="怎么监听View在屏幕中停留时间？"></a>怎么监听View在屏幕中停留时间？</h5><p>要知道View什么时候可见，什么时候不可见，然后在可见时记录一个起始访问时间，不可见时就可以计算View的停留时间。</p>
+<p>首先想到View被添加到屏幕和从屏幕中移除的时机。</p>
+<ul>
+<li>  View.onAttachedToWindow()方法表示View添加到屏幕中。</li>
+<li>  View.onDetachedFromWindow()方法表示View从屏幕中移除。</li>
+</ul>
+<p>也可以通过View.addOnAttachStateChangeListener(OnAttachStateChangeListener)来监听View从屏幕中进入和移除事件，而不需要覆写View的onAttachedToWindow()和onDetachedFromWindow()方法。</p>
+<p>但是View的不可见，并不一定是从屏幕中移除了，也可能是关闭屏幕、进入二级页面、按home进入桌面等方式都可以让View不可见，但是View并没有从屏幕中移除。</p>
+<p>所幸这几个页面切换事件发生时，View的onWindowFocusChanged(hasFocus)可以监听的到，View不可见时hasFocus就是false，可见时就是true。</p>
+<p>测试后可以发现，View移除屏幕前也会调用onWindowFocusChanged(false)，所以在非滚动容器里，View的可见性通过覆写View的onWindowFocusChanged(hasFocus)方法或者通过View的viewTreeObserver的addOnWindowFocusChangeListener()添加OnWindowFocusChangeListener监听View焦点变化来实现。</p>
+<p>但是View在滚动容器里，onWindowFocusChanged(hasFocus)就不好使了。</p>
+<p>典型的滚动容器有ScrollView（没有回收机制）、RecyclerView（有回收机制）。</p>
+<p>ScrollView中的View在添加过后onWindowFocusChanged就已经回调hasFocus = true了，但实际在屏幕之外并不可见。</p>
+<p>RecyclerView中的View可见和不可见内部有一套单独的机制控制，只用View.onWindowFocusChanged()判断还不行。</p>
+<h6 id="怎么知道ScrollView里的View可不可见？"><a href="#怎么知道ScrollView里的View可不可见？" class="headerlink" title="怎么知道ScrollView里的View可不可见？"></a>怎么知道ScrollView里的View可不可见？</h6><p>可以通过View.getGlobalVisibleRect()判断可见区域是不是大于本身的一半，也就是使用上面的isViewVisibleOverHalf()方法。</p>
+<h6 id="ScrollView的View可见和不可见在哪可以监听？"><a href="#ScrollView的View可见和不可见在哪可以监听？" class="headerlink" title="ScrollView的View可见和不可见在哪可以监听？"></a>ScrollView的View可见和不可见在哪可以监听？</h6><p>肯定是在ScrollView滚动的时候去检查内部View可不可见。</p>
+<p>所以需要监听ScrollView的滚动事件，可以通过ScrollView.viewTreeObserver.addOnScrollChangedListener()添加一个OnScrollChangedListener来监听滚动事件。</p>
+<p>滚动发生时让ScrollView内部所有View都调用isViewVisibleOverHalf()判断是否可见。</p>
+<h6 id="ScrollView内部所有View怎么收集？"><a href="#ScrollView内部所有View怎么收集？" class="headerlink" title="ScrollView内部所有View怎么收集？"></a>ScrollView内部所有View怎么收集？</h6><p>正常情况下就是递归遍历View树收集所有View呗。</p>
+<p>但是ScrollView内部View可能会动态添加或移除，所以View收集也得动态进行，还得从View的viewTreeObserver去找有没有合适的监听器。</p>
+<p>View的viewTreeObserver中有一个OnGlobalLayoutListener，在视图树的布局发生改变或者View在视图树的可见状态发生改变时会调用。可以在OnGlobalLayoutListener.onGlobalLayout()里收集ScrollView的所有View。</p>
+<h6 id="OnGlobalLayoutListener-onGlobalLayout-如果调用频繁会有性能问题，如何解决？"><a href="#OnGlobalLayoutListener-onGlobalLayout-如果调用频繁会有性能问题，如何解决？" class="headerlink" title="OnGlobalLayoutListener.onGlobalLayout()如果调用频繁会有性能问题，如何解决？"></a>OnGlobalLayoutListener.onGlobalLayout()如果调用频繁会有性能问题，如何解决？</h6><p>可以做一个debounce防抖操作，比如onGlobalLayout()调用后5秒内没有再调用了，才去收集ScrollView的所有View，当然这也会带来5秒的精准度误差，具体设置多长时间需要实际调试具体性能，肯定是越短越好。</p>
+<h6 id="RecyclerView的itemView可见和不可见在哪可以监听？"><a href="#RecyclerView的itemView可见和不可见在哪可以监听？" class="headerlink" title="RecyclerView的itemView可见和不可见在哪可以监听？"></a>RecyclerView的itemView可见和不可见在哪可以监听？</h6><p>RecyclerView布局是单独管理的，可以搜索attach关键字来寻找有用的API。</p>
+<p>可以发现RecyclerView会在View移入可视区域时触发Adapter.onViewAttachedToWindow(holder)，View移出可视区域时触发Adapter.onViewDetachedFromWindow(holder)。</p>
+<p>可以通过ViewHolder.getLayoutPosition()来获取item的位置，然后再获取item的数据。</p>
+<h6 id="RecyclerView的itemView有没有显示超过一半怎么判断？"><a href="#RecyclerView的itemView有没有显示超过一半怎么判断？" class="headerlink" title="RecyclerView的itemView有没有显示超过一半怎么判断？"></a>RecyclerView的itemView有没有显示超过一半怎么判断？</h6><p>可以通过View.getGlobalVisibleRect()判断可见区域是不是大于本身的一半，也就是使用上面的isViewVisibleOverHalf()方法。</p>
+<h5 id="怎么自动化统计View曝光事件？"><a href="#怎么自动化统计View曝光事件？" class="headerlink" title="怎么自动化统计View曝光事件？"></a>怎么自动化统计View曝光事件？</h5><p>两个基本步骤：</p>
+<ul>
+<li>  确定要统计哪些View。</li>
+<li>  在View的可见性变化回调中调用打点事件。</li>
+</ul>
+<h6 id="怎么确定要统计哪些View？"><a href="#怎么确定要统计哪些View？" class="headerlink" title="怎么确定要统计哪些View？"></a>怎么确定要统计哪些View？</h6><p>为什么会有这个问题？因为View相对Activity、Fragment数量太多了，并且统计了不关心的View完全是没有必要的工作。</p>
+<p>一般都是产品经理指定说要统计某页面某View的曝光，此时的问题是怎么唯一标识一个View，产品经理标识出来后，剩下的交给自动化程序处理，最终的理想形态就是可视化埋点，完全不需要开发参与埋点过程。</p>
+<h6 id="怎么唯一标识一个View？"><a href="#怎么唯一标识一个View？" class="headerlink" title="怎么唯一标识一个View？"></a>怎么唯一标识一个View？</h6><p>android内部是通过view的id标识的，但是id需要手动设置，没有设置id的View你就没法标识了。</p>
+<p>android的布局也是xml，所以可以使用前端的xpath的形式来定位标识View，每一级路径用View类型名称来标识，这样不存在没有id的情况；同一层级相同类型View用索引区别。</p>
+<p>例如ViewRootImpl/DecorView[0]/LinearLayout[0]/FrameLayout[0]。</p>
+<p>这种方式的缺点是：</p>
+<ul>
+<li>  可读性比较差，需要维护好View和事件名称映射表，定位元素不是很方便。</li>
+<li>  只要修改了布局，事件映射就废了，每次APP更新对于调整过的布局都要更新映射关系。</li>
+<li>  对于RecyclerView这种有视图回收机制的子View，需要额外增加元素位置来标识。</li>
+</ul>
+<p>可以尽量使用ConstraintLayout扁平化布局，这样调整布局的时候，相对路径还是不变的，减少布局的变动。</p>
+<h6 id="怎么区分View该使用哪种可见性变化回调？"><a href="#怎么区分View该使用哪种可见性变化回调？" class="headerlink" title="怎么区分View该使用哪种可见性变化回调？"></a>怎么区分View该使用哪种可见性变化回调？</h6><p>可以检查View的所有父View中有没有滚动容器，没有的话就可以用View.onWindowFocusChanged(hasFocus)来监听View的可见性。</p>
+<p>父View中有滚动容器，就什么也不做，单独处理。</p>
+<h6 id="自定义参数如何获取？"><a href="#自定义参数如何获取？" class="headerlink" title="自定义参数如何获取？"></a>自定义参数如何获取？</h6><p>如果参数在界面上有展示，就可以去获取对应的View，再获取View的值，可以做到可视化埋点。</p>
+<p>这种方式的一个问题是多语言下，对于View的文字获取可能是其他国家语言，并不统一。</p>
+<p>如果参数在界面上没有展示，可以通过调用预埋钩子函数，从预埋的参数列表中获取参数，比如每个页面都提供一个哈希表，存放这个特定业务页面相关数据，View中是可以获取Context的，一般情况下Context就是View所属页面的Activity，通过接口强制转换或者其他协议形式从页面的参数池里根据配置的key获取想要的参数值。</p>
+<h3 id="View点击事件"><a href="#View点击事件" class="headerlink" title="View点击事件"></a>View点击事件</h3><p>点击事件埋点的核心思路就是想办法拦截View点击事件，至于怎么唯一标识View、自定义参数如何获取，这些跟View曝光事件一样。</p>
+<p>根据实现方式，可以分为编译时和运行时两类方法。</p>
+<h4 id="运行时拦截"><a href="#运行时拦截" class="headerlink" title="运行时拦截"></a>运行时拦截</h4><p>运行时能找到拦截点就可以了。</p>
+<p><strong>反射替换View的OnClickListener属性</strong></p>
+<p>最直接的一个办法是遍历页面所有的View，通过反射替换View的OnClickListener属性为自定义OnClickListener，做一层代理，在自定义的OnClickListener中做埋点。</p>
+<p><strong>怎么遍历页面所有的View呢？</strong></p>
+<p>页面的View本身是一个View树，只要获取到根结点就可以遍历所有结点了，根结点是activity.getWindow().getDecorView()。</p>
+<p><strong>怎么识别并拦截动态添加的View？</strong></p>
+<p>可以给DecorView添加ViewTreeObserver.OnGlobalLayoutListener监听布局变化，就可以不遗漏动态添加的View。</p>
+<p><strong>怎么获取到所有页面？</strong></p>
+<p>在Application.onCreate()中通过registerActivityLifecycleCallback()注册ActivityLifecycleCallbacks，在其onActivityResumed(Activity activity)回调方法中做View的遍历，因为View树是在Activity onResume之后构建的。</p>
+<p><strong>优点</strong></p>
+<ul>
+<li>  App所有页面的View都可以拦截到，包括第三方SDK。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>  反射对运行时性能有损耗。</li>
+<li>  不在Activity里的View的点击是无法采集的，比如Dialog、PopupWindow等。</li>
+</ul>
+<h4 id="编译时拦截"><a href="#编译时拦截" class="headerlink" title="编译时拦截"></a>编译时拦截</h4><p>通过Gradle的Transform机制拦截dex处理过程，通过ASM进行字节码插桩，对所有onClick之类的点击事件的函数插入埋点代码。</p>
+<p><strong>优点</strong></p>
+<ul>
+<li>  运行时损耗比反射小。</li>
+<li>  所有类型的点击事件都可以拦截到。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>  布局文件中android:onClick属性指定的点击事件拦截不到，需要额外特殊处理。</li>
+<li>  会增加一点编译时间，但是代价小于运行时性能损耗。</li>
+</ul>
+<h1 id="数据存储"><a href="#数据存储" class="headerlink" title="数据存储"></a>数据存储</h1><h2 id="Android有哪些存储方式？"><a href="#Android有哪些存储方式？" class="headerlink" title="Android有哪些存储方式？"></a>Android有哪些存储方式？</h2><p>存储数据肯定是存文件了。</p>
+<p>根据数据组织形式，可以分为数据库和普通文件。</p>
+<p>数据库自己有一套机制帮我们弄好了，相对普通文件来说复杂一点。</p>
+<p>Android内置SQLite，直接调用SQLiteOpenHelper、SQLiteDatabase等相关类操作即可。</p>
+<p>普通文件存储数据，需要以某种格式序列化组织数据，这样方便写入和读取数据。缺点是序列化一般不能增量进行，只能全量更新，不太适合大数据操作。</p>
+<p>也有一些开源的自定义的存储方案，如Realm，WCDB、MMKV等，具体使用哪种需要看实际需求。</p>
+<h2 id="打点统计应该选用哪种存储方式？"><a href="#打点统计应该选用哪种存储方式？" class="headerlink" title="打点统计应该选用哪种存储方式？"></a>打点统计应该选用哪种存储方式？</h2><p>选择哪一种存储方式，需要看打点统计对于数据的处理需求。</p>
+<p>观察打点统计的数据流向和场景，可以发现：</p>
+<ul>
+<li>  App会频繁把数据存储到本地。</li>
+<li>  因为事件数量太多，上传数据需要批量上传，这就有批量查询数据的需求。</li>
+<li>  批量查询数据时，期望上传最早的一批数据，需要按时间排序事件，保证数据及时性。</li>
+</ul>
+<p>数据量大，查询需要有优化，用数据库比较合适。</p>
+<h2 id="数据表如何设计？"><a href="#数据表如何设计？" class="headerlink" title="数据表如何设计？"></a>数据表如何设计？</h2><p>打点事件至少对应一张事件表。</p>
+<h3 id="事件的唯一标识是什么？"><a href="#事件的唯一标识是什么？" class="headerlink" title="事件的唯一标识是什么？"></a>事件的唯一标识是什么？</h3><p>事件的唯一标识是事件id和事件发生时间的组合，可以给这两个属性联合起来增加唯一约束，这样在插入数据时也可以避免插入重复数据了。</p>
+<h3 id="事件表主键怎么定？"><a href="#事件表主键怎么定？" class="headerlink" title="事件表主键怎么定？"></a>事件表主键怎么定？</h3><p>主键一般使用整数型自增id，因为：</p>
+<ul>
+<li>  主键作为聚簇索引，整数比较是比较快的。</li>
+<li>  主键值是顺序的，就不会出现把新的记录插入到之前的磁盘页中，不会频繁的调整磁盘页，减少IO次数。</li>
+</ul>
+<h3 id="添加索引"><a href="#添加索引" class="headerlink" title="添加索引"></a>添加索引</h3><p>给事件发生时间的列添加索引，在按时间顺序批量查询事件时，可以减少IO次数。</p>
+<p>因为给列添加索引相当于构建了一个B+树，在B+树上搜索数据肯定是比顺序扫描所有数据要快的，这样也避免加载了不需要的磁盘页到内存中，所以可以提高读数据的效率。</p>
+<h3 id="添加check约束"><a href="#添加check约束" class="headerlink" title="添加check约束"></a>添加check约束</h3><p>需要给数据列做一些check约束，以免存储了非法的数据，对于服务端分析是没有意义的，没有必要浪费存储空间和网络流量。</p>
+<p>比如事件发生时间如果使用时间戳格式，那么数字应该是13位的，低于13位的数字情况就是非法的。</p>
+<p>约束也可以在SDK代码层做，SQL层做约束作为最后的保险。</p>
+<h3 id="事件的自定义参数怎么存储？"><a href="#事件的自定义参数怎么存储？" class="headerlink" title="事件的自定义参数怎么存储？"></a>事件的自定义参数怎么存储？</h3><p>事件可以添加任意的键值对参数，所有自定义的参数可以作为一个字段存储，以JSON或者其他节省存储空间的序列化的形式存储。</p>
+<h3 id="事件发生时的环境参数"><a href="#事件发生时的环境参数" class="headerlink" title="事件发生时的环境参数"></a>事件发生时的环境参数</h3><p>事件发生时会有很多环境参数，如网络、机型、APP版本号、系统版本、渠道等。</p>
+<p>有一些参数会不定期改变，如网络；有一些参数永久不变，如机型。总体来说变化的频次还是比较少的。</p>
+<p>也就是说，如果每个事件发生时的环境参数也存储在事件表里，会有比较多的冗余重复，增大表的体积，想到冗余重复，就会想到要分表。</p>
+<p><strong>不分表</strong></p>
+<p>如果不分表，处理数据时肯定比较方便，可以考虑压缩数据后再存储到数据库，减少数据表体积。</p>
+<p>压缩采用常见的无损压缩，例如LZ77+哈弗曼编码，也就是GZIP压缩，如果实测的随机压缩率能有80%左右，还是可以接受的，具体的压缩率跟数据本身的冗余度有关。</p>
+<p>所以环境参数的值最好也要是要用最少的字符来表示，比如系统版本的取值就写数字，不要写“Android 8“这种字符串，以减少存储空间。</p>
+<p><strong>分表</strong></p>
+<p>把环境参数单独弄一张表存储，环境参数行的唯一标识为所有环境参数拼接在一起的字符串的哈希值，这个哈希值在环境表里存一份，事件表里存一份，通过这个哈希值关联两者。</p>
+<p>这样节约一定的存储空间，但是查数据时处理起来比较麻烦，并且要多查一次表，为了统一处理方便，还是推荐不分表。</p>
+<h3 id="数据列大小限制"><a href="#数据列大小限制" class="headerlink" title="数据列大小限制"></a>数据列大小限制</h3><p>自定义的参数存储前一定要检查大小，避免单行数据过大。</p>
+<p>否则查询数据时，CursorWindow放不下大数据，会直接崩溃，报错如<code>java.lang.IllegalStateException: Couldn&#39;t read row 0, col 1 from CursorWindow. Make sure the Cursor is initialized correctly before accessing data from it.</code>。</p>
+<p><strong>CursorWindow是干什么的？</strong></p>
+<p>数据库查询的数据会存储在操作系统的共享内存中，可以跨进程访问，这样做是为了减少查询重复的数据，因为可能会有多个进程要查询同一个数据库。</p>
+<p>既然是共享内存，那肯定不能无限大，所以一般限定的大小是1MB或2MB左右。</p>
+<h2 id="需要使用ORM框架吗？"><a href="#需要使用ORM框架吗？" class="headerlink" title="需要使用ORM框架吗？"></a>需要使用ORM框架吗？</h2><p>ORM框架优点是简化编程，缺点是增加程序体积、降低一定的执行性能。</p>
+<p>我们这个表结构非常简单，不需要简化编程，所以不需要ORM框架，使用Android原生的SQLite相关的API就够用了。</p>
+<h2 id="跨进程埋点数据怎么处理？"><a href="#跨进程埋点数据怎么处理？" class="headerlink" title="跨进程埋点数据怎么处理？"></a>跨进程埋点数据怎么处理？</h2><p>Android已经提供了ContentProvider处理跨进程操作，把数据库操作封装在自定义的ContentProvider中。</p>
+<h3 id="自定义的ContentProvider需要单独放在一个进程吗？"><a href="#自定义的ContentProvider需要单独放在一个进程吗？" class="headerlink" title="自定义的ContentProvider需要单独放在一个进程吗？"></a>自定义的ContentProvider需要单独放在一个进程吗？</h3><p>单独放一个进程的优点：</p>
+<ul>
+<li>  主App崩溃了，不影响ContentProvider所在进程，如果ContentProvider进程有内存缓存就不受影响。</li>
+<li>  写数据不影响主App性能。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>  跨进程通信比进程内通信要慢一些，Binder通信要把数据封装为Parcel对象，还要经过内核缓冲区在进程之间拷贝，都是消耗，具体慢多少需要实测。</li>
+<li>  占用一个Binder线程，增大Binder阻塞的可能性。</li>
+<li>  Binder缓冲区大小有限制，不过一般埋点事件数据不会特别大。</li>
+</ul>
+<p>无特殊需求，可以让自定义ContentProvider放在主进程，即不指定进程。</p>
+<h2 id="数据怎么加密？"><a href="#数据怎么加密？" class="headerlink" title="数据怎么加密？"></a>数据怎么加密？</h2><p>两种思路：</p>
+<ul>
+<li>  加密整个数据库</li>
+<li>  数据内容加密后再写入数据库</li>
+</ul>
+<p>加密整个数据库可以使用主流的SQLCipher，开源免费，使用256-bit AES加密，安全可靠，但有一个很大的缺点是它会使APK体积增加好几个MB，所以这种方式不应该优先考虑。</p>
+<p>可以对数据内容加密后再写入数据库，这样实现简单，也不会增加APK体积。</p>
+<h3 id="数据内容应该怎么加密？"><a href="#数据内容应该怎么加密？" class="headerlink" title="数据内容应该怎么加密？"></a>数据内容应该怎么加密？</h3><p>加密分为对称加密和非对称加密：</p>
+<ul>
+<li>  对称加密，加密解密速度快，但是密钥一旦泄露就不安全。</li>
+<li>  非对称加密，加密解密速度慢，密钥分为公钥和私钥，私钥不会泄露，安全性有保障。</li>
+</ul>
+<p>所以可以把两种加密方式结合，既保证性加解密速度，也能保证安全，具体做法：</p>
+<ul>
+<li>  用对称加密方式来加密数据内容。</li>
+<li>  对称加密的密钥是随机生成的。</li>
+<li>  App内置非对称加密密钥，或从服务端动态配置下发。</li>
+<li>  用非对称加密的公钥加密对称加密的密钥。</li>
+<li>  加密后的对称加密的密钥也存储下来，一起上传给服务端。</li>
+<li>  服务端用私钥解密得到明文的对称加密密钥，再用对称加密密钥解密数据内容。</li>
+</ul>
+<h3 id="压缩和加密的顺序？"><a href="#压缩和加密的顺序？" class="headerlink" title="压缩和加密的顺序？"></a>压缩和加密的顺序？</h3><p>应该先压缩，再加密，因为：</p>
+<ul>
+<li>  数据量小，加密耗时就小。</li>
+<li>  加密前数据冗余特征明显，压缩率会比较高。</li>
+</ul>
+<h2 id="数据库操作应该用几个子线程？"><a href="#数据库操作应该用几个子线程？" class="headerlink" title="数据库操作应该用几个子线程？"></a>数据库操作应该用几个子线程？</h2><p>埋点系统对于数据库会有增、删、查三个需求。</p>
+<p>查询Android的源码可知，SQLite的增、删、查，最终都会从数据库连接池取出一个连接来执行。</p>
+<p>如果当前线程获取不到数据库连接，就会一直阻塞住，直到能获取到数据库连接。</p>
+<p>同时IO操作本身也是耗时的，所以数据库操作肯定要放在子线程执行，以免阻塞主线程，但是要设置几个子线程呢？</p>
+<p>增加和删除都是写数据库，写操作之间是互斥的，所以写操作只需要一个子线程，线程弄多了SQLite底层还是会互斥的。</p>
+<p>回滚日志模式下，读写是互斥的，这可以参考SQLite五种锁之间流转机制。</p>
+<p>WAL模式下，读写可以并发，仅在WAL日志回写到数据库文件时会阻塞读操作，但这发生在checkpoint，并不频繁。</p>
+<p>可以通过<code>SQLiteDatabase.enableWriteAheadLogging()</code>来开启WAL模式。</p>
+<p>目前Android系统的实现中，如果以回滚日志模式打开数据库，连接池中只会保持一个数据库连接。</p>
+<p>如果以WAL模式打开数据库，连接池中的最大连接数量则根据系统配置决定，默认配置是两个。</p>
+<p>所以开启WAL后，再弄单独弄一个线程用来查询数据，这样系统吞吐量就是最大的。</p>
+<h2 id="应该使用几个SQLiteDatabase对象？"><a href="#应该使用几个SQLiteDatabase对象？" class="headerlink" title="应该使用几个SQLiteDatabase对象？"></a>应该使用几个SQLiteDatabase对象？</h2><p>应该使用一个SQLiteDatabase对象来读写同一个数据库，业务层维持一个SQLiteOpenHelper实例就行了。</p>
+<p>因为SQLite底层也有自己的锁机制，锁是文件级的，如果使用多个SQLiteDatabase对象对同一个数据库做写操作，由于写与写之间互斥，阻塞时间久了就会抛出database is locked异常，这样使用多个SQLiteDatabase就显得没有必要了。</p>
+<h2 id="什么时候调用SQLiteDatabase-close-？"><a href="#什么时候调用SQLiteDatabase-close-？" class="headerlink" title="什么时候调用SQLiteDatabase.close()？"></a>什么时候调用SQLiteDatabase.close()？</h2><p>打点统计的生命周期贯穿整个App生命周期，所以可以不用close数据库对象。</p>
+<p>但在App空闲时，系统又会提示 <code>Leak found. Caused by: java.lang.IllegalStateException: SQLiteDatabase created and never closed</code>。</p>
+<p>我们可以在每次数据库操作后，设置一个10分钟的定时器，10分钟内没有新的数据库操作，就可以close数据库。</p>
+<p>注意要对数据库打开和关闭做引用计数，防止出现对一个已关闭的数据库对象还做操作而报错。</p>
+<h2 id="数据库操作的性能优化"><a href="#数据库操作的性能优化" class="headerlink" title="数据库操作的性能优化"></a>数据库操作的性能优化</h2><h3 id="优化插入数据"><a href="#优化插入数据" class="headerlink" title="优化插入数据"></a>优化插入数据</h3><p>一次SQL插入分为编译和执行两个阶段。</p>
+<p>编译阶段分为：</p>
+<ul>
+<li>  SQL语句解析</li>
+<li>  检查SQL语法错误、生成语法树</li>
+<li>  编译、优化</li>
+<li>  缓存</li>
+</ul>
+<p>执行阶段分为：</p>
+<ul>
+<li>  绑定参数</li>
+<li>  执行SQL操作</li>
+</ul>
+<p>可以在这个单次操作的过程中看有没有优化空间。</p>
+<p>多次操作也可以看看有没有优化空间，要从更整体的视角来审视。</p>
+<h4 id="缓存SQLiteStatement"><a href="#缓存SQLiteStatement" class="headerlink" title="缓存SQLiteStatement"></a>缓存SQLiteStatement</h4><p>SQLite API在每次写入时执行的步骤：</p>
+<ul>
+<li>  组装ContentValues</li>
+<li>  拼接SQL语句</li>
+<li>  将ContentValues转换为数组</li>
+<li>  创建SQLiteStatement</li>
+<li>  将SQLiteStatement与第3步的数组绑定</li>
+<li>  执行写入操作</li>
+</ul>
+<p>我们可以学习Room对数据插入的优化：</p>
+<ul>
+<li>  每个插入语句只创建一个SQLiteStatement，创建后就缓存下来，避免频繁的对象创建和字符串拼接。</li>
+<li>  插入数据时直接重新绑定SQLiteStatement的参数，绕过ContentValues的拼装。</li>
+<li>  执行写入操作。</li>
+</ul>
+<h4 id="批量插入"><a href="#批量插入" class="headerlink" title="批量插入"></a>批量插入</h4><p>如果数据插入非常频繁，应该把数据集中起来用一个事务批量插入，比多个事务频繁的一个个执行要快。</p>
+<h5 id="数据集中到什么程度才统一插入呢？"><a href="#数据集中到什么程度才统一插入呢？" class="headerlink" title="数据集中到什么程度才统一插入呢？"></a>数据集中到什么程度才统一插入呢？</h5><p>可以按时间和空间分别限定：</p>
+<ul>
+<li>  数据达到一定数量，比如10条。</li>
+<li>  要保存的数据线存储在内存缓存中，5秒内没有新数据要插入了，集中把内存中缓存的数据插入到数据库。</li>
+</ul>
+<h5 id="内存缓存应该用什么数据结构存储？"><a href="#内存缓存应该用什么数据结构存储？" class="headerlink" title="内存缓存应该用什么数据结构存储？"></a>内存缓存应该用什么数据结构存储？</h5><p>这里的内存缓存相当于一个生产者消费者模型，App业务层会往缓冲区插入事件数据，并且可能会从任意一个线程插入，统计SDK的子线程会从缓冲区取数据，所以考虑使用缓冲队列来实现内存缓存。</p>
+<p>缓冲队列自己实现需要手动加锁和线程同步逻辑，可以先看看JDK内置的缓冲队列能不能满足需求，JDK内置的缓冲队列有：</p>
+<ul>
+<li>  ArrayBlockingQueue：有界队列，数组实现，对操作系统缓存机制友好。</li>
+<li>  LinkedBlockingQueue：无界队列，链表实现，也可以传入队列大小作为有界队列。</li>
+<li>  LinkedTransferQueue：无界队列，链表实现；当 put 时，如果有等待的线程，就直接将元素 “交给” 等待者， 否则直接进入队列，效率比LinkedBlockingQueue更高一些。</li>
+<li>  SynchronousQueue：同步队列，无容量；写入操作不会立即返回，需要等待另一个线程来将这个元素拿走；同理，当一个读线程做读操作的时候，同样需要一个相匹配的写线程的写操作。</li>
+<li>  PriorityBlockingQueue：无界队列，数组实现，数据结构为二叉堆，可扩容，添加元素可以按优先级排序。</li>
+</ul>
+<p>有界队列的风险在于在缓冲区满又要存数据或缓冲区空又要取数据时会阻塞当前线程，如果当前线程是主线程，主线程往缓冲区添加数据有可能会产生阻塞，这是不能接受的。主线程最好是用无界队列。</p>
+<p>无界队列有内存溢出的风险，如果使用无界队列，必须要尽快取出无界队列中的数据，避免无限膨胀。</p>
+<h5 id="单缓冲队列的性能开销"><a href="#单缓冲队列的性能开销" class="headerlink" title="单缓冲队列的性能开销"></a>单缓冲队列的性能开销</h5><p>主要在：</p>
+<ul>
+<li>  生产者和消费者需要同时竞争一个缓冲区。</li>
+<li>  多个生产者竞争一个缓冲区。</li>
+</ul>
+<p>我们这里只有单个消费者，所以不存在多个消费者之间的竞争。</p>
+<p>多个生产者竞争一个缓冲区我们没办法避免，这就是业务特点。</p>
+<p>如果能减少生产者和消费者同时竞争一个缓冲区的几率，就可以提高性能。</p>
+<p>那么就需要让生产者和消费者各自拥有自己的缓冲区，在消费者缓冲区为空时，与生产者的缓冲区做交换，仅在缓冲区交换时生产者和消费者会产生竞争，这就是双缓冲队列。</p>
+<p>综上所述，内存缓存可以使用无界的双缓冲队列来实现。</p>
+<h5 id="App被强杀或崩溃后，内存缓存丢失了怎么办？"><a href="#App被强杀或崩溃后，内存缓存丢失了怎么办？" class="headerlink" title="App被强杀或崩溃后，内存缓存丢失了怎么办？"></a>App被强杀或崩溃后，内存缓存丢失了怎么办？</h5><p>为什么App被强杀后内存缓存会丢失呢？</p>
+<p>因为内存缓存在App进程的内存空间中，随App进程共存亡。</p>
+<p>如果缓存可以脱离App进程的约束，那么缓存就不会丢失了。</p>
+<p>所以有两个解决的方向：</p>
+<ul>
+<li>  在内存空间上脱离App进程约束。</li>
+<li>  在缓存介质上脱离App进程约束。</li>
+</ul>
+<p>内存空间上，我们如果用单独的进程来存储内存缓存，这样App进程不管发生什么都不会影响单独进程，可以把内存缓存放在自定义的ContentProvider中，自定义的ContentProvider再指定在单独的进程中运行。</p>
+<p>这种方式的主要缺点是频繁的跨进程通信效率会有一定降低。</p>
+<p>缓存介质上，如果能用文件存储缓存，就不受进程生命周期影响了。但是文件IO的速度肯定比内存操作速度慢，那有没有结合两者特点的东西存在呢？</p>
+<p>答案就是内存映射，Binder通信也用到了这个东西。内存映射把进程内的内存虚拟地址跟磁盘文件地址做映射，操作内存就是操作文件，性能却跟操作内存一样。</p>
+<p>所以可以基于内存映射机制设计一个双缓冲队列来实现内存缓存。</p>
+<p>不过内存映射需要预先分配指定的大小，是有界的，所以需要加速数据的读取处理，避免数据生产迅速达到存储上限。</p>
+<h3 id="优化查询数据"><a href="#优化查询数据" class="headerlink" title="优化查询数据"></a>优化查询数据</h3><ul>
+<li>  避免使用cursor.getColumnIndex()这个耗时操作，直接写死索引编号来获取数据列的值。</li>
+<li>  查询语句跟插入一样，做预编译，避免每次查询都要重新创建、拼接字符串。</li>
+</ul>
+<h2 id="存储空间不足怎么处理？"><a href="#存储空间不足怎么处理？" class="headerlink" title="存储空间不足怎么处理？"></a>存储空间不足怎么处理？</h2><p>在写数据时，要先检查一下存储空间，避免出错。</p>
+<p>空间不足时有两种策略：</p>
+<ul>
+<li>  删除最老的若干条数据，再存储新的数据。</li>
+<li>  丢弃新的数据，什么也不做。</li>
+</ul>
+<p>对于埋点系统第一种方式更合理一些。</p>
+<p>我们也可以对数据库文件做大小限制，防止数据库体积暴增。</p>
+<p>在每次插入数据前，都检查一下数据库文件大小是否超过设定的阈值，超过了就删除最老的若干条数据，再插入新数据。</p>
+<h1 id="数据上传策略"><a href="#数据上传策略" class="headerlink" title="数据上传策略"></a>数据上传策略</h1><h2 id="数据上传的需求"><a href="#数据上传的需求" class="headerlink" title="数据上传的需求"></a>数据上传的需求</h2><ul>
+<li>  及早的上传，保证数据及时性。</li>
+<li>  不对App性能造成影响。</li>
+</ul>
+<h2 id="为什么需要批量上传？"><a href="#为什么需要批量上传？" class="headerlink" title="为什么需要批量上传？"></a>为什么需要批量上传？</h2><p>要想最及时的上传数据，那肯定是刚打完点就上传。</p>
+<p>但是这样一来可能打点时没有网络，二来打点操作可能会很频繁性能损耗大。</p>
+<p>频繁的网络请求传输很小的数据量对性能影响还是比较大的，因为完成一个网络连接除了数据传输部分的耗时外，建立网络连接和释放连接也都是有耗时的，会占用CPU资源，也会消耗手机电量，还要传输很多辅助数据也会浪费流量。</p>
+<p>所以应该一次传输尽可能多的数据，也就是批量上传事件。</p>
+<h2 id="一次批量上传多少条数据合适？"><a href="#一次批量上传多少条数据合适？" class="headerlink" title="一次批量上传多少条数据合适？"></a>一次批量上传多少条数据合适？</h2><p>如果数量太小，浪费资源。</p>
+<p>如果数量太大，容易在弱网环境下发生超时，超时就重传，重传就会占用CPU、网络、电量等资源，所以尽可能一次性传完。</p>
+<p>具体数量多少可以通过公式求得，即：</p>
+<p><code>事件数量 = 一次网络请求合理的数据大小 / 单个事件大小</code></p>
+<p>那么问题就转变为：</p>
+<h3 id="怎么知道一次网络请求合理的数据大小？"><a href="#怎么知道一次网络请求合理的数据大小？" class="headerlink" title="怎么知道一次网络请求合理的数据大小？"></a>怎么知道一次网络请求合理的数据大小？</h3><p>App肯定还有其他业务请求网络，我们可以汇总一段时间内其他业务请求成功的网络API数据流量，求得一个算数平均的网络请求数据包大小值。</p>
+<p>这样测算的好处是，可以随着网络情况来动态调整批量上传的事件数量。</p>
+<p>也可以静态随机测算，设置一个固定值大小，如1MB。</p>
+<h3 id="怎么知道单个事件的大小？"><a href="#怎么知道单个事件的大小？" class="headerlink" title="怎么知道单个事件的大小？"></a>怎么知道单个事件的大小？</h3><p>汇总一段时间内的打点事件大小和数量，求得一个算数平均值大小。</p>
+<p>可以隔一段时间动态计算，或者预先静态计算好固定值。</p>
+<h2 id="在什么时候上传比较好？"><a href="#在什么时候上传比较好？" class="headerlink" title="在什么时候上传比较好？"></a>在什么时候上传比较好？</h2><p>为了保证及时性，可以隔一段时间检查一下是否还有数据没有上传，有的话全部上传。</p>
+<p>为了不影响App主功能，可以等到App进入后台后上传。</p>
+<p>一句话总结就是，需要在后台定期执行上传任务。</p>
+<h2 id="Android如何实现后台定期执行任务呢？"><a href="#Android如何实现后台定期执行任务呢？" class="headerlink" title="Android如何实现后台定期执行任务呢？"></a>Android如何实现后台定期执行任务呢？</h2><p>五种方式：</p>
+<ul>
+<li>  Service</li>
+<li>  <a href="https://developer.android.com/training/scheduling/alarms?hl=zh-cn#best-practices">AlarmManager</a></li>
+<li>  <a href="https://developer.android.com/training/sync-adapters/running-sync-adapter?hl=zh-cn">SyncAdapter</a></li>
+<li>  <a href="https://developer.android.com/reference/android/app/job/JobScheduler?hl=en">JobScheduler</a></li>
+<li>  <a href="https://developer.android.com/topic/libraries/architecture/workmanager?hl=zh-cn">WorkManager</a></li>
+</ul>
+<p>应该使用哪一种方案可以参考Android官方的<a href="https://developer.android.com/guide/background?hl=zh-cn">后台处理指南</a>。</p>
+<h3 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h3><p>Service是可以用来做长时间后台任务的，但往往是跟用户有一定交互关系的任务，例如开启一个前台服务播放音乐。</p>
+<p>Android 8 开始，只允许前台App创建和使用后台Service，限制后台Service无限运行。</p>
+<p>所以没办法让Service始终静默的保活来执行周期性的任务。</p>
+<h3 id="AlarmManager"><a href="#AlarmManager" class="headerlink" title="AlarmManager"></a>AlarmManager</h3><p>AlarmManager可以在App生命周期之外定时执行任务，可以精确地设定任务执行时间。</p>
+<p>缺点：</p>
+<ul>
+<li>  相比于JobScheduler、SyncAdaper灵活性有限，支持的功能少。</li>
+<li>  不跟其他的闹钟集中一起唤醒，不利于节约手机整体电量。</li>
+<li>  所以Android 6 引入了<a href="https://developer.android.com/training/monitoring-device-state/doze-standby?hl=zh-cn">低电耗模式（Doze）和应用待机模式（App Standby）</a>，Android 9 引入了<a href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn">应用待机存储分区（App Standby Buckets）</a>，这些电量优化措施会导致AlarmManager不能准确的按照设定的时间点执行任务。</li>
+</ul>
+<p><strong>低电耗模式</strong></p>
+<blockquote>
+<p>如果用户未插接设备的电源，在屏幕关闭的情况下，让设备在一段时间内保持不活动状态，那么设备就会进入低电耗模式。在低电耗模式下，系统会尝试通过限制应用访问占用大量网络和 CPU 资源的服务来节省电量。它还会阻止应用访问网络，并延迟其作业、同步和标准闹钟。</p>
+<p>系统会定期退出低电耗模式一小段时间，让应用完成其延迟的活动。在此维护期内，系统会运行所有待处理的同步、作业和闹钟，并允许应用访问网络。</p>
+<p>在每个维护期结束时，系统会再次进入低电耗模式，暂停网络访问并推迟作业、同步和闹钟。随着时间的推移，系统安排维护期的次数越来越少，这有助于在设备未连接至充电器的情况下长期处于不活动状态时降低耗电量。</p>
+<p>一旦用户通过移动设备、打开屏幕或连接至充电器唤醒设备，系统就会立即退出低电耗模式，并且所有应用都会恢复正常活动。</p>
+<p>低电耗模式尤其可能会影响 <code>[AlarmManager](&lt;https://developer.android.com/reference/android/app/AlarmManager?hl=zh-cn&gt;)</code> 闹钟和定时器管理的活动，因为当系统处于低电耗模式时，不会触发 Android 5.1（API 级别 22）或更低版本中的闹钟。</p>
+<p>为了帮助安排闹钟，Android 6.0（API 级别 23）引入了两种新的 <code>[AlarmManager](&lt;https://developer.android.com/reference/android/app/AlarmManager?hl=zh-cn&gt;)</code> 方法：<code>[setAndAllowWhileIdle()](&lt;https://developer.android.com/reference/android/app/AlarmManager?hl=zh-cn#setAndAllowWhileIdle(int,%20long,%20android.app.PendingIntent)&gt;)</code> 和 <code>[setExactAndAllowWhileIdle()](&lt;https://developer.android.com/reference/android/app/AlarmManager?hl=zh-cn#setExactAndAllowWhileIdle(int,%20long,%20android.app.PendingIntent)&gt;)</code>。通过这些方法，您可以设置即使设备处于低电耗模式也会触发的闹钟。</p>
+</blockquote>
+<p><strong>应用待机模式</strong></p>
+<blockquote>
+<p>用户在一段时间内未使用应用，并且应用没有前台进程时，应用就进入了待机模式。</p>
+<p>当应用处于应用待机模式时，闹钟会像设备处于低电耗模式一样被延迟。</p>
+</blockquote>
+<p><strong>应用待机存储分区</strong></p>
+<blockquote>
+<p>应用待机存储分区有助于系统根据应用的使用时间新近度和使用频率对应用资源请求确定优先级。 根据应用使用模式，每个应用都会被放置在五个优先级存储分区之一中。系统会根据应用所在的存储分区限制每个应用可用的设备资源。</p>
+<p>这些存储分区为：</p>
+<ul>
+<li>  <a href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn#active-bucket">活跃</a>：应用目前正在使用中，或者最近刚刚使用过</li>
+<li>  <a href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn#working-set-bucket">工作集</a>：应用会定期使用</li>
+<li>  <a href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn#frequent-bucket">常用</a>：应用会经常使用，但不会每天使用</li>
+<li>  <a href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn#rare-bucket">极少使用</a>：应用不经常使用</li>
+</ul>
+<p>此外，对于已安装但从未运行过的应用，还有一个特殊的<strong>从未使用</strong>存储分区。系统会对这些应用施加严格的限制。</p>
+<p>如果某个应用位于“活跃”存储分区中，系统不会对应用的作业、警报或 FCM 消息施加任何限制。</p>
+<p>如果某个应用位于工作集内，系统会对其运行作业和触发警报的频率施加轻微的限制。</p>
+<p>如果某个应用位于“常用”存储分区中，则系统对其运行作业和触发警报的频率施加更严格的限制。</p>
+<p>如果某个应用位于“极少使用”存储分区中，则系统对其运行作业、触发警报以及接收高优先级 FCM 消息的频率施加严格的限制。系统还会限制应用连接到互联网的能力。</p>
+<p>如需了解详情，请参阅<a href="https://developer.android.com/topic/performance/power/power-details?hl=zh-cn">电源管理限制</a>。</p>
+</blockquote>
+<h3 id="SyncAdapter"><a href="#SyncAdapter" class="headerlink" title="SyncAdapter"></a>SyncAdapter</h3><p>同步适配器是用来专门同步客户端和服务端数据的，由Android系统来调度管理，可以脱离于App生命周期，这样有利于节省手机整体电量。</p>
+<p>缺点：要创建自定义的身份验证器和ContentProvider，实现起来比较复杂。</p>
+<p>功能和JobScheduler、WorkManager区别不大。</p>
+<h3 id="JobScheduler"><a href="#JobScheduler" class="headerlink" title="JobScheduler"></a>JobScheduler</h3><p>Android 5.0提供了Jobscheduler，主要用于在未来某个时间下满足一定条件时触发执行某项任务。</p>
+<p>JobSchedule的宗旨就是把一些不是特别紧急的任务放到更合适的时机批量处理。这样做有两个好处：避免频繁的唤醒硬件模块，造成不必要的电量消耗以及避免在不合适的时间(例如低电量情况下、弱网络或者移动网络情况下的)执行过多的任务消耗电量。</p>
+<p>使用JobScheduler替代WakeLock和Alarm运行任务，是因为后者在每个APP中是相互独立的，而JobScheduler运行在操作系统层面。</p>
+<p>例如，如果10个APP每小时唤醒设备一次，由于这些任务的执行时机不可能同步，因此使用WakeLock和Alarm一个小时内设备被唤醒了10次！但由于JobScheduler是操作系统层面的，因此系统会执行设备唤醒的调度工作，每小时设备的唤醒次数会显著减少。</p>
+<h3 id="WorkManager"><a href="#WorkManager" class="headerlink" title="WorkManager"></a>WorkManager</h3><p>WorkManager作用和Jobscheduler一样，只不过可以最低运行在Android 4.0上。</p>
+<p>在Android 6.0以上，WorkManager使用Jobscheduler。</p>
+<p>在Android 4.0 到 Android 5.1 之间，使用Firebase JobDispatcher，如果Firebase JobDispatcher不可用，再用AlarmManager和BroadcaseReceiver。</p>
+<p>使用WorkManager的好处就是不需要考虑兼容性。</p>
+<p>WorkManager 适用于需要<strong>可靠运行</strong>的工作，即使用户导航离开屏幕、退出应用或重启设备也不影响工作的执行。例如：</p>
+<ul>
+<li>  向后端服务发送日志或分析数据</li>
+<li>  定期将应用数据与服务器同步</li>
+</ul>
+<p>WorkManager 不适用于那些可在应用进程结束时安全终止的进程内后台工作，也不适用于需要立即执行的工作。</p>
+<h3 id="最终选择：WorkManager"><a href="#最终选择：WorkManager" class="headerlink" title="最终选择：WorkManager"></a>最终选择：WorkManager</h3><p>对于数据上传，我们对时间的精确度并没有要求，只要保证能周期性的上传就行了。</p>
+<p>即使可以进行准时的周期性的数据上传，所有用户集中在某个时间点上传数据对于服务端的压力也会很大，得需要让数据上传时间一定的随机性。Android的电量优化策略，就制造了后台任务执行的随机性。</p>
+<p>所以用WorkManager的实用性是最好的。</p>
+<p>可以给WorkManager添加一个周期性的任务，每隔一个小时执行。</p>
+<p>再做一些优化配置：</p>
+<ul>
+<li>  当设备处于“电量不足模式”时，不允许执行任务。</li>
+<li>  用户设备处于空闲状态，才允许执行任务。</li>
+</ul>
+<p>这样最大化节约设备整体电量，同时避免影响App运行时性能。</p>
+<h2 id="重试策略"><a href="#重试策略" class="headerlink" title="重试策略"></a>重试策略</h2><p>如果网络请求报错，上传失败，应当要重试请求。</p>
+<p>但请求的频次应当是指数性衰减的，减缓对服务端的压力，恰好WorkManager支持设置这种重试策略。</p>
+<h1 id="网络上传"><a href="#网络上传" class="headerlink" title="网络上传"></a>网络上传</h1><h2 id="选用哪个网络库？"><a href="#选用哪个网络库？" class="headerlink" title="选用哪个网络库？"></a>选用哪个网络库？</h2><p>作为通用基础SDK，一般不依赖第三方库，因为会给SDK增加额外的体积。</p>
+<p>没有特殊需求，用系统默认的HttpURLConnection即可，Android 4.4以后HttpURLConnection底层实现是Okhttp，可以享受到Okhttp的优化。</p>
+<p>源码证明：<a href="https://android.googlesource.com/platform/external/okhttp/+/master"></a><a href="https://android.googlesource.com/platform/external/okhttp/+/master">https://android.googlesource.com/platform/external/okhttp/+/master</a></p>
+<h2 id="怎么保证数据传输安全？"><a href="#怎么保证数据传输安全？" class="headerlink" title="怎么保证数据传输安全？"></a>怎么保证数据传输安全？</h2><p>网络请求用https协议就好了，好处：</p>
+<ul>
+<li>  传输内容会加密。</li>
+<li>  数字证书体系会验证通信双方身份。</li>
+<li>  传输内容的哈希指纹有非对称加密保护可以检测出内容有没有被篡改。</li>
+</ul>
+<p>不用也不行，因为Android 9.0 默认禁止网络请求的明文传输，也就是禁止使用http通信了。</p>
+<p>通过<code>res/xml/network_security_config.xml</code>配置文件，不信任用户添加的证书，可以禁止https抓包。</p>
+<h2 id="网络传输可以做哪些性能优化？"><a href="#网络传输可以做哪些性能优化？" class="headerlink" title="网络传输可以做哪些性能优化？"></a>网络传输可以做哪些性能优化？</h2><p>得把一个网络请求的过程列出来，然后看每一步能否做优化，优化无非也就是从时间和空间两个维度考虑。</p>
+<p>一个https请求过程：</p>
+<ul>
+<li>  域名解析</li>
+<li>  TCP三次握手、TLS握手建立连接</li>
+<li>  发送http报文</li>
+</ul>
+<h3 id="HttpDNS"><a href="#HttpDNS" class="headerlink" title="HttpDNS"></a><strong>HttpDNS</strong></h3><p>域名解析可以考虑使用HttpDNS，可以防止域名劫持，不用递归请求域名服务器也加速了域名解析。</p>
+<h3 id="复用连接"><a href="#复用连接" class="headerlink" title="复用连接"></a><strong>复用连接</strong></h3><p>如果连接能复用，就可以避免频繁创建连接造成的不必要的耗时。</p>
+<p>HTTP/1.1提出了Keep-Alive机制：当一个HTTP请求的数据传输结束后，TCP连接不立即释放，如果此时有新的HTTP请求，且其请求的Host通上次请求相同，则可以直接复用为释放的TCP连接，从而省去了TCP的释放和再次创建的开销，减少了网络延时。</p>
+<p>Okhttp恰好实现了一个连接池管理，最多可以保持5个地址的连接能够keep-alive，每个keep-alive时长为5分钟。</p>
+<p>使用HttpURLConnection做网络请求，底层就是Okhttp实现，不需要额外做连接池优化处理。</p>
+<h3 id="减少Http报文体积"><a href="#减少Http报文体积" class="headerlink" title="减少Http报文体积"></a><strong>减少Http报文体积</strong></h3><p>可以从两个方向考虑：</p>
+<ul>
+<li>  对报文内容做整体压缩</li>
+<li>  报文内容本身在表达上做精简</li>
+</ul>
+<p>报文内容整体压缩：</p>
+<p>一般都是采用gzip压缩，gzip压缩底层实现是，先通过基于短语字典的LZ77算法压缩报文得到短语表示的内容，再用哈夫曼编码对冗余的短语表达进行压缩，两者都是无损压缩，压缩效果取决于报文内容自身的冗余度（信息熵）。</p>
+<p>报文内容表达上精简：</p>
+<ul>
+<li>  如果报文内容是key-value的形式，key又是比较固定的，我们可以在定义key时用英文缩写，避免使用长单词，这样就节约了内容体积。</li>
+<li>  如果能不产生多余的内容表达就不产生，不要存储冗余信息，因为数据量一大，冗余就会放大无数倍。</li>
+</ul>
+<h3 id="合并网络请求"><a href="#合并网络请求" class="headerlink" title="合并网络请求"></a>合并网络请求</h3><p>在讨论数据上传策略时提到了，要批量上传事件数据，避免一次请求的数据量过小。</p>
+<h3 id="一个tcp连接执行多个http请求"><a href="#一个tcp连接执行多个http请求" class="headerlink" title="一个tcp连接执行多个http请求"></a><strong>一个tcp连接执行多个http请求</strong></h3><p>如果在同一个tcp连接上同时发起多个http请求，也就是前一个http请求的响应还没有收到就发送第二个http请求了，由于http请求和响应并没有序号标识，所以无法区分收到的响应是哪个http请求的，所以一个tcp连接里只能串行的执行http请求。</p>
+<p>如果要在一个tcp连接里执行多个http请求，就要对http请求包做分片和标记，这就是http2，这样网络传输整体吞吐量就变大了。</p>
+<p>可以让服务端支持http2，客户端通过http2协议来传输，Okhttp支持http2协议通信。</p>
+<h1 id="统计口径"><a href="#统计口径" class="headerlink" title="统计口径"></a>统计口径</h1><p>数据收集后就要分析，分析数据就需要统计一些指标，指标需要定义出明确的行为边界，比如：</p>
+<ul>
+<li>  怎样区分打点事件是属于哪个用户的行为？</li>
+<li>  怎样算一个活跃用户？</li>
+<li>  App使用时长怎么计算？</li>
+</ul>
+<h2 id="怎么唯一标识一个用户？"><a href="#怎么唯一标识一个用户？" class="headerlink" title="怎么唯一标识一个用户？"></a>怎么唯一标识一个用户？</h2><p>如果App有用户系统，唯一标识一个用户不是应该用用户id吗。</p>
+<p>但是往往有隐私政策的要求，统计数据在非授权情况下一般只能匿名采集，不能把行为数据采集关联到具体的用户身上。</p>
+<p>传统方式是通过硬件标识符来唯一表示用户，如MAC地址、IMEI等，使用这些硬件标识符有几个问题：</p>
+<ul>
+<li>  需要额外申请权限，隐私性不好解释。</li>
+<li>  兼容性有很大问题，一些手机厂商的硬件标识符都是相同的，无法区分用户，会出现地址漂移。</li>
+<li>  Android高版本逐渐限制硬件标识符的获取，客观上无法保证唯一性。</li>
+</ul>
+<p>综上，可以随机生成一个随机的ID，如UUID.randomUUID().toString()，并保存在本地，作为用户的唯一标识。</p>
+<p>用户一旦卸载App或清除数据，用户唯一标识将重新生成。</p>
+<p>所以这个唯一标识也可以理解为安装ID。</p>
+<p>安装ID：</p>
+<p>缺点：同一个设备的用户可能会被标记为多个用户。</p>
+<p>优点：绝对唯一不会重复，匿名性好。</p>
+<p>参考：</p>
+<ul>
+<li>  Android官方：<a href="https://developer.android.com/training/articles/user-data-ids?hl=zh-cn">唯一标识符最佳做法</a></li>
+</ul>
+<h2 id="怎样算活跃用户？"><a href="#怎样算活跃用户？" class="headerlink" title="怎样算活跃用户？"></a>怎样算活跃用户？</h2><p>这个定义针对不同类型的App都有不同的标准，比如：</p>
+<ul>
+<li>  如果是视频类的App，可以规定观看了视频才算活跃用户。</li>
+<li>  如果是购物类的App，可以规定用户要浏览了商品或购买了商品才算活跃用户。</li>
+</ul>
+<p>标准不统一对于SDK肯定是不能实现的，对于SDK只能按照最标准化、最基本的方式来判断，比如用户至少得打开App使用一段时间。</p>
+<p>至于用户做了哪些行为动作可以通过漏斗分析来过滤统计出来。</p>
+<h3 id="怎样才算使用了App？"><a href="#怎样才算使用了App？" class="headerlink" title="怎样才算使用了App？"></a>怎样才算使用了App？</h3><p>当然是打开页面进行交互就算使用了App。</p>
+<p>但是页面只是App四大组件的其中之一，Service、Content Provider、Broadcast Receiver都是可以单独启动的。</p>
+<h3 id="无页面的组件启动也算使用了App吗？"><a href="#无页面的组件启动也算使用了App吗？" class="headerlink" title="无页面的组件启动也算使用了App吗？"></a>无页面的组件启动也算使用了App吗？</h3><p>从功能逻辑上说，肯定算是使用了App。</p>
+<p>但是我们的目标是想统计哪些用户跟App产生了交互，因为没有用户交互的话，不会产生用户价值，统计了也没有意义，而非页面组件跟用户都是没有交互的。</p>
+<p>比如通讯录App的Content Provider提供给其他所有App通讯录的数据，其他App通过Content Provider查询通讯录联系人时，没有跟通讯录App有什么界面上的交互，最大的价值可能就是用户会觉得通讯录App有点用不会删除，提高了通讯录App的留存率。</p>
+<h3 id="启动App页面才算使用了App"><a href="#启动App页面才算使用了App" class="headerlink" title="启动App页面才算使用了App"></a>启动App页面才算使用了App</h3><p>所以呢，我们定义打开App页面才算使用了App，可以通过Application.registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks)很方便的统计Activity的页面访问。</p>
+<h2 id="怎么统计App使用时长？"><a href="#怎么统计App使用时长？" class="headerlink" title="怎么统计App使用时长？"></a>怎么统计App使用时长？</h2><p>App启动时计时，App结束时用当前时间减去App启动时的计时，得到App使用时长。</p>
+<h3 id="App启动具体在哪？"><a href="#App启动具体在哪？" class="headerlink" title="App启动具体在哪？"></a>App启动具体在哪？</h3><p>我们已经定义了App打开页面才算使用了。</p>
+<p>所以对于App启动，只要有任意一个Activity执行到onResume()，就算开始使用，此时可以计时了。</p>
+<h3 id="App结束具体在哪？"><a href="#App结束具体在哪？" class="headerlink" title="App结束具体在哪？"></a>App结束具体在哪？</h3><p>App打开页面就算启动了，那么反过来，App退出所有页面就算结束。</p>
+<h4 id="怎么监听App退出了所有的页面？"><a href="#怎么监听App退出了所有的页面？" class="headerlink" title="怎么监听App退出了所有的页面？"></a>怎么监听App退出了所有的页面？</h4><p>通过Application.registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks)监听App所有Activity生命周期，在Activity执行到onResume()时做计数，在Activity执行到onPause()时减少计数，如果减少到0，说明没有可见的页面了，就算退出了所有的页面。</p>
+<p>这种方式包含了：</p>
+<ul>
+<li>  按返回键退出页面</li>
+<li>  按Home减退出页面</li>
+</ul>
+<h4 id="如果快速切换到桌面回到我们的App怎么处理？"><a href="#如果快速切换到桌面回到我们的App怎么处理？" class="headerlink" title="如果快速切换到桌面回到我们的App怎么处理？"></a>如果快速切换到桌面回到我们的App怎么处理？</h4><p>我们得从统计的目的来看，我们统计App时长是想观察用户跟App有持续的交互的时间有多长。</p>
+<p>如果用户切换到桌面，没一会儿又回到App，用户还是一直在想使用App的，可能是中途为了看一些其他的信息才切换出去。</p>
+<p>所以可以设置一个定时器，在App所有Activity都onPause后，设置一个如30秒的定时器：</p>
+<ul>
+<li>  如果30秒内有Activity执行onResume，说明用户又回来了，App还不能算结束。</li>
+<li>  如果30秒内没有Activity执行onResume，App就算结束了，可以计算App使用时长了。</li>
+</ul>
+<p>计算App结束时间的时候这30秒不算在内。</p>
+<h4 id="App崩溃、强杀方式退出页面，怎么计算App使用时长？"><a href="#App崩溃、强杀方式退出页面，怎么计算App使用时长？" class="headerlink" title="App崩溃、强杀方式退出页面，怎么计算App使用时长？"></a>App崩溃、强杀方式退出页面，怎么计算App使用时长？</h4><p>App非正常退出，就没办法等所有Activity都onPause后设置定时器来检查App是否结束了。</p>
+<p>那么只能等下次启动时，补记App结束事件，怎么补记呢？</p>
+<p>我们可以在每次Activity.onPause()时本地存储一个待定的App结束时间，等到下次Activity.onStart()时检查当前时间减去之前存储的待定的App结束时间，查看差值是否超过30秒，超过说明App已经结束了。</p>
+<p>这种做法的缺点是：</p>
+<ul>
+<li>  最后一个运行的Activity强制退出后统计不到它的使用时长。</li>
+<li>  用户再也不去启动App，就丢失了这次的App使用时长统计。</li>
+</ul>
+<p>在没有更好的办法之前，只能暂时使用这个相对准确的方法。</p>
+<h3 id="App有多个进程如何判定和计算App使用时长？"><a href="#App有多个进程如何判定和计算App使用时长？" class="headerlink" title="App有多个进程如何判定和计算App使用时长？"></a>App有多个进程如何判定和计算App使用时长？</h3><p>多个进程都是属于App的，所以每个进程的Activity都算App的页面。</p>
+<p>需要注意的是，在Activity.onPause()存储本地数据和Activty.onResume()读取本地数据时，需要跨进程访问的问题，可以使用ContentProvider + SharedPreferences来实现。</p>
+]]></content>
+      <categories>
+        <category>系统设计</category>
+      </categories>
+      <tags>
+        <tag>系统设计</tag>
+        <tag>埋点统计</tag>
+        <tag>SDK</tag>
       </tags>
   </entry>
 </search>

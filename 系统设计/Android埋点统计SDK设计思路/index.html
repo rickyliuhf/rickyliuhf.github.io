@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"rickyqliu.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="整体思路数据埋点系统至少有两个基本步骤：    数据收集。   数据上传。  由于数据并不是要求实时上传的，所以数据上传时可能没有网络，或者网络条件比较差容易上传失败，就需要把数据先存储到本地，再根据某些策略在随后的某个时间进行上传。 这里就涉及到四个方面的工作：    怎么收集数据？   怎么存储数据？   数据上传策略是什么？   怎么进行网络上传？  这一套流程走下来，基本功能就实现了。 但">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android埋点统计SDK设计思路">
+<meta property="og:url" content="http://rickyqliu.github.io/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Android%E5%9F%8B%E7%82%B9%E7%BB%9F%E8%AE%A1SDK%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/index.html">
+<meta property="og:site_name" content="Ricky.L的随笔">
+<meta property="og:description" content="整体思路数据埋点系统至少有两个基本步骤：    数据收集。   数据上传。  由于数据并不是要求实时上传的，所以数据上传时可能没有网络，或者网络条件比较差容易上传失败，就需要把数据先存储到本地，再根据某些策略在随后的某个时间进行上传。 这里就涉及到四个方面的工作：    怎么收集数据？   怎么存储数据？   数据上传策略是什么？   怎么进行网络上传？  这一套流程走下来，基本功能就实现了。 但">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-10-15T12:55:00.000Z">
+<meta property="article:modified_time" content="2021-10-09T05:35:39.670Z">
+<meta property="article:author" content="Ricky.L">
+<meta property="article:tag" content="系统设计">
+<meta property="article:tag" content="埋点统计">
+<meta property="article:tag" content="SDK">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://rickyqliu.github.io/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Android%E5%9F%8B%E7%82%B9%E7%BB%9F%E8%AE%A1SDK%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Android埋点统计SDK设计思路 | Ricky.L的随笔</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ricky.L的随笔</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Android%E5%9F%8B%E7%82%B9%E7%BB%9F%E8%AE%A1SDK%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android埋点统计SDK设计思路
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-15 20:55:00" itemprop="dateCreated datePublished" datetime="2020-10-15T20:55:00+08:00">2020-10-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-10-09 13:35:39" itemprop="dateModified" datetime="2021-10-09T13:35:39+08:00">2021-10-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" itemprop="url" rel="index"><span itemprop="name">系统设计</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Android%E5%9F%8B%E7%82%B9%E7%BB%9F%E8%AE%A1SDK%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="系统设计/Android埋点统计SDK设计思路/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="整体思路"><a href="#整体思路" class="headerlink" title="整体思路"></a>整体思路</h1><p>数据埋点系统至少有两个基本步骤：</p>
+<ul>
+<li>  数据收集。</li>
+<li>  数据上传。</li>
+</ul>
+<p>由于数据并不是要求实时上传的，所以数据上传时可能没有网络，或者网络条件比较差容易上传失败，就需要把数据先存储到本地，再根据某些策略在随后的某个时间进行上传。</p>
+<p>这里就涉及到四个方面的工作：</p>
+<ul>
+<li>  怎么收集数据？</li>
+<li>  怎么存储数据？</li>
+<li>  数据上传策略是什么？</li>
+<li>  怎么进行网络上传？</li>
+</ul>
+<p>这一套流程走下来，基本功能就实现了。</p>
+<p>但还有一些问题要穿插着考虑：</p>
+<ul>
+<li>  怎么保证数据收集的准确性？</li>
+<li>  怎么保证数据及时上传？</li>
+<li>  怎么保证数据的安全性？</li>
+<li>  怎么避免收集隐私数据？</li>
+<li>  怎么避免影响App性能？</li>
+<li>  统计口径怎么制定和统一？</li>
+</ul>
+<h1 id="数据收集"><a href="#数据收集" class="headerlink" title="数据收集"></a>数据收集</h1><h2 id="埋点方式"><a href="#埋点方式" class="headerlink" title="埋点方式"></a>埋点方式</h2><p>埋点方式可以分为</p>
+<ul>
+<li>  手动埋点。</li>
+<li>  自动埋点。</li>
+</ul>
+<h3 id="手动埋点"><a href="#手动埋点" class="headerlink" title="手动埋点"></a>手动埋点</h3><ul>
+<li>优点<ul>
+<li>  传自定义参数比较方便。</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>  标准化、重复动作埋点代码冗余了。</li>
+<li>  正确性依赖手动埋点人员，重构代码时也容易出错。</li>
+<li>  修改埋点代价大。</li>
+</ul>
+</li>
+</ul>
+<h3 id="自动埋点"><a href="#自动埋点" class="headerlink" title="自动埋点"></a>自动埋点</h3><ul>
+<li>优点<ul>
+<li>  避免标准化的埋点的重复，减少人力消耗。</li>
+<li>  方便统一测试、修改埋点，减少人工错误。</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>  传自定义参数不方便，因为业务参数在运行时才可知。</li>
+</ul>
+</li>
+</ul>
+<h2 id="哪些场景适合自动埋点？"><a href="#哪些场景适合自动埋点？" class="headerlink" title="哪些场景适合自动埋点？"></a>哪些场景适合自动埋点？</h2><p>具有重复结构特征的埋点，如：</p>
+<ul>
+<li>  页面访问事件</li>
+<li>  View点击事件</li>
+</ul>
+<h2 id="自动埋点如何实现？"><a href="#自动埋点如何实现？" class="headerlink" title="自动埋点如何实现？"></a>自动埋点如何实现？</h2><p>这个需要对每一个场景分别讨论。</p>
+<h3 id="页面访问事件"><a href="#页面访问事件" class="headerlink" title="页面访问事件"></a>页面访问事件</h3><p>对于页面访问事件，分为Activity、Fragment、View，看要统计的粒度。</p>
+<h4 id="Activity"><a href="#Activity" class="headerlink" title="Activity"></a>Activity</h4><p>Activity.onResume()可以作为Activity访问开始。</p>
+<p>Activity.onPause()可以作为Activity访问结束。</p>
+<p>Activity页面访问官方已经提供了API，调用Application.registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks)，ActivityLifecycleCallbacks的onActivityXXX系列方法中对Activity做埋点处理。此方式也适用于SDK里所有的Activity。</p>
+<h4 id="Fragment"><a href="#Fragment" class="headerlink" title="Fragment"></a>Fragment</h4><p>按照常规：</p>
+<p>Fragment.onResume()可以作为Fragment访问开始。</p>
+<p>Fragment.onPause()可以作为Fragment访问结束。</p>
+<p>Activity里的FragmentManager.registerFragmentLifecycleCallbacks(FragmentLifecycleCallbacks)可以监听到所有Fragment的onResume和onPause。</p>
+<p>但是Fragment有几个特殊使用场景，导致在Fragment处于onResume()时也可能是不展示的：</p>
+<ul>
+<li>  通过FragmentTransaction的hide方法隐藏了Fragment。</li>
+<li>  Fragment处于ViewPager中不显示的位置，此时getUserVisibleHint()为false。</li>
+</ul>
+<h5 id="怎么解决Fragment访问入口不统一的问题？"><a href="#怎么解决Fragment访问入口不统一的问题？" class="headerlink" title="怎么解决Fragment访问入口不统一的问题？"></a>怎么解决Fragment访问入口不统一的问题？</h5><p>两种办法：</p>
+<ul>
+<li>  在Fragment的onResume、onPause、onHiddenChanged、setUserVisibleHint几个生命周期变化方法里做Fragment是否显示的判断。</li>
+<li>  统一把业务代码里所有Fragment替换为androidx扩展包里的Fragment，使用setMaxLifecycle控制Fragment的生命周期。</li>
+</ul>
+<p>如果不是自己能主导的项目，修改业务代码往往比较困难，只能采用第一种方式。但第二种方式确实是最省事的方式，也是基础组件倒逼治理项目优化的很好的切入点。</p>
+<h5 id="如何判断一个Fragment是处于显示还是隐藏呢？"><a href="#如何判断一个Fragment是处于显示还是隐藏呢？" class="headerlink" title="如何判断一个Fragment是处于显示还是隐藏呢？"></a>如何判断一个Fragment是处于显示还是隐藏呢？</h5><p>观察Fragment源码可以发现，getUserVisibleHint()默认是true，mUserVisibleHint在FragmentPagerAdapter中会设为false。</p>
+<p>所以可以用<code>isResumed() &amp;&amp; !isHidden() &amp;&amp; getUserVisibleHint()</code>来判断Fragment是否是展示还是隐藏。</p>
+<h5 id="什么时候算Fragment访问开始和结束？"><a href="#什么时候算Fragment访问开始和结束？" class="headerlink" title="什么时候算Fragment访问开始和结束？"></a>什么时候算Fragment访问开始和结束？</h5><p>在onResume、onHiddenChanged、setUserVisibleHint三个方法调用时，<code>isResumed() &amp;&amp; !isHidden() &amp;&amp; getUserVisibleHint()</code>为true就是Fragment页面访问开始，为false就是Fragment页面访问结束。</p>
+<h5 id="FragmentTransaction-setMaxLifecycle-有什么效果？"><a href="#FragmentTransaction-setMaxLifecycle-有什么效果？" class="headerlink" title="FragmentTransaction.setMaxLifecycle()有什么效果？"></a>FragmentTransaction.setMaxLifecycle()有什么效果？</h5><p>在正常情况下，在 Activity 中 add 一个 Fragment 后其生命周期流程是会直接执行到 onResume 方法的。如果在add Fragment的时候同时设置setMaxLifecycle(fragment, Lifecycle.State.CREATED)的话，就会发现 Fragment 只会执行到 onCreate 方法。</p>
+<p>这样就可以通过FragmentManager.registerFragmentLifecycleCallbacks(FragmentLifecycleCallbacks)来监听到所有Fragment生命周期变化了。</p>
+<p>但是setMaxLifecycle这种方式需要修改业务代码，即使自己的代码可以修改，第三方SDK里的业务代码没办法修改，只能用传统的方式来监听Fragment页面访问。</p>
+<h5 id="怎么自动监听Fragment生命周期变化？"><a href="#怎么自动监听Fragment生命周期变化？" class="headerlink" title="怎么自动监听Fragment生命周期变化？"></a>怎么自动监听Fragment生命周期变化？</h5><p>onHiddenChanged、setUserVisibleHint是Fragment的方法，只能覆写，可以在Gradle编译时通过Transform拦截dex处理过程，给业务代码中所有Fragment子类做字节码插桩，按照上面总结的Fragment访问开始和结束的过程来做记录。</p>
+<h5 id="应该选用哪个字节码插桩工具？"><a href="#应该选用哪个字节码插桩工具？" class="headerlink" title="应该选用哪个字节码插桩工具？"></a>应该选用哪个字节码插桩工具？</h5><p>字节码插桩工具有ASM、AspectJ、Javassist等框架，选取原则应该是：</p>
+<ul>
+<li>  对于原函数性能影响小</li>
+<li>  对于APK体积影响小</li>
+<li>  对于APK编译速度影响小</li>
+</ul>
+<p>综合起来，选用ASM最能满足上述条件，因为ASM是比较底层的，插桩需要了解虚拟机字节码指令，没有多余的功能，自然体积也会比较小；AspectJ、Javassist的API更友好，所以会有一些冗余，但是性能就不如ASM了。</p>
+<h5 id="Fragment嵌套时子Fragment生命周期怎么处理？"><a href="#Fragment嵌套时子Fragment生命周期怎么处理？" class="headerlink" title="Fragment嵌套时子Fragment生命周期怎么处理？"></a>Fragment嵌套时子Fragment生命周期怎么处理？</h5><p>什么情况下会产生Fragment嵌套？</p>
+<p>在Fragment中通过getChildFragmentManager()添加的Fragment就是子Fragment。</p>
+<p>子Fragment生命周期存在什么问题？</p>
+<p>父Fragment的setUserVisibleHint和onHiddenChanged调用时，子Fragment的setUserVisibleHint和onHiddenChanged没有得到同步调用。</p>
+<p>怎么解决子Fragment生命周期方法不同步调用？</p>
+<p>父Fragment的setUserVisibleHint和onHiddenChanged调用时，手动调用子Fragment的setUserVisibleHint和onHiddenChanged，同步传递状态。</p>
+<p>所以最好让所有自定义的Fragment都继承一个BaseFragment，把这个处理代码封装在BaseFragment的setUserVisibleHint和onHiddenChanged中。</p>
+<p>但是第三方SDK的Fragment无法修改其代码，可以通过字节码插桩在每个自定义的Fragment里插入这段代码。</p>
+<h4 id="View"><a href="#View" class="headerlink" title="View"></a>View</h4><p>对View的曝光事件往往也是需要统计的。</p>
+<h5 id="怎么样才算有效的View曝光？"><a href="#怎么样才算有效的View曝光？" class="headerlink" title="怎么样才算有效的View曝光？"></a>怎么样才算有效的View曝光？</h5><p>比如在View屏幕停留事件超过2秒，且可见区域大于一半。</p>
+<p>需要明确的定义，是因为可能View处于滚动容器中，在快速滑动中曝光不应该算有效的曝光，未展示完整的View也不会被用户注意到，也不应该算有效的曝光。统计无效的曝光只会造成干扰。</p>
+<h5 id="View可见区域大于一半怎么判断？"><a href="#View可见区域大于一半怎么判断？" class="headerlink" title="View可见区域大于一半怎么判断？"></a>View可见区域大于一半怎么判断？</h5><p>怎么求View可见区域？</p>
+<p>只能去View类里去找是否有相关API。</p>
+<ul>
+<li>  View可见时，View.getGlobalVisibleRect(Rect)返回true，rect参数为屏幕作为坐标系的View可见区域的坐标。</li>
+<li>  View可见时，View.getLocalVisibileRect(Rect)返回true，rect参数的坐标系的原点是View自己的左上角。</li>
+</ul>
+<p>两者都可以来计算View可见区域，View可见区域大于一半的判断代码如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">isViewVisibleOverHalf</span><span class="params">(view: <span class="type">View</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> visibleRect = Rect()</span><br><span class="line">    <span class="keyword">val</span> partialVisible = view.getGlobalVisibleRect(visibleRect)</span><br><span class="line">    <span class="keyword">if</span> (!partialVisible) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">    <span class="keyword">val</span> halfWidthVisible = visibleRect.width() &gt;= view.measuredWidth / <span class="number">2</span></span><br><span class="line">    <span class="keyword">val</span> halfHeightVisible = visibleRect.height() &gt;= view.measuredHeight / <span class="number">2</span></span><br><span class="line">    <span class="keyword">return</span> halfWidthVisible &amp;&amp; halfHeightVisible</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h6 id="限制：View绘制完成后调用"><a href="#限制：View绘制完成后调用" class="headerlink" title="限制：View绘制完成后调用"></a>限制：View绘制完成后调用</h6><p>使用getGlobalVisibleRect()和getLocalVisibleRect()判断View的可见性时，一定要等View绘制完成后，再去调用这两个方法，否则无法得到对的结果，返回值的rect值都是0，visibility为false。</p>
+<p>这和获取View的宽高原理是一样的，如果View没有被绘制完成，那么View.getWidth和View.getHeight一定是等于0的。</p>
+<p>View绘制完成是在Activity的onResume之后的，因为在Activity.onResume时才会创建ViewRootImpl，才会触发整个View树的measure、layout、draw。</p>
+<h5 id="怎么监听View在屏幕中停留时间？"><a href="#怎么监听View在屏幕中停留时间？" class="headerlink" title="怎么监听View在屏幕中停留时间？"></a>怎么监听View在屏幕中停留时间？</h5><p>要知道View什么时候可见，什么时候不可见，然后在可见时记录一个起始访问时间，不可见时就可以计算View的停留时间。</p>
+<p>首先想到View被添加到屏幕和从屏幕中移除的时机。</p>
+<ul>
+<li>  View.onAttachedToWindow()方法表示View添加到屏幕中。</li>
+<li>  View.onDetachedFromWindow()方法表示View从屏幕中移除。</li>
+</ul>
+<p>也可以通过View.addOnAttachStateChangeListener(OnAttachStateChangeListener)来监听View从屏幕中进入和移除事件，而不需要覆写View的onAttachedToWindow()和onDetachedFromWindow()方法。</p>
+<p>但是View的不可见，并不一定是从屏幕中移除了，也可能是关闭屏幕、进入二级页面、按home进入桌面等方式都可以让View不可见，但是View并没有从屏幕中移除。</p>
+<p>所幸这几个页面切换事件发生时，View的onWindowFocusChanged(hasFocus)可以监听的到，View不可见时hasFocus就是false，可见时就是true。</p>
+<p>测试后可以发现，View移除屏幕前也会调用onWindowFocusChanged(false)，所以在非滚动容器里，View的可见性通过覆写View的onWindowFocusChanged(hasFocus)方法或者通过View的viewTreeObserver的addOnWindowFocusChangeListener()添加OnWindowFocusChangeListener监听View焦点变化来实现。</p>
+<p>但是View在滚动容器里，onWindowFocusChanged(hasFocus)就不好使了。</p>
+<p>典型的滚动容器有ScrollView（没有回收机制）、RecyclerView（有回收机制）。</p>
+<p>ScrollView中的View在添加过后onWindowFocusChanged就已经回调hasFocus = true了，但实际在屏幕之外并不可见。</p>
+<p>RecyclerView中的View可见和不可见内部有一套单独的机制控制，只用View.onWindowFocusChanged()判断还不行。</p>
+<h6 id="怎么知道ScrollView里的View可不可见？"><a href="#怎么知道ScrollView里的View可不可见？" class="headerlink" title="怎么知道ScrollView里的View可不可见？"></a>怎么知道ScrollView里的View可不可见？</h6><p>可以通过View.getGlobalVisibleRect()判断可见区域是不是大于本身的一半，也就是使用上面的isViewVisibleOverHalf()方法。</p>
+<h6 id="ScrollView的View可见和不可见在哪可以监听？"><a href="#ScrollView的View可见和不可见在哪可以监听？" class="headerlink" title="ScrollView的View可见和不可见在哪可以监听？"></a>ScrollView的View可见和不可见在哪可以监听？</h6><p>肯定是在ScrollView滚动的时候去检查内部View可不可见。</p>
+<p>所以需要监听ScrollView的滚动事件，可以通过ScrollView.viewTreeObserver.addOnScrollChangedListener()添加一个OnScrollChangedListener来监听滚动事件。</p>
+<p>滚动发生时让ScrollView内部所有View都调用isViewVisibleOverHalf()判断是否可见。</p>
+<h6 id="ScrollView内部所有View怎么收集？"><a href="#ScrollView内部所有View怎么收集？" class="headerlink" title="ScrollView内部所有View怎么收集？"></a>ScrollView内部所有View怎么收集？</h6><p>正常情况下就是递归遍历View树收集所有View呗。</p>
+<p>但是ScrollView内部View可能会动态添加或移除，所以View收集也得动态进行，还得从View的viewTreeObserver去找有没有合适的监听器。</p>
+<p>View的viewTreeObserver中有一个OnGlobalLayoutListener，在视图树的布局发生改变或者View在视图树的可见状态发生改变时会调用。可以在OnGlobalLayoutListener.onGlobalLayout()里收集ScrollView的所有View。</p>
+<h6 id="OnGlobalLayoutListener-onGlobalLayout-如果调用频繁会有性能问题，如何解决？"><a href="#OnGlobalLayoutListener-onGlobalLayout-如果调用频繁会有性能问题，如何解决？" class="headerlink" title="OnGlobalLayoutListener.onGlobalLayout()如果调用频繁会有性能问题，如何解决？"></a>OnGlobalLayoutListener.onGlobalLayout()如果调用频繁会有性能问题，如何解决？</h6><p>可以做一个debounce防抖操作，比如onGlobalLayout()调用后5秒内没有再调用了，才去收集ScrollView的所有View，当然这也会带来5秒的精准度误差，具体设置多长时间需要实际调试具体性能，肯定是越短越好。</p>
+<h6 id="RecyclerView的itemView可见和不可见在哪可以监听？"><a href="#RecyclerView的itemView可见和不可见在哪可以监听？" class="headerlink" title="RecyclerView的itemView可见和不可见在哪可以监听？"></a>RecyclerView的itemView可见和不可见在哪可以监听？</h6><p>RecyclerView布局是单独管理的，可以搜索attach关键字来寻找有用的API。</p>
+<p>可以发现RecyclerView会在View移入可视区域时触发Adapter.onViewAttachedToWindow(holder)，View移出可视区域时触发Adapter.onViewDetachedFromWindow(holder)。</p>
+<p>可以通过ViewHolder.getLayoutPosition()来获取item的位置，然后再获取item的数据。</p>
+<h6 id="RecyclerView的itemView有没有显示超过一半怎么判断？"><a href="#RecyclerView的itemView有没有显示超过一半怎么判断？" class="headerlink" title="RecyclerView的itemView有没有显示超过一半怎么判断？"></a>RecyclerView的itemView有没有显示超过一半怎么判断？</h6><p>可以通过View.getGlobalVisibleRect()判断可见区域是不是大于本身的一半，也就是使用上面的isViewVisibleOverHalf()方法。</p>
+<h5 id="怎么自动化统计View曝光事件？"><a href="#怎么自动化统计View曝光事件？" class="headerlink" title="怎么自动化统计View曝光事件？"></a>怎么自动化统计View曝光事件？</h5><p>两个基本步骤：</p>
+<ul>
+<li>  确定要统计哪些View。</li>
+<li>  在View的可见性变化回调中调用打点事件。</li>
+</ul>
+<h6 id="怎么确定要统计哪些View？"><a href="#怎么确定要统计哪些View？" class="headerlink" title="怎么确定要统计哪些View？"></a>怎么确定要统计哪些View？</h6><p>为什么会有这个问题？因为View相对Activity、Fragment数量太多了，并且统计了不关心的View完全是没有必要的工作。</p>
+<p>一般都是产品经理指定说要统计某页面某View的曝光，此时的问题是怎么唯一标识一个View，产品经理标识出来后，剩下的交给自动化程序处理，最终的理想形态就是可视化埋点，完全不需要开发参与埋点过程。</p>
+<h6 id="怎么唯一标识一个View？"><a href="#怎么唯一标识一个View？" class="headerlink" title="怎么唯一标识一个View？"></a>怎么唯一标识一个View？</h6><p>android内部是通过view的id标识的，但是id需要手动设置，没有设置id的View你就没法标识了。</p>
+<p>android的布局也是xml，所以可以使用前端的xpath的形式来定位标识View，每一级路径用View类型名称来标识，这样不存在没有id的情况；同一层级相同类型View用索引区别。</p>
+<p>例如ViewRootImpl/DecorView[0]/LinearLayout[0]/FrameLayout[0]。</p>
+<p>这种方式的缺点是：</p>
+<ul>
+<li>  可读性比较差，需要维护好View和事件名称映射表，定位元素不是很方便。</li>
+<li>  只要修改了布局，事件映射就废了，每次APP更新对于调整过的布局都要更新映射关系。</li>
+<li>  对于RecyclerView这种有视图回收机制的子View，需要额外增加元素位置来标识。</li>
+</ul>
+<p>可以尽量使用ConstraintLayout扁平化布局，这样调整布局的时候，相对路径还是不变的，减少布局的变动。</p>
+<h6 id="怎么区分View该使用哪种可见性变化回调？"><a href="#怎么区分View该使用哪种可见性变化回调？" class="headerlink" title="怎么区分View该使用哪种可见性变化回调？"></a>怎么区分View该使用哪种可见性变化回调？</h6><p>可以检查View的所有父View中有没有滚动容器，没有的话就可以用View.onWindowFocusChanged(hasFocus)来监听View的可见性。</p>
+<p>父View中有滚动容器，就什么也不做，单独处理。</p>
+<h6 id="自定义参数如何获取？"><a href="#自定义参数如何获取？" class="headerlink" title="自定义参数如何获取？"></a>自定义参数如何获取？</h6><p>如果参数在界面上有展示，就可以去获取对应的View，再获取View的值，可以做到可视化埋点。</p>
+<p>这种方式的一个问题是多语言下，对于View的文字获取可能是其他国家语言，并不统一。</p>
+<p>如果参数在界面上没有展示，可以通过调用预埋钩子函数，从预埋的参数列表中获取参数，比如每个页面都提供一个哈希表，存放这个特定业务页面相关数据，View中是可以获取Context的，一般情况下Context就是View所属页面的Activity，通过接口强制转换或者其他协议形式从页面的参数池里根据配置的key获取想要的参数值。</p>
+<h3 id="View点击事件"><a href="#View点击事件" class="headerlink" title="View点击事件"></a>View点击事件</h3><p>点击事件埋点的核心思路就是想办法拦截View点击事件，至于怎么唯一标识View、自定义参数如何获取，这些跟View曝光事件一样。</p>
+<p>根据实现方式，可以分为编译时和运行时两类方法。</p>
+<h4 id="运行时拦截"><a href="#运行时拦截" class="headerlink" title="运行时拦截"></a>运行时拦截</h4><p>运行时能找到拦截点就可以了。</p>
+<p><strong>反射替换View的OnClickListener属性</strong></p>
+<p>最直接的一个办法是遍历页面所有的View，通过反射替换View的OnClickListener属性为自定义OnClickListener，做一层代理，在自定义的OnClickListener中做埋点。</p>
+<p><strong>怎么遍历页面所有的View呢？</strong></p>
+<p>页面的View本身是一个View树，只要获取到根结点就可以遍历所有结点了，根结点是activity.getWindow().getDecorView()。</p>
+<p><strong>怎么识别并拦截动态添加的View？</strong></p>
+<p>可以给DecorView添加ViewTreeObserver.OnGlobalLayoutListener监听布局变化，就可以不遗漏动态添加的View。</p>
+<p><strong>怎么获取到所有页面？</strong></p>
+<p>在Application.onCreate()中通过registerActivityLifecycleCallback()注册ActivityLifecycleCallbacks，在其onActivityResumed(Activity activity)回调方法中做View的遍历，因为View树是在Activity onResume之后构建的。</p>
+<p><strong>优点</strong></p>
+<ul>
+<li>  App所有页面的View都可以拦截到，包括第三方SDK。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>  反射对运行时性能有损耗。</li>
+<li>  不在Activity里的View的点击是无法采集的，比如Dialog、PopupWindow等。</li>
+</ul>
+<h4 id="编译时拦截"><a href="#编译时拦截" class="headerlink" title="编译时拦截"></a>编译时拦截</h4><p>通过Gradle的Transform机制拦截dex处理过程，通过ASM进行字节码插桩，对所有onClick之类的点击事件的函数插入埋点代码。</p>
+<p><strong>优点</strong></p>
+<ul>
+<li>  运行时损耗比反射小。</li>
+<li>  所有类型的点击事件都可以拦截到。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>  布局文件中android:onClick属性指定的点击事件拦截不到，需要额外特殊处理。</li>
+<li>  会增加一点编译时间，但是代价小于运行时性能损耗。</li>
+</ul>
+<h1 id="数据存储"><a href="#数据存储" class="headerlink" title="数据存储"></a>数据存储</h1><h2 id="Android有哪些存储方式？"><a href="#Android有哪些存储方式？" class="headerlink" title="Android有哪些存储方式？"></a>Android有哪些存储方式？</h2><p>存储数据肯定是存文件了。</p>
+<p>根据数据组织形式，可以分为数据库和普通文件。</p>
+<p>数据库自己有一套机制帮我们弄好了，相对普通文件来说复杂一点。</p>
+<p>Android内置SQLite，直接调用SQLiteOpenHelper、SQLiteDatabase等相关类操作即可。</p>
+<p>普通文件存储数据，需要以某种格式序列化组织数据，这样方便写入和读取数据。缺点是序列化一般不能增量进行，只能全量更新，不太适合大数据操作。</p>
+<p>也有一些开源的自定义的存储方案，如Realm，WCDB、MMKV等，具体使用哪种需要看实际需求。</p>
+<h2 id="打点统计应该选用哪种存储方式？"><a href="#打点统计应该选用哪种存储方式？" class="headerlink" title="打点统计应该选用哪种存储方式？"></a>打点统计应该选用哪种存储方式？</h2><p>选择哪一种存储方式，需要看打点统计对于数据的处理需求。</p>
+<p>观察打点统计的数据流向和场景，可以发现：</p>
+<ul>
+<li>  App会频繁把数据存储到本地。</li>
+<li>  因为事件数量太多，上传数据需要批量上传，这就有批量查询数据的需求。</li>
+<li>  批量查询数据时，期望上传最早的一批数据，需要按时间排序事件，保证数据及时性。</li>
+</ul>
+<p>数据量大，查询需要有优化，用数据库比较合适。</p>
+<h2 id="数据表如何设计？"><a href="#数据表如何设计？" class="headerlink" title="数据表如何设计？"></a>数据表如何设计？</h2><p>打点事件至少对应一张事件表。</p>
+<h3 id="事件的唯一标识是什么？"><a href="#事件的唯一标识是什么？" class="headerlink" title="事件的唯一标识是什么？"></a>事件的唯一标识是什么？</h3><p>事件的唯一标识是事件id和事件发生时间的组合，可以给这两个属性联合起来增加唯一约束，这样在插入数据时也可以避免插入重复数据了。</p>
+<h3 id="事件表主键怎么定？"><a href="#事件表主键怎么定？" class="headerlink" title="事件表主键怎么定？"></a>事件表主键怎么定？</h3><p>主键一般使用整数型自增id，因为：</p>
+<ul>
+<li>  主键作为聚簇索引，整数比较是比较快的。</li>
+<li>  主键值是顺序的，就不会出现把新的记录插入到之前的磁盘页中，不会频繁的调整磁盘页，减少IO次数。</li>
+</ul>
+<h3 id="添加索引"><a href="#添加索引" class="headerlink" title="添加索引"></a>添加索引</h3><p>给事件发生时间的列添加索引，在按时间顺序批量查询事件时，可以减少IO次数。</p>
+<p>因为给列添加索引相当于构建了一个B+树，在B+树上搜索数据肯定是比顺序扫描所有数据要快的，这样也避免加载了不需要的磁盘页到内存中，所以可以提高读数据的效率。</p>
+<h3 id="添加check约束"><a href="#添加check约束" class="headerlink" title="添加check约束"></a>添加check约束</h3><p>需要给数据列做一些check约束，以免存储了非法的数据，对于服务端分析是没有意义的，没有必要浪费存储空间和网络流量。</p>
+<p>比如事件发生时间如果使用时间戳格式，那么数字应该是13位的，低于13位的数字情况就是非法的。</p>
+<p>约束也可以在SDK代码层做，SQL层做约束作为最后的保险。</p>
+<h3 id="事件的自定义参数怎么存储？"><a href="#事件的自定义参数怎么存储？" class="headerlink" title="事件的自定义参数怎么存储？"></a>事件的自定义参数怎么存储？</h3><p>事件可以添加任意的键值对参数，所有自定义的参数可以作为一个字段存储，以JSON或者其他节省存储空间的序列化的形式存储。</p>
+<h3 id="事件发生时的环境参数"><a href="#事件发生时的环境参数" class="headerlink" title="事件发生时的环境参数"></a>事件发生时的环境参数</h3><p>事件发生时会有很多环境参数，如网络、机型、APP版本号、系统版本、渠道等。</p>
+<p>有一些参数会不定期改变，如网络；有一些参数永久不变，如机型。总体来说变化的频次还是比较少的。</p>
+<p>也就是说，如果每个事件发生时的环境参数也存储在事件表里，会有比较多的冗余重复，增大表的体积，想到冗余重复，就会想到要分表。</p>
+<p><strong>不分表</strong></p>
+<p>如果不分表，处理数据时肯定比较方便，可以考虑压缩数据后再存储到数据库，减少数据表体积。</p>
+<p>压缩采用常见的无损压缩，例如LZ77+哈弗曼编码，也就是GZIP压缩，如果实测的随机压缩率能有80%左右，还是可以接受的，具体的压缩率跟数据本身的冗余度有关。</p>
+<p>所以环境参数的值最好也要是要用最少的字符来表示，比如系统版本的取值就写数字，不要写“Android 8“这种字符串，以减少存储空间。</p>
+<p><strong>分表</strong></p>
+<p>把环境参数单独弄一张表存储，环境参数行的唯一标识为所有环境参数拼接在一起的字符串的哈希值，这个哈希值在环境表里存一份，事件表里存一份，通过这个哈希值关联两者。</p>
+<p>这样节约一定的存储空间，但是查数据时处理起来比较麻烦，并且要多查一次表，为了统一处理方便，还是推荐不分表。</p>
+<h3 id="数据列大小限制"><a href="#数据列大小限制" class="headerlink" title="数据列大小限制"></a>数据列大小限制</h3><p>自定义的参数存储前一定要检查大小，避免单行数据过大。</p>
+<p>否则查询数据时，CursorWindow放不下大数据，会直接崩溃，报错如<code>java.lang.IllegalStateException: Couldn&#39;t read row 0, col 1 from CursorWindow. Make sure the Cursor is initialized correctly before accessing data from it.</code>。</p>
+<p><strong>CursorWindow是干什么的？</strong></p>
+<p>数据库查询的数据会存储在操作系统的共享内存中，可以跨进程访问，这样做是为了减少查询重复的数据，因为可能会有多个进程要查询同一个数据库。</p>
+<p>既然是共享内存，那肯定不能无限大，所以一般限定的大小是1MB或2MB左右。</p>
+<h2 id="需要使用ORM框架吗？"><a href="#需要使用ORM框架吗？" class="headerlink" title="需要使用ORM框架吗？"></a>需要使用ORM框架吗？</h2><p>ORM框架优点是简化编程，缺点是增加程序体积、降低一定的执行性能。</p>
+<p>我们这个表结构非常简单，不需要简化编程，所以不需要ORM框架，使用Android原生的SQLite相关的API就够用了。</p>
+<h2 id="跨进程埋点数据怎么处理？"><a href="#跨进程埋点数据怎么处理？" class="headerlink" title="跨进程埋点数据怎么处理？"></a>跨进程埋点数据怎么处理？</h2><p>Android已经提供了ContentProvider处理跨进程操作，把数据库操作封装在自定义的ContentProvider中。</p>
+<h3 id="自定义的ContentProvider需要单独放在一个进程吗？"><a href="#自定义的ContentProvider需要单独放在一个进程吗？" class="headerlink" title="自定义的ContentProvider需要单独放在一个进程吗？"></a>自定义的ContentProvider需要单独放在一个进程吗？</h3><p>单独放一个进程的优点：</p>
+<ul>
+<li>  主App崩溃了，不影响ContentProvider所在进程，如果ContentProvider进程有内存缓存就不受影响。</li>
+<li>  写数据不影响主App性能。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>  跨进程通信比进程内通信要慢一些，Binder通信要把数据封装为Parcel对象，还要经过内核缓冲区在进程之间拷贝，都是消耗，具体慢多少需要实测。</li>
+<li>  占用一个Binder线程，增大Binder阻塞的可能性。</li>
+<li>  Binder缓冲区大小有限制，不过一般埋点事件数据不会特别大。</li>
+</ul>
+<p>无特殊需求，可以让自定义ContentProvider放在主进程，即不指定进程。</p>
+<h2 id="数据怎么加密？"><a href="#数据怎么加密？" class="headerlink" title="数据怎么加密？"></a>数据怎么加密？</h2><p>两种思路：</p>
+<ul>
+<li>  加密整个数据库</li>
+<li>  数据内容加密后再写入数据库</li>
+</ul>
+<p>加密整个数据库可以使用主流的SQLCipher，开源免费，使用256-bit AES加密，安全可靠，但有一个很大的缺点是它会使APK体积增加好几个MB，所以这种方式不应该优先考虑。</p>
+<p>可以对数据内容加密后再写入数据库，这样实现简单，也不会增加APK体积。</p>
+<h3 id="数据内容应该怎么加密？"><a href="#数据内容应该怎么加密？" class="headerlink" title="数据内容应该怎么加密？"></a>数据内容应该怎么加密？</h3><p>加密分为对称加密和非对称加密：</p>
+<ul>
+<li>  对称加密，加密解密速度快，但是密钥一旦泄露就不安全。</li>
+<li>  非对称加密，加密解密速度慢，密钥分为公钥和私钥，私钥不会泄露，安全性有保障。</li>
+</ul>
+<p>所以可以把两种加密方式结合，既保证性加解密速度，也能保证安全，具体做法：</p>
+<ul>
+<li>  用对称加密方式来加密数据内容。</li>
+<li>  对称加密的密钥是随机生成的。</li>
+<li>  App内置非对称加密密钥，或从服务端动态配置下发。</li>
+<li>  用非对称加密的公钥加密对称加密的密钥。</li>
+<li>  加密后的对称加密的密钥也存储下来，一起上传给服务端。</li>
+<li>  服务端用私钥解密得到明文的对称加密密钥，再用对称加密密钥解密数据内容。</li>
+</ul>
+<h3 id="压缩和加密的顺序？"><a href="#压缩和加密的顺序？" class="headerlink" title="压缩和加密的顺序？"></a>压缩和加密的顺序？</h3><p>应该先压缩，再加密，因为：</p>
+<ul>
+<li>  数据量小，加密耗时就小。</li>
+<li>  加密前数据冗余特征明显，压缩率会比较高。</li>
+</ul>
+<h2 id="数据库操作应该用几个子线程？"><a href="#数据库操作应该用几个子线程？" class="headerlink" title="数据库操作应该用几个子线程？"></a>数据库操作应该用几个子线程？</h2><p>埋点系统对于数据库会有增、删、查三个需求。</p>
+<p>查询Android的源码可知，SQLite的增、删、查，最终都会从数据库连接池取出一个连接来执行。</p>
+<p>如果当前线程获取不到数据库连接，就会一直阻塞住，直到能获取到数据库连接。</p>
+<p>同时IO操作本身也是耗时的，所以数据库操作肯定要放在子线程执行，以免阻塞主线程，但是要设置几个子线程呢？</p>
+<p>增加和删除都是写数据库，写操作之间是互斥的，所以写操作只需要一个子线程，线程弄多了SQLite底层还是会互斥的。</p>
+<p>回滚日志模式下，读写是互斥的，这可以参考SQLite五种锁之间流转机制。</p>
+<p>WAL模式下，读写可以并发，仅在WAL日志回写到数据库文件时会阻塞读操作，但这发生在checkpoint，并不频繁。</p>
+<p>可以通过<code>SQLiteDatabase.enableWriteAheadLogging()</code>来开启WAL模式。</p>
+<p>目前Android系统的实现中，如果以回滚日志模式打开数据库，连接池中只会保持一个数据库连接。</p>
+<p>如果以WAL模式打开数据库，连接池中的最大连接数量则根据系统配置决定，默认配置是两个。</p>
+<p>所以开启WAL后，再弄单独弄一个线程用来查询数据，这样系统吞吐量就是最大的。</p>
+<h2 id="应该使用几个SQLiteDatabase对象？"><a href="#应该使用几个SQLiteDatabase对象？" class="headerlink" title="应该使用几个SQLiteDatabase对象？"></a>应该使用几个SQLiteDatabase对象？</h2><p>应该使用一个SQLiteDatabase对象来读写同一个数据库，业务层维持一个SQLiteOpenHelper实例就行了。</p>
+<p>因为SQLite底层也有自己的锁机制，锁是文件级的，如果使用多个SQLiteDatabase对象对同一个数据库做写操作，由于写与写之间互斥，阻塞时间久了就会抛出database is locked异常，这样使用多个SQLiteDatabase就显得没有必要了。</p>
+<h2 id="什么时候调用SQLiteDatabase-close-？"><a href="#什么时候调用SQLiteDatabase-close-？" class="headerlink" title="什么时候调用SQLiteDatabase.close()？"></a>什么时候调用SQLiteDatabase.close()？</h2><p>打点统计的生命周期贯穿整个App生命周期，所以可以不用close数据库对象。</p>
+<p>但在App空闲时，系统又会提示 <code>Leak found. Caused by: java.lang.IllegalStateException: SQLiteDatabase created and never closed</code>。</p>
+<p>我们可以在每次数据库操作后，设置一个10分钟的定时器，10分钟内没有新的数据库操作，就可以close数据库。</p>
+<p>注意要对数据库打开和关闭做引用计数，防止出现对一个已关闭的数据库对象还做操作而报错。</p>
+<h2 id="数据库操作的性能优化"><a href="#数据库操作的性能优化" class="headerlink" title="数据库操作的性能优化"></a>数据库操作的性能优化</h2><h3 id="优化插入数据"><a href="#优化插入数据" class="headerlink" title="优化插入数据"></a>优化插入数据</h3><p>一次SQL插入分为编译和执行两个阶段。</p>
+<p>编译阶段分为：</p>
+<ul>
+<li>  SQL语句解析</li>
+<li>  检查SQL语法错误、生成语法树</li>
+<li>  编译、优化</li>
+<li>  缓存</li>
+</ul>
+<p>执行阶段分为：</p>
+<ul>
+<li>  绑定参数</li>
+<li>  执行SQL操作</li>
+</ul>
+<p>可以在这个单次操作的过程中看有没有优化空间。</p>
+<p>多次操作也可以看看有没有优化空间，要从更整体的视角来审视。</p>
+<h4 id="缓存SQLiteStatement"><a href="#缓存SQLiteStatement" class="headerlink" title="缓存SQLiteStatement"></a>缓存SQLiteStatement</h4><p>SQLite API在每次写入时执行的步骤：</p>
+<ul>
+<li>  组装ContentValues</li>
+<li>  拼接SQL语句</li>
+<li>  将ContentValues转换为数组</li>
+<li>  创建SQLiteStatement</li>
+<li>  将SQLiteStatement与第3步的数组绑定</li>
+<li>  执行写入操作</li>
+</ul>
+<p>我们可以学习Room对数据插入的优化：</p>
+<ul>
+<li>  每个插入语句只创建一个SQLiteStatement，创建后就缓存下来，避免频繁的对象创建和字符串拼接。</li>
+<li>  插入数据时直接重新绑定SQLiteStatement的参数，绕过ContentValues的拼装。</li>
+<li>  执行写入操作。</li>
+</ul>
+<h4 id="批量插入"><a href="#批量插入" class="headerlink" title="批量插入"></a>批量插入</h4><p>如果数据插入非常频繁，应该把数据集中起来用一个事务批量插入，比多个事务频繁的一个个执行要快。</p>
+<h5 id="数据集中到什么程度才统一插入呢？"><a href="#数据集中到什么程度才统一插入呢？" class="headerlink" title="数据集中到什么程度才统一插入呢？"></a>数据集中到什么程度才统一插入呢？</h5><p>可以按时间和空间分别限定：</p>
+<ul>
+<li>  数据达到一定数量，比如10条。</li>
+<li>  要保存的数据线存储在内存缓存中，5秒内没有新数据要插入了，集中把内存中缓存的数据插入到数据库。</li>
+</ul>
+<h5 id="内存缓存应该用什么数据结构存储？"><a href="#内存缓存应该用什么数据结构存储？" class="headerlink" title="内存缓存应该用什么数据结构存储？"></a>内存缓存应该用什么数据结构存储？</h5><p>这里的内存缓存相当于一个生产者消费者模型，App业务层会往缓冲区插入事件数据，并且可能会从任意一个线程插入，统计SDK的子线程会从缓冲区取数据，所以考虑使用缓冲队列来实现内存缓存。</p>
+<p>缓冲队列自己实现需要手动加锁和线程同步逻辑，可以先看看JDK内置的缓冲队列能不能满足需求，JDK内置的缓冲队列有：</p>
+<ul>
+<li>  ArrayBlockingQueue：有界队列，数组实现，对操作系统缓存机制友好。</li>
+<li>  LinkedBlockingQueue：无界队列，链表实现，也可以传入队列大小作为有界队列。</li>
+<li>  LinkedTransferQueue：无界队列，链表实现；当 put 时，如果有等待的线程，就直接将元素 “交给” 等待者， 否则直接进入队列，效率比LinkedBlockingQueue更高一些。</li>
+<li>  SynchronousQueue：同步队列，无容量；写入操作不会立即返回，需要等待另一个线程来将这个元素拿走；同理，当一个读线程做读操作的时候，同样需要一个相匹配的写线程的写操作。</li>
+<li>  PriorityBlockingQueue：无界队列，数组实现，数据结构为二叉堆，可扩容，添加元素可以按优先级排序。</li>
+</ul>
+<p>有界队列的风险在于在缓冲区满又要存数据或缓冲区空又要取数据时会阻塞当前线程，如果当前线程是主线程，主线程往缓冲区添加数据有可能会产生阻塞，这是不能接受的。主线程最好是用无界队列。</p>
+<p>无界队列有内存溢出的风险，如果使用无界队列，必须要尽快取出无界队列中的数据，避免无限膨胀。</p>
+<h5 id="单缓冲队列的性能开销"><a href="#单缓冲队列的性能开销" class="headerlink" title="单缓冲队列的性能开销"></a>单缓冲队列的性能开销</h5><p>主要在：</p>
+<ul>
+<li>  生产者和消费者需要同时竞争一个缓冲区。</li>
+<li>  多个生产者竞争一个缓冲区。</li>
+</ul>
+<p>我们这里只有单个消费者，所以不存在多个消费者之间的竞争。</p>
+<p>多个生产者竞争一个缓冲区我们没办法避免，这就是业务特点。</p>
+<p>如果能减少生产者和消费者同时竞争一个缓冲区的几率，就可以提高性能。</p>
+<p>那么就需要让生产者和消费者各自拥有自己的缓冲区，在消费者缓冲区为空时，与生产者的缓冲区做交换，仅在缓冲区交换时生产者和消费者会产生竞争，这就是双缓冲队列。</p>
+<p>综上所述，内存缓存可以使用无界的双缓冲队列来实现。</p>
+<h5 id="App被强杀或崩溃后，内存缓存丢失了怎么办？"><a href="#App被强杀或崩溃后，内存缓存丢失了怎么办？" class="headerlink" title="App被强杀或崩溃后，内存缓存丢失了怎么办？"></a>App被强杀或崩溃后，内存缓存丢失了怎么办？</h5><p>为什么App被强杀后内存缓存会丢失呢？</p>
+<p>因为内存缓存在App进程的内存空间中，随App进程共存亡。</p>
+<p>如果缓存可以脱离App进程的约束，那么缓存就不会丢失了。</p>
+<p>所以有两个解决的方向：</p>
+<ul>
+<li>  在内存空间上脱离App进程约束。</li>
+<li>  在缓存介质上脱离App进程约束。</li>
+</ul>
+<p>内存空间上，我们如果用单独的进程来存储内存缓存，这样App进程不管发生什么都不会影响单独进程，可以把内存缓存放在自定义的ContentProvider中，自定义的ContentProvider再指定在单独的进程中运行。</p>
+<p>这种方式的主要缺点是频繁的跨进程通信效率会有一定降低。</p>
+<p>缓存介质上，如果能用文件存储缓存，就不受进程生命周期影响了。但是文件IO的速度肯定比内存操作速度慢，那有没有结合两者特点的东西存在呢？</p>
+<p>答案就是内存映射，Binder通信也用到了这个东西。内存映射把进程内的内存虚拟地址跟磁盘文件地址做映射，操作内存就是操作文件，性能却跟操作内存一样。</p>
+<p>所以可以基于内存映射机制设计一个双缓冲队列来实现内存缓存。</p>
+<p>不过内存映射需要预先分配指定的大小，是有界的，所以需要加速数据的读取处理，避免数据生产迅速达到存储上限。</p>
+<h3 id="优化查询数据"><a href="#优化查询数据" class="headerlink" title="优化查询数据"></a>优化查询数据</h3><ul>
+<li>  避免使用cursor.getColumnIndex()这个耗时操作，直接写死索引编号来获取数据列的值。</li>
+<li>  查询语句跟插入一样，做预编译，避免每次查询都要重新创建、拼接字符串。</li>
+</ul>
+<h2 id="存储空间不足怎么处理？"><a href="#存储空间不足怎么处理？" class="headerlink" title="存储空间不足怎么处理？"></a>存储空间不足怎么处理？</h2><p>在写数据时，要先检查一下存储空间，避免出错。</p>
+<p>空间不足时有两种策略：</p>
+<ul>
+<li>  删除最老的若干条数据，再存储新的数据。</li>
+<li>  丢弃新的数据，什么也不做。</li>
+</ul>
+<p>对于埋点系统第一种方式更合理一些。</p>
+<p>我们也可以对数据库文件做大小限制，防止数据库体积暴增。</p>
+<p>在每次插入数据前，都检查一下数据库文件大小是否超过设定的阈值，超过了就删除最老的若干条数据，再插入新数据。</p>
+<h1 id="数据上传策略"><a href="#数据上传策略" class="headerlink" title="数据上传策略"></a>数据上传策略</h1><h2 id="数据上传的需求"><a href="#数据上传的需求" class="headerlink" title="数据上传的需求"></a>数据上传的需求</h2><ul>
+<li>  及早的上传，保证数据及时性。</li>
+<li>  不对App性能造成影响。</li>
+</ul>
+<h2 id="为什么需要批量上传？"><a href="#为什么需要批量上传？" class="headerlink" title="为什么需要批量上传？"></a>为什么需要批量上传？</h2><p>要想最及时的上传数据，那肯定是刚打完点就上传。</p>
+<p>但是这样一来可能打点时没有网络，二来打点操作可能会很频繁性能损耗大。</p>
+<p>频繁的网络请求传输很小的数据量对性能影响还是比较大的，因为完成一个网络连接除了数据传输部分的耗时外，建立网络连接和释放连接也都是有耗时的，会占用CPU资源，也会消耗手机电量，还要传输很多辅助数据也会浪费流量。</p>
+<p>所以应该一次传输尽可能多的数据，也就是批量上传事件。</p>
+<h2 id="一次批量上传多少条数据合适？"><a href="#一次批量上传多少条数据合适？" class="headerlink" title="一次批量上传多少条数据合适？"></a>一次批量上传多少条数据合适？</h2><p>如果数量太小，浪费资源。</p>
+<p>如果数量太大，容易在弱网环境下发生超时，超时就重传，重传就会占用CPU、网络、电量等资源，所以尽可能一次性传完。</p>
+<p>具体数量多少可以通过公式求得，即：</p>
+<p><code>事件数量 = 一次网络请求合理的数据大小 / 单个事件大小</code></p>
+<p>那么问题就转变为：</p>
+<h3 id="怎么知道一次网络请求合理的数据大小？"><a href="#怎么知道一次网络请求合理的数据大小？" class="headerlink" title="怎么知道一次网络请求合理的数据大小？"></a>怎么知道一次网络请求合理的数据大小？</h3><p>App肯定还有其他业务请求网络，我们可以汇总一段时间内其他业务请求成功的网络API数据流量，求得一个算数平均的网络请求数据包大小值。</p>
+<p>这样测算的好处是，可以随着网络情况来动态调整批量上传的事件数量。</p>
+<p>也可以静态随机测算，设置一个固定值大小，如1MB。</p>
+<h3 id="怎么知道单个事件的大小？"><a href="#怎么知道单个事件的大小？" class="headerlink" title="怎么知道单个事件的大小？"></a>怎么知道单个事件的大小？</h3><p>汇总一段时间内的打点事件大小和数量，求得一个算数平均值大小。</p>
+<p>可以隔一段时间动态计算，或者预先静态计算好固定值。</p>
+<h2 id="在什么时候上传比较好？"><a href="#在什么时候上传比较好？" class="headerlink" title="在什么时候上传比较好？"></a>在什么时候上传比较好？</h2><p>为了保证及时性，可以隔一段时间检查一下是否还有数据没有上传，有的话全部上传。</p>
+<p>为了不影响App主功能，可以等到App进入后台后上传。</p>
+<p>一句话总结就是，需要在后台定期执行上传任务。</p>
+<h2 id="Android如何实现后台定期执行任务呢？"><a href="#Android如何实现后台定期执行任务呢？" class="headerlink" title="Android如何实现后台定期执行任务呢？"></a>Android如何实现后台定期执行任务呢？</h2><p>五种方式：</p>
+<ul>
+<li>  Service</li>
+<li>  <a target="_blank" rel="noopener" href="https://developer.android.com/training/scheduling/alarms?hl=zh-cn#best-practices">AlarmManager</a></li>
+<li>  <a target="_blank" rel="noopener" href="https://developer.android.com/training/sync-adapters/running-sync-adapter?hl=zh-cn">SyncAdapter</a></li>
+<li>  <a target="_blank" rel="noopener" href="https://developer.android.com/reference/android/app/job/JobScheduler?hl=en">JobScheduler</a></li>
+<li>  <a target="_blank" rel="noopener" href="https://developer.android.com/topic/libraries/architecture/workmanager?hl=zh-cn">WorkManager</a></li>
+</ul>
+<p>应该使用哪一种方案可以参考Android官方的<a target="_blank" rel="noopener" href="https://developer.android.com/guide/background?hl=zh-cn">后台处理指南</a>。</p>
+<h3 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h3><p>Service是可以用来做长时间后台任务的，但往往是跟用户有一定交互关系的任务，例如开启一个前台服务播放音乐。</p>
+<p>Android 8 开始，只允许前台App创建和使用后台Service，限制后台Service无限运行。</p>
+<p>所以没办法让Service始终静默的保活来执行周期性的任务。</p>
+<h3 id="AlarmManager"><a href="#AlarmManager" class="headerlink" title="AlarmManager"></a>AlarmManager</h3><p>AlarmManager可以在App生命周期之外定时执行任务，可以精确地设定任务执行时间。</p>
+<p>缺点：</p>
+<ul>
+<li>  相比于JobScheduler、SyncAdaper灵活性有限，支持的功能少。</li>
+<li>  不跟其他的闹钟集中一起唤醒，不利于节约手机整体电量。</li>
+<li>  所以Android 6 引入了<a target="_blank" rel="noopener" href="https://developer.android.com/training/monitoring-device-state/doze-standby?hl=zh-cn">低电耗模式（Doze）和应用待机模式（App Standby）</a>，Android 9 引入了<a target="_blank" rel="noopener" href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn">应用待机存储分区（App Standby Buckets）</a>，这些电量优化措施会导致AlarmManager不能准确的按照设定的时间点执行任务。</li>
+</ul>
+<p><strong>低电耗模式</strong></p>
+<blockquote>
+<p>如果用户未插接设备的电源，在屏幕关闭的情况下，让设备在一段时间内保持不活动状态，那么设备就会进入低电耗模式。在低电耗模式下，系统会尝试通过限制应用访问占用大量网络和 CPU 资源的服务来节省电量。它还会阻止应用访问网络，并延迟其作业、同步和标准闹钟。</p>
+<p>系统会定期退出低电耗模式一小段时间，让应用完成其延迟的活动。在此维护期内，系统会运行所有待处理的同步、作业和闹钟，并允许应用访问网络。</p>
+<p>在每个维护期结束时，系统会再次进入低电耗模式，暂停网络访问并推迟作业、同步和闹钟。随着时间的推移，系统安排维护期的次数越来越少，这有助于在设备未连接至充电器的情况下长期处于不活动状态时降低耗电量。</p>
+<p>一旦用户通过移动设备、打开屏幕或连接至充电器唤醒设备，系统就会立即退出低电耗模式，并且所有应用都会恢复正常活动。</p>
+<p>低电耗模式尤其可能会影响 <code>[AlarmManager](&lt;https://developer.android.com/reference/android/app/AlarmManager?hl=zh-cn&gt;)</code> 闹钟和定时器管理的活动，因为当系统处于低电耗模式时，不会触发 Android 5.1（API 级别 22）或更低版本中的闹钟。</p>
+<p>为了帮助安排闹钟，Android 6.0（API 级别 23）引入了两种新的 <code>[AlarmManager](&lt;https://developer.android.com/reference/android/app/AlarmManager?hl=zh-cn&gt;)</code> 方法：<code>[setAndAllowWhileIdle()](&lt;https://developer.android.com/reference/android/app/AlarmManager?hl=zh-cn#setAndAllowWhileIdle(int,%20long,%20android.app.PendingIntent)&gt;)</code> 和 <code>[setExactAndAllowWhileIdle()](&lt;https://developer.android.com/reference/android/app/AlarmManager?hl=zh-cn#setExactAndAllowWhileIdle(int,%20long,%20android.app.PendingIntent)&gt;)</code>。通过这些方法，您可以设置即使设备处于低电耗模式也会触发的闹钟。</p>
+</blockquote>
+<p><strong>应用待机模式</strong></p>
+<blockquote>
+<p>用户在一段时间内未使用应用，并且应用没有前台进程时，应用就进入了待机模式。</p>
+<p>当应用处于应用待机模式时，闹钟会像设备处于低电耗模式一样被延迟。</p>
+</blockquote>
+<p><strong>应用待机存储分区</strong></p>
+<blockquote>
+<p>应用待机存储分区有助于系统根据应用的使用时间新近度和使用频率对应用资源请求确定优先级。 根据应用使用模式，每个应用都会被放置在五个优先级存储分区之一中。系统会根据应用所在的存储分区限制每个应用可用的设备资源。</p>
+<p>这些存储分区为：</p>
+<ul>
+<li>  <a target="_blank" rel="noopener" href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn#active-bucket">活跃</a>：应用目前正在使用中，或者最近刚刚使用过</li>
+<li>  <a target="_blank" rel="noopener" href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn#working-set-bucket">工作集</a>：应用会定期使用</li>
+<li>  <a target="_blank" rel="noopener" href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn#frequent-bucket">常用</a>：应用会经常使用，但不会每天使用</li>
+<li>  <a target="_blank" rel="noopener" href="https://developer.android.com/topic/performance/appstandby?hl=zh-cn#rare-bucket">极少使用</a>：应用不经常使用</li>
+</ul>
+<p>此外，对于已安装但从未运行过的应用，还有一个特殊的<strong>从未使用</strong>存储分区。系统会对这些应用施加严格的限制。</p>
+<p>如果某个应用位于“活跃”存储分区中，系统不会对应用的作业、警报或 FCM 消息施加任何限制。</p>
+<p>如果某个应用位于工作集内，系统会对其运行作业和触发警报的频率施加轻微的限制。</p>
+<p>如果某个应用位于“常用”存储分区中，则系统对其运行作业和触发警报的频率施加更严格的限制。</p>
+<p>如果某个应用位于“极少使用”存储分区中，则系统对其运行作业、触发警报以及接收高优先级 FCM 消息的频率施加严格的限制。系统还会限制应用连接到互联网的能力。</p>
+<p>如需了解详情，请参阅<a target="_blank" rel="noopener" href="https://developer.android.com/topic/performance/power/power-details?hl=zh-cn">电源管理限制</a>。</p>
+</blockquote>
+<h3 id="SyncAdapter"><a href="#SyncAdapter" class="headerlink" title="SyncAdapter"></a>SyncAdapter</h3><p>同步适配器是用来专门同步客户端和服务端数据的，由Android系统来调度管理，可以脱离于App生命周期，这样有利于节省手机整体电量。</p>
+<p>缺点：要创建自定义的身份验证器和ContentProvider，实现起来比较复杂。</p>
+<p>功能和JobScheduler、WorkManager区别不大。</p>
+<h3 id="JobScheduler"><a href="#JobScheduler" class="headerlink" title="JobScheduler"></a>JobScheduler</h3><p>Android 5.0提供了Jobscheduler，主要用于在未来某个时间下满足一定条件时触发执行某项任务。</p>
+<p>JobSchedule的宗旨就是把一些不是特别紧急的任务放到更合适的时机批量处理。这样做有两个好处：避免频繁的唤醒硬件模块，造成不必要的电量消耗以及避免在不合适的时间(例如低电量情况下、弱网络或者移动网络情况下的)执行过多的任务消耗电量。</p>
+<p>使用JobScheduler替代WakeLock和Alarm运行任务，是因为后者在每个APP中是相互独立的，而JobScheduler运行在操作系统层面。</p>
+<p>例如，如果10个APP每小时唤醒设备一次，由于这些任务的执行时机不可能同步，因此使用WakeLock和Alarm一个小时内设备被唤醒了10次！但由于JobScheduler是操作系统层面的，因此系统会执行设备唤醒的调度工作，每小时设备的唤醒次数会显著减少。</p>
+<h3 id="WorkManager"><a href="#WorkManager" class="headerlink" title="WorkManager"></a>WorkManager</h3><p>WorkManager作用和Jobscheduler一样，只不过可以最低运行在Android 4.0上。</p>
+<p>在Android 6.0以上，WorkManager使用Jobscheduler。</p>
+<p>在Android 4.0 到 Android 5.1 之间，使用Firebase JobDispatcher，如果Firebase JobDispatcher不可用，再用AlarmManager和BroadcaseReceiver。</p>
+<p>使用WorkManager的好处就是不需要考虑兼容性。</p>
+<p>WorkManager 适用于需要<strong>可靠运行</strong>的工作，即使用户导航离开屏幕、退出应用或重启设备也不影响工作的执行。例如：</p>
+<ul>
+<li>  向后端服务发送日志或分析数据</li>
+<li>  定期将应用数据与服务器同步</li>
+</ul>
+<p>WorkManager 不适用于那些可在应用进程结束时安全终止的进程内后台工作，也不适用于需要立即执行的工作。</p>
+<h3 id="最终选择：WorkManager"><a href="#最终选择：WorkManager" class="headerlink" title="最终选择：WorkManager"></a>最终选择：WorkManager</h3><p>对于数据上传，我们对时间的精确度并没有要求，只要保证能周期性的上传就行了。</p>
+<p>即使可以进行准时的周期性的数据上传，所有用户集中在某个时间点上传数据对于服务端的压力也会很大，得需要让数据上传时间一定的随机性。Android的电量优化策略，就制造了后台任务执行的随机性。</p>
+<p>所以用WorkManager的实用性是最好的。</p>
+<p>可以给WorkManager添加一个周期性的任务，每隔一个小时执行。</p>
+<p>再做一些优化配置：</p>
+<ul>
+<li>  当设备处于“电量不足模式”时，不允许执行任务。</li>
+<li>  用户设备处于空闲状态，才允许执行任务。</li>
+</ul>
+<p>这样最大化节约设备整体电量，同时避免影响App运行时性能。</p>
+<h2 id="重试策略"><a href="#重试策略" class="headerlink" title="重试策略"></a>重试策略</h2><p>如果网络请求报错，上传失败，应当要重试请求。</p>
+<p>但请求的频次应当是指数性衰减的，减缓对服务端的压力，恰好WorkManager支持设置这种重试策略。</p>
+<h1 id="网络上传"><a href="#网络上传" class="headerlink" title="网络上传"></a>网络上传</h1><h2 id="选用哪个网络库？"><a href="#选用哪个网络库？" class="headerlink" title="选用哪个网络库？"></a>选用哪个网络库？</h2><p>作为通用基础SDK，一般不依赖第三方库，因为会给SDK增加额外的体积。</p>
+<p>没有特殊需求，用系统默认的HttpURLConnection即可，Android 4.4以后HttpURLConnection底层实现是Okhttp，可以享受到Okhttp的优化。</p>
+<p>源码证明：<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/external/okhttp/+/master"></a><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/external/okhttp/+/master">https://android.googlesource.com/platform/external/okhttp/+/master</a></p>
+<h2 id="怎么保证数据传输安全？"><a href="#怎么保证数据传输安全？" class="headerlink" title="怎么保证数据传输安全？"></a>怎么保证数据传输安全？</h2><p>网络请求用https协议就好了，好处：</p>
+<ul>
+<li>  传输内容会加密。</li>
+<li>  数字证书体系会验证通信双方身份。</li>
+<li>  传输内容的哈希指纹有非对称加密保护可以检测出内容有没有被篡改。</li>
+</ul>
+<p>不用也不行，因为Android 9.0 默认禁止网络请求的明文传输，也就是禁止使用http通信了。</p>
+<p>通过<code>res/xml/network_security_config.xml</code>配置文件，不信任用户添加的证书，可以禁止https抓包。</p>
+<h2 id="网络传输可以做哪些性能优化？"><a href="#网络传输可以做哪些性能优化？" class="headerlink" title="网络传输可以做哪些性能优化？"></a>网络传输可以做哪些性能优化？</h2><p>得把一个网络请求的过程列出来，然后看每一步能否做优化，优化无非也就是从时间和空间两个维度考虑。</p>
+<p>一个https请求过程：</p>
+<ul>
+<li>  域名解析</li>
+<li>  TCP三次握手、TLS握手建立连接</li>
+<li>  发送http报文</li>
+</ul>
+<h3 id="HttpDNS"><a href="#HttpDNS" class="headerlink" title="HttpDNS"></a><strong>HttpDNS</strong></h3><p>域名解析可以考虑使用HttpDNS，可以防止域名劫持，不用递归请求域名服务器也加速了域名解析。</p>
+<h3 id="复用连接"><a href="#复用连接" class="headerlink" title="复用连接"></a><strong>复用连接</strong></h3><p>如果连接能复用，就可以避免频繁创建连接造成的不必要的耗时。</p>
+<p>HTTP/1.1提出了Keep-Alive机制：当一个HTTP请求的数据传输结束后，TCP连接不立即释放，如果此时有新的HTTP请求，且其请求的Host通上次请求相同，则可以直接复用为释放的TCP连接，从而省去了TCP的释放和再次创建的开销，减少了网络延时。</p>
+<p>Okhttp恰好实现了一个连接池管理，最多可以保持5个地址的连接能够keep-alive，每个keep-alive时长为5分钟。</p>
+<p>使用HttpURLConnection做网络请求，底层就是Okhttp实现，不需要额外做连接池优化处理。</p>
+<h3 id="减少Http报文体积"><a href="#减少Http报文体积" class="headerlink" title="减少Http报文体积"></a><strong>减少Http报文体积</strong></h3><p>可以从两个方向考虑：</p>
+<ul>
+<li>  对报文内容做整体压缩</li>
+<li>  报文内容本身在表达上做精简</li>
+</ul>
+<p>报文内容整体压缩：</p>
+<p>一般都是采用gzip压缩，gzip压缩底层实现是，先通过基于短语字典的LZ77算法压缩报文得到短语表示的内容，再用哈夫曼编码对冗余的短语表达进行压缩，两者都是无损压缩，压缩效果取决于报文内容自身的冗余度（信息熵）。</p>
+<p>报文内容表达上精简：</p>
+<ul>
+<li>  如果报文内容是key-value的形式，key又是比较固定的，我们可以在定义key时用英文缩写，避免使用长单词，这样就节约了内容体积。</li>
+<li>  如果能不产生多余的内容表达就不产生，不要存储冗余信息，因为数据量一大，冗余就会放大无数倍。</li>
+</ul>
+<h3 id="合并网络请求"><a href="#合并网络请求" class="headerlink" title="合并网络请求"></a>合并网络请求</h3><p>在讨论数据上传策略时提到了，要批量上传事件数据，避免一次请求的数据量过小。</p>
+<h3 id="一个tcp连接执行多个http请求"><a href="#一个tcp连接执行多个http请求" class="headerlink" title="一个tcp连接执行多个http请求"></a><strong>一个tcp连接执行多个http请求</strong></h3><p>如果在同一个tcp连接上同时发起多个http请求，也就是前一个http请求的响应还没有收到就发送第二个http请求了，由于http请求和响应并没有序号标识，所以无法区分收到的响应是哪个http请求的，所以一个tcp连接里只能串行的执行http请求。</p>
+<p>如果要在一个tcp连接里执行多个http请求，就要对http请求包做分片和标记，这就是http2，这样网络传输整体吞吐量就变大了。</p>
+<p>可以让服务端支持http2，客户端通过http2协议来传输，Okhttp支持http2协议通信。</p>
+<h1 id="统计口径"><a href="#统计口径" class="headerlink" title="统计口径"></a>统计口径</h1><p>数据收集后就要分析，分析数据就需要统计一些指标，指标需要定义出明确的行为边界，比如：</p>
+<ul>
+<li>  怎样区分打点事件是属于哪个用户的行为？</li>
+<li>  怎样算一个活跃用户？</li>
+<li>  App使用时长怎么计算？</li>
+</ul>
+<h2 id="怎么唯一标识一个用户？"><a href="#怎么唯一标识一个用户？" class="headerlink" title="怎么唯一标识一个用户？"></a>怎么唯一标识一个用户？</h2><p>如果App有用户系统，唯一标识一个用户不是应该用用户id吗。</p>
+<p>但是往往有隐私政策的要求，统计数据在非授权情况下一般只能匿名采集，不能把行为数据采集关联到具体的用户身上。</p>
+<p>传统方式是通过硬件标识符来唯一表示用户，如MAC地址、IMEI等，使用这些硬件标识符有几个问题：</p>
+<ul>
+<li>  需要额外申请权限，隐私性不好解释。</li>
+<li>  兼容性有很大问题，一些手机厂商的硬件标识符都是相同的，无法区分用户，会出现地址漂移。</li>
+<li>  Android高版本逐渐限制硬件标识符的获取，客观上无法保证唯一性。</li>
+</ul>
+<p>综上，可以随机生成一个随机的ID，如UUID.randomUUID().toString()，并保存在本地，作为用户的唯一标识。</p>
+<p>用户一旦卸载App或清除数据，用户唯一标识将重新生成。</p>
+<p>所以这个唯一标识也可以理解为安装ID。</p>
+<p>安装ID：</p>
+<p>缺点：同一个设备的用户可能会被标记为多个用户。</p>
+<p>优点：绝对唯一不会重复，匿名性好。</p>
+<p>参考：</p>
+<ul>
+<li>  Android官方：<a target="_blank" rel="noopener" href="https://developer.android.com/training/articles/user-data-ids?hl=zh-cn">唯一标识符最佳做法</a></li>
+</ul>
+<h2 id="怎样算活跃用户？"><a href="#怎样算活跃用户？" class="headerlink" title="怎样算活跃用户？"></a>怎样算活跃用户？</h2><p>这个定义针对不同类型的App都有不同的标准，比如：</p>
+<ul>
+<li>  如果是视频类的App，可以规定观看了视频才算活跃用户。</li>
+<li>  如果是购物类的App，可以规定用户要浏览了商品或购买了商品才算活跃用户。</li>
+</ul>
+<p>标准不统一对于SDK肯定是不能实现的，对于SDK只能按照最标准化、最基本的方式来判断，比如用户至少得打开App使用一段时间。</p>
+<p>至于用户做了哪些行为动作可以通过漏斗分析来过滤统计出来。</p>
+<h3 id="怎样才算使用了App？"><a href="#怎样才算使用了App？" class="headerlink" title="怎样才算使用了App？"></a>怎样才算使用了App？</h3><p>当然是打开页面进行交互就算使用了App。</p>
+<p>但是页面只是App四大组件的其中之一，Service、Content Provider、Broadcast Receiver都是可以单独启动的。</p>
+<h3 id="无页面的组件启动也算使用了App吗？"><a href="#无页面的组件启动也算使用了App吗？" class="headerlink" title="无页面的组件启动也算使用了App吗？"></a>无页面的组件启动也算使用了App吗？</h3><p>从功能逻辑上说，肯定算是使用了App。</p>
+<p>但是我们的目标是想统计哪些用户跟App产生了交互，因为没有用户交互的话，不会产生用户价值，统计了也没有意义，而非页面组件跟用户都是没有交互的。</p>
+<p>比如通讯录App的Content Provider提供给其他所有App通讯录的数据，其他App通过Content Provider查询通讯录联系人时，没有跟通讯录App有什么界面上的交互，最大的价值可能就是用户会觉得通讯录App有点用不会删除，提高了通讯录App的留存率。</p>
+<h3 id="启动App页面才算使用了App"><a href="#启动App页面才算使用了App" class="headerlink" title="启动App页面才算使用了App"></a>启动App页面才算使用了App</h3><p>所以呢，我们定义打开App页面才算使用了App，可以通过Application.registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks)很方便的统计Activity的页面访问。</p>
+<h2 id="怎么统计App使用时长？"><a href="#怎么统计App使用时长？" class="headerlink" title="怎么统计App使用时长？"></a>怎么统计App使用时长？</h2><p>App启动时计时，App结束时用当前时间减去App启动时的计时，得到App使用时长。</p>
+<h3 id="App启动具体在哪？"><a href="#App启动具体在哪？" class="headerlink" title="App启动具体在哪？"></a>App启动具体在哪？</h3><p>我们已经定义了App打开页面才算使用了。</p>
+<p>所以对于App启动，只要有任意一个Activity执行到onResume()，就算开始使用，此时可以计时了。</p>
+<h3 id="App结束具体在哪？"><a href="#App结束具体在哪？" class="headerlink" title="App结束具体在哪？"></a>App结束具体在哪？</h3><p>App打开页面就算启动了，那么反过来，App退出所有页面就算结束。</p>
+<h4 id="怎么监听App退出了所有的页面？"><a href="#怎么监听App退出了所有的页面？" class="headerlink" title="怎么监听App退出了所有的页面？"></a>怎么监听App退出了所有的页面？</h4><p>通过Application.registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks)监听App所有Activity生命周期，在Activity执行到onResume()时做计数，在Activity执行到onPause()时减少计数，如果减少到0，说明没有可见的页面了，就算退出了所有的页面。</p>
+<p>这种方式包含了：</p>
+<ul>
+<li>  按返回键退出页面</li>
+<li>  按Home减退出页面</li>
+</ul>
+<h4 id="如果快速切换到桌面回到我们的App怎么处理？"><a href="#如果快速切换到桌面回到我们的App怎么处理？" class="headerlink" title="如果快速切换到桌面回到我们的App怎么处理？"></a>如果快速切换到桌面回到我们的App怎么处理？</h4><p>我们得从统计的目的来看，我们统计App时长是想观察用户跟App有持续的交互的时间有多长。</p>
+<p>如果用户切换到桌面，没一会儿又回到App，用户还是一直在想使用App的，可能是中途为了看一些其他的信息才切换出去。</p>
+<p>所以可以设置一个定时器，在App所有Activity都onPause后，设置一个如30秒的定时器：</p>
+<ul>
+<li>  如果30秒内有Activity执行onResume，说明用户又回来了，App还不能算结束。</li>
+<li>  如果30秒内没有Activity执行onResume，App就算结束了，可以计算App使用时长了。</li>
+</ul>
+<p>计算App结束时间的时候这30秒不算在内。</p>
+<h4 id="App崩溃、强杀方式退出页面，怎么计算App使用时长？"><a href="#App崩溃、强杀方式退出页面，怎么计算App使用时长？" class="headerlink" title="App崩溃、强杀方式退出页面，怎么计算App使用时长？"></a>App崩溃、强杀方式退出页面，怎么计算App使用时长？</h4><p>App非正常退出，就没办法等所有Activity都onPause后设置定时器来检查App是否结束了。</p>
+<p>那么只能等下次启动时，补记App结束事件，怎么补记呢？</p>
+<p>我们可以在每次Activity.onPause()时本地存储一个待定的App结束时间，等到下次Activity.onStart()时检查当前时间减去之前存储的待定的App结束时间，查看差值是否超过30秒，超过说明App已经结束了。</p>
+<p>这种做法的缺点是：</p>
+<ul>
+<li>  最后一个运行的Activity强制退出后统计不到它的使用时长。</li>
+<li>  用户再也不去启动App，就丢失了这次的App使用时长统计。</li>
+</ul>
+<p>在没有更好的办法之前，只能暂时使用这个相对准确的方法。</p>
+<h3 id="App有多个进程如何判定和计算App使用时长？"><a href="#App有多个进程如何判定和计算App使用时长？" class="headerlink" title="App有多个进程如何判定和计算App使用时长？"></a>App有多个进程如何判定和计算App使用时长？</h3><p>多个进程都是属于App的，所以每个进程的Activity都算App的页面。</p>
+<p>需要注意的是，在Activity.onPause()存储本地数据和Activty.onResume()读取本地数据时，需要跨进程访问的问题，可以使用ContentProvider + SharedPreferences来实现。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Ricky.L
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://rickyqliu.github.io/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Android%E5%9F%8B%E7%82%B9%E7%BB%9F%E8%AE%A1SDK%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/" title="Android埋点统计SDK设计思路">http://rickyqliu.github.io/系统设计/Android埋点统计SDK设计思路/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" rel="tag"># 系统设计</a>
+              <a href="/tags/%E5%9F%8B%E7%82%B9%E7%BB%9F%E8%AE%A1/" rel="tag"># 埋点统计</a>
+              <a href="/tags/SDK/" rel="tag"># SDK</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Android%20-%20%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E6%8F%92%E4%BB%B6%E5%8C%96%E6%A1%86%E6%9E%B6/" rel="prev" title="Android - 如何设计一个插件化框架？">
+      <i class="fa fa-chevron-left"></i> Android - 如何设计一个插件化框架？
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%9D%A2%E8%AF%95%E5%AE%98%EF%BC%9A%E4%BD%A0%E6%9C%89%E4%BB%80%E4%B9%88%E6%83%B3%E9%97%AE%E7%9A%84%EF%BC%9F/" rel="next" title="面试官：你有什么想问的？">
+      面试官：你有什么想问的？ <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%80%9D%E8%B7%AF"><span class="nav-number">1.</span> <span class="nav-text">整体思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%94%B6%E9%9B%86"><span class="nav-number">2.</span> <span class="nav-text">数据收集</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%8B%E7%82%B9%E6%96%B9%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">埋点方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%8B%E5%8A%A8%E5%9F%8B%E7%82%B9"><span class="nav-number">2.1.1.</span> <span class="nav-text">手动埋点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E5%9F%8B%E7%82%B9"><span class="nav-number">2.1.2.</span> <span class="nav-text">自动埋点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%AA%E4%BA%9B%E5%9C%BA%E6%99%AF%E9%80%82%E5%90%88%E8%87%AA%E5%8A%A8%E5%9F%8B%E7%82%B9%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">哪些场景适合自动埋点？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E5%9F%8B%E7%82%B9%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%EF%BC%9F"><span class="nav-number">2.3.</span> <span class="nav-text">自动埋点如何实现？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A1%B5%E9%9D%A2%E8%AE%BF%E9%97%AE%E4%BA%8B%E4%BB%B6"><span class="nav-number">2.3.1.</span> <span class="nav-text">页面访问事件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Activity"><span class="nav-number">2.3.1.1.</span> <span class="nav-text">Activity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Fragment"><span class="nav-number">2.3.1.2.</span> <span class="nav-text">Fragment</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3Fragment%E8%AE%BF%E9%97%AE%E5%85%A5%E5%8F%A3%E4%B8%8D%E7%BB%9F%E4%B8%80%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">2.3.1.2.1.</span> <span class="nav-text">怎么解决Fragment访问入口不统一的问题？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E4%B8%80%E4%B8%AAFragment%E6%98%AF%E5%A4%84%E4%BA%8E%E6%98%BE%E7%A4%BA%E8%BF%98%E6%98%AF%E9%9A%90%E8%97%8F%E5%91%A2%EF%BC%9F"><span class="nav-number">2.3.1.2.2.</span> <span class="nav-text">如何判断一个Fragment是处于显示还是隐藏呢？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E7%AE%97Fragment%E8%AE%BF%E9%97%AE%E5%BC%80%E5%A7%8B%E5%92%8C%E7%BB%93%E6%9D%9F%EF%BC%9F"><span class="nav-number">2.3.1.2.3.</span> <span class="nav-text">什么时候算Fragment访问开始和结束？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#FragmentTransaction-setMaxLifecycle-%E6%9C%89%E4%BB%80%E4%B9%88%E6%95%88%E6%9E%9C%EF%BC%9F"><span class="nav-number">2.3.1.2.4.</span> <span class="nav-text">FragmentTransaction.setMaxLifecycle()有什么效果？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E8%87%AA%E5%8A%A8%E7%9B%91%E5%90%ACFragment%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%8F%98%E5%8C%96%EF%BC%9F"><span class="nav-number">2.3.1.2.5.</span> <span class="nav-text">怎么自动监听Fragment生命周期变化？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%BA%94%E8%AF%A5%E9%80%89%E7%94%A8%E5%93%AA%E4%B8%AA%E5%AD%97%E8%8A%82%E7%A0%81%E6%8F%92%E6%A1%A9%E5%B7%A5%E5%85%B7%EF%BC%9F"><span class="nav-number">2.3.1.2.6.</span> <span class="nav-text">应该选用哪个字节码插桩工具？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Fragment%E5%B5%8C%E5%A5%97%E6%97%B6%E5%AD%90Fragment%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%EF%BC%9F"><span class="nav-number">2.3.1.2.7.</span> <span class="nav-text">Fragment嵌套时子Fragment生命周期怎么处理？</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#View"><span class="nav-number">2.3.1.3.</span> <span class="nav-text">View</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E6%A0%B7%E6%89%8D%E7%AE%97%E6%9C%89%E6%95%88%E7%9A%84View%E6%9B%9D%E5%85%89%EF%BC%9F"><span class="nav-number">2.3.1.3.1.</span> <span class="nav-text">怎么样才算有效的View曝光？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#View%E5%8F%AF%E8%A7%81%E5%8C%BA%E5%9F%9F%E5%A4%A7%E4%BA%8E%E4%B8%80%E5%8D%8A%E6%80%8E%E4%B9%88%E5%88%A4%E6%96%AD%EF%BC%9F"><span class="nav-number">2.3.1.3.2.</span> <span class="nav-text">View可见区域大于一半怎么判断？</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E9%99%90%E5%88%B6%EF%BC%9AView%E7%BB%98%E5%88%B6%E5%AE%8C%E6%88%90%E5%90%8E%E8%B0%83%E7%94%A8"><span class="nav-number">2.3.1.3.2.1.</span> <span class="nav-text">限制：View绘制完成后调用</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%9B%91%E5%90%ACView%E5%9C%A8%E5%B1%8F%E5%B9%95%E4%B8%AD%E5%81%9C%E7%95%99%E6%97%B6%E9%97%B4%EF%BC%9F"><span class="nav-number">2.3.1.3.3.</span> <span class="nav-text">怎么监听View在屏幕中停留时间？</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%9F%A5%E9%81%93ScrollView%E9%87%8C%E7%9A%84View%E5%8F%AF%E4%B8%8D%E5%8F%AF%E8%A7%81%EF%BC%9F"><span class="nav-number">2.3.1.3.3.1.</span> <span class="nav-text">怎么知道ScrollView里的View可不可见？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#ScrollView%E7%9A%84View%E5%8F%AF%E8%A7%81%E5%92%8C%E4%B8%8D%E5%8F%AF%E8%A7%81%E5%9C%A8%E5%93%AA%E5%8F%AF%E4%BB%A5%E7%9B%91%E5%90%AC%EF%BC%9F"><span class="nav-number">2.3.1.3.3.2.</span> <span class="nav-text">ScrollView的View可见和不可见在哪可以监听？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#ScrollView%E5%86%85%E9%83%A8%E6%89%80%E6%9C%89View%E6%80%8E%E4%B9%88%E6%94%B6%E9%9B%86%EF%BC%9F"><span class="nav-number">2.3.1.3.3.3.</span> <span class="nav-text">ScrollView内部所有View怎么收集？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#OnGlobalLayoutListener-onGlobalLayout-%E5%A6%82%E6%9E%9C%E8%B0%83%E7%94%A8%E9%A2%91%E7%B9%81%E4%BC%9A%E6%9C%89%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%EF%BC%8C%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%EF%BC%9F"><span class="nav-number">2.3.1.3.3.4.</span> <span class="nav-text">OnGlobalLayoutListener.onGlobalLayout()如果调用频繁会有性能问题，如何解决？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#RecyclerView%E7%9A%84itemView%E5%8F%AF%E8%A7%81%E5%92%8C%E4%B8%8D%E5%8F%AF%E8%A7%81%E5%9C%A8%E5%93%AA%E5%8F%AF%E4%BB%A5%E7%9B%91%E5%90%AC%EF%BC%9F"><span class="nav-number">2.3.1.3.3.5.</span> <span class="nav-text">RecyclerView的itemView可见和不可见在哪可以监听？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#RecyclerView%E7%9A%84itemView%E6%9C%89%E6%B2%A1%E6%9C%89%E6%98%BE%E7%A4%BA%E8%B6%85%E8%BF%87%E4%B8%80%E5%8D%8A%E6%80%8E%E4%B9%88%E5%88%A4%E6%96%AD%EF%BC%9F"><span class="nav-number">2.3.1.3.3.6.</span> <span class="nav-text">RecyclerView的itemView有没有显示超过一半怎么判断？</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E8%87%AA%E5%8A%A8%E5%8C%96%E7%BB%9F%E8%AE%A1View%E6%9B%9D%E5%85%89%E4%BA%8B%E4%BB%B6%EF%BC%9F"><span class="nav-number">2.3.1.3.4.</span> <span class="nav-text">怎么自动化统计View曝光事件？</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%A1%AE%E5%AE%9A%E8%A6%81%E7%BB%9F%E8%AE%A1%E5%93%AA%E4%BA%9BView%EF%BC%9F"><span class="nav-number">2.3.1.3.4.1.</span> <span class="nav-text">怎么确定要统计哪些View？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E5%94%AF%E4%B8%80%E6%A0%87%E8%AF%86%E4%B8%80%E4%B8%AAView%EF%BC%9F"><span class="nav-number">2.3.1.3.4.2.</span> <span class="nav-text">怎么唯一标识一个View？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E5%8C%BA%E5%88%86View%E8%AF%A5%E4%BD%BF%E7%94%A8%E5%93%AA%E7%A7%8D%E5%8F%AF%E8%A7%81%E6%80%A7%E5%8F%98%E5%8C%96%E5%9B%9E%E8%B0%83%EF%BC%9F"><span class="nav-number">2.3.1.3.4.3.</span> <span class="nav-text">怎么区分View该使用哪种可见性变化回调？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8F%82%E6%95%B0%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%EF%BC%9F"><span class="nav-number">2.3.1.3.4.4.</span> <span class="nav-text">自定义参数如何获取？</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#View%E7%82%B9%E5%87%BB%E4%BA%8B%E4%BB%B6"><span class="nav-number">2.3.2.</span> <span class="nav-text">View点击事件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E6%8B%A6%E6%88%AA"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">运行时拦截</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E6%97%B6%E6%8B%A6%E6%88%AA"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">编译时拦截</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8"><span class="nav-number">3.</span> <span class="nav-text">数据存储</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Android%E6%9C%89%E5%93%AA%E4%BA%9B%E5%AD%98%E5%82%A8%E6%96%B9%E5%BC%8F%EF%BC%9F"><span class="nav-number">3.1.</span> <span class="nav-text">Android有哪些存储方式？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%93%E7%82%B9%E7%BB%9F%E8%AE%A1%E5%BA%94%E8%AF%A5%E9%80%89%E7%94%A8%E5%93%AA%E7%A7%8D%E5%AD%98%E5%82%A8%E6%96%B9%E5%BC%8F%EF%BC%9F"><span class="nav-number">3.2.</span> <span class="nav-text">打点统计应该选用哪种存储方式？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%A1%A8%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%EF%BC%9F"><span class="nav-number">3.3.</span> <span class="nav-text">数据表如何设计？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E7%9A%84%E5%94%AF%E4%B8%80%E6%A0%87%E8%AF%86%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.3.1.</span> <span class="nav-text">事件的唯一标识是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E8%A1%A8%E4%B8%BB%E9%94%AE%E6%80%8E%E4%B9%88%E5%AE%9A%EF%BC%9F"><span class="nav-number">3.3.2.</span> <span class="nav-text">事件表主键怎么定？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E7%B4%A2%E5%BC%95"><span class="nav-number">3.3.3.</span> <span class="nav-text">添加索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0check%E7%BA%A6%E6%9D%9F"><span class="nav-number">3.3.4.</span> <span class="nav-text">添加check约束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8F%82%E6%95%B0%E6%80%8E%E4%B9%88%E5%AD%98%E5%82%A8%EF%BC%9F"><span class="nav-number">3.3.5.</span> <span class="nav-text">事件的自定义参数怎么存储？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E5%8F%91%E7%94%9F%E6%97%B6%E7%9A%84%E7%8E%AF%E5%A2%83%E5%8F%82%E6%95%B0"><span class="nav-number">3.3.6.</span> <span class="nav-text">事件发生时的环境参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%88%97%E5%A4%A7%E5%B0%8F%E9%99%90%E5%88%B6"><span class="nav-number">3.3.7.</span> <span class="nav-text">数据列大小限制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9C%80%E8%A6%81%E4%BD%BF%E7%94%A8ORM%E6%A1%86%E6%9E%B6%E5%90%97%EF%BC%9F"><span class="nav-number">3.4.</span> <span class="nav-text">需要使用ORM框架吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%A8%E8%BF%9B%E7%A8%8B%E5%9F%8B%E7%82%B9%E6%95%B0%E6%8D%AE%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%EF%BC%9F"><span class="nav-number">3.5.</span> <span class="nav-text">跨进程埋点数据怎么处理？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E7%9A%84ContentProvider%E9%9C%80%E8%A6%81%E5%8D%95%E7%8B%AC%E6%94%BE%E5%9C%A8%E4%B8%80%E4%B8%AA%E8%BF%9B%E7%A8%8B%E5%90%97%EF%BC%9F"><span class="nav-number">3.5.1.</span> <span class="nav-text">自定义的ContentProvider需要单独放在一个进程吗？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%80%8E%E4%B9%88%E5%8A%A0%E5%AF%86%EF%BC%9F"><span class="nav-number">3.6.</span> <span class="nav-text">数据怎么加密？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%86%85%E5%AE%B9%E5%BA%94%E8%AF%A5%E6%80%8E%E4%B9%88%E5%8A%A0%E5%AF%86%EF%BC%9F"><span class="nav-number">3.6.1.</span> <span class="nav-text">数据内容应该怎么加密？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%8B%E7%BC%A9%E5%92%8C%E5%8A%A0%E5%AF%86%E7%9A%84%E9%A1%BA%E5%BA%8F%EF%BC%9F"><span class="nav-number">3.6.2.</span> <span class="nav-text">压缩和加密的顺序？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E5%BA%94%E8%AF%A5%E7%94%A8%E5%87%A0%E4%B8%AA%E5%AD%90%E7%BA%BF%E7%A8%8B%EF%BC%9F"><span class="nav-number">3.7.</span> <span class="nav-text">数据库操作应该用几个子线程？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E8%AF%A5%E4%BD%BF%E7%94%A8%E5%87%A0%E4%B8%AASQLiteDatabase%E5%AF%B9%E8%B1%A1%EF%BC%9F"><span class="nav-number">3.8.</span> <span class="nav-text">应该使用几个SQLiteDatabase对象？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%B0%83%E7%94%A8SQLiteDatabase-close-%EF%BC%9F"><span class="nav-number">3.9.</span> <span class="nav-text">什么时候调用SQLiteDatabase.close()？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E7%9A%84%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="nav-number">3.10.</span> <span class="nav-text">数据库操作的性能优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE"><span class="nav-number">3.10.1.</span> <span class="nav-text">优化插入数据</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%93%E5%AD%98SQLiteStatement"><span class="nav-number">3.10.1.1.</span> <span class="nav-text">缓存SQLiteStatement</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%B9%E9%87%8F%E6%8F%92%E5%85%A5"><span class="nav-number">3.10.1.2.</span> <span class="nav-text">批量插入</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86%E4%B8%AD%E5%88%B0%E4%BB%80%E4%B9%88%E7%A8%8B%E5%BA%A6%E6%89%8D%E7%BB%9F%E4%B8%80%E6%8F%92%E5%85%A5%E5%91%A2%EF%BC%9F"><span class="nav-number">3.10.1.2.1.</span> <span class="nav-text">数据集中到什么程度才统一插入呢？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E7%BC%93%E5%AD%98%E5%BA%94%E8%AF%A5%E7%94%A8%E4%BB%80%E4%B9%88%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%AD%98%E5%82%A8%EF%BC%9F"><span class="nav-number">3.10.1.2.2.</span> <span class="nav-text">内存缓存应该用什么数据结构存储？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8D%95%E7%BC%93%E5%86%B2%E9%98%9F%E5%88%97%E7%9A%84%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80"><span class="nav-number">3.10.1.2.3.</span> <span class="nav-text">单缓冲队列的性能开销</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#App%E8%A2%AB%E5%BC%BA%E6%9D%80%E6%88%96%E5%B4%A9%E6%BA%83%E5%90%8E%EF%BC%8C%E5%86%85%E5%AD%98%E7%BC%93%E5%AD%98%E4%B8%A2%E5%A4%B1%E4%BA%86%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="nav-number">3.10.1.2.4.</span> <span class="nav-text">App被强杀或崩溃后，内存缓存丢失了怎么办？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE"><span class="nav-number">3.10.2.</span> <span class="nav-text">优化查询数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E7%A9%BA%E9%97%B4%E4%B8%8D%E8%B6%B3%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%EF%BC%9F"><span class="nav-number">3.11.</span> <span class="nav-text">存储空间不足怎么处理？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%8A%E4%BC%A0%E7%AD%96%E7%95%A5"><span class="nav-number">4.</span> <span class="nav-text">数据上传策略</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%8A%E4%BC%A0%E7%9A%84%E9%9C%80%E6%B1%82"><span class="nav-number">4.1.</span> <span class="nav-text">数据上传的需求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%89%B9%E9%87%8F%E4%B8%8A%E4%BC%A0%EF%BC%9F"><span class="nav-number">4.2.</span> <span class="nav-text">为什么需要批量上传？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E6%AC%A1%E6%89%B9%E9%87%8F%E4%B8%8A%E4%BC%A0%E5%A4%9A%E5%B0%91%E6%9D%A1%E6%95%B0%E6%8D%AE%E5%90%88%E9%80%82%EF%BC%9F"><span class="nav-number">4.3.</span> <span class="nav-text">一次批量上传多少条数据合适？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%9F%A5%E9%81%93%E4%B8%80%E6%AC%A1%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E5%90%88%E7%90%86%E7%9A%84%E6%95%B0%E6%8D%AE%E5%A4%A7%E5%B0%8F%EF%BC%9F"><span class="nav-number">4.3.1.</span> <span class="nav-text">怎么知道一次网络请求合理的数据大小？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%9F%A5%E9%81%93%E5%8D%95%E4%B8%AA%E4%BA%8B%E4%BB%B6%E7%9A%84%E5%A4%A7%E5%B0%8F%EF%BC%9F"><span class="nav-number">4.3.2.</span> <span class="nav-text">怎么知道单个事件的大小？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%B8%8A%E4%BC%A0%E6%AF%94%E8%BE%83%E5%A5%BD%EF%BC%9F"><span class="nav-number">4.4.</span> <span class="nav-text">在什么时候上传比较好？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%90%8E%E5%8F%B0%E5%AE%9A%E6%9C%9F%E6%89%A7%E8%A1%8C%E4%BB%BB%E5%8A%A1%E5%91%A2%EF%BC%9F"><span class="nav-number">4.5.</span> <span class="nav-text">Android如何实现后台定期执行任务呢？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Service"><span class="nav-number">4.5.1.</span> <span class="nav-text">Service</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AlarmManager"><span class="nav-number">4.5.2.</span> <span class="nav-text">AlarmManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SyncAdapter"><span class="nav-number">4.5.3.</span> <span class="nav-text">SyncAdapter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JobScheduler"><span class="nav-number">4.5.4.</span> <span class="nav-text">JobScheduler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WorkManager"><span class="nav-number">4.5.5.</span> <span class="nav-text">WorkManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%80%E7%BB%88%E9%80%89%E6%8B%A9%EF%BC%9AWorkManager"><span class="nav-number">4.5.6.</span> <span class="nav-text">最终选择：WorkManager</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E8%AF%95%E7%AD%96%E7%95%A5"><span class="nav-number">4.6.</span> <span class="nav-text">重试策略</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E4%B8%8A%E4%BC%A0"><span class="nav-number">5.</span> <span class="nav-text">网络上传</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E7%94%A8%E5%93%AA%E4%B8%AA%E7%BD%91%E7%BB%9C%E5%BA%93%EF%BC%9F"><span class="nav-number">5.1.</span> <span class="nav-text">选用哪个网络库？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E5%AE%89%E5%85%A8%EF%BC%9F"><span class="nav-number">5.2.</span> <span class="nav-text">怎么保证数据传输安全？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8F%AF%E4%BB%A5%E5%81%9A%E5%93%AA%E4%BA%9B%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%EF%BC%9F"><span class="nav-number">5.3.</span> <span class="nav-text">网络传输可以做哪些性能优化？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HttpDNS"><span class="nav-number">5.3.1.</span> <span class="nav-text">HttpDNS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E7%94%A8%E8%BF%9E%E6%8E%A5"><span class="nav-number">5.3.2.</span> <span class="nav-text">复用连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%8F%E5%B0%91Http%E6%8A%A5%E6%96%87%E4%BD%93%E7%A7%AF"><span class="nav-number">5.3.3.</span> <span class="nav-text">减少Http报文体积</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82"><span class="nav-number">5.3.4.</span> <span class="nav-text">合并网络请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AAtcp%E8%BF%9E%E6%8E%A5%E6%89%A7%E8%A1%8C%E5%A4%9A%E4%B8%AAhttp%E8%AF%B7%E6%B1%82"><span class="nav-number">5.3.5.</span> <span class="nav-text">一个tcp连接执行多个http请求</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%9F%E8%AE%A1%E5%8F%A3%E5%BE%84"><span class="nav-number">6.</span> <span class="nav-text">统计口径</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E5%94%AF%E4%B8%80%E6%A0%87%E8%AF%86%E4%B8%80%E4%B8%AA%E7%94%A8%E6%88%B7%EF%BC%9F"><span class="nav-number">6.1.</span> <span class="nav-text">怎么唯一标识一个用户？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E6%A0%B7%E7%AE%97%E6%B4%BB%E8%B7%83%E7%94%A8%E6%88%B7%EF%BC%9F"><span class="nav-number">6.2.</span> <span class="nav-text">怎样算活跃用户？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E6%A0%B7%E6%89%8D%E7%AE%97%E4%BD%BF%E7%94%A8%E4%BA%86App%EF%BC%9F"><span class="nav-number">6.2.1.</span> <span class="nav-text">怎样才算使用了App？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E9%A1%B5%E9%9D%A2%E7%9A%84%E7%BB%84%E4%BB%B6%E5%90%AF%E5%8A%A8%E4%B9%9F%E7%AE%97%E4%BD%BF%E7%94%A8%E4%BA%86App%E5%90%97%EF%BC%9F"><span class="nav-number">6.2.2.</span> <span class="nav-text">无页面的组件启动也算使用了App吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8App%E9%A1%B5%E9%9D%A2%E6%89%8D%E7%AE%97%E4%BD%BF%E7%94%A8%E4%BA%86App"><span class="nav-number">6.2.3.</span> <span class="nav-text">启动App页面才算使用了App</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%BB%9F%E8%AE%A1App%E4%BD%BF%E7%94%A8%E6%97%B6%E9%95%BF%EF%BC%9F"><span class="nav-number">6.3.</span> <span class="nav-text">怎么统计App使用时长？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#App%E5%90%AF%E5%8A%A8%E5%85%B7%E4%BD%93%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="nav-number">6.3.1.</span> <span class="nav-text">App启动具体在哪？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#App%E7%BB%93%E6%9D%9F%E5%85%B7%E4%BD%93%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="nav-number">6.3.2.</span> <span class="nav-text">App结束具体在哪？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%9B%91%E5%90%ACApp%E9%80%80%E5%87%BA%E4%BA%86%E6%89%80%E6%9C%89%E7%9A%84%E9%A1%B5%E9%9D%A2%EF%BC%9F"><span class="nav-number">6.3.2.1.</span> <span class="nav-text">怎么监听App退出了所有的页面？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E5%BF%AB%E9%80%9F%E5%88%87%E6%8D%A2%E5%88%B0%E6%A1%8C%E9%9D%A2%E5%9B%9E%E5%88%B0%E6%88%91%E4%BB%AC%E7%9A%84App%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%EF%BC%9F"><span class="nav-number">6.3.2.2.</span> <span class="nav-text">如果快速切换到桌面回到我们的App怎么处理？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#App%E5%B4%A9%E6%BA%83%E3%80%81%E5%BC%BA%E6%9D%80%E6%96%B9%E5%BC%8F%E9%80%80%E5%87%BA%E9%A1%B5%E9%9D%A2%EF%BC%8C%E6%80%8E%E4%B9%88%E8%AE%A1%E7%AE%97App%E4%BD%BF%E7%94%A8%E6%97%B6%E9%95%BF%EF%BC%9F"><span class="nav-number">6.3.2.3.</span> <span class="nav-text">App崩溃、强杀方式退出页面，怎么计算App使用时长？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#App%E6%9C%89%E5%A4%9A%E4%B8%AA%E8%BF%9B%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%A4%E5%AE%9A%E5%92%8C%E8%AE%A1%E7%AE%97App%E4%BD%BF%E7%94%A8%E6%97%B6%E9%95%BF%EF%BC%9F"><span class="nav-number">6.3.3.</span> <span class="nav-text">App有多个进程如何判定和计算App使用时长？</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ricky.L"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ricky.L</p>
+  <div class="site-description" itemprop="description">Follow your heart</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">194</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">266</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvatarQing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvatarQing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/2011291/ricky" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;2011291&#x2F;ricky" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/avatarqing/" title="LeetCode → https:&#x2F;&#x2F;leetcode-cn.com&#x2F;u&#x2F;avatarqing&#x2F;" rel="noopener" target="_blank"><i class="fab fa-leetcode fa-fw"></i>LeetCode</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/ricky.q.liu@foxmail.com" title="E-Mail → ricky.q.liu@foxmail.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ricky.L</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://rickyqliu-blog.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://rickyqliu.github.io/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Android%E5%9F%8B%E7%82%B9%E7%BB%9F%E8%AE%A1SDK%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/";
+    this.page.identifier = "系统设计/Android埋点统计SDK设计思路/";
+    this.page.title = "Android埋点统计SDK设计思路";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://rickyqliu-blog.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
