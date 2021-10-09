@@ -12241,7 +12241,7 @@
 <li>  在Fragment的onResume、onPause、onHiddenChanged、setUserVisibleHint几个生命周期变化方法里做Fragment是否显示的判断。</li>
 <li>  统一把业务代码里所有Fragment替换为androidx扩展包里的Fragment，使用setMaxLifecycle控制Fragment的生命周期。</li>
 </ul>
-<p>如果不是自己能主导的项目，修改业务代码往往比较困难，只能采用第一种方式。但第二种方式确实是最省事的方式，也是基础组件倒逼治理项目优化的很好的切入点。</p>
+<p>如果不是自己能主导的项目，修改业务代码往往比较困难，只能采用第一种方式。</p>
 <h5 id="如何判断一个Fragment是处于显示还是隐藏呢？"><a href="#如何判断一个Fragment是处于显示还是隐藏呢？" class="headerlink" title="如何判断一个Fragment是处于显示还是隐藏呢？"></a>如何判断一个Fragment是处于显示还是隐藏呢？</h5><p>观察Fragment源码可以发现，getUserVisibleHint()默认是true，mUserVisibleHint在FragmentPagerAdapter中会设为false。</p>
 <p>所以可以用<code>isResumed() &amp;&amp; !isHidden() &amp;&amp; getUserVisibleHint()</code>来判断Fragment是否是展示还是隐藏。</p>
 <h5 id="什么时候算Fragment访问开始和结束？"><a href="#什么时候算Fragment访问开始和结束？" class="headerlink" title="什么时候算Fragment访问开始和结束？"></a>什么时候算Fragment访问开始和结束？</h5><p>在onResume、onHiddenChanged、setUserVisibleHint三个方法调用时，<code>isResumed() &amp;&amp; !isHidden() &amp;&amp; getUserVisibleHint()</code>为true就是Fragment页面访问开始，为false就是Fragment页面访问结束。</p>
@@ -12256,12 +12256,9 @@
 <li>  对于APK编译速度影响小</li>
 </ul>
 <p>综合起来，选用ASM最能满足上述条件，因为ASM是比较底层的，插桩需要了解虚拟机字节码指令，没有多余的功能，自然体积也会比较小；AspectJ、Javassist的API更友好，所以会有一些冗余，但是性能就不如ASM了。</p>
-<h5 id="Fragment嵌套时子Fragment生命周期怎么处理？"><a href="#Fragment嵌套时子Fragment生命周期怎么处理？" class="headerlink" title="Fragment嵌套时子Fragment生命周期怎么处理？"></a>Fragment嵌套时子Fragment生命周期怎么处理？</h5><p>什么情况下会产生Fragment嵌套？</p>
-<p>在Fragment中通过getChildFragmentManager()添加的Fragment就是子Fragment。</p>
-<p>子Fragment生命周期存在什么问题？</p>
-<p>父Fragment的setUserVisibleHint和onHiddenChanged调用时，子Fragment的setUserVisibleHint和onHiddenChanged没有得到同步调用。</p>
-<p>怎么解决子Fragment生命周期方法不同步调用？</p>
-<p>父Fragment的setUserVisibleHint和onHiddenChanged调用时，手动调用子Fragment的setUserVisibleHint和onHiddenChanged，同步传递状态。</p>
+<h5 id="Fragment嵌套时子Fragment生命周期怎么处理？"><a href="#Fragment嵌套时子Fragment生命周期怎么处理？" class="headerlink" title="Fragment嵌套时子Fragment生命周期怎么处理？"></a>Fragment嵌套时子Fragment生命周期怎么处理？</h5><h6 id="什么情况下会产生Fragment嵌套？"><a href="#什么情况下会产生Fragment嵌套？" class="headerlink" title="什么情况下会产生Fragment嵌套？"></a>什么情况下会产生Fragment嵌套？</h6><p>在Fragment中通过getChildFragmentManager()添加的Fragment就是子Fragment。</p>
+<h6 id="子Fragment生命周期存在什么问题？"><a href="#子Fragment生命周期存在什么问题？" class="headerlink" title="子Fragment生命周期存在什么问题？"></a>子Fragment生命周期存在什么问题？</h6><p>父Fragment的setUserVisibleHint和onHiddenChanged调用时，子Fragment的setUserVisibleHint和onHiddenChanged没有得到同步调用。</p>
+<h6 id="怎么解决子Fragment生命周期方法不同步调用？"><a href="#怎么解决子Fragment生命周期方法不同步调用？" class="headerlink" title="怎么解决子Fragment生命周期方法不同步调用？"></a>怎么解决子Fragment生命周期方法不同步调用？</h6><p>父Fragment的setUserVisibleHint和onHiddenChanged调用时，手动调用子Fragment的setUserVisibleHint和onHiddenChanged，同步传递状态。</p>
 <p>所以最好让所有自定义的Fragment都继承一个BaseFragment，把这个处理代码封装在BaseFragment的setUserVisibleHint和onHiddenChanged中。</p>
 <p>但是第三方SDK的Fragment无法修改其代码，可以通过字节码插桩在每个自定义的Fragment里插入这段代码。</p>
 <h4 id="View"><a href="#View" class="headerlink" title="View"></a>View</h4><p>对View的曝光事件往往也是需要统计的。</p>
@@ -12394,7 +12391,7 @@
 <p>所以环境参数的值最好也要是要用最少的字符来表示，比如系统版本的取值就写数字，不要写“Android 8“这种字符串，以减少存储空间。</p>
 <p><strong>分表</strong></p>
 <p>把环境参数单独弄一张表存储，环境参数行的唯一标识为所有环境参数拼接在一起的字符串的哈希值，这个哈希值在环境表里存一份，事件表里存一份，通过这个哈希值关联两者。</p>
-<p>这样节约一定的存储空间，但是查数据时处理起来比较麻烦，并且要多查一次表，为了统一处理方便，还是推荐不分表。</p>
+<p>这样节约一定的存储空间，但是查数据时处理起来比较麻烦，并且要多查一次表，删除数据也不好级联删除，为了统一处理方便，还是不推荐分表。</p>
 <h3 id="数据列大小限制"><a href="#数据列大小限制" class="headerlink" title="数据列大小限制"></a>数据列大小限制</h3><p>自定义的参数存储前一定要检查大小，避免单行数据过大。</p>
 <p>否则查询数据时，CursorWindow放不下大数据，会直接崩溃，报错如<code>java.lang.IllegalStateException: Couldn&#39;t read row 0, col 1 from CursorWindow. Make sure the Cursor is initialized correctly before accessing data from it.</code>。</p>
 <p><strong>CursorWindow是干什么的？</strong></p>
@@ -12640,9 +12637,7 @@
 <li>  用户设备处于空闲状态，才允许执行任务。</li>
 </ul>
 <p>这样最大化节约设备整体电量，同时避免影响App运行时性能。</p>
-<h2 id="重试策略"><a href="#重试策略" class="headerlink" title="重试策略"></a>重试策略</h2><p>如果网络请求报错，上传失败，应当要重试请求。</p>
-<p>但请求的频次应当是指数性衰减的，减缓对服务端的压力，恰好WorkManager支持设置这种重试策略。</p>
-<h1 id="网络上传"><a href="#网络上传" class="headerlink" title="网络上传"></a>网络上传</h1><h2 id="选用哪个网络库？"><a href="#选用哪个网络库？" class="headerlink" title="选用哪个网络库？"></a>选用哪个网络库？</h2><p>作为通用基础SDK，一般不依赖第三方库，因为会给SDK增加额外的体积。</p>
+<h1 id="网络传输"><a href="#网络传输" class="headerlink" title="网络传输"></a>网络传输</h1><h2 id="选用哪个网络库？"><a href="#选用哪个网络库？" class="headerlink" title="选用哪个网络库？"></a>选用哪个网络库？</h2><p>作为通用基础SDK，一般不依赖第三方库，因为会给SDK增加额外的体积。</p>
 <p>没有特殊需求，用系统默认的HttpURLConnection即可，Android 4.4以后HttpURLConnection底层实现是Okhttp，可以享受到Okhttp的优化。</p>
 <p>源码证明：<a href="https://android.googlesource.com/platform/external/okhttp/+/master"></a><a href="https://android.googlesource.com/platform/external/okhttp/+/master">https://android.googlesource.com/platform/external/okhttp/+/master</a></p>
 <h2 id="怎么保证数据传输安全？"><a href="#怎么保证数据传输安全？" class="headerlink" title="怎么保证数据传输安全？"></a>怎么保证数据传输安全？</h2><p>网络请求用https协议就好了，好处：</p>
@@ -12681,6 +12676,31 @@
 <h3 id="一个tcp连接执行多个http请求"><a href="#一个tcp连接执行多个http请求" class="headerlink" title="一个tcp连接执行多个http请求"></a><strong>一个tcp连接执行多个http请求</strong></h3><p>如果在同一个tcp连接上同时发起多个http请求，也就是前一个http请求的响应还没有收到就发送第二个http请求了，由于http请求和响应并没有序号标识，所以无法区分收到的响应是哪个http请求的，所以一个tcp连接里只能串行的执行http请求。</p>
 <p>如果要在一个tcp连接里执行多个http请求，就要对http请求包做分片和标记，这就是http2，这样网络传输整体吞吐量就变大了。</p>
 <p>可以让服务端支持http2，客户端通过http2协议来传输，Okhttp支持http2协议通信。</p>
+<h2 id="数据上传成功后还需要做什么吗？"><a href="#数据上传成功后还需要做什么吗？" class="headerlink" title="数据上传成功后还需要做什么吗？"></a>数据上传成功后还需要做什么吗？</h2><p>需要把上传成功的事件从本地数据库中删除。</p>
+<p>具体操作：</p>
+<p>因为上传的数据是事件最老的一批数据，所以记录下最近的个事件时间，删除这个时间之前所有的数据即可。</p>
+<h2 id="数据上传失败怎么处理？"><a href="#数据上传失败怎么处理？" class="headerlink" title="数据上传失败怎么处理？"></a>数据上传失败怎么处理？</h2><p>先要看失败的原因是什么，再根据每一种情况看怎么处理合适。</p>
+<p>上传失败的情景有：</p>
+<ul>
+<li>  无网络、网络环境差。</li>
+<li>  http 5xx错误，即服务器错误。</li>
+<li>  http 4xx错误，即客户端错误。</li>
+</ul>
+<h3 id="无网络如何处理？"><a href="#无网络如何处理？" class="headerlink" title="无网络如何处理？"></a>无网络如何处理？</h3><p>等待网络连通后请求，WorkManager支持这一设置。</p>
+<h3 id="http-5xx服务端错误如何处理？"><a href="#http-5xx服务端错误如何处理？" class="headerlink" title="http 5xx服务端错误如何处理？"></a>http 5xx服务端错误如何处理？</h3><p>服务端错误时，也只能重试请求，但是请求的频次也应当是指数性衰减的，否则一直上传一直失败这样循环，对服务端的压力会很大，WorkManager支持设置指数衰减的重试策略。</p>
+<h3 id="http-4xx客户端错误如何处理？"><a href="#http-4xx客户端错误如何处理？" class="headerlink" title="http 4xx客户端错误如何处理？"></a>http 4xx客户端错误如何处理？</h3><p>4xx的错误有很多，不同的错误处理方式也不同，得一个个看。</p>
+<h4 id="400-Bad-Request-如何处理？"><a href="#400-Bad-Request-如何处理？" class="headerlink" title="400 Bad Request 如何处理？"></a>400 Bad Request 如何处理？</h4><p>最常见的是400 Bad Request错误，即客户端请求的数据服务端认为非法。</p>
+<p>对于400的错误，如果不修改数据的错误再次上传，还是依然会报400的错。</p>
+<p>所以就看服务端对数据校验的逻辑是什么，根据这些校验逻辑在客户端上传数据前提前做检查，检测到某个事件有非法数据就丢弃，否则会让整个批量上传都失败。</p>
+<p>所以客户端对事件参数合法性的校验可以放在插入数据时就开始进行，存入非法数据是没有意义的；在上传前再做二次校验。</p>
+<p>这一类非法数据的问题，主要都是兼容性问题，比如获取系统当前时间戳毫秒数，按道理应该是13位数字，但是有的手机获取的是低于13位数字的，这样就没办法判定事件发生时间了，原因是什么也弄不清，解决办法只能是不获取系统当前时间，采用其他方式来作为事件的发生时间，比如用服务端时间+本地时间偏移量来计算事件发生时间。</p>
+<p>如果没有能提前考虑的非法的逻辑处理，那么需要从本地数据库中删除请求错误的数据，以免总是频繁的上传错误的数据。</p>
+<h4 id="403-Forbidden-如何处理？"><a href="#403-Forbidden-如何处理？" class="headerlink" title="403 Forbidden 如何处理？"></a>403 Forbidden 如何处理？</h4><p>这种情况最多的原因是同一IP地址发送请求过多遭到服务端屏蔽。</p>
+<p>为什么会出现这种情况呢？跟400 Bad Request有一定联系，如果遇到400错误后总是频繁的重试上传，就会发送过多的请求。</p>
+<p>此时也只能是指数级降低重试请求的频次，避免浪费客户端的网络流量。</p>
+<h4 id="408-Request-Time-out-如何处理？"><a href="#408-Request-Time-out-如何处理？" class="headerlink" title="408 Request Time-out 如何处理？"></a>408 Request Time-out 如何处理？</h4><p>408的意思是服务器等待客户端发送的请求时间过长，超时了。</p>
+<p>所以在批量上传数据的时候就要限制一下一次网络请求数据大小的上限。</p>
+<h4 id="其他4xx情况"><a href="#其他4xx情况" class="headerlink" title="其他4xx情况"></a>其他4xx情况</h4><p>其他4xx的情况在发布前就可以验证出来，可以默认统一指数级降低重试请求的频次。</p>
 <h1 id="统计口径"><a href="#统计口径" class="headerlink" title="统计口径"></a>统计口径</h1><p>数据收集后就要分析，分析数据就需要统计一些指标，指标需要定义出明确的行为边界，比如：</p>
 <ul>
 <li>  怎样区分打点事件是属于哪个用户的行为？</li>
@@ -12728,7 +12748,7 @@
 <li>  按返回键退出页面</li>
 <li>  按Home减退出页面</li>
 </ul>
-<h4 id="如果快速切换到桌面回到我们的App怎么处理？"><a href="#如果快速切换到桌面回到我们的App怎么处理？" class="headerlink" title="如果快速切换到桌面回到我们的App怎么处理？"></a>如果快速切换到桌面回到我们的App怎么处理？</h4><p>我们得从统计的目的来看，我们统计App时长是想观察用户跟App有持续的交互的时间有多长。</p>
+<h4 id="如果切换到桌面没一会又回到我们的App算App结束吗？"><a href="#如果切换到桌面没一会又回到我们的App算App结束吗？" class="headerlink" title="如果切换到桌面没一会又回到我们的App算App结束吗？"></a>如果切换到桌面没一会又回到我们的App算App结束吗？</h4><p>我们得从统计的目的来看，我们统计App时长是想观察用户跟App有持续的交互的时间有多长。</p>
 <p>如果用户切换到桌面，没一会儿又回到App，用户还是一直在想使用App的，可能是中途为了看一些其他的信息才切换出去。</p>
 <p>所以可以设置一个定时器，在App所有Activity都onPause后，设置一个如30秒的定时器：</p>
 <ul>
@@ -12747,6 +12767,29 @@
 <p>在没有更好的办法之前，只能暂时使用这个相对准确的方法。</p>
 <h3 id="App有多个进程如何判定和计算App使用时长？"><a href="#App有多个进程如何判定和计算App使用时长？" class="headerlink" title="App有多个进程如何判定和计算App使用时长？"></a>App有多个进程如何判定和计算App使用时长？</h3><p>多个进程都是属于App的，所以每个进程的Activity都算App的页面。</p>
 <p>需要注意的是，在Activity.onPause()存储本地数据和Activty.onResume()读取本地数据时，需要跨进程访问的问题，可以使用ContentProvider + SharedPreferences来实现。</p>
+<h1 id="如何测试埋点的正确性？"><a href="#如何测试埋点的正确性？" class="headerlink" title="如何测试埋点的正确性？"></a>如何测试埋点的正确性？</h1><h2 id="从服务端获取数据验证"><a href="#从服务端获取数据验证" class="headerlink" title="从服务端获取数据验证"></a>从服务端获取数据验证</h2><p>最直接的想法就是，在App一顿操作后，去服务端看埋点数据是不是跟预期一致的。</p>
+<p>所以可以让服务端开发一个测试环境的上传接口，客户端可以在单元测试环境里写模拟埋点的代码，等埋点逻辑走完了，调用获取埋点数据的接口，验证是否与预期一致。</p>
+<p>这样的测试方法比较符合直觉，可以验证埋点系统的基本流程的正确。缺点是：</p>
+<ul>
+<li>  只能测试已经想到的预定类型的数据，对于兼容性问题测试不出来。</li>
+<li>  受到测试服务器环境约束，一旦测试服务器坏了，测试就跑不通。</li>
+<li>  如果针对每个埋点都这样测试，这一顿操作显得过重了。</li>
+</ul>
+<h2 id="如何验证每一个手动埋点的正确性？"><a href="#如何验证每一个手动埋点的正确性？" class="headerlink" title="如何验证每一个手动埋点的正确性？"></a>如何验证每一个手动埋点的正确性？</h2><p>手动埋点只有埋点的那个开发人员对当前业务最熟悉，应当由他来写单元测试保证他的埋点逻辑的正确性，尽可能的减少在后续开发中出错。</p>
+<p>至于埋点SDK内部的正确，由埋点SDK开发者保证，业务层只能假定埋点SDK是完全无误的。</p>
+<p>如果业务层没办法写单元测试，那就重构业务代码，不然没法在客观上保证每个版本埋点都不出错。</p>
+<h2 id="埋点SDK正确性如何保证？"><a href="#埋点SDK正确性如何保证？" class="headerlink" title="埋点SDK正确性如何保证？"></a>埋点SDK正确性如何保证？</h2><p>编写单元测试保证已知的逻辑都能运行正确，测试覆盖率可以要求的高一点，如80%到90%，避免后续修改代码时出错。</p>
+<h1 id="如何保证埋点的准确性？"><a href="#如何保证埋点的准确性？" class="headerlink" title="如何保证埋点的准确性？"></a>如何保证埋点的准确性？</h1><p>如果采集的数据没有问题，又都能上传到服务端，按道理就不存在不准确。</p>
+<p>那么数据不准确的原因是什么呢？一定是数据采集和传输过程的某些环节出了问题。</p>
+<p>比如：</p>
+<ul>
+<li>  手动埋点时，开发人员传错了参数。</li>
+<li>  数据存储时，数据库损坏了、磁盘空间不足等原因导致数据丢失。</li>
+<li>  数据上传时，因为用户特殊的操作导致数据没有及时的上传。</li>
+<li>  网络传输时，数据被破解篡改。</li>
+<li>  兼容性错误，导致产生大量非法数据，无法反映真实的情况。</li>
+</ul>
+<p>每一点的解决都是充满困难的，只能想办法在每个环节尽可能做到极致，才能保证系统整体运行良好。只能根据实际业务需求和遇到的情况再重点针对性解决。</p>
 ]]></content>
       <categories>
         <category>系统设计</category>
