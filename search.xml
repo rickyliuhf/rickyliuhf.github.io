@@ -9586,6 +9586,8 @@
     <title>LeetCode刷题600+感想</title>
     <url>/%E9%9A%8F%E6%83%B3/LeetCode%E5%88%B7%E9%A2%98600+%E6%84%9F%E6%83%B3/</url>
     <content><![CDATA[<p>LeetCode上很多题解是直接给结论，缺少逻辑推理分析过程，对于各种细节为什么要这么做解释的比较少，看完了往往也不太理解。要彻底理解，肯定是要自己推理分析一遍的。</p>
+<span id="more"></span>
+
 <p><strong>应该怎么做逻辑推理呢？</strong></p>
 <ul>
 <li>遵循第一性原理，从目标结果倒推分析，定义出问题。</li>
