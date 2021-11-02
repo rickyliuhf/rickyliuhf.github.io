@@ -186,137 +186,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20Binder%E6%9C%BA%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="Follow your heart">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Android/Android%20Binder%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Android Binder机制</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-07-20 20:21:00" itemprop="dateCreated datePublished" datetime="2018-07-20T20:21:00+08:00">2018-07-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Android/Android%20Binder%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android Binder机制/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <span id="more"></span>
-
-<h1 id="Binder机制概述"><a href="#Binder机制概述" class="headerlink" title="Binder机制概述"></a>Binder机制概述</h1><p>Android是基于Linux的，Linux的进程之间的内存地址空间是相互隔离的，进程之间无法直接访问对方的数据，这就需要有一个进程之间都可以访问的地方做数据交换，这就是内核空间。</p>
-<p>传统的Linux跨进程通信机制下，通常是进程A把数据复制到内核中的一个缓冲区中，进程B从内核的缓冲区中读取数据。</p>
-<p>Binder进程间通信机制自然也是要通过内核空间来进行的，但是又不是传统的Linux通信机制，怎么样去在内核中做一些操作呢？Linux有一个动态内核可加载模块，Binder就是加载了 Binder驱动  模块，来在内核中做一些操作，实现跨进程通信。</p>
-<h2 id="Binder驱动具体做了什么呢-？"><a href="#Binder驱动具体做了什么呢-？" class="headerlink" title="Binder驱动具体做了什么呢  ？"></a>Binder驱动具体做了什么呢  ？</h2><p>Binder驱动在内核空间中创建一个数据缓冲区，再通过内存映射机制，把缓冲区与数据接受进程用户空间地址做映射，这样数据发送进程的数据把数据拷贝到内核缓冲区过后，数据接受进程就可以直接  获取到数据，避免了一次内核空间的数据拷贝，提高了性能。</p>
-<h2 id="Binder机制还保证了进程间通信的安全性。"><a href="#Binder机制还保证了进程间通信的安全性。" class="headerlink" title="Binder机制还保证了进程间通信的安全性。"></a>Binder机制还保证了进程间通信的安全性。</h2><p>传统进程通信机制缺乏足够的安全措施：在传统进程通信中，只能由发送进程在请求中自行填入UID与PID，容易被恶意程序利用，是不可靠的。只有内置在进程通信机制内的可靠的进程身份标记才能提供必要的安全保障，Android的应用程序有自己UID，可用于鉴别进程身份。</p>
-<p>Binder机制为每个进程分配了UID/PID来作为鉴别身份的标识，并且在Binder通信时会根据UID/PID进行有效性检测。传统的进程通信方式对于通信双方的身份并没有做出严格的验证，如socket通信ip地址是客户端手动填入，容易出现伪造。</p>
-<h2 id="Binder通信整体机制"><a href="#Binder通信整体机制" class="headerlink" title="Binder通信整体机制"></a>Binder通信整体机制</h2><ol>
-<li> Server端向ServiceManager注册Binder对象，建立Binder名称和Binder引用的映射关系，这样Client端可以通过Binder名字获取Server中Binder实体的引用。在Android系统启动的时候，会初始化各种系统服务，这些系统服务会注册到ServiceManager。</li>
-<li> Client通过名字从ServiceManager获取到Binder实体引用，通常获取到的是一个Proxy代理对象</li>
-<li> Client调用代理对象的方法，代理对象会把要调用的方法的方法名称、参数等信息封装成Parcel对象，发送给Binder驱动</li>
-<li> Server会读取Binder驱动中的请求数据，解包Parcel对象，并把结果也以Parcel对象的形式返回</li>
-<li> 客户端发起Binder调用的时候会阻塞，服务端会有一个Binder线程池来响应处理客户端的请求</li>
-<li> 全程使用代理模式屏蔽进程间通信细节</li>
-</ol>
-<h1 id="Binder的优势是什么？"><a href="#Binder的优势是什么？" class="headerlink" title="Binder的优势是什么？"></a>Binder的优势是什么？</h1><ol>
-<li> 数据拷贝仅需一次，性能仅此于共享内存，优于管道、消息队列、套接字等通信方式</li>
-<li> C/S架构比共享内存清晰</li>
-<li> 传统IPC不做权限校验，由上层使用者自己实现，Binder做了权限控制</li>
-</ol>
-<h1 id="Binder的原理什么"><a href="#Binder的原理什么" class="headerlink" title="Binder的原理什么?"></a>Binder的原理什么?</h1><p>Binder是基于共享内存的，但是使用了mmap内存映射，只有一次用户空间到内核空间的拷贝，速度快。</p>
-<p>在实际的实现中，binder 是作为一个特殊的字符型设备而存在的，设备节点为 /dev/binder, 其实现遵循linux设备驱动模型。</p>
-<h1 id="Binder机制的安全性是如何保证的？"><a href="#Binder机制的安全性是如何保证的？" class="headerlink" title="Binder机制的安全性是如何保证的？"></a>Binder机制的安全性是如何保证的？</h1><p>传统进程通信机制缺乏足够的安全措施：</p>
-<ul>
-<li>传统进程通信的接收进程无法获得发送进程可靠的用户标识/进程标识（UID/PID），因而无法鉴别对方身份。</li>
-<li>在传统进程通信中，只能由发送进程在请求中自行填入UID与PID，容易被恶意程序利用，是不可靠的。</li>
-<li> 传统进程通信的访问接入点是公开的，如FIFO与unix domain socket的路径名，socket的ip地址与端口号，lSystem V键值等，知道这些接入点的任何程序都可能试图建立连接，很难阻止恶意程序获得连接，如通过猜测地址获得连接等。</li>
-</ul>
-<p>只有内置在进程通信机制内的可靠的进程身份标记才能提供必要的安全保障。<br>Android的应用程序有自己UID，可用于鉴别进程身份。</p>
-<h1 id="Binder的异常传递机制是怎样的？"><a href="#Binder的异常传递机制是怎样的？" class="headerlink" title="Binder的异常传递机制是怎样的？"></a>Binder的异常传递机制是怎样的？</h1><p>可以推断所有Binder实体对象方法中发生的异常都会被处理。无非一种是将异常信息发送给对端进程，另一种是将异常信息在本进程输出。而这些处理都不会使Server进程退出。</p>
-<p>仔细思考这样设计也是很合理的。作为Server进程，它在什么时候执行，该执行些什么都不由自己掌控，而是由Client进程控制。因此抛出异常本质上与Client进程相关，让一个Client进程的行为导致Server进程退出显然是不合理的。此外，Server进程可能关联着千百个Client，不能由于一个Client的错误行为而影响本可以正常获取服务的其他Client。</p>
-<h1 id="系统服务和context-bindService-的方式有什么区别？"><a href="#系统服务和context-bindService-的方式有什么区别？" class="headerlink" title="系统服务和context.bindService()的方式有什么区别？"></a>系统服务和context.bindService()的方式有什么区别？</h1><p>服务可分为系统服务与普通服务，系统服务一般是在系统启动的时候，由SystemServer进程创建并注册到ServiceManager中的。而普通服务一般是通过ActivityManagerService启动的服务，或者说通过四大组件中的Service组件启动的服务。这两种服务在实现跟使用上是有不同的，主要从以下几个方面：</p>
-<ul>
-<li>服务的启动方式</li>
-<li>服务的注册与管理</li>
-<li>服务的请求使用方式</li>
-</ul>
-<h1 id="Binder缓冲区为什么大小是1MB？为什么不能更大？"><a href="#Binder缓冲区为什么大小是1MB？为什么不能更大？" class="headerlink" title="Binder缓冲区为什么大小是1MB？为什么不能更大？"></a>Binder缓冲区为什么大小是1MB？为什么不能更大？</h1><p>因为缓冲区会他通过mmap映射到用户进程的虚拟地址空间，内存映射的空间不能太大。</p>
-<h1 id="Binder应用场景？"><a href="#Binder应用场景？" class="headerlink" title="Binder应用场景？"></a>Binder应用场景？</h1><ol>
-<li>跨进程通信</li>
-<li>跨进程观察者模式</li>
-<li>App提权</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%E7%AD%BE%E5%90%8D%E6%9C%BA%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -348,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -473,7 +342,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -719,7 +588,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -837,7 +706,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1017,7 +886,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1119,7 +988,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1229,7 +1098,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1327,7 +1196,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1447,7 +1316,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-10-13 19:32:27" itemprop="dateModified" datetime="2021-10-13T19:32:27+08:00">2021-10-13</time>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1505,6 +1374,212 @@
 <p>用LinkedHashMap手撕 <a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/lru-cache/">LeetCode.146. LRU 缓存机制（难度：中等）</a></p>
 <figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LRUCache</span></span>(<span class="keyword">private</span> <span class="keyword">val</span> capacity: <span class="built_in">Int</span>) &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> map = LinkedHashMap&lt;<span class="built_in">Int</span>, <span class="built_in">Int</span>&gt;(<span class="number">16</span>, <span class="number">0.75f</span>, <span class="literal">true</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">get</span><span class="params">(key: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> map[key] ?: -<span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">put</span><span class="params">(key: <span class="type">Int</span>, value: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (map.size == capacity &amp;&amp; !map.containsKey(key)) &#123;</span><br><span class="line">            <span class="keyword">val</span> oldest = map.iterator().next()</span><br><span class="line">            map.remove(oldest.key)</span><br><span class="line">        &#125;</span><br><span class="line">        map[key] = value</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Android%E9%9B%86%E5%90%88%E7%B1%BB-ArrayMap%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="Follow your heart">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Android%E9%9B%86%E5%90%88%E7%B1%BB-ArrayMap%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Android集合类-ArrayMap原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-10 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-10T20:00:00+08:00">2018-05-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-11-02 17:11:14" itemprop="dateModified" datetime="2021-11-02T17:11:14+08:00">2021-11-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Android%E9%9B%86%E5%90%88%E7%B1%BB-ArrayMap%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Android集合类-ArrayMap原理/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ArrayMap、SparseArray、HashMap的区别？"><a href="#ArrayMap、SparseArray、HashMap的区别？" class="headerlink" title="ArrayMap、SparseArray、HashMap的区别？"></a>ArrayMap、SparseArray、HashMap的区别？</h1><ul>
+<li><p>数据结构</p>
+<ul>
+<li>  ArrayMap和SparseArray采用的都是两个数组，Android专门针对内存优化而设计的</li>
+<li>  HashMap采用的是数据+链表+红黑树</li>
+</ul>
+</li>
+<li><p>内存优化</p>
+<ul>
+<li>  ArrayMap比HashMap更节省内存，综合性能方面在数据量不大的情况下，推荐使用ArrayMap；</li>
+<li>  Hash需要创建一个额外对象来保存每一个放入map的entry，且容量的利用率比ArrayMap低，整体更消耗内存</li>
+<li>  SparseArray比ArrayMap节省1/3的内存，但SparseArray只能用于key为int类型的Map，所以int类型的Map数据推荐使用SparseArray；</li>
+</ul>
+</li>
+<li><p>性能方面：</p>
+<ul>
+<li>  ArrayMap查找时间复杂度O(logN)；ArrayMap增加、删除操作需要移动成员，速度相比较慢，对于个数小于1000的情况下，性能基本没有明显差异</li>
+<li>  HashMap查找、修改的时间复杂度为O(1)；</li>
+<li>  SparseArray适合频繁删除和插入来回执行的场景，性能比较好</li>
+</ul>
+</li>
+<li><p>缓存机制</p>
+<ul>
+<li>  ArrayMap针对容量为4和8的对象进行缓存，可避免频繁创建对象而分配内存与GC操作，这两个缓存池大小的上限为10个，防止缓存池无限增大；</li>
+<li>  HashMap没有缓存机制</li>
+<li>  SparseArray有延迟回收机制，提供删除效率，同时减少数组成员来回拷贝的次数</li>
+</ul>
+</li>
+<li><p>扩容机制</p>
+<ul>
+<li>  ArrayMap是在容量满的时机触发容量扩大至原来的1.5倍，在容量不足1/3时触发内存收缩至原来的0.5倍，更节省的内存扩容机制</li>
+<li>  HashMap是在容量的0.75倍时触发容量扩大至原来的2倍，且没有内存收缩机制。HashMap扩容过程有hash重建，相对耗时。所以能大致知道数据量，可指定创建指定容量的对象，能减少性能浪费。</li>
+</ul>
+</li>
+<li><p>并发问题</p>
+<ul>
+<li>  ArrayMap是非线程安全的类，大量方法中通过对mSize判断是否发生并发，来决定抛出异常。但没有覆盖到所有并发场景，比如大小没有改变而成员内容改变的情况就没有覆盖</li>
+<li>  HashMap是在每次增加、删除、清空操作的过程将modCount加1，在关键方法内进入时记录当前mCount，执行完核心逻辑后，再检测mCount是否被其他线程修改，来决定抛出异常。这一点的处理比ArrayMap更有全面。</li>
+</ul>
+</li>
+</ul>
+<p>总结：</p>
+<ul>
+<li>HashMap的查找和插入时间复杂度为O(1)的代价是牺牲大量的内存来实现的。</li>
+<li>而SparseArray和ArrayMap性能略逊于HashMap，但更节省内存。</li>
+<li>SparseArray的key是int类型，ArrayMap的key是任意类型。</li>
+<li>SparseArray删除元素是延迟删除，减少数组拷贝的频次。</li>
+<li>ArrayMap有对容量4和8的缓存机制，避免频繁的内存分配和垃圾回收。</li>
+</ul>
+<p>Android中的小数据量的哈希表，Google推荐数据量小于1000使用ArrayMap，大于1000使用HashMap。</p>
+<h1 id="为什么ArrayMap数据量大了性能不如HashMap？数据量小了性能比HashMap好？"><a href="#为什么ArrayMap数据量大了性能不如HashMap？数据量小了性能比HashMap好？" class="headerlink" title="为什么ArrayMap数据量大了性能不如HashMap？数据量小了性能比HashMap好？"></a>为什么ArrayMap数据量大了性能不如HashMap？数据量小了性能比HashMap好？</h1><p>ArrayMap中的 mHashs 数组以升序的方式保存了所有的 hash code，在查找数据时则通过二分查找 hash code 所对应的 index。这也是它的 get() 比 HashMap 慢的根据原因所在。</p>
+<p>插入、删除需要移动数组的元素，数据多了的话，速度也相对较慢，数据少了影响较小。</p>
+<h1 id="ArrayMap底层存储结构是怎样的？"><a href="#ArrayMap底层存储结构是怎样的？" class="headerlink" title="ArrayMap底层存储结构是怎样的？"></a>ArrayMap底层存储结构是怎样的？</h1><ul>
+<li>  mHashes是一个记录所有key的hashcode值组成的数组，是从小到大的排序方式；</li>
+<li>  mArray是一个记录着key-value键值对所组成的数组，是mHashes大小的2倍；</li>
+</ul>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825214641.png"></p>
+<p>为什么mArray的大小是mHahses的2倍？</p>
+<p>因为mArray存储了key和value，所以需要2倍于mHashes的容量。</p>
+<p>mHashes 在 index 处存储了 key 的 hash code，而 mArray 则在 hash code 的 index&lt;&lt;1 处存储 key，在 index&lt;&lt;1 + 1 处存储 value。简单点说就是偶数处存储 key，相邻奇数处存储 value。</p>
+<h1 id="多个key的hashCode发生冲突时是怎么存储数据的？"><a href="#多个key的hashCode发生冲突时是怎么存储数据的？" class="headerlink" title="多个key的hashCode发生冲突时是怎么存储数据的？"></a>多个key的hashCode发生冲突时是怎么存储数据的？</h1><p>HashMap用的是拉链法把同一个hashCode元素放在一个桶中</p>
+<p>ArrayMap用的是开放定址法之线性探测法</p>
+<p>相同的hashCode存储在mHashes数组中相邻的位置，把原来数组中该位置之后的元素全部后移一位</p>
+<p>例子：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210825214729.png"></p>
+<p>index == 0 时 和 index == 1时的 hash code 是一样的，说明 key1 与 key2 的 hash code 是一样的，也就是存在 hash 冲突了。那么，如上，这里的解决办法就是 hash code 存储了 2 份，而 key-value 分别存储一份。</p>
+<h1 id="ArrayMap-indexOf-key-hash-原理"><a href="#ArrayMap-indexOf-key-hash-原理" class="headerlink" title="ArrayMap.indexOf(key, hash)原理?"></a>ArrayMap.indexOf(key, hash)原理?</h1><p>源码的注释已经说的很明白</p>
+<ol>
+<li> 在mHashes中二分查找hash的索引</li>
+<li> 如果mHashes中没找到hash，说明不存在这个元素，返回二分查找得出的应该插入的位置，以保障mHashes存储的hash保持升序</li>
+<li> 如果mHashes中找到了hash，有两种情况：找到元素了  或  存在哈希冲突，这一点通过mArray存储的key和方法传入的key是否相等来判断，如果相等说明找到元素了，不相等则没有找到，没有找到要返回待插入的位置</li>
+<li> 由于相同的hash在mHashes中存储在相邻的位置，如果mHashes中找到了hash，但是mArray中存储的key不相等，则往右往左分别寻找相同hash对应的mArray中的key是否相等</li>
+</ol>
+<h1 id="ArrayMap-put-key-value-原理"><a href="#ArrayMap-put-key-value-原理" class="headerlink" title="ArrayMap.put(key, value)原理?"></a>ArrayMap.put(key, value)原理?</h1><ol>
+<li> 求key的hashCode</li>
+<li> 通过indexOf(key, hash)计算新的hash应该插入mHashes数组中什么位置</li>
+<li> 如果index &gt; 0 说明之前这个key已经存了值，替换为新的value就结束put流程</li>
+<li> index &lt; 0 说明mHashes里不存在这个hash，index为待插入的位置</li>
+<li> 如果容量不够了，就申请新的数组，容量为之前的1.5倍，把旧数组的值全部拷贝到新的数组</li>
+<li> index后面的元素全部后移一位，给index的位置腾出空间</li>
+<li> 存储hash到mHashes[index]，存储key、value到mArray的index * 2和index * 2 + 1的位置</li>
+</ol>
+<h1 id="为什么通过key求得index后要左移1位？"><a href="#为什么通过key求得index后要左移1位？" class="headerlink" title="为什么通过key求得index后要左移1位？"></a>为什么通过key求得index后要左移1位？</h1><p>因为这个index是mHashes的索引，mHashes数组长度是mArray数组长度的一半，索引乘以2，就是作为mArray的索引</p>
+<h1 id="ArrayMap-remove-原理？"><a href="#ArrayMap-remove-原理？" class="headerlink" title="ArrayMap.remove()原理？"></a>ArrayMap.remove()原理？</h1><p>一般情况下删除一个数据，只需要将 index 后面的数据都往 index 方向移一位，然后删除末位数即可。</p>
+<p>如果再满足缩容的条件就进行缩容，条件是mHashs长度大于 2 * BASE_SIZE 且  实际元素个数小于mHashs长度的1/3，就把容量压缩为实际元素大小的1.5倍</p>
+<p>为什么是1.5倍，这样保证不会频繁的创建数组，也不会浪费太多的空间，平衡了性能</p>
+<h1 id="mHashes里存的hashcode为什么要升序？"><a href="#mHashes里存的hashcode为什么要升序？" class="headerlink" title="mHashes里存的hashcode为什么要升序？"></a>mHashes里存的hashcode为什么要升序？</h1><p>因为要二分查找获取插入位置。</p>
+<h1 id="为什么mHashes中查找元素要二分查找？不能用HashMap的索引定位法吗？"><a href="#为什么mHashes中查找元素要二分查找？不能用HashMap的索引定位法吗？" class="headerlink" title="为什么mHashes中查找元素要二分查找？不能用HashMap的索引定位法吗？"></a>为什么mHashes中查找元素要二分查找？不能用HashMap的索引定位法吗？</h1><h2 id="HashMap是怎么计算索引位置的？"><a href="#HashMap是怎么计算索引位置的？" class="headerlink" title="HashMap是怎么计算索引位置的？"></a>HashMap是怎么计算索引位置的？</h2><p>HashMap是直接用数组大小与key的hashCode做与操作得到数组索引。</p>
+<h2 id="为什么ArrayMap不按照HashMap计算索引的方式来做呢？"><a href="#为什么ArrayMap不按照HashMap计算索引的方式来做呢？" class="headerlink" title="为什么ArrayMap不按照HashMap计算索引的方式来做呢？"></a>为什么ArrayMap不按照HashMap计算索引的方式来做呢？</h2><p>因为扩容后会重新hash，让元素分布的更均匀以较少哈希冲突，重新hash过程比较耗时，实现起来也比较复杂。</p>
+<p>数据量小的情况下，用二分查找足够应付。</p>
+<h1 id="ArrayMap为什么要设计一个缓存机制？"><a href="#ArrayMap为什么要设计一个缓存机制？" class="headerlink" title="ArrayMap为什么要设计一个缓存机制？"></a>ArrayMap为什么要设计一个缓存机制？</h1><p>很多场景可能起初都是数据很少，为了减少频繁地创建和回收数组，特意设计了两个缓存池，分别缓存大小为4和8的ArrayMap对象，这两个长度的Map根据统计信息应该用的很多。</p>
+<h1 id="ArrayMap缓存机制实现原理？"><a href="#ArrayMap缓存机制实现原理？" class="headerlink" title="ArrayMap缓存机制实现原理？"></a>ArrayMap缓存机制实现原理？</h1><p>freeArrays(hashes, array, size) 会把hashes数组和array数组用链表的形式存储下来，头结点用mBaseCache、mTwiceBaseCache存储，分别表示数组长度为4和8的缓存<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210825214932.png"></p>
+<p>freeArrays()触发时机:</p>
+<ul>
+<li>  当执行removeAt()移除最后一个元素的情况</li>
+<li>  当执行clear()清理的情况</li>
+<li>  当执行ensureCapacity()在当前容量小于预期容量的情况下, 先执行allocArrays,再执行freeArrays</li>
+<li>  当执行put()在容量满的情况下, 先执行allocArrays, 再执行freeArrays</li>
+</ul>
+<p>当allocArrays分配内存时，如果所需要分配的大小等于4或者8，且相对应的缓冲池不为空，则会从相应缓存池中取出缓存的mArray和mHashes。<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210825214947.png"></p>
+<p>这里需要注意的是只有大小为4或者8的内存分配才有可能从缓存池取数据，因为freeArrays过程放入缓存池的大小只有4或8，对于其他大小的内存分配则需要创建新的数组。</p>
+<p>优化小技巧，对于分配数据不超过8的对象的情况下，一定要创建4或者8大小，否则浪费了缓存机制。比如ArrayMap[7]就是不友好的写法，建议写成ArrayMap[8]。</p>
+<p>两个缓存池大小上限为10个。</p>
+<h1 id="扩容的条件？"><a href="#扩容的条件？" class="headerlink" title="扩容的条件？"></a>扩容的条件？</h1><p>mSize是实际存储的元素的个数</p>
+<p>当mSize大于或等于mHashes数组长度时需要扩容，新容量的规则如下：</p>
+<ul>
+<li>  当map个数满足条件 osize&lt;4时，则扩容后的大小为4；</li>
+<li>  当map个数满足条件 4&lt;= osize &lt; 8时，则扩容后的大小为8；</li>
+<li>  当map个数满足条件 osize&gt;=8时，则扩容后的大小为原来的1.5倍；</li>
+</ul>
+<h1 id="缩容的条件？"><a href="#缩容的条件？" class="headerlink" title="缩容的条件？"></a>缩容的条件？</h1><p>当数组内存的大小大于8，且已存储数据的个数mSize小于数组空间大小的1/3的情况下，需要收紧数据的内容容量，分配新的数组，老的内存靠虚拟机自动回收。</p>
+<ul>
+<li>  如果mSize&lt;=8，则设置新大小为8；</li>
+<li>  如果mSize&gt; 8，则设置新大小为mSize的1.5倍。</li>
+</ul>
+<p>也就是说在数据较大的情况下，当内存使用量不足1/3的情况下，内存数组会收紧50%</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="http://gityuan.com/2019/01/13/arraymap/">深度解读ArrayMap优势与缺陷</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/6844903762470060045">ArrayMap详解及源码分析</a></li>
+</ul>
 
       
     </div>
@@ -1591,14 +1666,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">192</span>
+          <span class="site-state-item-count">191</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
