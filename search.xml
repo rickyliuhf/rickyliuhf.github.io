@@ -5944,68 +5944,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Android中数据库相关的类</title>
-    <url>/%E6%95%B0%E6%8D%AE%E5%BA%93/Android%E4%B8%AD%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3%E7%9A%84%E7%B1%BB/</url>
-    <content><![CDATA[<span id="more"></span>
-
-<h1 id="Android中数据库相关类"><a href="#Android中数据库相关类" class="headerlink" title="Android中数据库相关类"></a>Android中数据库相关类</h1><ul>
-<li>  SQLiteOpenHelper：管理SQLite的帮助类，提供获取SQLIteDatabase实例的方法，它会在第一次使用数据库时调用获取实例方法时创建SQLiteDatabase实例，并且处理数据库版本变化，开发人员在实现ContentProvider时都要实现一个自定义的SQLiteOpenHelper类，处理数据的创建、升级和降级。</li>
-<li>  SQLiteDatabase：代表一个打开的SQLite数据库，提供了执行数据库操作的接口方法。如果不需要在进程之间共享数据，应用程序也可以自行创建这个类的实例来读写SQLite数据库。</li>
-<li>  SQLiteSession：SQLiteSession负责管理数据库连接和事务的生命周期，通过SQLiteConnectionPool获取数据库连接来执行具体的数据库操作。</li>
-<li>  SQLiteConnectionPool：数据库连接池，管理所有打开的数据库连接（Connection）。所有数据库连接都是通过它来打开，打开后会加入连接池，在读写数据库时需要从连接池中获取一个数据库连接来使用。</li>
-<li>  SQLiteConnection：代表了数据库连接，每个Connection封装了一个native层的sqlite3实例，通过JNI调用SQLite动态库的接口方法操作数据库，Connection要么被Session持有，要么被连接池持有。</li>
-<li>  CursorFactory：可选的Cursor工厂，可以提供自定义工厂来创建Cursor。</li>
-<li>  DatabaseErrorHandler：可选的数据库异常处理器（目前仅处理数据库Corruption），如果不提供，将会使用默认的异常处理器。</li>
-<li>  SQLiteDatabaseConfiguration：数据库配置，应用程序可以创建多个到SQLite数据库的连接，这个类用来保证每个连接的配置都是相同的。</li>
-<li>  SQLiteQuery和SQLiteStatement：从抽象类SQLiteProgram派生，封装了SQL语句的执行过程，在执行时自动组装待执行的SQL语句，并调用SQLiteSession来执行数据库操作。这两个类的实现应用了设计模式中的命令模式。</li>
-</ul>
-<h1 id="使用SQLiteOpenHelper的原因"><a href="#使用SQLiteOpenHelper的原因" class="headerlink" title="使用SQLiteOpenHelper的原因"></a>使用SQLiteOpenHelper的原因</h1><p>之所以需要使用SQLiteOpenHelper，而不是调用Context的方法来直接得到SQLiteDatabase，主要是因为它有两个好处：</p>
-<ol>
-<li> 自动管理创建：当需要对数据库进行操作的时候，不用关心SQLiteOpenHelper所关联的SQLiteDatabase是否创建，SQLiteOpenHelper会帮我们去判断，如果没有创建，那么就先创建该数据库后，再返回给使用者。</li>
-<li> 自动管理版本：当需要对数据库进行操作之前，如果发现当前声明的数据库的版本和手机内的数据库版本不同的时候，那么会分别调用onUpgrade和onDowngrade，这样使用者就可以在里面来处理新旧版本的兼容问题。</li>
-</ol>
-<h1 id="SQLiteOpenHelper跟数据库连接池的关系是怎样的？"><a href="#SQLiteOpenHelper跟数据库连接池的关系是怎样的？" class="headerlink" title="# SQLiteOpenHelper跟数据库连接池的关系是怎样的？"></a># SQLiteOpenHelper跟数据库连接池的关系是怎样的？</h1><p>一个SQLiteOpenHelper对象存有一个SQLiteDatabase对象</p>
-<p>一个SQLiteDatabase对象存有一个SQLiteConnectionPool对象</p>
-<p>一个SQLiteConnectionPool对象</p>
-<ol>
-<li> 在journal-mode下最多存有1个SQLiteConnection</li>
-<li> 在wal-mode下最多存有2个SQLiteConnection</li>
-</ol>
-<h1 id="SQL-语句的执行过程"><a href="#SQL-语句的执行过程" class="headerlink" title="SQL 语句的执行过程"></a>SQL 语句的执行过程</h1><p>创建SQLiteStatement对象，把SQL语句传给SQLiteStatement构造函数，调用SQLiteStatement的executeInsert()</p>
-<p>SQLiteStatement.executeInsert()内部的增删改查方法都会先getSession()获取SQLiteSession，再调用SQLiteSession的execute方法</p>
-<p>继续追查可以发现SQLiteSession是在SQLiteDatabase里以ThreadLocal形式存储，也就是每个线程只能有一个SQLiteSession</p>
-<p>SQLiteSession的execute方法里会从数据库连接获取一个连接，每个SQLiteSession对象有一个SQLiteConnection对象</p>
-<h1 id="SQLiteSession存在的价值"><a href="#SQLiteSession存在的价值" class="headerlink" title="SQLiteSession存在的价值"></a>SQLiteSession存在的价值</h1><p>给数据库连接代理了一层，管理事务和连接的生命周期。</p>
-<p>在事务执行过程中一直持有数据库连接。</p>
-<p>由于数据库连接数量是有限的，所以连接用完后要及时释放连接。</p>
-<p>事务开启后，从连接池获取连接。</p>
-<p>事务结束后，把连接归还到连接池。</p>
-<h1 id="数据库连接是什么意思？"><a href="#数据库连接是什么意思？" class="headerlink" title="数据库连接是什么意思？"></a>数据库连接是什么意思？</h1><p>一个连接对应一个事务操作</p>
-<h1 id="如果一个数据库连接始终不关闭会有什么影响？"><a href="#如果一个数据库连接始终不关闭会有什么影响？" class="headerlink" title="如果一个数据库连接始终不关闭会有什么影响？"></a>如果一个数据库连接始终不关闭会有什么影响？</h1><p>SQLite连接数有最大限制，不关闭，会导致别的进程无法连接数据库。</p>
-<h1 id="SQLiteConnectionPool连接池大小是怎么定的"><a href="#SQLiteConnectionPool连接池大小是怎么定的" class="headerlink" title="SQLiteConnectionPool连接池大小是怎么定的?"></a>SQLiteConnectionPool连接池大小是怎么定的?</h1><p>目前Android系统的实现中，如果以非WAL模式打开数据库，连接池中只会保持一个数据库连接，如果以WAL模式打开数据库，连接池中的最大连接数量则根据系统配置决定，默认配置是两个。</p>
-<h1 id="数据库连接池只提供最多1个连接会有什么影响？"><a href="#数据库连接池只提供最多1个连接会有什么影响？" class="headerlink" title="数据库连接池只提供最多1个连接会有什么影响？"></a>数据库连接池只提供最多1个连接会有什么影响？</h1><p>如果应用程序中有大量的并发数据库读和写操作的话，每个操作的时长都可能受到影响，所以数据库操作应放在工作线程中执行，以免影响UI响应。</p>
-<p>因为每个事务都是在SQLiteSession中执行的，执行事务前会从连接池获取连接，调用的是SQLiteConnectionPool.acquireConnection()，方法内如果获取不到Connection就会阻塞线程等待，用链表存储阻塞的线程，直到连接被释放，也就是别的事务执行完成。</p>
-<p>我们平时在多线程中的数据库操作都是串行的。</p>
-<h1 id="Android里开启事务，事务模式用的是哪个？"><a href="#Android里开启事务，事务模式用的是哪个？" class="headerlink" title="Android里开启事务，事务模式用的是哪个？"></a>Android里开启事务，事务模式用的是哪个？</h1><ul>
-<li>SQLiteDatabase.beginTransaction()开启的是EXCLUSIVE。</li>
-<li>SQLiteDatabase.beginTransactionNonExclusive()开启的是IMMEDIATE。</li>
-</ul>
-<p>注意这两个事务模式只针对回滚日志模式下的事务。</p>
-<p><a href="https://sqlite.org/lang_transaction.html#:%7E:text=EXCLUSIVE%20is%20similar%20to%20IMMEDIATE,while%20the%20transaction%20is%20underway.">SQLite官网</a>说在WAL日志模式下，EXCLUSIVE和IMMEDIATE是一样的。</p>
-]]></content>
-      <categories>
-        <category>数据库</category>
-      </categories>
-      <tags>
-        <tag>Android</tag>
-        <tag>数据库</tag>
-        <tag>SQLiteOpenHelper</tag>
-        <tag>SQLiteConnectionPool</tag>
-        <tag>SQLiteSession</tag>
-        <tag>连接池</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>SQLite事务、回滚日志、WAL</title>
     <url>/%E6%95%B0%E6%8D%AE%E5%BA%93/SQLite%E4%BA%8B%E5%8A%A1%E3%80%81%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E3%80%81WAL/</url>
     <content><![CDATA[<span id="more"></span>
@@ -6195,6 +6133,68 @@
         <tag>并发</tag>
         <tag>数据库</tag>
         <tag>SQLite</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android中数据库相关的类</title>
+    <url>/%E6%95%B0%E6%8D%AE%E5%BA%93/Android%E4%B8%AD%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3%E7%9A%84%E7%B1%BB/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<h1 id="Android中数据库相关类"><a href="#Android中数据库相关类" class="headerlink" title="Android中数据库相关类"></a>Android中数据库相关类</h1><ul>
+<li>  SQLiteOpenHelper：管理SQLite的帮助类，提供获取SQLIteDatabase实例的方法，它会在第一次使用数据库时调用获取实例方法时创建SQLiteDatabase实例，并且处理数据库版本变化，开发人员在实现ContentProvider时都要实现一个自定义的SQLiteOpenHelper类，处理数据的创建、升级和降级。</li>
+<li>  SQLiteDatabase：代表一个打开的SQLite数据库，提供了执行数据库操作的接口方法。如果不需要在进程之间共享数据，应用程序也可以自行创建这个类的实例来读写SQLite数据库。</li>
+<li>  SQLiteSession：SQLiteSession负责管理数据库连接和事务的生命周期，通过SQLiteConnectionPool获取数据库连接来执行具体的数据库操作。</li>
+<li>  SQLiteConnectionPool：数据库连接池，管理所有打开的数据库连接（Connection）。所有数据库连接都是通过它来打开，打开后会加入连接池，在读写数据库时需要从连接池中获取一个数据库连接来使用。</li>
+<li>  SQLiteConnection：代表了数据库连接，每个Connection封装了一个native层的sqlite3实例，通过JNI调用SQLite动态库的接口方法操作数据库，Connection要么被Session持有，要么被连接池持有。</li>
+<li>  CursorFactory：可选的Cursor工厂，可以提供自定义工厂来创建Cursor。</li>
+<li>  DatabaseErrorHandler：可选的数据库异常处理器（目前仅处理数据库Corruption），如果不提供，将会使用默认的异常处理器。</li>
+<li>  SQLiteDatabaseConfiguration：数据库配置，应用程序可以创建多个到SQLite数据库的连接，这个类用来保证每个连接的配置都是相同的。</li>
+<li>  SQLiteQuery和SQLiteStatement：从抽象类SQLiteProgram派生，封装了SQL语句的执行过程，在执行时自动组装待执行的SQL语句，并调用SQLiteSession来执行数据库操作。这两个类的实现应用了设计模式中的命令模式。</li>
+</ul>
+<h1 id="使用SQLiteOpenHelper的原因"><a href="#使用SQLiteOpenHelper的原因" class="headerlink" title="使用SQLiteOpenHelper的原因"></a>使用SQLiteOpenHelper的原因</h1><p>之所以需要使用SQLiteOpenHelper，而不是调用Context的方法来直接得到SQLiteDatabase，主要是因为它有两个好处：</p>
+<ol>
+<li> 自动管理创建：当需要对数据库进行操作的时候，不用关心SQLiteOpenHelper所关联的SQLiteDatabase是否创建，SQLiteOpenHelper会帮我们去判断，如果没有创建，那么就先创建该数据库后，再返回给使用者。</li>
+<li> 自动管理版本：当需要对数据库进行操作之前，如果发现当前声明的数据库的版本和手机内的数据库版本不同的时候，那么会分别调用onUpgrade和onDowngrade，这样使用者就可以在里面来处理新旧版本的兼容问题。</li>
+</ol>
+<h1 id="SQLiteOpenHelper跟数据库连接池的关系是怎样的？"><a href="#SQLiteOpenHelper跟数据库连接池的关系是怎样的？" class="headerlink" title="# SQLiteOpenHelper跟数据库连接池的关系是怎样的？"></a># SQLiteOpenHelper跟数据库连接池的关系是怎样的？</h1><p>一个SQLiteOpenHelper对象存有一个SQLiteDatabase对象</p>
+<p>一个SQLiteDatabase对象存有一个SQLiteConnectionPool对象</p>
+<p>一个SQLiteConnectionPool对象</p>
+<ol>
+<li> 在journal-mode下最多存有1个SQLiteConnection</li>
+<li> 在wal-mode下最多存有2个SQLiteConnection</li>
+</ol>
+<h1 id="SQL-语句的执行过程"><a href="#SQL-语句的执行过程" class="headerlink" title="SQL 语句的执行过程"></a>SQL 语句的执行过程</h1><p>创建SQLiteStatement对象，把SQL语句传给SQLiteStatement构造函数，调用SQLiteStatement的executeInsert()</p>
+<p>SQLiteStatement.executeInsert()内部的增删改查方法都会先getSession()获取SQLiteSession，再调用SQLiteSession的execute方法</p>
+<p>继续追查可以发现SQLiteSession是在SQLiteDatabase里以ThreadLocal形式存储，也就是每个线程只能有一个SQLiteSession</p>
+<p>SQLiteSession的execute方法里会从数据库连接获取一个连接，每个SQLiteSession对象有一个SQLiteConnection对象</p>
+<h1 id="SQLiteSession存在的价值"><a href="#SQLiteSession存在的价值" class="headerlink" title="SQLiteSession存在的价值"></a>SQLiteSession存在的价值</h1><p>给数据库连接代理了一层，管理事务和连接的生命周期。</p>
+<p>在事务执行过程中一直持有数据库连接。</p>
+<p>由于数据库连接数量是有限的，所以连接用完后要及时释放连接。</p>
+<p>事务开启后，从连接池获取连接。</p>
+<p>事务结束后，把连接归还到连接池。</p>
+<h1 id="数据库连接是什么意思？"><a href="#数据库连接是什么意思？" class="headerlink" title="数据库连接是什么意思？"></a>数据库连接是什么意思？</h1><p>一个连接对应一个事务操作</p>
+<h1 id="如果一个数据库连接始终不关闭会有什么影响？"><a href="#如果一个数据库连接始终不关闭会有什么影响？" class="headerlink" title="如果一个数据库连接始终不关闭会有什么影响？"></a>如果一个数据库连接始终不关闭会有什么影响？</h1><p>SQLite连接数有最大限制，不关闭，会导致别的进程无法连接数据库。</p>
+<h1 id="SQLiteConnectionPool连接池大小是怎么定的"><a href="#SQLiteConnectionPool连接池大小是怎么定的" class="headerlink" title="SQLiteConnectionPool连接池大小是怎么定的?"></a>SQLiteConnectionPool连接池大小是怎么定的?</h1><p>目前Android系统的实现中，如果以非WAL模式打开数据库，连接池中只会保持一个数据库连接，如果以WAL模式打开数据库，连接池中的最大连接数量则根据系统配置决定，默认配置是两个。</p>
+<h1 id="数据库连接池只提供最多1个连接会有什么影响？"><a href="#数据库连接池只提供最多1个连接会有什么影响？" class="headerlink" title="数据库连接池只提供最多1个连接会有什么影响？"></a>数据库连接池只提供最多1个连接会有什么影响？</h1><p>如果应用程序中有大量的并发数据库读和写操作的话，每个操作的时长都可能受到影响，所以数据库操作应放在工作线程中执行，以免影响UI响应。</p>
+<p>因为每个事务都是在SQLiteSession中执行的，执行事务前会从连接池获取连接，调用的是SQLiteConnectionPool.acquireConnection()，方法内如果获取不到Connection就会阻塞线程等待，用链表存储阻塞的线程，直到连接被释放，也就是别的事务执行完成。</p>
+<p>我们平时在多线程中的数据库操作都是串行的。</p>
+<h1 id="Android里开启事务，事务模式用的是哪个？"><a href="#Android里开启事务，事务模式用的是哪个？" class="headerlink" title="Android里开启事务，事务模式用的是哪个？"></a>Android里开启事务，事务模式用的是哪个？</h1><ul>
+<li>SQLiteDatabase.beginTransaction()开启的是EXCLUSIVE。</li>
+<li>SQLiteDatabase.beginTransactionNonExclusive()开启的是IMMEDIATE。</li>
+</ul>
+<p>注意这两个事务模式只针对回滚日志模式下的事务。</p>
+<p><a href="https://sqlite.org/lang_transaction.html#:%7E:text=EXCLUSIVE%20is%20similar%20to%20IMMEDIATE,while%20the%20transaction%20is%20underway.">SQLite官网</a>说在WAL日志模式下，EXCLUSIVE和IMMEDIATE是一样的。</p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>数据库</tag>
+        <tag>SQLiteOpenHelper</tag>
+        <tag>SQLiteConnectionPool</tag>
+        <tag>SQLiteSession</tag>
+        <tag>连接池</tag>
       </tags>
   </entry>
   <entry>
