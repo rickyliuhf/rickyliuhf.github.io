@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 5.4.2">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
@@ -184,662 +184,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Java类加载流程</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-03-05 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-05T20:00:00+08:00">2018-03-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java类加载机制/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="类加载流程"><a href="#类加载流程" class="headerlink" title="类加载流程"></a>类加载流程</h1><p>类从被加载到虚拟机内存，到卸载出内存为止，常规的生命周期如下：</p>
-<ol>
-<li> 加载（Loading）</li>
-<li> 链接（Linking）</li>
-<li> 初始化（Initialization）</li>
-<li> 使用（Using）</li>
-<li> 卸载（Unloading）</li>
-</ol>
-<p>其中链接（Linking）又可以分为：</p>
-<ol>
-<li> 验证（Verification）</li>
-<li> 准备（Preparation）</li>
-<li> 解析（Resolution）</li>
-</ol>
-<p>加载、验证、准备、初始化，这几个顺序是确定的，解析某些情况下发生在初始化之后，这是为了支持Java语言的运行时绑定（动态绑定）。</p>
-<p>参考</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》7.3节  类加载的过程</li>
-</ul>
-<h1 id="加载（Loading）"><a href="#加载（Loading）" class="headerlink" title="加载（Loading）"></a>加载（Loading）</h1><p>加载:</p>
-<ol>
-<li> 通过类的全限定名来获取类的二进制字节流。</li>
-<li> 将字节流代表的静态存储结构转换为方法区的运行时数据结构。</li>
-<li> 在内存中生成一个代表这个类的java.lang.Class对象，作为方法区这个类的各种数据的访问入口。</li>
-</ol>
-<p>第1条，通过类的全限定名来获取类的二进制字节流，jvm没有限制具体的实现，历史上的典型实现有：</p>
-<ol>
-<li> 从zip包中读取，如jar。</li>
-<li> 从网络中获取。</li>
-<li> 运行时动态生成，如动态代理，在java.lang.reflect.Proxy中用了ProxyGenerator.generateProxyClass为特定接口生成形式。为“*$Proxy”的代理类二进制字节流。</li>
-<li> 从其他文件生成，如由文件生成class。</li>
-<li> 通过数据库读取。</li>
-</ol>
-<p>非数组类加载类中获取类的二进制字节流的动作自定义性最强，既可以用系统提供的引导类加载器完成，也可以用用户自定义类加载器完成，开发者可以自定义一个ClassLoader并重写findClass方法来控制字节流的获取。</p>
-<p>数组类的加载由虚拟机直接创建。<br>数组元素类是基本类型，虚拟机会把数组类标记为与BootstrapClassLoader关联。</p>
-<h1 id="验证（Verification）"><a href="#验证（Verification）" class="headerlink" title="验证（Verification）"></a>验证（Verification）</h1><h2 id="类加载后为什么需要验证？"><a href="#类加载后为什么需要验证？" class="headerlink" title="类加载后为什么需要验证？"></a>类加载后为什么需要验证？</h2><p>由于类加载过程不要求class一定从Java源代码编译而来，可以通过任何途径产生，在字节码可以做到Java语法层面做不到的事情，也有可能不符合正常的Java语法规范，所以如果不对class字节流进行验证，可能会使系统遭受攻击。</p>
-<h2 id="类的验证过程是怎样的？"><a href="#类的验证过程是怎样的？" class="headerlink" title="类的验证过程是怎样的？"></a>类的验证过程是怎样的？</h2><p>大致会完成以下验证动作：</p>
-<ol>
-<li> 文件格式验证</li>
-<li> 元数据验证</li>
-<li> 字节码验证</li>
-<li> 符号引用验证</li>
-</ol>
-<h3 id="文件格式验证"><a href="#文件格式验证" class="headerlink" title="文件格式验证"></a>文件格式验证</h3><p>例如：</p>
-<ol>
-<li> 是否以magic number 0xCAFEBABE开头</li>
-<li> 主次版本号是否在当前虚拟机处理范围</li>
-<li> 常量池中的常量是否有不被支持的的常量类型</li>
-</ol>
-<h3 id="元数据验证"><a href="#元数据验证" class="headerlink" title="元数据验证"></a>元数据验证</h3><p>是对字节码描述的元数据信息进行语义分析，保证元数据信息符合Java语言规范，如：</p>
-<ol>
-<li> 这个类是否有父类。</li>
-<li> 这个类是否继承了不允许被继承的类（被final关键字修饰的类）。</li>
-<li> 如果这个类不是抽象类，是否实现了父类或接口之中的要求实现的方法。</li>
-</ol>
-<h4 id="类的元数据指什么？"><a href="#类的元数据指什么？" class="headerlink" title="类的元数据指什么？"></a>类的元数据指什么？</h4><p>一个class文件中的信息分为代码和元数据两部分，其中代码是指方法体里的java代码，在class文件中表现为Code属性，其他所有数据项都用于描述元数据，包括类、字段、方法定义等。</p>
-<p>参考《深入理解Java虚拟机（第2版）》183页 6.3.7 属性表集合</p>
-<h3 id="字节码验证"><a href="#字节码验证" class="headerlink" title="字节码验证"></a>字节码验证</h3><p>对方法体做校验分析，通过数据流和控制流分析，确定程序语义是否是合法的、符合逻辑的，如：</p>
-<ol>
-<li> 保证跳转指令不会跳转到方法体以外的字节码指令上。</li>
-<li> 保证方法体内类型转换是有效的。</li>
-</ol>
-<p>通过了字节码验证，也无法保证程序就是没有错误的，无法通过程序准确的检查出代码是否在有限的时间内结束运行，即离散数学中的Halting Problem。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20081359/answer/162329455">如何通俗地解释停机问题（Halting Problem）？ - 张皓的回答 - 知乎</a></li>
-</ul>
-<h3 id="符号引用验证"><a href="#符号引用验证" class="headerlink" title="符号引用验证"></a>符号引用验证</h3><p>发生在虚拟机将符号转为直接引用的时候，这个动作将在连接的第三个阶段——解析阶段中发生。</p>
-<p>符号引用验证可以看作是对类自身以外（常量池中的各种符号引用）的信息进行匹配性校验，内容如根据名能否找到类、方法字段等。</p>
-<p>这阶段目的是确保解析动作的正常执行，如果无法通过符号验证，将会抛出一个java.lang.IncompatibleClassChangeError异常的子类，如java.lang.IllegalAccessError、java.lang.NoSuchFieldError、java.lang.NoSuchMethdError等。</p>
-<h1 id="准备（Preparation）"><a href="#准备（Preparation）" class="headerlink" title="准备（Preparation）"></a>准备（Preparation）</h1><p>类的准备阶段会完成：</p>
-<ol>
-<li> 为类的静态变量分配内存</li>
-<li> 设置变量初始值</li>
-</ol>
-<p>如果是常量，则编译时存放进引用其的class的常量池中，加载时存入方法区的运行时常量池。</p>
-<p>类变量是指static修饰过的变量。</p>
-<p>在类变量未被final修饰时，变量的初始值是数据类型的零值。</p>
-<p>例如 public static int value = 123; 语句，在准备阶段赋值是0（int类型的零值）而不是123。</p>
-<h1 id="解析（Resolution）"><a href="#解析（Resolution）" class="headerlink" title="解析（Resolution）"></a>解析（Resolution）</h1><p>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。</p>
-<ul>
-<li>符号引用（Symbolic References）<br>以一组符号来描述所引用的目标，符号可以是任何形式的字面量，只要使用时能无歧义地定位到目标即可。符号引用与虚拟机实现的内存布局无关，引用的目标并不一定已经加载到内存中。</li>
-<li>直接引用（Direct References）<br>直接引用可以是直接指向目标的指针、相对偏移量或是一个能间接定位到目标的句柄。直接引用是与虚拟机实现的内存布局相关的，同一个符号引用在不同虚拟机实例上翻译出来的直接引用一般不会相同。如果有了直接引用，那引用的目标必定已经存在内存地址中。</li>
-</ul>
-<p>所有方法调用中的目标方法在Class文件里面都是一个常量池中的符号引用，在类加载的解析阶段，会将其中的一部分符号引用转化为直接引用，这种解析能成立的前提是：方法在程序真正运行之前就有一个可确定的调用版本，并且这个方法的调用版本在运行期是不可改变的。换句话说，调用目标在程序代码写好、编译器进行编译时就必须确定下来。这类方法的调用称为解析（Resolution）。  </p>
-<p>在Java语言中符合“编译器可知，运行期不可变”这个要求的方法，主要包括静态方法和私有方法两大类，前者与类型直接关联，后者在外部不可被访问，这两种方法各自的特点决定了他们都不可能通过继承而别的方式重写其他版本，因此他们都适合在类加载阶段进行解析。<br>与之相对应的是，在Java虚拟机里面提供了5条方法调用字节码指令，分别如下。</p>
-<ul>
-<li>  invokestatic：调用静态方法。</li>
-<li>  invokespecial：调用实例构造器<init>方法、私有方法和父类方法。</li>
-<li>  invokevirtual：调用所有的虚方法。</li>
-<li>  invokeinterface：调用接口方法，会在运行时再确定一个实现此接口的对象。</li>
-<li>  invokedynamic：先在运行时动态解析出调用点限定符所引用的方法，然后再执行该方法，在此之前的4条调用指令，分派逻辑是固化在Java虚拟机内部的，而invokedynamic指令的分派逻辑是由用户所设定的引导方法决定的。</li>
-</ul>
-<p>只要能被invokestatic和invokespecial指令调用的方法，都可以在解析阶段中确定唯一的调用版本，符合这个条件的有静态方法、私有方法、实例构造器、父类方法4类，他们在类加载的时候就会把符号引用解析为该方法的直接引用。这些方法可以称为非虚方法，与之相反，其他方法称为虚方法。</p>
-<p>方法调用并不等于方法执行，方法调用阶段的唯一任务就是确定被调用方法的版本(即调用哪一方法)，暂时还不涉及方法内部的具体运行过程。在程序运行时，进行方法调用是最普遍、最频繁的操作。Class文件的编译过程不包含编译中的连接步骤，一切方法调用在Class文件里面存储的都只是符号引用，而不是方法在实际运行时内存布局中的入口地址(相当于之前说的直接引用)。这个特性给Java带来了强大的动态扩展能力，但也使得Java方法调用过程变得相对复杂起来，需要在类加载期间，甚至到运行期间才能确定目标方法的直接引用。</p>
-<h1 id="初始化（Initialization）"><a href="#初始化（Initialization）" class="headerlink" title="初始化（Initialization）"></a>初始化（Initialization）</h1><p>类初始化阶段是类加载过程的最后一步，前面的类加载过程中，除了在加载阶段用户可以通过自定义类加载器参与之外，其余动作完全由虚拟机主导和控制。到了初始化阶段，才真正开始执行类中定义的 Java 代码。</p>
-<p>在准备阶段，变量已经赋值过一次系统要求的初始值，而在初始化阶段，则根据程序员自己设置的变量赋值。初始化阶段是执行类构造器<code>&lt;clinit&gt;()</code> 方法的过程。</p>
-<h2 id="lt-clinit-gt-方法生成的细节"><a href="#lt-clinit-gt-方法生成的细节" class="headerlink" title="&lt;clinit&gt;() 方法生成的细节"></a><code>&lt;clinit&gt;()</code> 方法生成的细节</h2><ul>
-<li><code>&lt;clinit&gt;()</code>  方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块中的语句合并产生的，编译器收集的顺序是由语句在源文件中出现的前后顺序决定的，静态语句块中只能访问定义在它之前的变量，定义在它后面的变量，可以赋值，但是不能访问。</li>
-<li><code>&lt;clinit&gt;()</code> 方法与类的构造函数 <code>&lt;init&gt;()</code>方法不同，它不需要显示地调用父类构造器，虚拟机会保证在子类<code>&lt;clinit&gt;()</code>方法执行之前，父类的<code>&lt;clinit&gt;()</code> 方法已经执行完毕。因此在虚拟机中第一个被执行的<code>&lt;clinit&gt;()</code> 方法肯定是 Object 的。</li>
-<li><code>&lt;clinit&gt;()</code>方法对类或接口来说不是必需的，如果一个类中没有静态语句块也没有对变量赋值的操作，那么编译器不为这个类生成<code>&lt;clinit&gt;()</code> 方法。</li>
-<li>接口中不能使用静态语句块，但仍然有变量初始化的操作，因此接口与类一样都会生成 <code>&lt;clinit&gt;()</code> 方法。但接口与类不同的是，接口不需要首先执行父类的<code>&lt;clinit&gt;()</code> 方法。只有当用到父类中的变量时，父接口才会初始化。另外，接口的实现类在初始化时也一样不会执行接口的<code>&lt;clinit&gt;()</code> 方法。</li>
-<li>虚拟机会保证一个类的<code>&lt;clinit&gt;()</code> 方法在多线程中被正确的加锁，同步，如果多个线程同时去初始化一个类，那么只会有一个线程去执行这个类的<code>&lt;clinit&gt;()</code> 方法，其它线程被阻塞。</li>
-</ul>
-<p>另外就是在同一个类加载器下，<code>&lt;clinit&gt;()</code> 方法只会被执行一次，也就是说一个类型只会被初始化一次。</p>
-<h2 id="类什么情况下会触发初始化"><a href="#类什么情况下会触发初始化" class="headerlink" title="类什么情况下会触发初始化?"></a>类什么情况下会触发初始化?</h2><p>以下五种情况必须对类进行初始化（加载、验证、准备自然必须在初始化之前完成）：</p>
-<ol>
-<li> 遇到new、putstatic、getstatic、invokestatic这几条字节指令；生成这 4 条指令最常见的 Java 代码场景是：使用 new 关键字实例化对象、读取或设置一个类的静态字段（被 final 修饰、已在编译期把结果放入到常量池的静态字段除外）以及调用一个类的静态方法的时候。</li>
-<li> 被final修饰的静态字段在编译期已经被把结果存入从常量池了，会触发static的指令吗，需要调研试验一下。</li>
-<li> 通过Class.forName反射调用一个类，参数中初始化选项默认为true。</li>
-<li> 初始化一个类，要先触发父类的初始化；初始化一个接口时只有在真正使用到父接口的时候（如引用接口中定义的常量）才初始化。</li>
-<li> 虚拟机启动时，会先初始化主类，即含有main方法的类。</li>
-<li>使用jdk7的动态语言机制时，一个MethodHandle实例最后解析结果是REF_getStatic、REF_putStatic、REF_invokeStatic的方法句柄，需要初始化这些方法句柄对应的类。</li>
-</ol>
-<h2 id="不会触发类初始化的典型场景"><a href="#不会触发类初始化的典型场景" class="headerlink" title="不会触发类初始化的典型场景"></a>不会触发类初始化的典型场景</h2><ol>
-<li> 调用父类的静态成员变量，只会执行父类的static代码块，不会执行子类的static代码块，即子类没有初始化。</li>
-<li> 创建一个类的数组，不会触发数组元素类初始化（元素类的static代码块不会执行）。</li>
-<li> A类只引用了B类中定义的常量（static final定义的基本类型字面量或字符串字面量的属性），不会触发该B类的初始化，因为在编译阶段通过常量池传播优化，已经将B类的常量值存储到了A类常量池中，以后A类对B类中常量的引用都转换为对A类自身常量池中的引用。</li>
-</ol>
-<h1 id="卸载（Unloading）"><a href="#卸载（Unloading）" class="headerlink" title="卸载（Unloading）"></a>卸载（Unloading）</h1><h2 id="类卸载时机"><a href="#类卸载时机" class="headerlink" title="类卸载时机"></a>类卸载时机</h2><p>类的卸载就从虚拟机中移除类，这个由虚拟机的垃圾回收机制决定，一般要满足下面的条件：</p>
-<ol>
-<li> 该类所有的实例对象都已被回收。</li>
-<li> 该类的类加载器对象已被回收。</li>
-<li> 该类的Class对象没有在任何地方被引用，无法在任何地方通过反射访问该类。</li>
-</ol>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li>《深入理解Java虚拟机（第2版）》第7章  虚拟机类加载机制</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Class%E5%B8%B8%E9%87%8F%E6%B1%A0%E3%80%81%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0%E3%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%B8%B8%E9%87%8F%E6%B1%A0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Class%E5%B8%B8%E9%87%8F%E6%B1%A0%E3%80%81%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0%E3%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%B8%B8%E9%87%8F%E6%B1%A0/" class="post-title-link" itemprop="url">Class常量池、运行时常量池、字符串常量池</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-03-03 20:00:00" itemprop="dateCreated datePublished" datetime="2018-03-03T20:00:00+08:00">2018-03-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Class%E5%B8%B8%E9%87%8F%E6%B1%A0%E3%80%81%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0%E3%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%B8%B8%E9%87%8F%E6%B1%A0/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Class常量池、运行时常量池、字符串常量池/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Class常量池"><a href="#Class常量池" class="headerlink" title="Class常量池"></a>Class常量池</h1><h2 id="Class常量池在哪，是做什么的？"><a href="#Class常量池在哪，是做什么的？" class="headerlink" title="Class常量池在哪，是做什么的？"></a>Class常量池在哪，是做什么的？</h2><p>每个Class文件中都有常量池，位于魔数和主次版本号之后，是Class文件中第一个出现的表类型的数据项，占用空间最大的数据项之一，也是与其他项目关联最多的数据类型。</p>
-<p>Class常量池主要存放：</p>
-<ol>
-<li> 字面量（Literal）</li>
-<li> 符号引用（Symbolic References）</li>
-</ol>
-<p>可以理解为Class文件中的资源仓库。</p>
-<p>参考《深入理解Java虚拟机（第2版）》168页 6.3.2 常量池。</p>
-<h3 id="字面量是什么？"><a href="#字面量是什么？" class="headerlink" title="字面量是什么？"></a>字面量是什么？</h3><p>直观的数据值。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int i = 100;</span><br><span class="line">float f = 2.3f;</span><br><span class="line">String s = &quot;abc&quot;;</span><br></pre></td></tr></table></figure>
-<p>100、2.3f、”abc”是字面量</p>
-<p>0x1FB等十六进制、八进制、二进制等直观的数据值也是字面量。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/55994121/answer/147296098">Java 中new String(“字面量”) 中 “字面量” 是何时进入字符串常量池的? - 木女孩的回答 - 知乎 </a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/itplay/p/11137526.html">Java 8 中的常量池、字符串池、包装类对象池</a></li>
-</ul>
-<h3 id="符号引用是什么？"><a href="#符号引用是什么？" class="headerlink" title="符号引用是什么？"></a>符号引用是什么？</h3><ol>
-<li> 类和接口的全限定名</li>
-<li> 字段的名称和描述符 </li>
-<li> 方法的名称和描述符</li>
-</ol>
-<blockquote>
-<p>Java代码在进行Javac编译的时候，并不像C和C++那样有“连接”这一步骤，而是在虚拟机加载Class文件的时候进行动态连接。</p>
-<p>也就是说，在Class文件中不会保存各个方法、字段的最终内存布局信息，因此这些字段、方法的符号引用不经过运行期转换的话无法得到真正的内存入口地址，也就无法直接被虚拟机使用。</p>
-<p>当虚拟机运行时，需要从常量池获得对应的符号引用，再在类创建时或运行时解析、翻译到具体的内存地址之中。</p>
-</blockquote>
-<p>因为java要支持动态性，所以不能在编译期就确定最终的内存布局。</p>
-<p>参考《深入理解Java虚拟机（第2版）》168页 6.3.2 常量池。</p>
-<h4 id="字段描述符和方法的描述符是什么？"><a href="#字段描述符和方法的描述符是什么？" class="headerlink" title="字段描述符和方法的描述符是什么？"></a>字段描述符和方法的描述符是什么？</h4><p>字段的描述符唯一确定一个字段，方法的描述符唯一确定一个方法。</p>
-<p>参考：</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》177页 6.3.5 字段表集合</li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhangjg_blog/article/details/21487287">深入理解Java Class文件格式（二）</a></li>
-</ul>
-<h2 id="Class常量池的实际存储格式是什么样的"><a href="#Class常量池的实际存储格式是什么样的" class="headerlink" title="Class常量池的实际存储格式是什么样的?"></a>Class常量池的实际存储格式是什么样的?</h2><p>常量池整体上分为两部分：</p>
-<ul>
-<li>常量池计数器</li>
-<li>常量池数据区</li>
-</ul>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210128235549.png"></p>
-<p>常量池计数器（constant_pool_count）：由于常量的数量不固定，所以需要先放置两个字节来表示常量池容量计数值。</p>
-<p>常量池数据区：数据区是由（constant_pool_count-1）个cp_info结构组成，一个cp_info结构对应一个常量。在字节码中共有14种类型的cp_info（如下图6所示），每种类型的结构都是固定的。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210128235546.png"></p>
-<p>具体以CONSTANT_utf8_info为例，它的结构如下图7左侧所示。首先一个字节“tag”，它的值取自上图6中对应项的Tag，由于它的类型是utf8_info，所以值为“01”。接下来两个字节标识该字符串的长度Length，然后Length个字节为这个字符串具体的值。从图2中的字节码摘取一个cp_info结构，如下图7右侧所示。将它翻译过来后，其含义为：该常量类型为utf8字符串，长度为一字节，数据为“a”。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210128235548.png"></p>
-<p>参考</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》168页 6.3.2 常量池</li>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2019/09/05/java-bytecode-enhancement.html">美团：字节码增强技术探索</a></li>
-</ul>
-<h2 id="Class常量池一个具体内容的例子？"><a href="#Class常量池一个具体内容的例子？" class="headerlink" title="Class常量池一个具体内容的例子？"></a>Class常量池一个具体内容的例子？</h2><p>定义如下的类：</p>
- <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JavaBean</span></span>&#123; </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> value = <span class="number">1</span>; </span><br><span class="line">    <span class="keyword">public</span> String s = <span class="string">&quot;abc&quot;</span>; </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> f = <span class="number">0x101</span>; </span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setValue</span><span class="params">(<span class="keyword">int</span> v)</span></span>&#123; </span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> temp = <span class="number">3</span>; </span><br><span class="line">        <span class="keyword">this</span>.value = temp + v; </span><br><span class="line">    &#125; </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getValue</span><span class="params">()</span></span>&#123; </span><br><span class="line">        <span class="keyword">return</span> value; </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<p>生成的class常量池如下： </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">Constant pool: </span><br><span class="line">   #1 = Methodref          #6.#29         // java/lang/Object.&quot;&lt;init&gt;&quot;:()V </span><br><span class="line">   #2 = Fieldref           #5.#30         // JavaBasicKnowledge/JavaBean.value:I </span><br><span class="line">   #3 = String             #31            // abc </span><br><span class="line">   #4 = Fieldref           #5.#32         // JavaBasicKnowledge/JavaBean.s:Ljava/lang/String; </span><br><span class="line">   #5 = Class              #33            // JavaBasicKnowledge/JavaBean </span><br><span class="line">   #6 = Class              #34            // java/lang/Object </span><br><span class="line">   #7 = Utf8               value </span><br><span class="line">   #8 = Utf8               I </span><br><span class="line">   #9 = Utf8               s </span><br><span class="line">  #10 = Utf8               Ljava/lang/String; </span><br><span class="line">  #11 = Utf8               f </span><br><span class="line">  #12 = Utf8               ConstantValue </span><br><span class="line">  #13 = Integer            257 </span><br><span class="line">  #14 = Utf8               &lt;init&gt; </span><br><span class="line">  #15 = Utf8               ()V </span><br><span class="line">  #16 = Utf8               Code </span><br><span class="line">  #17 = Utf8               LineNumberTable </span><br><span class="line">  #18 = Utf8               LocalVariableTable </span><br><span class="line">  #19 = Utf8               this </span><br><span class="line">  #20 = Utf8               LJavaBasicKnowledge/JavaBean; </span><br><span class="line">  #21 = Utf8               setValue </span><br><span class="line">  #22 = Utf8               (I)V </span><br><span class="line">  #23 = Utf8               v </span><br><span class="line">  #24 = Utf8               temp </span><br><span class="line">  #25 = Utf8               getValue </span><br><span class="line">  #26 = Utf8               ()I </span><br><span class="line">  #27 = Utf8               SourceFile </span><br><span class="line">  #28 = Utf8               StringConstantPool.java </span><br><span class="line">  #29 = NameAndType        #14:#15        // &quot;&lt;init&gt;&quot;:()V </span><br><span class="line">  #30 = NameAndType        #7:#8          // value:I </span><br><span class="line">  #31 = Utf8               abc </span><br><span class="line">  #32 = NameAndType        #9:#10         // s:Ljava/lang/String; </span><br><span class="line">  #33 = Utf8               JavaBasicKnowledge/JavaBean </span><br><span class="line">  #34 = Utf8               java/lang/Object </span><br></pre></td></tr></table></figure>
-
-<p>字面量：</p>
-<p>这里需要说明的一点，上面说的存在于常量池的字面量，指的是数据的值，也就是abc和0x101(257),通过上面对常量池的观察可知这两个字面量是确实存在于常量池的。</p>
-<p>而对于基本类型数据(甚至是方法中的局部变量)，也就是上面的private int value = 1;常量池中只保留了他的的字段描述符I和字段的名称value，他们的字面量不会存在于常量池。</p>
-<p>符号引用：</p>
-<p>对于方法中的局部变量名，class文件的常量池仅仅保存字段名。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1450501">彻底弄懂java中的常量池</a></li>
-</ul>
-<h2 id="一个方法名最多可以有多长？"><a href="#一个方法名最多可以有多长？" class="headerlink" title="一个方法名最多可以有多长？"></a>一个方法名最多可以有多长？</h2><p>在HotSpot VM中，运行时常量池里，CONSTANT_Utf8_info可以表示Class文件的方法、字段等等，其结构如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210128235522.png"></p>
-<p>首先是1个字节的tag,表示这是一个CONSTANT_Utf8_info结构的常量，然后是两个字节的length，表示要储存字节的长度，之后是一个字节的byte数组，表示真正的储存的length个长度的字符串。这里需要注意的是，一个字节只是代表这里有一个byte类型的数组，而这个数组的长度当然可以远远大于一个字节。当然，由于CONSTANT_Utf8_info结构只能用u2即两个字节来表示长度，因此长度的最大值为2byte，也就是65535。</p>
-<h2 id="Android虚拟机的Class常量池跟JVM的有什么不同？"><a href="#Android虚拟机的Class常量池跟JVM的有什么不同？" class="headerlink" title="Android虚拟机的Class常量池跟JVM的有什么不同？"></a>Android虚拟机的Class常量池跟JVM的有什么不同？</h2><blockquote>
-<p>Java从设计之初就非要支持分离编译（separate compilation）与按需动态类加载（on-demand dynamic class loading），导致Java的Class文件必须独立的（self-contained）——每个Class文件必须自己携带自己的常量池，其主要信息是字符串与若干其它常量的值，以及用于符号链接的符号引用信息（symbolic reference）。</p>
-<p>如果大家关注过Class文件的内容的话，会知道其实通常Class文件里表示程序逻辑的代码部分——“字节码”——只占Class文件大小的小头；而大头都被常量池占了。而且多个Class文件的常量池内容之间常常有重叠，所以当程序涉及多个Class文件时，就容易有冗余信息，不利于减少传输/存储代码的大小。</p>
-<p>大家或许还记得Google在Google I/O 2008的<a href="https://link.zhihu.com/?target=https://sites.google.com/site/io/dalvik-vm-internals">Dalvik VM Internals</a>演讲里，Dan得意的介绍到Dalvik的Dex格式在未压缩的情况下都比压缩了的JAR文件还小么？</p>
-<p>Dan准确的介绍了Dex体积更小的原因：一个Dex相当于一个或多个JAR包，里面可以包含多个Class文件对应的内容。一个Dex文件里的所有Class都共享同一个常量池，因而不会像Class文件那样在多个常量池之间有冗余。这样Dex文件就等同于在元数据层面上对JAR文件做了压缩，所以前者比后者更小。</p>
-</blockquote>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/35777031/answer/64575683">栈式虚拟机和寄存器式虚拟机？</a> </li>
-</ul>
-<h1 id="字符串常量池"><a href="#字符串常量池" class="headerlink" title="字符串常量池"></a>字符串常量池</h1><h2 id="字符串常量池在内存区域中的哪一块？"><a href="#字符串常量池在内存区域中的哪一块？" class="headerlink" title="字符串常量池在内存区域中的哪一块？"></a>字符串常量池在内存区域中的哪一块？</h2><p><img src="https://gitee.com/picportal/pic/raw/master/img/20210225235523.png"></p>
-<p>方法区实际上是在一块叫“非堆”的区域包含——可以简单粗略的理解为非堆中包含了永生代，而永生代中又包含了方法区和字符串常量池。</p>
-<p>其中的Interned String就是全局共享的“字符串常量池（String Pool）”，和运行时常量池不是一个概念。但我们在代码中申明String s1 = “Hello”;这句代码后，在类加载的过程中，类的class文件的信息会被解析到内存的方法区里。</p>
-<p>全局字符串池里的内容是在类加载完成，经过验证，准备阶段之后在堆中生成字符串对象实例，然后将该字符串对象实例的引用值存到string pool中（记住：string pool中存的是引用值而不是具体的实例对象，具体的实例对象是在堆中开辟的一块空间存放的。）。</p>
-<p>在HotSpot VM里实现的string pool功能的是一个StringTable类，它是一个哈希表，里面存的是驻留字符串(也就是我们常说的用双引号括起来的)的引用（而不是驻留字符串实例本身），也就是说在堆中的某些字符串实例被这个StringTable引用之后就等同被赋予了”驻留字符串”的身份。这个StringTable在每个HotSpot VM的实例只有一份，被所有的类共享。</p>
-<h2 id="String-s1-“Hello”，到底有没有在堆中创建对象？"><a href="#String-s1-“Hello”，到底有没有在堆中创建对象？" class="headerlink" title="String s1 = “Hello”，到底有没有在堆中创建对象？"></a>String s1 = “Hello”，到底有没有在堆中创建对象？</h2><p>class文件里常量池里大部分数据会被加载到“运行时常量池”，包括String的字面量；但同时“Hello”字符串的一个引用会被存到同样在“非堆”区域的“字符串常量池”中，而”Hello”本体还是和所有对象一样，创建在Java堆中。</p>
-<p>当主线程开始创建s1时，虚拟机会先去字符串池中找是否有equals(“Hello”)的String，如果相等就把在字符串池中“Hello”的引用复制给s1；如果找不到相等的字符串，就会在堆中新建一个对象，同时把引用驻留在字符串池，再把引用赋给str。</p>
-<p>当用字面量赋值的方法创建字符串时，无论创建多少次，只要字符串的值相同，它们所指向的都是堆中的同一个对象。</p>
-<h2 id="字符串常量池本质是个什么东西？"><a href="#字符串常量池本质是个什么东西？" class="headerlink" title="字符串常量池本质是个什么东西？"></a>字符串常量池本质是个什么东西？</h2><p>字符串常量池是JVM所维护的一个字符串实例的引用表。</p>
-<p>在HotSpot VM中，它是一个叫做StringTable的全局表。在字符串常量池中维护的是字符串实例的引用，底层C++实现就是一个Hashtable。这些被维护的引用所指的字符串实例，被称作”被驻留的字符串”或”interned string”或通常所说的”进入了字符串常量池的字符串”。</p>
-<h2 id="String”字面量”-是何时进入字符串常量池的？如何决定是否要复用字符串常量池中的驻留字符串？"><a href="#String”字面量”-是何时进入字符串常量池的？如何决定是否要复用字符串常量池中的驻留字符串？" class="headerlink" title="String”字面量” 是何时进入字符串常量池的？如何决定是否要复用字符串常量池中的驻留字符串？"></a>String”字面量” 是何时进入字符串常量池的？如何决定是否要复用字符串常量池中的驻留字符串？</h2><p>在执行ldc指令时，该指令表示int、float或String型常量从常量池推送至栈顶。</p>
-<blockquote>
-<p>ldc全称：load constant</p>
-</blockquote>
-<p>就HotSpot VM的实现来说，加载类的时候，那些字符串字面量会进入到当前类的运行时常量池，不会进入全局的字符串常量池（即在StringTable中并没有相应的引用，在堆中也没有对应的对象产生），在执行ldc指令时，触发lazy resolution这个动作。</p>
-<p>ldc字节码在这里的执行语义是：到当前类的运行时常量池（runtime constant pool，HotSpot VM里是ConstantPool + ConstantPoolCache）去查找该index对应的项，如果该项尚未resolve则resolve之，并返回resolve后的内容。</p>
-<p>在遇到String类型常量时，resolve的过程如果发现StringTable已经有了内容匹配的java.lang.String的引用，则直接返回这个引用，反之，如果StringTable里尚未有内容匹配的String实例的引用，则会在Java堆里创建一个对应内容的String对象，然后在StringTable记录下这个引用，并返回这个引用出去。</p>
-<p>可见，ldc指令是否需要创建新的String实例，全看在第一次执行这一条ldc指令时，StringTable是否已经记录了一个对应内容的String的引用。</p>
-<h2 id="String-intern-用法和规则是什么？"><a href="#String-intern-用法和规则是什么？" class="headerlink" title="String.intern()用法和规则是什么？"></a>String.intern()用法和规则是什么？</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		String str1 = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;计算机&quot;</span>).append(<span class="string">&quot;软件&quot;</span>).toString();</span><br><span class="line">		System.out.println(str1.intern() == str1);</span><br><span class="line">		String str2 = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;ja&quot;</span>).append(<span class="string">&quot;va&quot;</span>).toString();</span><br><span class="line">		System.out.println(str2.intern() == str2);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;	</span><br></pre></td></tr></table></figure>
-
-<p>以上代码，在 JDK6 下执行结果为 false、false，在 JDK7 以上执行结果为 true、false。</p>
-<p>首先我们调用StringBuilder创建了一个”计算机软件”String对象，因为调用了new关键字，因此是在运行时创建，之前JVM中是没有这个字符串的。</p>
-<p>在 JDK6 下，intern()会把首次遇到的字符串实例复制到永久代中，返回的也是这个永久代中字符串实例的引用；而在JDK1.7开始，intern()方法不再复制字符串实例，String 的 intern 方法首先将尝试在常量池中查找该对象的引用，如果找到则直接返回该对象在常量池中的引用地址。</p>
-<p>因此在1.7中，“计算机软件”这个字符串实例只存在一份，存在于java堆中！通过3中的分析，我们知道当String str1 = new StringBuilder(“计算机”).append(“软件”).toString();这句代码执行完之后，已经在堆中创建了一个字符串对象，并且在全局字符串常量池中保留了这个字符串的引用，那么str1.intern()直接返回这个引用，这当然满足str1.intern() == str1——都是他自己嘛；对于引用str2，因为JVM中已经有“java”这个字符串了，因此new StringBuilder(“ja”).append(“va”).toString()会重新创建一个新的“java”字符串对象，而intern()会返回首次遇到的常量的实例引用，因此他返回的是系统中的那个”java”字符串对象引用(首次)，因此会返回false。</p>
-<p>在 JDK6 下 str1、str2 指向的是新创建的对象，该对象将在 Java Heap 中创建，所以 str1、str2 指向的是 Java Heap 中的内存地址；调用 intern 方法后将尝试在常量池中查找该对象，没找到后将其放入常量池并返回，所以此时 str1/str2.intern() 指向的是常量池中的地址，JDK6常量池在永久代，与堆隔离，所以 s1.intern()和s1 的地址当然不同了。</p>
-<h1 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h1><h2 id="运行时常量池是什么？"><a href="#运行时常量池是什么？" class="headerlink" title="运行时常量池是什么？"></a>运行时常量池是什么？</h2><p>运行时常量池是方法区的一部分，所以也是全局贡献的，我们知道，jvm在执行某个类的时候，必须经过加载、链接（验证、准备、解析）、初始化，在第一步加载的时候需要完成：</p>
-<ol>
-<li> 通过一个类的全限定名来获取此类的二进制字节流</li>
-<li> 将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构    </li>
-<li> 在内存中生成一个类对象，代表加载的这个类，这个对象是java.lang.Class，它作为方法区这个类的各种数据访问的入口。</li>
-</ol>
-<p>上面的第二条，将class字节流代表的静态存储结构转化为方法区的运行时数据结构，其中就包含了class文件常量池进入运行时常量池的过程，这里需要强调一下不同的类共用一个运行时常量池，同时在进入运行时常量池的过程中，多个class文件中常量池相同的字符串，多个class文件中常量池中相同的字符串只会存在一份在运行时常量池，这也是一种优化。</p>
-<p>运行时常量池的作用是存储java class文件常量池中的符号信息，运行时常量池中保存着一些class文件中描述的符号引用，同时在类的解析阶段还会将这些符号引用翻译出直接引用（直接指向实例对象的指针，内存地址），翻译出来的直接引用也是存储在运行时常量池中。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210225235522.png"></p>
-<h2 id="运行时常量池-和-驻留字符串常量池-有什么联系？"><a href="#运行时常量池-和-驻留字符串常量池-有什么联系？" class="headerlink" title="运行时常量池  和  驻留字符串常量池  有什么联系？"></a>运行时常量池  和  驻留字符串常量池  有什么联系？</h2><p>jvm在执行某个类的时候，必须经过加载、连接、初始化，而连接又包括验证、准备、解析三个阶段。而当类加载到内存中后，jvm就会将class常量池中的内容存放到运行时常量池中，由此可知，运行时常量池也是每个类都有一个。在上面我也说了，class常量池中存的是字面量和符号引用，也就是说他们存的并不是对象的实例，而是对象的符号引用值。而经过解析（resolve）之后，也就是把符号引用替换为直接引用，解析的过程会去查询全局字符串池，也就是我们上面所说的StringTable，以保证运行时常量池所引用的字符串与全局字符串池中所引用的是一致的。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">String str1 = &quot;abc&quot;;</span><br><span class="line">String str2 = new String(&quot;def&quot;);</span><br><span class="line">String str3 = &quot;abc&quot;;</span><br><span class="line">String str4 = str2.intern();</span><br><span class="line">String str5 = &quot;def&quot;;</span><br><span class="line">System.out.println(str1 == str3); // true</span><br><span class="line">System.out.println(str2 == str4); // false</span><br><span class="line">System.out.println(str4 == str5); // true</span><br></pre></td></tr></table></figure>
-
-<p>上面程序的首先经过编译之后，在该类的class常量池中存放一些符号引用，然后类加载之后，将class常量池中存放的符号引用转存到运行时常量池中，然后经过验证，准备阶段之后，在堆中生成驻留字符串的实例对象（也就是上例中str1所指向的”abc”实例对象），然后将这个对象的引用存到全局String Pool中，也就是StringTable中，最后在解析阶段，要把运行时常量池中的符号引用替换成直接引用，那么就直接查询StringTable，保证StringTable里的引用值与运行时常量池中的引用值一致，大概整个过程就是这样了。</p>
-<p>回到上面的那个程序，现在就很容易解释整个程序的内存分配过程了，首先，在堆中会有一个”abc”实例，全局StringTable中存放着”abc”的一个引用值，然后在运行第二句的时候会生成两个实例，一个是”def”的实例对象，并且StringTable中存储一个”def”的引用值，还有一个是new出来的一个”def”的实例对象，与上面那个是不同的实例，当在解析str3的时候查找StringTable，里面有”abc”的全局驻留字符串引用，所以str3的引用地址与之前的那个已存在的相同，str4是在运行的时候调用intern()函数，返回StringTable中”def”的引用值，如果没有就将str2的引用值添加进去，在这里，StringTable中已经有了”def”的引用值了，所以返回上面在new str2的时候添加到StringTable中的 “def”引用值，最后str5在解析的时候就也是指向存在于StringTable中的”def”的引用值，那么这样一分析之后，下面三个打印的值就容易理解了。</p>
-<p>“abc”的常量会被ldc指令从常量池推送到栈顶，ldc会触发动态解析。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/itplay/p/11137526.html">【JVM】Java 8 中的常量池、字符串池、包装类对象池</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/55994121/answer/147296098">Java 中new String(“字面量”) 中 “字面量” 是何时进入字符串常量池的? - 木女孩的回答 - 知乎 </a></li>
-<li><a target="_blank" rel="noopener" href="https://tangxman.github.io/2015/07/27/the-difference-of-java-string-pool/">Java中几种常量池的区分</a></li>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1450501">彻底弄懂java中的常量池</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%9A%84Class%E7%BB%93%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%9A%84Class%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">Java的Class结构</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-02-20 20:00:00" itemprop="dateCreated datePublished" datetime="2018-02-20T20:00:00+08:00">2018-02-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E7%9A%84Class%E7%BB%93%E6%9E%84/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java的Class结构/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="如何方便的查看class结构？"><a href="#如何方便的查看class结构？" class="headerlink" title="如何方便的查看class结构？"></a>如何方便的查看class结构？</h1><ul>
-<li><p>方法一<br>javap -verbose xxx.class</p>
-</li>
-<li><p>方法二<br>Intellij Idea装 jclasslib 插件<br>代码编译后在菜单栏”View”中选择”Show Bytecode With jclasslib”</p>
-</li>
-</ul>
-<h1 id="Class文件的整体结构是怎样的"><a href="#Class文件的整体结构是怎样的" class="headerlink" title="Class文件的整体结构是怎样的?"></a>Class文件的整体结构是怎样的?</h1><p>JVM规范要求每一个字节码文件都要由十部分按照固定的顺序组成。<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210125335546.png"></p>
-<p>class文件各数据项之间没有分隔符。</p>
-<p>class文件采用类似于C语言的伪结构存储数据，这种伪结构只有两种数据类型：无符号数和表。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210125335542.png"></p>
-<p>参考：</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》第6章  类文件结构</li>
-</ul>
-<h1 id="方法表的具体存储格式是怎样的？"><a href="#方法表的具体存储格式是怎样的？" class="headerlink" title="方法表的具体存储格式是怎样的？"></a>方法表的具体存储格式是怎样的？</h1><p>方法表也是由两部分组成：</p>
-<ul>
-<li>第一部分为两个字节描述方法的个数。</li>
-<li>第二部分为每个方法的详细信息。方法的详细信息较为复杂，包括方法的访问标志、方法名、方法的描述符以及方法的属性。</li>
-</ul>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210125235546.png"></p>
-<p>方法名索引、描述符索引，这两个的索引指的是在常量池中的索引，方法名和描述符都存储在class的常量池中，可以通过索引值在常量池中找到。</p>
-<p>属性包括以下3个部分：</p>
-<ol>
-<li> “Code区”：源代码对应的JVM指令操作码，在进行字节码增强时重点操作的就是“Code区”这一部分。</li>
-<li> “LineNumberTable”：行号表，将Code区的操作码和源代码中的行号对应，Debug时会起到作用（源代码走一行，需要走多少个JVM指令操作码）。 </li>
-<li> “LocalVariableTable”：本地变量表，包含This和局部变量，之所以可以在每一个方法内部都可以调用This，是因为JVM将This作为每一个方法的第一个参数隐式进行传入。当然，这是针对非Static方法而言。</li>
-</ol>
-<p>参考：</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》第6章  类文件结构 6.3.6 方法表集合</li>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2019/09/05/java-bytecode-enhancement.html">美团：字节码增强技术探索</a></li>
-</ul>
-<h1 id="class文件结构一个具体的案例"><a href="#class文件结构一个具体的案例" class="headerlink" title="class文件结构一个具体的案例?"></a>class文件结构一个具体的案例?</h1><p>参考《深入理解Java虚拟机（第2版）》第6章 类文件结构 6.3.7 属性表集合 。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">Classfile ~/Demo.class </span><br><span class="line">  Last modified <span class="number">2020</span>-<span class="number">9</span>-<span class="number">30</span>; size <span class="number">338</span> bytes </span><br><span class="line">  MD5 checksum d2cf9d824e949e4dcc98ac47657cba67 </span><br><span class="line">  Compiled from <span class="string">&quot;Demo.java&quot;</span> </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo</span> </span></span><br><span class="line"><span class="class">  <span class="title">minor</span> <span class="title">version</span>: 0 </span></span><br><span class="line"><span class="class">  <span class="title">major</span> <span class="title">version</span>: 52 </span></span><br><span class="line"><span class="class">  <span class="title">flags</span>: <span class="title">ACC_PUBLIC</span>, <span class="title">ACC_SUPER</span> </span></span><br><span class="line"><span class="class"><span class="title">Constant</span> <span class="title">pool</span>: </span></span><br><span class="line"><span class="class">   #1 </span>= Methodref          #<span class="number">4.</span>#<span class="number">18</span>         <span class="comment">// java/lang/Object.&quot;&lt;init&gt;&quot;:()V </span></span><br><span class="line">   #<span class="number">2</span> = Fieldref           #<span class="number">3.</span>#<span class="number">19</span>         <span class="comment">// Demo.m:I </span></span><br><span class="line">   #<span class="number">3</span> = Class              #<span class="number">20</span>            <span class="comment">// Demo </span></span><br><span class="line">   #<span class="number">4</span> = Class              #<span class="number">21</span>            <span class="comment">// java/lang/Object </span></span><br><span class="line">   #<span class="number">5</span> = Utf8               m </span><br><span class="line">   #<span class="number">6</span> = Utf8               I </span><br><span class="line">   #<span class="number">7</span> = Utf8               &lt;init&gt; </span><br><span class="line">   #<span class="number">8</span> = Utf8               ()V </span><br><span class="line">   #<span class="number">9</span> = Utf8               Code </span><br><span class="line">  #<span class="number">10</span> = Utf8               LineNumberTable </span><br><span class="line">  #<span class="number">11</span> = Utf8               LocalVariableTable </span><br><span class="line">  #<span class="number">12</span> = Utf8               <span class="keyword">this</span> </span><br><span class="line">  #<span class="number">13</span> = Utf8               LDemo; </span><br><span class="line">  #<span class="number">14</span> = Utf8               inc </span><br><span class="line">  #<span class="number">15</span> = Utf8               ()I </span><br><span class="line">  #<span class="number">16</span> = Utf8               SourceFile </span><br><span class="line">  #<span class="number">17</span> = Utf8               Demo.java </span><br><span class="line">  #<span class="number">18</span> = NameAndType        #<span class="number">7</span>:#<span class="number">8</span>          <span class="comment">// &quot;&lt;init&gt;&quot;:()V </span></span><br><span class="line">  #<span class="number">19</span> = NameAndType        #<span class="number">5</span>:#<span class="number">6</span>          <span class="comment">// m:I </span></span><br><span class="line">  #<span class="number">20</span> = Utf8               Demo </span><br><span class="line">  #<span class="number">21</span> = Utf8               java/lang/Object </span><br><span class="line">&#123; </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Demo</span><span class="params">()</span></span>; </span><br><span class="line">    descriptor: ()V </span><br><span class="line">    flags: ACC_PUBLIC </span><br><span class="line">    Code: </span><br><span class="line">      stack=<span class="number">1</span>, locals=<span class="number">1</span>, args_size=<span class="number">1</span> </span><br><span class="line">         <span class="number">0</span>: aload_0 </span><br><span class="line">         <span class="number">1</span>: invokespecial #<span class="number">1</span>                  <span class="comment">// Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V </span></span><br><span class="line">         <span class="number">4</span>: <span class="keyword">return</span> </span><br><span class="line">      LineNumberTable: </span><br><span class="line">        line <span class="number">1</span>: <span class="number">0</span> </span><br><span class="line">      LocalVariableTable: </span><br><span class="line">        Start  Length  Slot  Name   Signature </span><br><span class="line">            <span class="number">0</span>       <span class="number">5</span>     <span class="number">0</span>  <span class="keyword">this</span>   LDemo; </span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">inc</span><span class="params">()</span></span>; </span><br><span class="line">    descriptor: ()I </span><br><span class="line">    flags: ACC_PUBLIC </span><br><span class="line">    Code: </span><br><span class="line">      stack=<span class="number">2</span>, locals=<span class="number">1</span>, args_size=<span class="number">1</span> </span><br><span class="line">         <span class="number">0</span>: aload_0 </span><br><span class="line">         <span class="number">1</span>: getfield      #<span class="number">2</span>                  <span class="comment">// Field m:I </span></span><br><span class="line">         <span class="number">4</span>: iconst_1 </span><br><span class="line">         <span class="number">5</span>: iadd </span><br><span class="line">         <span class="number">6</span>: ireturn </span><br><span class="line">      LineNumberTable: </span><br><span class="line">        line <span class="number">5</span>: <span class="number">0</span> </span><br><span class="line">      LocalVariableTable: </span><br><span class="line">        Start  Length  Slot  Name   Signature </span><br><span class="line">            <span class="number">0</span>       <span class="number">7</span>     <span class="number">0</span>  <span class="keyword">this</span>   LDemo; </span><br><span class="line">&#125; </span><br><span class="line">SourceFile: <span class="string">&quot;Demo.java&quot;</span> </span><br></pre></td></tr></table></figure>
-
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li>《深入理解Java虚拟机（第2版）》第6章  类文件结构</li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/webor2006/p/9459681.html">Java字节码方法表与属性表深度剖析</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/webor2006/p/9459681.html">Java字节码方法表与属性表深度剖析</a></li>
-<li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2019/09/05/java-bytecode-enhancement.html">美团：字节码增强技术探索</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/" class="post-title-link" itemprop="url">Object.finalize()</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-01-17 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-17T20:00:00+08:00">2018-01-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Object.finalize()/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Object.finalize()/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Object的finalize-方法什么时候被执行？"><a href="#Object的finalize-方法什么时候被执行？" class="headerlink" title="Object的finalize()方法什么时候被执行？"></a>Object的finalize()方法什么时候被执行？</h1><p>当垃圾回收器要宣告一个对象死亡时，至少要经过两次标记过程：</p>
-<p>如果对象在进行可达性分析后发现没有和GC Roots相连接的引用链，就会被第一次标记。</p>
-<p>GC会再判断该对象是否覆盖了finalize方法，若未覆盖，则直接将其回收。</p>
-<p>如果对象覆盖finalize()方法且未被虚拟机调用过，那么这个对象会被放置在F-Queue队列中，并在稍后由一个虚拟机自动建立的低优先级的Finalizer线程区执行触发finalize()方法，但不承诺等待其运行结束。</p>
-<p>执行finalize方法完毕后，GC会再次判断该对象是否可达，若不可达，则进行回收，否则，对象“复活”。</p>
-<h1 id="Object-finalize-设计目的？"><a href="#Object-finalize-设计目的？" class="headerlink" title="Object.finalize()设计目的？"></a>Object.finalize()设计目的？</h1><p>f对象逃脱死亡的最后一次机会。（只要重新与引用链上的任何一个对象建立关联即可。）但是不建议使用，运行代价高昂，不确定性大，且无法保证各个对象的调用顺序。可用try-finally或其他替代。</p>
-<h1 id="Object-finalize-使用场景"><a href="#Object-finalize-使用场景" class="headerlink" title="Object.finalize()使用场景"></a>Object.finalize()使用场景</h1><p>由于发生垃圾回收就会调用finalize()，所以它可以作为垃圾回收的监听回调。</p>
-<p>在Android framework源码中BinderInternal实现了gc监听的功能，ActivityThread在gc发生时，如果当前内存不足时，则清理一些不必要的activity以释放内存。</p>
-<p>再比如你调用了一些native的方法，可以要在finalize()里去调用C的释放函数。</p>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36761831/article/details/81211540">Java中 System.gc() 调用垃圾收集器与 finalize() 函数
-</a></li>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1082673">是时候忘掉finalize方法了</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/questionTerminal/d8eab06913084e42b515633604eef7cd">finalize()方法什么时候被调用？析构函数(finalization)的目的是什么？</a></li>
-<li>《深入理解Java虚拟机》</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%BC%BA%E5%BC%95%E7%94%A8%E3%80%81%E8%BD%AF%E5%BC%95%E7%94%A8%E3%80%81%E5%BC%B1%E5%BC%95%E7%94%A8%E3%80%81%E8%99%9A%E5%BC%95%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -871,7 +215,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -974,7 +318,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1121,7 +465,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1231,7 +575,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1336,7 +680,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1577,7 +921,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1752,10 +1096,582 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%BF%90%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%BF%90%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">Java运行时内存结构</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-01 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-01T20:00:00+08:00">2018-01-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%BF%90%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java运行时内存结构/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Java运行时数据区域有哪些？"><a href="#Java运行时数据区域有哪些？" class="headerlink" title="Java运行时数据区域有哪些？"></a>Java运行时数据区域有哪些？</h1><ol>
+<li> 程序计数器</li>
+<li> 虚拟机栈</li>
+<li> 本地方法栈</li>
+<li> 方法区</li>
+<li> 堆</li>
+</ol>
+<p>其中程序计数器、虚拟机栈、本地方法栈是每个线程私有的，方法区和堆是线程间共享的。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824234546.png"></p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20200325265523.png"></p>
+<h1 id="程序计数器（Program-Counter-Register）"><a href="#程序计数器（Program-Counter-Register）" class="headerlink" title="程序计数器（Program Counter Register）"></a>程序计数器（Program Counter Register）</h1><p>可以看作是当前线程所执行的字节码的行号指示器。</p>
+<h2 id="程序计数器的作用"><a href="#程序计数器的作用" class="headerlink" title="程序计数器的作用"></a>程序计数器的作用</h2><ol>
+<li> 字节码解释器通过改变程序计数器来依次读取指令，从而实现代码的流程控制，如：顺序执行、选择、循环、异常处理。</li>
+<li> 在多线程的情况下，程序计数器用于记录当前线程执行的位置，从而当线程被切换回来的时候能够知道该线程上次运行到哪儿了。</li>
+</ol>
+<h2 id="为什么必须每个线程都要单独弄一个程序计数器？"><a href="#为什么必须每个线程都要单独弄一个程序计数器？" class="headerlink" title="为什么必须每个线程都要单独弄一个程序计数器？"></a>为什么必须每个线程都要单独弄一个程序计数器？</h2><p>因为多线程是通过轮流切换占用CPU时间片来实现的，线程数量大于CPU数量时，就会有线程处于等待状态，等到可以占用CPU时间片了，会恢复线程的执行，这时就必须要回到线程等待前的指令执行位置，以便接下来继续执行后面的指令，每个线程运行的指令又不一样，所以必须对每个线程都要保存当前执行的指令位置。</p>
+<h1 id="虚拟机栈（VM-Stack）"><a href="#虚拟机栈（VM-Stack）" class="headerlink" title="虚拟机栈（VM Stack）"></a>虚拟机栈（VM Stack）</h1><p>虚拟机栈对应Java中的方法执行的内存模型。</p>
+<p>栈中的每个元素称为栈帧，每个方法执行的时候都会创建一个栈帧，存储局部变量表、操作数栈、动态链接、方法出口等信息。每个方法从开始执行到执行完成的过程，对应着一个栈帧在虚拟机栈中入栈到出栈的过程。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824234622.png"></p>
+<h2 id="局部变量表（Local-Variable-Table）"><a href="#局部变量表（Local-Variable-Table）" class="headerlink" title="局部变量表（Local Variable Table）"></a>局部变量表（Local Variable Table）</h2><p>存放方法参数和方法内的局部变量。</p>
+<p>局部变量表中存放了编译期可知的各种基本数据类型（boolean、byte、char、short、int、long、float、double）、对象引用（reference类型，可能指向一个对象的起始地址的指针，也可能是指向一个对象的句柄）和returnAddress类型（指向一条字节码指令的地址）</p>
+<p>局部变量表的基本存储单位是变量槽（Variable Slot），每个槽的大小是4个字节，64位的long和double会占用局部变量表的两个槽位（slot），其余数据类型占用一个槽位。</p>
+<p>局部变量表所需的内存空间在编译阶段完全确定，因为数据类型的大小是确定的，方法运行期间不会改变局部变量表的大小。字节码中方法的Code属性的max_locals数据项中确定了需要分配的局部变量表的最大容量，在编译时写入。</p>
+<p>局部变量表存储顺序：变量表从索引0开始，依次存放方法所属的对象引用（如果为静态方法则没有）、方法参数变量（按照顺序声明）、方法内局部变量（按照顺序声明）。对于byte、short、char这三种数据类型需要转换为int类型存储在局部变量表中。</p>
+<p>一个代码示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class IntegerDemo &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        Integer a = 1;</span><br><span class="line">        Integer b = 2;</span><br><span class="line">        Integer c = 3;</span><br><span class="line">        Integer d = 3;</span><br><span class="line">        Integer e = 321;</span><br><span class="line">        Integer f = 321;</span><br><span class="line">        Long g = 3L;</span><br><span class="line">        System.out.println(c == d);</span><br><span class="line">        System.out.println(e == f);</span><br><span class="line">        System.out.println(c == (a + b));</span><br><span class="line">        System.out.println(c.equals(a + b));</span><br><span class="line">        System.out.println(g == a + b);</span><br><span class="line">        System.out.println(g.equals(a + b));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>局部变量表为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">LocalVariableTable:</span><br><span class="line">  Start  Length  Slot  Name   Signature</span><br><span class="line">      0     183     0  args   [Ljava/lang/String;</span><br><span class="line">      5     178     1     a   Ljava/lang/Integer;</span><br><span class="line">     10     173     2     b   Ljava/lang/Integer;</span><br><span class="line">     15     168     3     c   Ljava/lang/Integer;</span><br><span class="line">     21     162     4     d   Ljava/lang/Integer;</span><br><span class="line">     29     154     5     e   Ljava/lang/Integer;</span><br><span class="line">     37     146     6     f   Ljava/lang/Integer;</span><br><span class="line">     45     138     7     g   Ljava/lang/Long;</span><br></pre></td></tr></table></figure>
+
+<h3 id="没有局部变量表会怎么样？"><a href="#没有局部变量表会怎么样？" class="headerlink" title="没有局部变量表会怎么样？"></a>没有局部变量表会怎么样？</h3><p>参考《深入理解Java虚拟机（第2版）》190页 6.3.7 属性表集合。</p>
+<blockquote>
+<p>LocalVariableTable属性用于描述栈帧中局部变量表中的变量与Java源码中定义的变量之间关系。<br>注：LocalVariableTable属性不是必须的，在javac编译时，可通过-g：none或-h：vars来取消或关闭这项信息。如果没有生成这项信息，最大的影响就是当别人引用这个方法时，所有的参数名称都将失去，IDE将会使用诸如arg0、arg1之类的占位符来代替原有的参数名，这对程序没什么影响，但是会对代码编写带来较大不便，而且在调试期间无法根据参数名称从上下文中获取参数值。</p>
+</blockquote>
+<h2 id="操作数栈（Operand-Stack）"><a href="#操作数栈（Operand-Stack）" class="headerlink" title="操作数栈（Operand Stack）"></a>操作数栈（Operand Stack）</h2><p>用于保存计算过程中的中间结果，作为计算的临时数据存储区。</p>
+<p>大多数指令都要从这里弹出数据，执行运算后将结果再压回操作数栈。</p>
+<p>操作数栈最大深度在编译时也是写入到字节码中方法的Code属性的max_stacks数据项中。</p>
+<p>操作数栈的基本单位是4个字节，32位数据类型占用一个单位，64位数据类型占用两个单位，对于byte、short、char这三种数据类型需要转换为int类型再存入栈中。</p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/0333144544e2">操作数栈的特点</a></p>
+<p>java的指令是基于栈的指令集架构（Instruction Set Architecture，ISA），指令流中的指令大部分都是零地址指令，指令依赖操作数栈进行工作。</p>
+<p>另外一种常用的指令集架构是基于寄存器的指令集。</p>
+<p>基于栈的指令集  优点（反过来就是  基于寄存器的指令集  缺点）：</p>
+<ol>
+<li> 可移植性强，直接依赖硬件寄存器将会受到硬件条件的约束</li>
+<li> 代码相对紧凑，因为指令没有操作数</li>
+<li> 编译器实现更简单，因为不用考虑空间分配，栈大小固定，编译时可知</li>
+</ol>
+<p>基于栈的指令集  缺点（反过来就是  基于寄存器的指令集  优点）：</p>
+<ol>
+<li> 速度稍慢，因为栈实现在内存中，频繁访问栈意味着频繁访问内存，访问内存是比访问寄存器慢很多的</li>
+<li> 指令数量多，因为访问数据频繁，入栈和出栈这两个指令就很多</li>
+</ol>
+<p>参考《深入理解Java虚拟机（第2版）》270页 8.4.2 <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/20c2b6f5fe59">基于栈的指令集与基于寄存器的指令集</a>。</p>
+<h2 id="动态链接（Dynamic-Linking）"><a href="#动态链接（Dynamic-Linking）" class="headerlink" title="动态链接（Dynamic Linking）"></a>动态链接（Dynamic Linking）</h2><p>每个栈帧都包含一个执行运行时常量池中该栈帧所属方法的引用，持有这个引用是为了支持方法调用过程中的动态连接（Dynamic Linking）。</p>
+<p>Class 文件中存放了大量的符号引用，字节码中的方法调用指令就是以常量池中指向方法的符号引用作为参数。这些符号引用一部分会在类加载阶段或第一次使用时转化为直接引用，这种转化称为静态解析。另一部分将在每一次运行期间转化为直接引用，这部分称为动态连接。</p>
+<p>动态连接是一个将符号引用解析为直接引用的过程。当java虚拟机执行字节码时，如果它遇到一个操作码，这个操作码第一次使用一个指向另一个类的符号引用，那么虚拟机就必须解析这个符号引用。<br>在解析时，虚拟机执行两个基本任务：</p>
+<ol>
+<li>查找被引用的类（如果必要的话就装载它）。</li>
+<li>将符号引用替换为直接引用，这样当它以后再次遇到相同的引用时，它就可以立即使用这个直接引用，而不必花时间再次解析这个符号引用了。</li>
+</ol>
+<p>参考：</p>
+<ul>
+<li>《深入理解Java虚拟机（第2版）》8.2.3 动态链接</li>
+</ul>
+<h2 id="方法返回地址（Return-Address）"><a href="#方法返回地址（Return-Address）" class="headerlink" title="方法返回地址（Return Address）"></a>方法返回地址（Return Address）</h2><p>方法退出的过程实际上等同于把当前栈帧出栈。</p>
+<p>因此退出时可能执行的操作有：恢复上层方法的局部变量表和操作数栈，如果有返回值，则把它压入调用者栈帧的操作数栈中，调整PC计数器的值以指向方法调用指令后面的一条指令</p>
+<p>参考《深入理解Java虚拟机（第2版）》 8.2.4 方法返回地址</p>
+<h2 id="虚拟机栈会有什么潜在的问题？"><a href="#虚拟机栈会有什么潜在的问题？" class="headerlink" title="虚拟机栈会有什么潜在的问题？"></a>虚拟机栈会有什么潜在的问题？</h2><ul>
+<li>某个线程中方法嵌套执行的太多了，超过虚拟机栈允许的最大深度，将会抛出StackOverflow（栈溢出）异常。<ul>
+<li>一个典型的场景是递归方法，递归深度过大，会引起栈溢出，某些语言下可以采用尾递归优化。</li>
+</ul>
+</li>
+<li>当线程不断增多，不停的申请虚拟机栈，内存可能不够用了，会引发OutOfMemoryError异常，即内存溢出。<ul>
+<li>一个典型的场景是，程序中的同时运行的线程不停的增多。</li>
+</ul>
+</li>
+</ul>
+<h1 id="本地方法栈（Native-Method-Stack）"><a href="#本地方法栈（Native-Method-Stack）" class="headerlink" title="本地方法栈（Native Method Stack）"></a>本地方法栈（Native Method Stack）</h1><p>虚拟机栈对应的是java方法的执行过程，本地方法栈对应native方法的执行过程。</p>
+<h1 id="堆（Heap）"><a href="#堆（Heap）" class="headerlink" title="堆（Heap）"></a>堆（Heap）</h1><p>创建一个对象实例便存储在堆，所有线程共享。</p>
+<p>物理上可以不连续，逻辑上是连续的即可。</p>
+<p>是虚拟机管理的内存区域最大的一块，是虚拟机垃圾回收的主要区域。</p>
+<p>现代垃圾回收收集器基本都采用分代回收，堆被划分为新生代和老年代，新生代又分为Eden区、From Survivor区、To Survivor区。划分特定区域是为了更高效的进行垃圾回收。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824235449.png"></p>
+<h2 id="对象都是在堆上分配的吗？"><a href="#对象都是在堆上分配的吗？" class="headerlink" title="对象都是在堆上分配的吗？"></a>对象都是在堆上分配的吗？</h2><p>创建新对象实例也可能分配在TLAB和栈上。</p>
+<p>对象不在堆上分配主要的原因还是堆是共享的，在堆上分配有锁的开销。无论是TLAB还是栈都是线程私有的，私有即避免了竞争（当然也可能产生额外的问题例如可见性问题），这是典型的用空间换效率的做法。</p>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/yangzl2008/java/article/details/43202969">Java中的逃逸分析和TLAB以及Java对象分配</a></li>
+<li><a target="_blank" rel="noopener" href="https://hesey.wang/2011/07/object-allocation-on-non-heap.html">对象都是在堆上分配的吗</a></li>
+</ul>
+<h1 id="方法区（Method-Area）"><a href="#方法区（Method-Area）" class="headerlink" title="方法区（Method Area）"></a>方法区（Method Area）</h1><p>存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。</p>
+<p>各线程共享的区域。</p>
+<h2 id="方法区里的东西放在堆里不行吗？"><a href="#方法区里的东西放在堆里不行吗？" class="headerlink" title="方法区里的东西放在堆里不行吗？"></a>方法区里的东西放在堆里不行吗？</h2><p>因为方法区存储的类信息、常量等数据都是生命周期比较长的，要放在堆，也只能放在老年代，但可能生命周期比老年代的对象还要长。</p>
+<p>故而单独开辟一个空间，单独管理，提高垃圾回收的效率。</p>
+<h2 id="方法区什么时候垃圾回收？"><a href="#方法区什么时候垃圾回收？" class="headerlink" title="方法区什么时候垃圾回收？"></a>方法区什么时候垃圾回收？</h2><p>回收废弃常量和无用的类。</p>
+<p>无用类三条判断方法：</p>
+<ol>
+<li> 堆中没有该类的实例</li>
+<li> 该类的类加载器已被回收</li>
+<li> 没有任何地方引用Class对象，也没有反射调用</li>
+</ol>
+<p>这也是类卸载的判断。</p>
+<p>参考《深入理解Java虚拟机》3.2.5 回收方法区 68页。</p>
+<p>大量使用反射，动态代理，cglib等字节码框架都需要类卸载机制，保证方法区不溢出。</p>
+<h1 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h1><p>《深入理解 Java 虚拟机 第三版》2.2.7 小节 关于 Java 直接内存的描述。</p>
+<blockquote>
+<p>直接内存（Direct Memory）并不是虚拟机运行时数据区的一部分，也不是《Java虚拟机规范》中定义的内存区域。但是这部分内存也被频繁地使用，而且也可能导致 OutOfMemoryError 异常出现，所以我们放到这里一起讲解。  </p>
+<p>在 JDK 1.4 中新加入了 NIO（New Input/Output）类，引入了一种基于通道（Channel）与缓冲区（Buffer）的 I/O 方式，它可以使用 Native 函数库直接分配堆外内存，然后通过一个存储在 Java 堆里面的 DirectByteBuffer 对象作为这块内存的引用进行操作。这样能在一些场景中显著提高性能，因为避免了在 Java 堆和 Native 堆中来回复制数据。  </p>
+<p>显然，本机直接内存的分配不会受到 Java 堆大小的限制，但是，既然是内存，则肯定还是会受到本机总内存（包括物理内存、SWAP分区或者分页文件）大小以及处理器寻址空间的限制，一般服务器管理员配置虚拟机参数时，会根据实际内存去设置 <code>-Xmx</code> 等参数信息，但经常忽略掉直接内存，使得各个内存区域总和大于物理内存限制（包括物理的和操作系统级的限制），从而导致动态扩展时出现 OutOfMemoryError 异常。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="post-title-link" itemprop="url">Java并发-线程池</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-25 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-25T20:00:00+08:00">2017-10-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-线程池/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="为什么要使用线程池？"><a href="#为什么要使用线程池？" class="headerlink" title="为什么要使用线程池？"></a>为什么要使用线程池？</h1><ol>
+<li> 线程的创建和销毁是消耗性能的，如果频繁的开线程执行任务，可以考虑复用已启动的线程，避免无谓的性能开销，提高系统整体吞吐量</li>
+<li> 对任务异步调度进行了抽象，方便统一控制和测试</li>
+</ol>
+<h1 id="线程池的几个参数的作用分别是什么？"><a href="#线程池的几个参数的作用分别是什么？" class="headerlink" title="线程池的几个参数的作用分别是什么？"></a>线程池的几个参数的作用分别是什么？</h1><p>线程池是ThreadPoolExecutor类，构造函数的参数如下：</p>
+<ol>
+<li> int corePoolSize：核心线程数量，除非手动shutdown否则核心线程一直运行</li>
+<li> int maximumPoolSize：最大线程数量，最大线程数减去核心线程数的线程为非核心线程</li>
+<li> long keepAliveTime：非核心线程空闲时的存活时间</li>
+<li> TimeUnit unit：非核心线程空闲时的存活时间单位</li>
+<li> BlockingQueue<Runnable> workQueue：存放任务的工作队列，核心线程全都在执行任务时，没法执行新的任务了，新任务就存放在这里</li>
+<li> ThreadFactory threadFactory：线程创建的工厂，可以给线程设置名字，方便排查问题</li>
+<li> RejectedExecutionHandler handler：存放任务的阻塞队列存不下新的任务时的拒绝策略，做限流保护</li>
+</ol>
+<h1 id="任务拒绝策略有哪些？"><a href="#任务拒绝策略有哪些？" class="headerlink" title="任务拒绝策略有哪些？"></a>任务拒绝策略有哪些？</h1><p>AbortPolicy：抛出一个异常，默认的</p>
+<p>DiscardPolicy：直接丢弃任务</p>
+<p>DiscardOldestPolicy：丢弃队列里最老的任务，将当前这个任务继续提交给线程池）</p>
+<p>CallerRunsPolicy：交给线程池调用所在的线程进行处理</p>
+<h1 id="线程池有哪些工作队列，分别什么场景使用？"><a href="#线程池有哪些工作队列，分别什么场景使用？" class="headerlink" title="线程池有哪些工作队列，分别什么场景使用？"></a>线程池有哪些工作队列，分别什么场景使用？</h1><p>主要三种：无界队列、有界队列、同步移交队列</p>
+<h2 id="无界队列"><a href="#无界队列" class="headerlink" title="无界队列"></a>无界队列</h2><p>LinkedBlockingQueue，队列大小无限。</p>
+<p>Executors.newFixedThreadPool 采用就是 LinkedBlockingQueue。</p>
+<p>当某些任务耗时较长时，可能会导致队列中堆积存储大量任务，进而导致内存溢出。</p>
+<h2 id="有界队列"><a href="#有界队列" class="headerlink" title="有界队列"></a>有界队列</h2><ul>
+<li>ArrayBlockingQueue</li>
+<li>有界的LinkedBlockingQueue</li>
+<li>支持设置优先级的PriorityBlockingQueue</li>
+</ul>
+<p>有界队列的大小要和线程池大小配合，线程池比有界队列大时可以减少内存消耗、降低CPU使用率和上下文切换，但会限制吞吐量。</p>
+<h2 id="同步移交队"><a href="#同步移交队" class="headerlink" title="同步移交队"></a>同步移交队</h2><p>SynchronousQueue</p>
+<p>其并不真正存储任务，当一个放入任务到队列中必须同时有一个线程正在等待取任务，无限数量的线程池可以使用队列，这样每次提交任务都会立刻执行。</p>
+<h2 id="LinkedTransferQueue"><a href="#LinkedTransferQueue" class="headerlink" title="LinkedTransferQueue"></a>LinkedTransferQueue</h2><p>LinkedTransferQueue 是 SynchronousQueue 和 LinkedBlockingQueue 的合体，性能比 LinkedBlockingQueue 更高（没有锁操作），比 SynchronousQueue能存储更多的元素。</p>
+<p>当 put 时，如果有等待的线程，就直接将元素 “交给” 等待者， 否则直接进入队列。</p>
+<p>put 和 transfer 方法的区别是 put 是立即返回的， transfer 是阻塞等待消费者拿到数据才返回。transfer方法和 SynchronousQueue的 put 方法类似。</p>
+<h1 id="往线程池里提交一个任务会发生什么？"><a href="#往线程池里提交一个任务会发生什么？" class="headerlink" title="往线程池里提交一个任务会发生什么？"></a>往线程池里提交一个任务会发生什么？</h1><p>线程池的核心接口是Executor，里面只有一个execute(Runnable)方法，ExecutorService接口继承了Executor，提供了submit、shutdown、invokeAll、invokeyAny等方法。</p>
+<p>提交任务有execute和submit两种方式，execute只能提交无返回值的Runnable，submit可以提交有返回值的Callable和无返回值的Runnable，submit方法会新建一个FutureTask封装传入的Callback和Runnable，Runnable会被适配为Callback对象，FutureTask是集成Runnable的，最终还是执行execute(Runnable)，FutureTask内部只处理Callable</p>
+<p>execute(Runnable)里的逻辑：</p>
+<p>如果运行的线程数少于corePoolSize，则创建新线程执行任务。</p>
+<p>如果运行的线程数大于corePoolSize，则将新任务加入工作队列，而不添加新的线程，核心线程执行完一个任务就从工作队列中取任务继续执行。</p>
+<p>如果队列已满无法再加入，则创建新的线程执行，一直到线程总数超过maximumPoolSize时，对新任务执行拒绝策略。</p>
+<p>execute里addWorker(null, false);，传递空任务，代表新建线程，不为空表示新建线程并添加第一个任务</p>
+<p>submit任务后，任务内抛出的异常会拦截，通过Future获取异常对象，通过execute执行的任务，抛出的异常原封不动的向上抛。</p>
+<h1 id="线程池的大小应该设置多大？"><a href="#线程池的大小应该设置多大？" class="headerlink" title="线程池的大小应该设置多大？"></a>线程池的大小应该设置多大？</h1><p>任务分三类：</p>
+<ol>
+<li> CPU计算密集型</li>
+<li> IO密集型</li>
+<li> 计算和IO混合型</li>
+</ol>
+<p>CPU计算密集型任务大部分时间用来做计算逻辑，消耗CPU资源，这种任务同时执行的数量应该跟CPU数量相等。因为任务同时执行的数量少于CPU数量的话，明明有CPU空闲，任务却得不到执行，就浪费资源了，系统整体吞吐量低；任务同时执行的数量多于CPU数量的话，由于所有的CPU都满载了，要让CPU分时间片给各个任务才能保证多出的人得到执行，而切换任务是有成本的，要保存恢复任务（线程）的上下文环境。</p>
+<p>CPU密集型任务的线程池大小可以设置为CPU数量 + 1，额外多分配一个线程是因为其他线程偶尔会因为故障或其他原因暂停运行了，额外的一个线程可以确保CPU有任务执行不会被浪费。</p>
+<p>IO密集型任务，多数线程处于阻塞状态等待IO完成，让出CPU，不消耗CPU资源，故而应该让线程池多处理一些任务。线程池大小一般设置为 2 * CPU数量 + 1。</p>
+<p>假设有一个任务，计算需要C毫秒，IO操作需要等待W毫秒，整个任务的耗时就是C+W，一个CPU执行这个任务，CPU利用率U=C/(C+W)，很明显0 &lt;= U &lt;=1，也就是说一个CPU一个线程的情况下该线程的CPU利用为U，如果想要使得CPU利用率为1，那就多开几个线程，让几个线程的CPU利用率加起来等于1就完事了，那么总共就需要 1/U=(C+W)/C=1+W/C 个线程，1个CPU利用率100%需要1+W/C个线程，那么N个CPU利用率要100%就再乘以N就好了，所以总线程数就是N*(1+W/C)</p>
+<p>CPU计算密集型，可以认为没有IO操作，W=0，那么公式计算就会得到N</p>
+<p>IO密集型，C应该比较小，W比较大，那么W/C就会大于1，代入公式得到总线程数至少是2N，但是线程数也不能很大，每创建一个线程都会占用内存空间，线程数量过大会内存溢出，还要考虑硬盘和网络带宽等IO资源的限制，线程搞多了IO处理不了也没有意义，只会浪费内存。IO密集型线程池大小一般就设为2N+1，加1也是为了防止有线程因为某种原因故障或暂停了，额外的这个线程确保CPU不会浪费。</p>
+<p>线程等待的时间越长，需要越多的线程数；线程计算的时间越长，需要的线程数越少。</p>
+<p>任务的等待时间和计算时间可以通过基准测试工具测试出来，求一个近似值，再代入公式，即可估算出线程池大小。如果实际不同种类的任务等待时间和计算时间差异较大，只能用一个线程池的情况下，那就取平均值。</p>
+<p>也不是线程越多、CPU越多就可以无限提高运算速度，这是有上限的，可以用Amdahl（阿姆达尔）定律来衡量处理器并行运算之后效率的提升能力和上限，加速比 = 并行前系统耗时 / 并行后的系统耗时，加速比可以看作并行后提升了多少倍的执行速度。</p>
+<p>并行前系统耗时可以分为两个部分，一个是只能串行执行的部分，一个是可以并行执行的部分，设p为可以并行执行的部分的比例，必须串行执行的部分的比例就是1-p，设cpu数量（或线程数）为n，可并行部分执行的时间就是p/n，并行后的执行时间就是 1-p+p/n，并行前执行时间就是1了，加速比即1/(1-p+p/n)</p>
+<p>也可以设f为必须串行执行的部分的比例，可以并行执行的部分的比例就是1-f，设cpu数量（或线程数）为n，可并行部分执行的时间就是(1-f)/n，并行后的执行时间就是 f+(1-f)/n，加速比为1/(f+(1-f)/n)</p>
+<p>必须串行执行的部分越大，加速比就越小，这就是多核（多线程）加速的上限值。</p>
+<h1 id="线程池的非核心线程什么时候会被释放？"><a href="#线程池的非核心线程什么时候会被释放？" class="headerlink" title="线程池的非核心线程什么时候会被释放？"></a>线程池的非核心线程什么时候会被释放？</h1><p>非核心线程的保活借由BlockingQueue的带超时参数的poll()方法实现了，在keepAliveTime时间内没有从队列取到任务，就一直阻塞当前线程。</p>
+<h1 id="核心线程为什么一直可以运行，如何保证不销毁的？"><a href="#核心线程为什么一直可以运行，如何保证不销毁的？" class="headerlink" title="核心线程为什么一直可以运行，如何保证不销毁的？"></a>核心线程为什么一直可以运行，如何保证不销毁的？</h1><p>线程的运行没有停止就不会消耗。</p>
+<p>提交任务的执行路径：execute() -&gt; addWorker() -&gt; Worker.run() -&gt; runWorker() -&gt; getTask()</p>
+<p>核心线程会在getTask()中阻塞的从工作队列中获取任务，即如果工作队列中没有任务，就一直阻塞当前线程，非核心线程从队列取不到任务就立刻返回不阻塞线程，线程逻辑就会走完。</p>
+<p>通过判断当前线程池线程总数是否大于核心线程数来判断当前线程是否应该当做核心线程。</p>
+<h1 id="线程池有哪些坑？"><a href="#线程池有哪些坑？" class="headerlink" title="线程池有哪些坑？"></a>线程池有哪些坑？</h1><p>要注意ThreadLocal的value内存泄漏问题，要及时remove。</p>
+<h1 id="自定义线程池的场景"><a href="#自定义线程池的场景" class="headerlink" title="自定义线程池的场景"></a>自定义线程池的场景</h1><p>追溯调用线程池之前的堆栈，防止线程里报错不知道外面哪里调用的。</p>
+<h1 id="ForkJoinPool解决了什么问题？"><a href="#ForkJoinPool解决了什么问题？" class="headerlink" title="ForkJoinPool解决了什么问题？"></a>ForkJoinPool解决了什么问题？</h1><p>任务窃取机制，避免了取任务的时候多线程竞争一个队列，减少线程间竞争的等待开销，所以更快。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/" class="post-title-link" itemprop="url">Java并发-happens-before</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-23 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-23T20:00:00+08:00">2017-10-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-happen-before/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="什么是happens-before原则？"><a href="#什么是happens-before原则？" class="headerlink" title="什么是happens-before原则？"></a>什么是happens-before原则？</h1><p>前一个操作的结果对后续操作是可见的</p>
+<h1 id="为什么需要happens-before原则？"><a href="#为什么需要happens-before原则？" class="headerlink" title="为什么需要happens-before原则？"></a>为什么需要happens-before原则？</h1><p>虚拟机会做编译优化，进行指令重排序，以提高CPU利用率，防止CPU出现空等待；但有些情况是不能重排序的，否则并发下会出问题，所以就要规定这些情况，happens-before原则就是这个规定.</p>
+<h1 id="典型场景？"><a href="#典型场景？" class="headerlink" title="典型场景？"></a>典型场景？</h1><p>比如写一个单例，new一个对象，指令执行的步骤是：</p>
+<ol>
+<li> 给对象分配内存</li>
+<li> 对象初始化</li>
+<li> 将对象内存地址关联</li>
+</ol>
+<p>指令重排序，可能会导致对象还没初始化，就会已经被使用了，所以需要volatile来禁止指令重排序</p>
+<h1 id="有哪些happens-before原则？"><a href="#有哪些happens-before原则？" class="headerlink" title="有哪些happens-before原则？"></a>有哪些happens-before原则？</h1><ol>
+<li> 程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作；</li>
+<li> 锁定规则：一个unLock操作先行发生于后面对同一个锁额lock操作；</li>
+<li> volatile变量规则：对一个变量的写操作先行发生于后面对这个变量的读操作；</li>
+<li> 传递规则：如果操作A先行发生于操作B，而操作B又先行发生于操作C，则可以得出操作A先行发生于操作C；</li>
+<li> 线程启动规则：Thread对象的start()方法先行发生于此线程的每个一个动作；</li>
+<li> 线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生；</li>
+<li> 线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结束、Thread.isAlive()的返回值手段检测到线程已经终止执行；</li>
+<li> 对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始；</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/" class="post-title-link" itemprop="url">Java并发-指令重排序、指令流水线</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-23 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-23T20:00:00+08:00">2017-10-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/指令重排序/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="如何验证指令发生了重排序？"><a href="#如何验证指令发生了重排序？" class="headerlink" title="如何验证指令发生了重排序？"></a>如何验证指令发生了重排序？</h1><p>定义两个变量设置初始值，在两个线程中分别赋新的值，然后打印在赋值语句后面打印另外一个线程修改的变量。</p>
+<p>执行很多次，如果发生了打印的都是变量的初始值，就是发生重排序了，违反直觉，但是编译器觉得两条语句没有依赖关系，允许指令重排序</p>
+<h1 id="CPU的指令流水线是什么？解决了什么问题？"><a href="#CPU的指令流水线是什么？解决了什么问题？" class="headerlink" title="CPU的指令流水线是什么？解决了什么问题？"></a>CPU的指令流水线是什么？解决了什么问题？</h1><p>一条指令可以分为多个步骤完成，每个步骤可以由不同的硬件功能单元来执行，这样就可以让多个功能单元并行执行指令的不同步骤，不需要等待一个指令执行完再执行执行下一个指令，流水线可以让指令的一个步骤完成了就可以执行下一个指令的同一个步骤</p>
+<h1 id="CPU指令流水线存在什么问题？"><a href="#CPU指令流水线存在什么问题？" class="headerlink" title="CPU指令流水线存在什么问题？"></a>CPU指令流水线存在什么问题？</h1><p>如果指令之间存在数据相关性，导致前一条指令执行完后才能执行后一条指令，指令重叠就会发生冲突，无法并行执行，后面的指令只能等待，这个时候就可以把数据无关的指令重排序，以防止流水线停顿。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215853.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215901.png"></p>
+<h1 id="CPU指令流水线什么情况下会需要指令重排序"><a href="#CPU指令流水线什么情况下会需要指令重排序" class="headerlink" title="CPU指令流水线什么情况下会需要指令重排序?"></a>CPU指令流水线什么情况下会需要指令重排序?</h1><p>一条指令可以分为多个步骤完成，如下:</p>
+<ol>
+<li> 取指 IF</li>
+<li> 译码和取寄存器操作数 ID</li>
+<li> 执行或者有效地址计算 EX</li>
+<li> 存储器访问 MEM</li>
+<li> 写回 WB</li>
+</ol>
+<p>CPU在工作时，需要将上述指令分为多个步骤依次执行</p>
+<p>为了提高硬件利用率，CPU指令是按流水线技术来执行的，如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215936.png"></p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215945.png"></p>
+<ol>
+<li> LW指令 表示 load，其中LW R1,b表示把b的值加载到寄存器R1中</li>
+<li> LW R2,c 表示把c的值加载到寄存器R2中</li>
+<li> ADD 指令表示加法，把R1 、R2的值相加，并存入R3寄存器中。</li>
+<li> SW 表示 store 即将 R3寄存器的值保持到变量a中</li>
+<li> LW R4,e 表示把e的值加载到寄存器R4中</li>
+<li> LW R5,f 表示把f的值加载到寄存器R5中</li>
+<li> SUB 指令表示减法，把R4 、R5的值相减，并存入R6寄存器中。</li>
+<li> SW d,R6 表示将R6寄存器的值保持到变量d中</li>
+</ol>
+<p>上述便是汇编指令的执行过程，在某些指令上存在X的标志，X代表中断的含义，也就是只要有X的地方就会导致指令流水线技术停顿，同时也会影响后续指令的执行，可能需要经过1个或几个指令周期才可能恢复正常，那为什么停顿呢？这是因为部分数据还没准备好，如执行ADD指令时，需要使用到前面指令的数据R1，R2，而此时R2的MEM操作没有完成，即未拷贝到存储器中，这样加法计算就无法进行，必须等到MEM操作完成后才能执行，也就因此而停顿了，其他指令也是类似的情况。前面阐述过，停顿会造成CPU性能下降，因此我们应该想办法消除这些停顿，这时就需要使用到指令重排了，如下图，既然ADD指令需要等待，那我们就利用等待的时间做些别的事情，如把LW R4,e 和 LW R5,f 移动到前面执行，毕竟LW R4,e 和 LW R5,f执行并没有数据依赖关系，对他们有数据依赖关系的SUB R6,R5,R4指令在R4,R5加载完成后才执行的，没有影响</p>
+<p>正如上图所示，所有的停顿都完美消除了，指令流水线也无需中断了，这样CPU的性能也能带来很好的提升，这就是处理器指令重排的作用。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/15/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><span class="page-number current">16</span><a class="page-number" href="/page/17/">17</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><a class="extend next" rel="next" href="/page/17/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/15/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><span class="page-number current">16</span><a class="page-number" href="/page/17/">17</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><a class="extend next" rel="next" href="/page/17/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1823,20 +1739,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">191</span>
+          <span class="site-state-item-count">187</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">266</span>
+        <span class="site-state-item-count">257</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1877,7 +1793,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

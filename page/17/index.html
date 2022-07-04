@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 5.4.2">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
@@ -184,578 +184,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%BF%90%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%BF%90%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">Java运行时内存结构</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-01-01 20:00:00" itemprop="dateCreated datePublished" datetime="2018-01-01T20:00:00+08:00">2018-01-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%99%9A%E6%8B%9F%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">虚拟机</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%BF%90%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="虚拟机/Java运行时内存结构/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Java运行时数据区域有哪些？"><a href="#Java运行时数据区域有哪些？" class="headerlink" title="Java运行时数据区域有哪些？"></a>Java运行时数据区域有哪些？</h1><ol>
-<li> 程序计数器</li>
-<li> 虚拟机栈</li>
-<li> 本地方法栈</li>
-<li> 方法区</li>
-<li> 堆</li>
-</ol>
-<p>其中程序计数器、虚拟机栈、本地方法栈是每个线程私有的，方法区和堆是线程间共享的。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824234546.png"></p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20200325265523.png"></p>
-<h1 id="程序计数器（Program-Counter-Register）"><a href="#程序计数器（Program-Counter-Register）" class="headerlink" title="程序计数器（Program Counter Register）"></a>程序计数器（Program Counter Register）</h1><p>可以看作是当前线程所执行的字节码的行号指示器。</p>
-<h2 id="程序计数器的作用"><a href="#程序计数器的作用" class="headerlink" title="程序计数器的作用"></a>程序计数器的作用</h2><ol>
-<li> 字节码解释器通过改变程序计数器来依次读取指令，从而实现代码的流程控制，如：顺序执行、选择、循环、异常处理。</li>
-<li> 在多线程的情况下，程序计数器用于记录当前线程执行的位置，从而当线程被切换回来的时候能够知道该线程上次运行到哪儿了。</li>
-</ol>
-<h2 id="为什么必须每个线程都要单独弄一个程序计数器？"><a href="#为什么必须每个线程都要单独弄一个程序计数器？" class="headerlink" title="为什么必须每个线程都要单独弄一个程序计数器？"></a>为什么必须每个线程都要单独弄一个程序计数器？</h2><p>因为多线程是通过轮流切换占用CPU时间片来实现的，线程数量大于CPU数量时，就会有线程处于等待状态，等到可以占用CPU时间片了，会恢复线程的执行，这时就必须要回到线程等待前的指令执行位置，以便接下来继续执行后面的指令，每个线程运行的指令又不一样，所以必须对每个线程都要保存当前执行的指令位置。</p>
-<h1 id="虚拟机栈（VM-Stack）"><a href="#虚拟机栈（VM-Stack）" class="headerlink" title="虚拟机栈（VM Stack）"></a>虚拟机栈（VM Stack）</h1><p>虚拟机栈对应Java中的方法执行的内存模型。</p>
-<p>栈中的每个元素称为栈帧，每个方法执行的时候都会创建一个栈帧，存储局部变量表、操作数栈、动态链接、方法出口等信息。每个方法从开始执行到执行完成的过程，对应着一个栈帧在虚拟机栈中入栈到出栈的过程。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824234622.png"></p>
-<h2 id="局部变量表（Local-Variable-Table）"><a href="#局部变量表（Local-Variable-Table）" class="headerlink" title="局部变量表（Local Variable Table）"></a>局部变量表（Local Variable Table）</h2><p>存放方法参数和方法内的局部变量。</p>
-<p>局部变量表中存放了编译期可知的各种基本数据类型（boolean、byte、char、short、int、long、float、double）、对象引用（reference类型，可能指向一个对象的起始地址的指针，也可能是指向一个对象的句柄）和returnAddress类型（指向一条字节码指令的地址）</p>
-<p>局部变量表的基本存储单位是变量槽（Variable Slot），每个槽的大小是4个字节，64位的long和double会占用局部变量表的两个槽位（slot），其余数据类型占用一个槽位。</p>
-<p>局部变量表所需的内存空间在编译阶段完全确定，因为数据类型的大小是确定的，方法运行期间不会改变局部变量表的大小。字节码中方法的Code属性的max_locals数据项中确定了需要分配的局部变量表的最大容量，在编译时写入。</p>
-<p>局部变量表存储顺序：变量表从索引0开始，依次存放方法所属的对象引用（如果为静态方法则没有）、方法参数变量（按照顺序声明）、方法内局部变量（按照顺序声明）。对于byte、short、char这三种数据类型需要转换为int类型存储在局部变量表中。</p>
-<p>一个代码示例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class IntegerDemo &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        Integer a = 1;</span><br><span class="line">        Integer b = 2;</span><br><span class="line">        Integer c = 3;</span><br><span class="line">        Integer d = 3;</span><br><span class="line">        Integer e = 321;</span><br><span class="line">        Integer f = 321;</span><br><span class="line">        Long g = 3L;</span><br><span class="line">        System.out.println(c == d);</span><br><span class="line">        System.out.println(e == f);</span><br><span class="line">        System.out.println(c == (a + b));</span><br><span class="line">        System.out.println(c.equals(a + b));</span><br><span class="line">        System.out.println(g == a + b);</span><br><span class="line">        System.out.println(g.equals(a + b));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>局部变量表为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">LocalVariableTable:</span><br><span class="line">  Start  Length  Slot  Name   Signature</span><br><span class="line">      0     183     0  args   [Ljava/lang/String;</span><br><span class="line">      5     178     1     a   Ljava/lang/Integer;</span><br><span class="line">     10     173     2     b   Ljava/lang/Integer;</span><br><span class="line">     15     168     3     c   Ljava/lang/Integer;</span><br><span class="line">     21     162     4     d   Ljava/lang/Integer;</span><br><span class="line">     29     154     5     e   Ljava/lang/Integer;</span><br><span class="line">     37     146     6     f   Ljava/lang/Integer;</span><br><span class="line">     45     138     7     g   Ljava/lang/Long;</span><br></pre></td></tr></table></figure>
-
-<h3 id="没有局部变量表会怎么样？"><a href="#没有局部变量表会怎么样？" class="headerlink" title="没有局部变量表会怎么样？"></a>没有局部变量表会怎么样？</h3><p>参考《深入理解Java虚拟机（第2版）》190页 6.3.7 属性表集合。</p>
-<blockquote>
-<p>LocalVariableTable属性用于描述栈帧中局部变量表中的变量与Java源码中定义的变量之间关系。<br>注：LocalVariableTable属性不是必须的，在javac编译时，可通过-g：none或-h：vars来取消或关闭这项信息。如果没有生成这项信息，最大的影响就是当别人引用这个方法时，所有的参数名称都将失去，IDE将会使用诸如arg0、arg1之类的占位符来代替原有的参数名，这对程序没什么影响，但是会对代码编写带来较大不便，而且在调试期间无法根据参数名称从上下文中获取参数值。</p>
-</blockquote>
-<h2 id="操作数栈（Operand-Stack）"><a href="#操作数栈（Operand-Stack）" class="headerlink" title="操作数栈（Operand Stack）"></a>操作数栈（Operand Stack）</h2><p>用于保存计算过程中的中间结果，作为计算的临时数据存储区。</p>
-<p>大多数指令都要从这里弹出数据，执行运算后将结果再压回操作数栈。</p>
-<p>操作数栈最大深度在编译时也是写入到字节码中方法的Code属性的max_stacks数据项中。</p>
-<p>操作数栈的基本单位是4个字节，32位数据类型占用一个单位，64位数据类型占用两个单位，对于byte、short、char这三种数据类型需要转换为int类型再存入栈中。</p>
-<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/0333144544e2">操作数栈的特点</a></p>
-<p>java的指令是基于栈的指令集架构（Instruction Set Architecture，ISA），指令流中的指令大部分都是零地址指令，指令依赖操作数栈进行工作。</p>
-<p>另外一种常用的指令集架构是基于寄存器的指令集。</p>
-<p>基于栈的指令集  优点（反过来就是  基于寄存器的指令集  缺点）：</p>
-<ol>
-<li> 可移植性强，直接依赖硬件寄存器将会受到硬件条件的约束</li>
-<li> 代码相对紧凑，因为指令没有操作数</li>
-<li> 编译器实现更简单，因为不用考虑空间分配，栈大小固定，编译时可知</li>
-</ol>
-<p>基于栈的指令集  缺点（反过来就是  基于寄存器的指令集  优点）：</p>
-<ol>
-<li> 速度稍慢，因为栈实现在内存中，频繁访问栈意味着频繁访问内存，访问内存是比访问寄存器慢很多的</li>
-<li> 指令数量多，因为访问数据频繁，入栈和出栈这两个指令就很多</li>
-</ol>
-<p>参考《深入理解Java虚拟机（第2版）》270页 8.4.2 <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/20c2b6f5fe59">基于栈的指令集与基于寄存器的指令集</a>。</p>
-<h2 id="动态链接（Dynamic-Linking）"><a href="#动态链接（Dynamic-Linking）" class="headerlink" title="动态链接（Dynamic Linking）"></a>动态链接（Dynamic Linking）</h2><p>每个栈帧都包含一个执行运行时常量池中该栈帧所属方法的引用，持有这个引用是为了支持方法调用过程中的动态连接（Dynamic Linking）。</p>
-<p>Class 文件中存放了大量的符号引用，字节码中的方法调用指令就是以常量池中指向方法的符号引用作为参数。这些符号引用一部分会在类加载阶段或第一次使用时转化为直接引用，这种转化称为静态解析。另一部分将在每一次运行期间转化为直接引用，这部分称为动态连接。</p>
-<p>动态连接是一个将符号引用解析为直接引用的过程。当java虚拟机执行字节码时，如果它遇到一个操作码，这个操作码第一次使用一个指向另一个类的符号引用，那么虚拟机就必须解析这个符号引用。<br>在解析时，虚拟机执行两个基本任务：</p>
-<ol>
-<li>查找被引用的类（如果必要的话就装载它）。</li>
-<li>将符号引用替换为直接引用，这样当它以后再次遇到相同的引用时，它就可以立即使用这个直接引用，而不必花时间再次解析这个符号引用了。</li>
-</ol>
-<p>参考：</p>
-<ul>
-<li>《深入理解Java虚拟机（第2版）》8.2.3 动态链接</li>
-</ul>
-<h2 id="方法返回地址（Return-Address）"><a href="#方法返回地址（Return-Address）" class="headerlink" title="方法返回地址（Return Address）"></a>方法返回地址（Return Address）</h2><p>方法退出的过程实际上等同于把当前栈帧出栈。</p>
-<p>因此退出时可能执行的操作有：恢复上层方法的局部变量表和操作数栈，如果有返回值，则把它压入调用者栈帧的操作数栈中，调整PC计数器的值以指向方法调用指令后面的一条指令</p>
-<p>参考《深入理解Java虚拟机（第2版）》 8.2.4 方法返回地址</p>
-<h2 id="虚拟机栈会有什么潜在的问题？"><a href="#虚拟机栈会有什么潜在的问题？" class="headerlink" title="虚拟机栈会有什么潜在的问题？"></a>虚拟机栈会有什么潜在的问题？</h2><ul>
-<li>某个线程中方法嵌套执行的太多了，超过虚拟机栈允许的最大深度，将会抛出StackOverflow（栈溢出）异常。<ul>
-<li>一个典型的场景是递归方法，递归深度过大，会引起栈溢出，某些语言下可以采用尾递归优化。</li>
-</ul>
-</li>
-<li>当线程不断增多，不停的申请虚拟机栈，内存可能不够用了，会引发OutOfMemoryError异常，即内存溢出。<ul>
-<li>一个典型的场景是，程序中的同时运行的线程不停的增多。</li>
-</ul>
-</li>
-</ul>
-<h1 id="本地方法栈（Native-Method-Stack）"><a href="#本地方法栈（Native-Method-Stack）" class="headerlink" title="本地方法栈（Native Method Stack）"></a>本地方法栈（Native Method Stack）</h1><p>虚拟机栈对应的是java方法的执行过程，本地方法栈对应native方法的执行过程。</p>
-<h1 id="堆（Heap）"><a href="#堆（Heap）" class="headerlink" title="堆（Heap）"></a>堆（Heap）</h1><p>创建一个对象实例便存储在堆，所有线程共享。</p>
-<p>物理上可以不连续，逻辑上是连续的即可。</p>
-<p>是虚拟机管理的内存区域最大的一块，是虚拟机垃圾回收的主要区域。</p>
-<p>现代垃圾回收收集器基本都采用分代回收，堆被划分为新生代和老年代，新生代又分为Eden区、From Survivor区、To Survivor区。划分特定区域是为了更高效的进行垃圾回收。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210824235449.png"></p>
-<h2 id="对象都是在堆上分配的吗？"><a href="#对象都是在堆上分配的吗？" class="headerlink" title="对象都是在堆上分配的吗？"></a>对象都是在堆上分配的吗？</h2><p>创建新对象实例也可能分配在TLAB和栈上。</p>
-<p>对象不在堆上分配主要的原因还是堆是共享的，在堆上分配有锁的开销。无论是TLAB还是栈都是线程私有的，私有即避免了竞争（当然也可能产生额外的问题例如可见性问题），这是典型的用空间换效率的做法。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/yangzl2008/java/article/details/43202969">Java中的逃逸分析和TLAB以及Java对象分配</a></li>
-<li><a target="_blank" rel="noopener" href="https://hesey.wang/2011/07/object-allocation-on-non-heap.html">对象都是在堆上分配的吗</a></li>
-</ul>
-<h1 id="方法区（Method-Area）"><a href="#方法区（Method-Area）" class="headerlink" title="方法区（Method Area）"></a>方法区（Method Area）</h1><p>存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。</p>
-<p>各线程共享的区域。</p>
-<h2 id="方法区里的东西放在堆里不行吗？"><a href="#方法区里的东西放在堆里不行吗？" class="headerlink" title="方法区里的东西放在堆里不行吗？"></a>方法区里的东西放在堆里不行吗？</h2><p>因为方法区存储的类信息、常量等数据都是生命周期比较长的，要放在堆，也只能放在老年代，但可能生命周期比老年代的对象还要长。</p>
-<p>故而单独开辟一个空间，单独管理，提高垃圾回收的效率。</p>
-<h2 id="方法区什么时候垃圾回收？"><a href="#方法区什么时候垃圾回收？" class="headerlink" title="方法区什么时候垃圾回收？"></a>方法区什么时候垃圾回收？</h2><p>回收废弃常量和无用的类。</p>
-<p>无用类三条判断方法：</p>
-<ol>
-<li> 堆中没有该类的实例</li>
-<li> 该类的类加载器已被回收</li>
-<li> 没有任何地方引用Class对象，也没有反射调用</li>
-</ol>
-<p>这也是类卸载的判断。</p>
-<p>参考《深入理解Java虚拟机》3.2.5 回收方法区 68页。</p>
-<p>大量使用反射，动态代理，cglib等字节码框架都需要类卸载机制，保证方法区不溢出。</p>
-<h1 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h1><p>《深入理解 Java 虚拟机 第三版》2.2.7 小节 关于 Java 直接内存的描述。</p>
-<blockquote>
-<p>直接内存（Direct Memory）并不是虚拟机运行时数据区的一部分，也不是《Java虚拟机规范》中定义的内存区域。但是这部分内存也被频繁地使用，而且也可能导致 OutOfMemoryError 异常出现，所以我们放到这里一起讲解。  </p>
-<p>在 JDK 1.4 中新加入了 NIO（New Input/Output）类，引入了一种基于通道（Channel）与缓冲区（Buffer）的 I/O 方式，它可以使用 Native 函数库直接分配堆外内存，然后通过一个存储在 Java 堆里面的 DirectByteBuffer 对象作为这块内存的引用进行操作。这样能在一些场景中显著提高性能，因为避免了在 Java 堆和 Native 堆中来回复制数据。  </p>
-<p>显然，本机直接内存的分配不会受到 Java 堆大小的限制，但是，既然是内存，则肯定还是会受到本机总内存（包括物理内存、SWAP分区或者分页文件）大小以及处理器寻址空间的限制，一般服务器管理员配置虚拟机参数时，会根据实际内存去设置 <code>-Xmx</code> 等参数信息，但经常忽略掉直接内存，使得各个内存区域总和大于物理内存限制（包括物理的和操作系统级的限制），从而导致动态扩展时出现 OutOfMemoryError 异常。</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="post-title-link" itemprop="url">Java并发-线程池</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-10-25 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-25T20:00:00+08:00">2017-10-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E6%B1%A0/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-线程池/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="为什么要使用线程池？"><a href="#为什么要使用线程池？" class="headerlink" title="为什么要使用线程池？"></a>为什么要使用线程池？</h1><ol>
-<li> 线程的创建和销毁是消耗性能的，如果频繁的开线程执行任务，可以考虑复用已启动的线程，避免无谓的性能开销，提高系统整体吞吐量</li>
-<li> 对任务异步调度进行了抽象，方便统一控制和测试</li>
-</ol>
-<h1 id="线程池的几个参数的作用分别是什么？"><a href="#线程池的几个参数的作用分别是什么？" class="headerlink" title="线程池的几个参数的作用分别是什么？"></a>线程池的几个参数的作用分别是什么？</h1><p>线程池是ThreadPoolExecutor类，构造函数的参数如下：</p>
-<ol>
-<li> int corePoolSize：核心线程数量，除非手动shutdown否则核心线程一直运行</li>
-<li> int maximumPoolSize：最大线程数量，最大线程数减去核心线程数的线程为非核心线程</li>
-<li> long keepAliveTime：非核心线程空闲时的存活时间</li>
-<li> TimeUnit unit：非核心线程空闲时的存活时间单位</li>
-<li> BlockingQueue<Runnable> workQueue：存放任务的工作队列，核心线程全都在执行任务时，没法执行新的任务了，新任务就存放在这里</li>
-<li> ThreadFactory threadFactory：线程创建的工厂，可以给线程设置名字，方便排查问题</li>
-<li> RejectedExecutionHandler handler：存放任务的阻塞队列存不下新的任务时的拒绝策略，做限流保护</li>
-</ol>
-<h1 id="任务拒绝策略有哪些？"><a href="#任务拒绝策略有哪些？" class="headerlink" title="任务拒绝策略有哪些？"></a>任务拒绝策略有哪些？</h1><p>AbortPolicy：抛出一个异常，默认的</p>
-<p>DiscardPolicy：直接丢弃任务</p>
-<p>DiscardOldestPolicy：丢弃队列里最老的任务，将当前这个任务继续提交给线程池）</p>
-<p>CallerRunsPolicy：交给线程池调用所在的线程进行处理</p>
-<h1 id="线程池有哪些工作队列，分别什么场景使用？"><a href="#线程池有哪些工作队列，分别什么场景使用？" class="headerlink" title="线程池有哪些工作队列，分别什么场景使用？"></a>线程池有哪些工作队列，分别什么场景使用？</h1><p>主要三种：无界队列、有界队列、同步移交队列</p>
-<h2 id="无界队列"><a href="#无界队列" class="headerlink" title="无界队列"></a>无界队列</h2><p>LinkedBlockingQueue，队列大小无限。</p>
-<p>Executors.newFixedThreadPool 采用就是 LinkedBlockingQueue。</p>
-<p>当某些任务耗时较长时，可能会导致队列中堆积存储大量任务，进而导致内存溢出。</p>
-<h2 id="有界队列"><a href="#有界队列" class="headerlink" title="有界队列"></a>有界队列</h2><ul>
-<li>ArrayBlockingQueue</li>
-<li>有界的LinkedBlockingQueue</li>
-<li>支持设置优先级的PriorityBlockingQueue</li>
-</ul>
-<p>有界队列的大小要和线程池大小配合，线程池比有界队列大时可以减少内存消耗、降低CPU使用率和上下文切换，但会限制吞吐量。</p>
-<h2 id="同步移交队"><a href="#同步移交队" class="headerlink" title="同步移交队"></a>同步移交队</h2><p>SynchronousQueue</p>
-<p>其并不真正存储任务，当一个放入任务到队列中必须同时有一个线程正在等待取任务，无限数量的线程池可以使用队列，这样每次提交任务都会立刻执行。</p>
-<h2 id="LinkedTransferQueue"><a href="#LinkedTransferQueue" class="headerlink" title="LinkedTransferQueue"></a>LinkedTransferQueue</h2><p>LinkedTransferQueue 是 SynchronousQueue 和 LinkedBlockingQueue 的合体，性能比 LinkedBlockingQueue 更高（没有锁操作），比 SynchronousQueue能存储更多的元素。</p>
-<p>当 put 时，如果有等待的线程，就直接将元素 “交给” 等待者， 否则直接进入队列。</p>
-<p>put 和 transfer 方法的区别是 put 是立即返回的， transfer 是阻塞等待消费者拿到数据才返回。transfer方法和 SynchronousQueue的 put 方法类似。</p>
-<h1 id="往线程池里提交一个任务会发生什么？"><a href="#往线程池里提交一个任务会发生什么？" class="headerlink" title="往线程池里提交一个任务会发生什么？"></a>往线程池里提交一个任务会发生什么？</h1><p>线程池的核心接口是Executor，里面只有一个execute(Runnable)方法，ExecutorService接口继承了Executor，提供了submit、shutdown、invokeAll、invokeyAny等方法。</p>
-<p>提交任务有execute和submit两种方式，execute只能提交无返回值的Runnable，submit可以提交有返回值的Callable和无返回值的Runnable，submit方法会新建一个FutureTask封装传入的Callback和Runnable，Runnable会被适配为Callback对象，FutureTask是集成Runnable的，最终还是执行execute(Runnable)，FutureTask内部只处理Callable</p>
-<p>execute(Runnable)里的逻辑：</p>
-<p>如果运行的线程数少于corePoolSize，则创建新线程执行任务。</p>
-<p>如果运行的线程数大于corePoolSize，则将新任务加入工作队列，而不添加新的线程，核心线程执行完一个任务就从工作队列中取任务继续执行。</p>
-<p>如果队列已满无法再加入，则创建新的线程执行，一直到线程总数超过maximumPoolSize时，对新任务执行拒绝策略。</p>
-<p>execute里addWorker(null, false);，传递空任务，代表新建线程，不为空表示新建线程并添加第一个任务</p>
-<p>submit任务后，任务内抛出的异常会拦截，通过Future获取异常对象，通过execute执行的任务，抛出的异常原封不动的向上抛。</p>
-<h1 id="线程池的大小应该设置多大？"><a href="#线程池的大小应该设置多大？" class="headerlink" title="线程池的大小应该设置多大？"></a>线程池的大小应该设置多大？</h1><p>任务分三类：</p>
-<ol>
-<li> CPU计算密集型</li>
-<li> IO密集型</li>
-<li> 计算和IO混合型</li>
-</ol>
-<p>CPU计算密集型任务大部分时间用来做计算逻辑，消耗CPU资源，这种任务同时执行的数量应该跟CPU数量相等。因为任务同时执行的数量少于CPU数量的话，明明有CPU空闲，任务却得不到执行，就浪费资源了，系统整体吞吐量低；任务同时执行的数量多于CPU数量的话，由于所有的CPU都满载了，要让CPU分时间片给各个任务才能保证多出的人得到执行，而切换任务是有成本的，要保存恢复任务（线程）的上下文环境。</p>
-<p>CPU密集型任务的线程池大小可以设置为CPU数量 + 1，额外多分配一个线程是因为其他线程偶尔会因为故障或其他原因暂停运行了，额外的一个线程可以确保CPU有任务执行不会被浪费。</p>
-<p>IO密集型任务，多数线程处于阻塞状态等待IO完成，让出CPU，不消耗CPU资源，故而应该让线程池多处理一些任务。线程池大小一般设置为 2 * CPU数量 + 1。</p>
-<p>假设有一个任务，计算需要C毫秒，IO操作需要等待W毫秒，整个任务的耗时就是C+W，一个CPU执行这个任务，CPU利用率U=C/(C+W)，很明显0 &lt;= U &lt;=1，也就是说一个CPU一个线程的情况下该线程的CPU利用为U，如果想要使得CPU利用率为1，那就多开几个线程，让几个线程的CPU利用率加起来等于1就完事了，那么总共就需要 1/U=(C+W)/C=1+W/C 个线程，1个CPU利用率100%需要1+W/C个线程，那么N个CPU利用率要100%就再乘以N就好了，所以总线程数就是N*(1+W/C)</p>
-<p>CPU计算密集型，可以认为没有IO操作，W=0，那么公式计算就会得到N</p>
-<p>IO密集型，C应该比较小，W比较大，那么W/C就会大于1，代入公式得到总线程数至少是2N，但是线程数也不能很大，每创建一个线程都会占用内存空间，线程数量过大会内存溢出，还要考虑硬盘和网络带宽等IO资源的限制，线程搞多了IO处理不了也没有意义，只会浪费内存。IO密集型线程池大小一般就设为2N+1，加1也是为了防止有线程因为某种原因故障或暂停了，额外的这个线程确保CPU不会浪费。</p>
-<p>线程等待的时间越长，需要越多的线程数；线程计算的时间越长，需要的线程数越少。</p>
-<p>任务的等待时间和计算时间可以通过基准测试工具测试出来，求一个近似值，再代入公式，即可估算出线程池大小。如果实际不同种类的任务等待时间和计算时间差异较大，只能用一个线程池的情况下，那就取平均值。</p>
-<p>也不是线程越多、CPU越多就可以无限提高运算速度，这是有上限的，可以用Amdahl（阿姆达尔）定律来衡量处理器并行运算之后效率的提升能力和上限，加速比 = 并行前系统耗时 / 并行后的系统耗时，加速比可以看作并行后提升了多少倍的执行速度。</p>
-<p>并行前系统耗时可以分为两个部分，一个是只能串行执行的部分，一个是可以并行执行的部分，设p为可以并行执行的部分的比例，必须串行执行的部分的比例就是1-p，设cpu数量（或线程数）为n，可并行部分执行的时间就是p/n，并行后的执行时间就是 1-p+p/n，并行前执行时间就是1了，加速比即1/(1-p+p/n)</p>
-<p>也可以设f为必须串行执行的部分的比例，可以并行执行的部分的比例就是1-f，设cpu数量（或线程数）为n，可并行部分执行的时间就是(1-f)/n，并行后的执行时间就是 f+(1-f)/n，加速比为1/(f+(1-f)/n)</p>
-<p>必须串行执行的部分越大，加速比就越小，这就是多核（多线程）加速的上限值。</p>
-<h1 id="线程池的非核心线程什么时候会被释放？"><a href="#线程池的非核心线程什么时候会被释放？" class="headerlink" title="线程池的非核心线程什么时候会被释放？"></a>线程池的非核心线程什么时候会被释放？</h1><p>非核心线程的保活借由BlockingQueue的带超时参数的poll()方法实现了，在keepAliveTime时间内没有从队列取到任务，就一直阻塞当前线程。</p>
-<h1 id="核心线程为什么一直可以运行，如何保证不销毁的？"><a href="#核心线程为什么一直可以运行，如何保证不销毁的？" class="headerlink" title="核心线程为什么一直可以运行，如何保证不销毁的？"></a>核心线程为什么一直可以运行，如何保证不销毁的？</h1><p>线程的运行没有停止就不会消耗。</p>
-<p>提交任务的执行路径：execute() -&gt; addWorker() -&gt; Worker.run() -&gt; runWorker() -&gt; getTask()</p>
-<p>核心线程会在getTask()中阻塞的从工作队列中获取任务，即如果工作队列中没有任务，就一直阻塞当前线程，非核心线程从队列取不到任务就立刻返回不阻塞线程，线程逻辑就会走完。</p>
-<p>通过判断当前线程池线程总数是否大于核心线程数来判断当前线程是否应该当做核心线程。</p>
-<h1 id="线程池有哪些坑？"><a href="#线程池有哪些坑？" class="headerlink" title="线程池有哪些坑？"></a>线程池有哪些坑？</h1><p>要注意ThreadLocal的value内存泄漏问题，要及时remove。</p>
-<h1 id="自定义线程池的场景"><a href="#自定义线程池的场景" class="headerlink" title="自定义线程池的场景"></a>自定义线程池的场景</h1><p>追溯调用线程池之前的堆栈，防止线程里报错不知道外面哪里调用的。</p>
-<h1 id="ForkJoinPool解决了什么问题？"><a href="#ForkJoinPool解决了什么问题？" class="headerlink" title="ForkJoinPool解决了什么问题？"></a>ForkJoinPool解决了什么问题？</h1><p>任务窃取机制，避免了取任务的时候多线程竞争一个队列，减少线程间竞争的等待开销，所以更快。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/" class="post-title-link" itemprop="url">Java并发-happens-before</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-10-23 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-23T20:00:00+08:00">2017-10-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-happen-before/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-happen-before/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="什么是happens-before原则？"><a href="#什么是happens-before原则？" class="headerlink" title="什么是happens-before原则？"></a>什么是happens-before原则？</h1><p>前一个操作的结果对后续操作是可见的</p>
-<h1 id="为什么需要happens-before原则？"><a href="#为什么需要happens-before原则？" class="headerlink" title="为什么需要happens-before原则？"></a>为什么需要happens-before原则？</h1><p>虚拟机会做编译优化，进行指令重排序，以提高CPU利用率，防止CPU出现空等待；但有些情况是不能重排序的，否则并发下会出问题，所以就要规定这些情况，happens-before原则就是这个规定.</p>
-<h1 id="典型场景？"><a href="#典型场景？" class="headerlink" title="典型场景？"></a>典型场景？</h1><p>比如写一个单例，new一个对象，指令执行的步骤是：</p>
-<ol>
-<li> 给对象分配内存</li>
-<li> 对象初始化</li>
-<li> 将对象内存地址关联</li>
-</ol>
-<p>指令重排序，可能会导致对象还没初始化，就会已经被使用了，所以需要volatile来禁止指令重排序</p>
-<h1 id="有哪些happens-before原则？"><a href="#有哪些happens-before原则？" class="headerlink" title="有哪些happens-before原则？"></a>有哪些happens-before原则？</h1><ol>
-<li> 程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作；</li>
-<li> 锁定规则：一个unLock操作先行发生于后面对同一个锁额lock操作；</li>
-<li> volatile变量规则：对一个变量的写操作先行发生于后面对这个变量的读操作；</li>
-<li> 传递规则：如果操作A先行发生于操作B，而操作B又先行发生于操作C，则可以得出操作A先行发生于操作C；</li>
-<li> 线程启动规则：Thread对象的start()方法先行发生于此线程的每个一个动作；</li>
-<li> 线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生；</li>
-<li> 线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结束、Thread.isAlive()的返回值手段检测到线程已经终止执行；</li>
-<li> 对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始；</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/" class="post-title-link" itemprop="url">Java并发-指令重排序、指令流水线</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-10-23 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-23T20:00:00+08:00">2017-10-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/指令重排序/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="如何验证指令发生了重排序？"><a href="#如何验证指令发生了重排序？" class="headerlink" title="如何验证指令发生了重排序？"></a>如何验证指令发生了重排序？</h1><p>定义两个变量设置初始值，在两个线程中分别赋新的值，然后打印在赋值语句后面打印另外一个线程修改的变量。</p>
-<p>执行很多次，如果发生了打印的都是变量的初始值，就是发生重排序了，违反直觉，但是编译器觉得两条语句没有依赖关系，允许指令重排序</p>
-<h1 id="CPU的指令流水线是什么？解决了什么问题？"><a href="#CPU的指令流水线是什么？解决了什么问题？" class="headerlink" title="CPU的指令流水线是什么？解决了什么问题？"></a>CPU的指令流水线是什么？解决了什么问题？</h1><p>一条指令可以分为多个步骤完成，每个步骤可以由不同的硬件功能单元来执行，这样就可以让多个功能单元并行执行指令的不同步骤，不需要等待一个指令执行完再执行执行下一个指令，流水线可以让指令的一个步骤完成了就可以执行下一个指令的同一个步骤</p>
-<h1 id="CPU指令流水线存在什么问题？"><a href="#CPU指令流水线存在什么问题？" class="headerlink" title="CPU指令流水线存在什么问题？"></a>CPU指令流水线存在什么问题？</h1><p>如果指令之间存在数据相关性，导致前一条指令执行完后才能执行后一条指令，指令重叠就会发生冲突，无法并行执行，后面的指令只能等待，这个时候就可以把数据无关的指令重排序，以防止流水线停顿。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215853.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215901.png"></p>
-<h1 id="CPU指令流水线什么情况下会需要指令重排序"><a href="#CPU指令流水线什么情况下会需要指令重排序" class="headerlink" title="CPU指令流水线什么情况下会需要指令重排序?"></a>CPU指令流水线什么情况下会需要指令重排序?</h1><p>一条指令可以分为多个步骤完成，如下:</p>
-<ol>
-<li> 取指 IF</li>
-<li> 译码和取寄存器操作数 ID</li>
-<li> 执行或者有效地址计算 EX</li>
-<li> 存储器访问 MEM</li>
-<li> 写回 WB</li>
-</ol>
-<p>CPU在工作时，需要将上述指令分为多个步骤依次执行</p>
-<p>为了提高硬件利用率，CPU指令是按流水线技术来执行的，如下：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215936.png"></p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826215945.png"></p>
-<ol>
-<li> LW指令 表示 load，其中LW R1,b表示把b的值加载到寄存器R1中</li>
-<li> LW R2,c 表示把c的值加载到寄存器R2中</li>
-<li> ADD 指令表示加法，把R1 、R2的值相加，并存入R3寄存器中。</li>
-<li> SW 表示 store 即将 R3寄存器的值保持到变量a中</li>
-<li> LW R4,e 表示把e的值加载到寄存器R4中</li>
-<li> LW R5,f 表示把f的值加载到寄存器R5中</li>
-<li> SUB 指令表示减法，把R4 、R5的值相减，并存入R6寄存器中。</li>
-<li> SW d,R6 表示将R6寄存器的值保持到变量d中</li>
-</ol>
-<p>上述便是汇编指令的执行过程，在某些指令上存在X的标志，X代表中断的含义，也就是只要有X的地方就会导致指令流水线技术停顿，同时也会影响后续指令的执行，可能需要经过1个或几个指令周期才可能恢复正常，那为什么停顿呢？这是因为部分数据还没准备好，如执行ADD指令时，需要使用到前面指令的数据R1，R2，而此时R2的MEM操作没有完成，即未拷贝到存储器中，这样加法计算就无法进行，必须等到MEM操作完成后才能执行，也就因此而停顿了，其他指令也是类似的情况。前面阐述过，停顿会造成CPU性能下降，因此我们应该想办法消除这些停顿，这时就需要使用到指令重排了，如下图，既然ADD指令需要等待，那我们就利用等待的时间做些别的事情，如把LW R4,e 和 LW R5,f 移动到前面执行，毕竟LW R4,e 和 LW R5,f执行并没有数据依赖关系，对他们有数据依赖关系的SUB R6,R5,R4指令在R4,R5加载完成后才执行的，没有影响</p>
-<p>正如上图所示，所有的停顿都完美消除了，指令流水线也无需中断了，这样CPU的性能也能带来很好的提升，这就是处理器指令重排的作用。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-volatile/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -787,7 +215,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -908,7 +336,7 @@
 <p>这个可以用程序验证，volatile变量初始值为0，两个线程分别对其自增一万次，最后变量的值是小于两万的。</p>
 <p>可以从字节码指令看出来</p>
 <p>如下的代码：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileDemo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> value = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">increament</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        value++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">VolatileDemo</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> <span class="variable">value</span> <span class="operator">=</span> <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increament</span><span class="params">()</span> &#123;</span><br><span class="line">        value++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>编译后value++的字节码指令如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GETFIELD VolatileDemo.value : I</span><br><span class="line">ICONST_1</span><br><span class="line">IADD</span><br><span class="line">PUTFIELD VolatileDemo.value : I</span><br></pre></td></tr></table></figure>
@@ -973,7 +401,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1033,10 +461,10 @@
 <li> Entry类存储了ThreadLocal这个key和对应的value</li>
 <li> 对ThreadLocal持有弱引用，对value持有强引用</li>
 </ol>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&lt;?&gt;&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">    Object value;</span><br><span class="line"></span><br><span class="line">    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">        <span class="keyword">super</span>(k);</span><br><span class="line">        value = v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Entry</span> <span class="keyword">extends</span> <span class="title class_">WeakReference</span>&lt;ThreadLocal&lt;?&gt;&gt; &#123;</span><br><span class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">    Object value;</span><br><span class="line"></span><br><span class="line">    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">        <span class="built_in">super</span>(k);</span><br><span class="line">        value = v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h1 id="TheadLocal如何保证唯一性？"><a href="#TheadLocal如何保证唯一性？" class="headerlink" title="TheadLocal如何保证唯一性？"></a>TheadLocal如何保证唯一性？</h1><p>ThreadLocal作为映射表的Key，需要具备唯一的标识，每创建一个新的ThreadLocal，这个标识就变的跟之前不一样了。 如何保证每一个ThreadLocal的唯一性呢？</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadLocal</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> HASH_INCREMENT = <span class="number">0x61c88647</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 每一个ThreadLocal对象的HashCode都不一样</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> threadLocalHashCode = nextHashCode();</span><br><span class="line">	</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">nextHashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// 下一个HashCode，是在已有基础上增加0x61c88647</span></span><br><span class="line">        <span class="keyword">return</span> nextHashCode.getAndAdd(HASH_INCREMENT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThreadLocal</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">HASH_INCREMENT</span> <span class="operator">=</span> <span class="number">0x61c88647</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 每一个ThreadLocal对象的HashCode都不一样</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">threadLocalHashCode</span> <span class="operator">=</span> nextHashCode();</span><br><span class="line">	</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">nextHashCode</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="comment">// 下一个HashCode，是在已有基础上增加0x61c88647</span></span><br><span class="line">        <span class="keyword">return</span> nextHashCode.getAndAdd(HASH_INCREMENT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>ThreadLocal内部有一个名为threadLocalHashCode的变量，每创建一个新的ThreadLocal对象，这个变量的值就会增加0x61c88647。 正是因为有这么一个神奇的数字，它能够保证生成的Hash值可以均匀的分布在0~(2^N-1)之间，N是数组长度。 更多关于数字0x61c88647，可以参考<a target="_blank" rel="noopener" href="https://www.javaspecialists.eu/archive/Issue164.html">Why 0x61c88647?</a></p>
 <h1 id="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"><a href="#ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？" class="headerlink" title="ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？"></a>ThreadLocalMap如何计算value应该存在table数组中哪个索引位置？</h1><p>Map的key是ThreadLocal</p>
@@ -1120,7 +548,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1185,11 +613,11 @@
 <h1 id="伪共享的解决：字节填充"><a href="#伪共享的解决：字节填充" class="headerlink" title="伪共享的解决：字节填充"></a>伪共享的解决：字节填充</h1><p>保证不同的CPU处理的数据位于不同的缓存行中，就不会引发缓存行的频繁失效。</p>
 <p>java里定义类的成员变量时，可以倾向于把不变的遍历放在一起（一组位置），易变的变量放在一起，使它们尽量不在同一个缓存行，这样每次对象的易变变量变化时，不会引起不变的属性所在缓存行失效，从而提高缓存命中率，避免频繁从主存读取数据，提高CPU吞吐量。</p>
 <p>Jdk6中可以通过添加填充变量进行字节填充来解决伪共享，示例如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;  <span class="comment">// 实际数据</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6; <span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PaddingObject</span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">volatile</span> <span class="type">long</span> <span class="variable">value</span> <span class="operator">=</span> <span class="number">0L</span>;  <span class="comment">// 实际数据</span></span><br><span class="line">	<span class="keyword">public</span> <span class="type">long</span> p1, p2, p3, p4, p5, p6; <span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>想象PaddingObject里本来只有一个value属性，现在有多个线程需要读写一个PaddingObject数组（修改数组每一项里的value），由于数组的存储空间在内存中是连续的，根据CPU访问数据的空间局部性特点，CPU在访问数组某个元素的时候，会把该元素所在的内存块整个拷贝到CPU缓存中，这个内存块包含了数组中一些相邻的元素，多个线程同时修改数组中相邻的一些元素时，这个缓存行会频繁失效，CPU缓存命中率低，如果数组的每一个元素位于不同的内存块，也就可以位于不同的缓存行，多线程就不会竞争同一个缓存行</p>
 <p>Jdk7中有的版本用上述方式无效，添加的无用变量会被优化去除，需要使用继承的方式组织优化，示例如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">long</span> p1, p2, p3, p4, p5, p6;<span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddingObject</span> <span class="keyword">extends</span> <span class="title">AbstractPaddingObject</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">long</span> value = <span class="number">0L</span>;    <span class="comment">// 实际数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractPaddingObject</span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="type">long</span> p1, p2, p3, p4, p5, p6;<span class="comment">// 填充</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PaddingObject</span> <span class="keyword">extends</span> <span class="title class_">AbstractPaddingObject</span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="type">long</span> <span class="variable">value</span> <span class="operator">=</span> <span class="number">0L</span>;    <span class="comment">// 实际数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>Jdk8开始提供了@sun.misc.Contended 注解进行字节填充，不用再手动声明无用的变量了，同时要开启 JVM 参数：-XX:-RestrictContended=false</p>
 <p>字节填充会增大目标对象的体积，是用空间换时间。</p>
@@ -1247,7 +675,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1287,12 +715,12 @@
           <h1 id="Semaphore作用"><a href="#Semaphore作用" class="headerlink" title="Semaphore作用"></a>Semaphore作用</h1><p>如果限定某些资源最多有N个线程可以访问，那么超过N个则不允许再有线程来访问。<br>同时当现有线程结束后，就会释放，然后允许新的线程进来。</p>
 <p>类似于锁的lock与 unlock过程 ，区别在于Semaphore多加锁和解锁是计数的。</p>
 <p>示例：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Semaphore semaphore = <span class="keyword">new</span> Semaphore(<span class="number">3</span>);</span><br><span class="line">semaphore.acquire(); <span class="comment">// 获取一个许可</span></span><br><span class="line">semaphore.release(); <span class="comment">// 释放一个许可</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Semaphore</span> <span class="variable">semaphore</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Semaphore</span>(<span class="number">3</span>);</span><br><span class="line">semaphore.acquire(); <span class="comment">// 获取一个许可</span></span><br><span class="line">semaphore.release(); <span class="comment">// 释放一个许可</span></span><br></pre></td></tr></table></figure>
 <p>Semephore构造函数传入0，也可以release进行+1</p>
 <h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>Semaphore构造函数传递的值会保存在AQS的state变量中</p>
 <p>调用acquire方法，尝试给state减1，如果state变为负数，就会阻塞当前线程，把当前线程作为结点插入到AQS队列中。如果state不为负数，则继续执行线程的后续代码。</p>
 <p>调用release方法，会给state加1，如果AQS队列里有等待的线程，就唤醒等待的线程，并把结点移除队列。</p>
-<h1 id="3个线程交替打印123456789…"><a href="#3个线程交替打印123456789…" class="headerlink" title="3个线程交替打印123456789…"></a>3个线程交替打印123456789…</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SemaphoreDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> n = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Semaphore s1 = <span class="keyword">new</span> Semaphore(<span class="number">1</span>);</span><br><span class="line">        Semaphore s2 = <span class="keyword">new</span> Semaphore(<span class="number">0</span>);</span><br><span class="line">        Semaphore s3 = <span class="keyword">new</span> Semaphore(<span class="number">0</span>);</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s1.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T1: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s2.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s2.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T2: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s3.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        Thread t3 = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s3.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T3: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s1.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t3.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="3个线程交替打印123456789…"><a href="#3个线程交替打印123456789…" class="headerlink" title="3个线程交替打印123456789…"></a>3个线程交替打印123456789…</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SemaphoreDemo</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Semaphore</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Semaphore</span>(<span class="number">1</span>);</span><br><span class="line">        <span class="type">Semaphore</span> <span class="variable">s2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Semaphore</span>(<span class="number">0</span>);</span><br><span class="line">        <span class="type">Semaphore</span> <span class="variable">s3</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Semaphore</span>(<span class="number">0</span>);</span><br><span class="line">        <span class="type">Thread</span> <span class="variable">t1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s1.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T1: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s2.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Thread</span> <span class="variable">t2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s2.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T2: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s3.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Thread</span> <span class="variable">t3</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        s3.acquire();</span><br><span class="line">                        System.out.println(<span class="string">&quot;T3: &quot;</span> + n);</span><br><span class="line">                        n++;</span><br><span class="line">                        s1.release();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t3.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -1343,7 +771,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1398,7 +826,7 @@
 <h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p>调用CyclicBarrier的await()方法，通过ReentrantLock先加锁，然后用Condition的await实现等待。</p>
 <p>每次调用await()会计数，当第个N个线程执行await()后，会对Condition对象signalAll()来让所有等待线程的继续执行。</p>
 <p>然后重新计数，继续同样的过程。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dowait(<span class="keyword">false</span>, <span class="number">0L</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (TimeoutException toe) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> Error(toe); <span class="comment">// cannot happen</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Main barrier code, covering the various policies.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">dowait</span><span class="params">(<span class="keyword">boolean</span> timed, <span class="keyword">long</span> nanos)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> InterruptedException, BrokenBarrierException,</span></span><br><span class="line"><span class="function">           TimeoutException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> Generation g = generation;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (g.broken)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">            breakBarrier();</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> index = --count;</span><br><span class="line">        <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;  <span class="comment">// tripped</span></span><br><span class="line">            <span class="keyword">boolean</span> ranAction = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> Runnable command = barrierCommand;</span><br><span class="line">                <span class="keyword">if</span> (command != <span class="keyword">null</span>)</span><br><span class="line">                    command.run();</span><br><span class="line">                ranAction = <span class="keyword">true</span>;</span><br><span class="line">                nextGeneration();</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!ranAction)</span><br><span class="line">                    breakBarrier();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// loop until tripped, broken, interrupted, or timed out</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!timed)</span><br><span class="line">                    trip.await();</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (nanos &gt; <span class="number">0L</span>)</span><br><span class="line">                    nanos = trip.awaitNanos(nanos);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">                <span class="keyword">if</span> (g == generation &amp;&amp; ! g.broken) &#123;</span><br><span class="line">                    breakBarrier();</span><br><span class="line">                    <span class="keyword">throw</span> ie;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// We&#x27;re about to finish waiting even if we had not</span></span><br><span class="line">                    <span class="comment">// been interrupted, so this interrupt is deemed to</span></span><br><span class="line">                    <span class="comment">// &quot;belong&quot; to subsequent execution.</span></span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g.broken)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> BrokenBarrierException();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g != generation)</span><br><span class="line">                <span class="keyword">return</span> index;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (timed &amp;&amp; nanos &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                breakBarrier();</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dowait(<span class="literal">false</span>, <span class="number">0L</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (TimeoutException toe) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(toe); <span class="comment">// cannot happen</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Main barrier code, covering the various policies.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">dowait</span><span class="params">(<span class="type">boolean</span> timed, <span class="type">long</span> nanos)</span></span><br><span class="line">    <span class="keyword">throws</span> InterruptedException, BrokenBarrierException,</span><br><span class="line">           TimeoutException &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="built_in">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">Generation</span> <span class="variable">g</span> <span class="operator">=</span> generation;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (g.broken)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BrokenBarrierException</span>();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">            breakBarrier();</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InterruptedException</span>();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> --count;</span><br><span class="line">        <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;  <span class="comment">// tripped</span></span><br><span class="line">            <span class="type">boolean</span> <span class="variable">ranAction</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="type">Runnable</span> <span class="variable">command</span> <span class="operator">=</span> barrierCommand;</span><br><span class="line">                <span class="keyword">if</span> (command != <span class="literal">null</span>)</span><br><span class="line">                    command.run();</span><br><span class="line">                ranAction = <span class="literal">true</span>;</span><br><span class="line">                nextGeneration();</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!ranAction)</span><br><span class="line">                    breakBarrier();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// loop until tripped, broken, interrupted, or timed out</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!timed)</span><br><span class="line">                    trip.await();</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (nanos &gt; <span class="number">0L</span>)</span><br><span class="line">                    nanos = trip.awaitNanos(nanos);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">                <span class="keyword">if</span> (g == generation &amp;&amp; ! g.broken) &#123;</span><br><span class="line">                    breakBarrier();</span><br><span class="line">                    <span class="keyword">throw</span> ie;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// We&#x27;re about to finish waiting even if we had not</span></span><br><span class="line">                    <span class="comment">// been interrupted, so this interrupt is deemed to</span></span><br><span class="line">                    <span class="comment">// &quot;belong&quot; to subsequent execution.</span></span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g.broken)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BrokenBarrierException</span>();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g != generation)</span><br><span class="line">                <span class="keyword">return</span> index;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (timed &amp;&amp; nanos &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                breakBarrier();</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TimeoutException</span>();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h1 id="CountDownLatch和CyclicBarrier区别？"><a href="#CountDownLatch和CyclicBarrier区别？" class="headerlink" title="CountDownLatch和CyclicBarrier区别？"></a>CountDownLatch和CyclicBarrier区别？</h1><p>CountDownLatch主要是实现了1个或N个线程需要等待其他线程完成某项操作之后才能继续往下执行操作，描述的是1个线程或N个线程等待其他线程的关系。</p>
 <p>CyclicBarrier主要是实现了多个线程之间相互等待，直到所有的线程都满足了条件之后各自才能继续执行后续的操作，描述的多个线程内部相互等待的关系。</p>
@@ -1453,7 +881,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1534,10 +962,522 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/" class="post-title-link" itemprop="url">Java并发-条件变量、wait()与notify()、await()与signal()</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-16 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-16T20:00:00+08:00">2017-10-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-wait()%E3%80%81notify()%E3%80%81notifyAll()/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-wait()、notify()、notifyAll()/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Object-wait-为什么要配合while使用？"><a href="#Object-wait-为什么要配合while使用？" class="headerlink" title="Object.wait()为什么要配合while使用？"></a>Object.wait()为什么要配合while使用？</h1><p>wait之前一般都是要判断某个条件成立才会wait，这个判断条件需要写成while：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">while (check pass) &#123;</span><br><span class="line">	wait();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果写成if，wait过后当前线程交出锁，等当前线程重新被唤起后，条件是否满足是不知道的，其他线程可能修改了条件的状态，要重新判断一下，否则可能条件未满足就继续执行了。</p>
+<p>以生产者消费者模型为例。</p>
+<ul>
+<li>有1个生产者往缓冲区加数据，有2个消费者从缓冲区取数据。</li>
+<li>消费者取数据前会检查缓冲区是否为空，不为空才能取数据，为空的话要等待。</li>
+<li>假设两个消费者线程都等待了。</li>
+<li>然后生产者往缓冲区添加数据后做notifyAll唤醒所有消费者，会唤醒两个等待的消费者线程，让消费者线程从监视器的等待队列移动到锁竞争队列，两者竞争锁。</li>
+<li>其中一个线程竞争到锁后，消费了缓冲区数据，缓冲区没有数据了，释放锁后另外一个消费者获得到了锁，开始取从缓冲区取数据，而没有再做条件检查了。</li>
+</ul>
+<p>这种现象叫做虚假唤醒。</p>
+<h1 id="Object的notify-和notifyAll-有什么区别？"><a href="#Object的notify-和notifyAll-有什么区别？" class="headerlink" title="Object的notify()和notifyAll()有什么区别？"></a>Object的notify()和notifyAll()有什么区别？</h1><p>每一个对象都有一个内部锁，即监视器（Monitor），虚拟机会给每个对象维护两个线程集合（可能是队列），一个叫Entry Set（入口集），另外一个叫Wait Set（等待集），对于任意对象object，object的Entry Set用于存储等待获取object内部锁的所有线程，object的Wait Set存储执行了object.wait()和object.wait(long timeout)的线程。</p>
+<ul>
+<li>notify()会唤醒Wait Set里的一个线程。</li>
+<li>notifyAll()会唤醒Wait Set里的所有线程，线程被唤醒后去竞争获取锁，没有获取锁的线程进入Entry Set。</li>
+</ul>
+<h1 id="什么时候用notify-？什么时候用notifyAll"><a href="#什么时候用notify-？什么时候用notifyAll" class="headerlink" title="什么时候用notify()？什么时候用notifyAll()?"></a>什么时候用notify()？什么时候用notifyAll()?</h1><p>如果所有线程都在等待相同的条件，并且一次只有一个线程可以从条件变为true，则可以使用notify。</p>
+<p>在这种情况下，notify是优于notifyAll 因为唤醒所有这些因为我们知道只有一个线程会受益而所有其他线程将再次等待，所以调用notifyAll方法只是浪费CPU。</p>
+<p>虽然这看起来很合理，但仍有一个警告，即无意中的接收者吞下了关键通知。通过使用notifyAll，我们确保所有收件人都会收到通知。</p>
+<h1 id="Object的wait-notifyAll-和Condition的await-signalAll-的区别？"><a href="#Object的wait-notifyAll-和Condition的await-signalAll-的区别？" class="headerlink" title="Object的wait()/notifyAll()和Condition的await()/signalAll()的区别？"></a>Object的wait()/notifyAll()和Condition的await()/signalAll()的区别？</h1><p>以生产者消费者模型为例。</p>
+<ul>
+<li>使用wait()、notify()/notifyAll()的缺点在于在生产者唤醒消费者、或者消费者唤醒生产者时，由于生产者和消费者使用同一个锁，所以生产者也会将生产者唤醒，消费者也会将消费者唤醒。</li>
+<li>如果能让消费者只唤醒生产者，或者生产者只唤醒消费者，就没有性能浪费了。</li>
+<li>所以一个ReentrantLock支持创建多个Condition，以应对这种场景。</li>
+<li>synchronized的锁对象没有提供多条件唤醒。</li>
+</ul>
+<p>ArrayBlockingQueue是典型的生产者消费者的例子，源码是很好的参考。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/" class="post-title-link" itemprop="url">Java并发-synchronized、ReentrantLock</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-15 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-15T20:00:00+08:00">2017-10-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-synchronized%E3%80%81%E9%94%81%E5%8D%87%E7%BA%A7%E3%80%81wait%E5%92%8Cnotify/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-synchronized、锁升级、wait和notify/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="synchronized作用"><a href="#synchronized作用" class="headerlink" title="synchronized作用"></a>synchronized作用</h1><p>让一段代码在多线程之间互斥访问，保证原子性、有序性、可见性，并且是可重入的。</p>
+<h1 id="synchronized使用方式"><a href="#synchronized使用方式" class="headerlink" title="synchronized使用方式"></a>synchronized使用方式</h1><ul>
+<li>synchronized修饰代码块时需要传入一个对象作为锁，这个对象可以是任意的，进入同步代码块前要获取这个锁，没有获得锁的线程就要阻塞等待，同步代码块执行完释放锁。</li>
+<li>修饰成员方法时，锁是对象实例。</li>
+<li>修饰静态方法时，锁是类的class实例。</li>
+</ul>
+<h1 id="synchronized原理综述"><a href="#synchronized原理综述" class="headerlink" title="synchronized原理综述"></a>synchronized原理综述</h1><p>每个Java对象都关联一个监视器锁对象，同步代码块在字节码层面是通过在代码块的指令前后加上monitorenter和monitorexit指令来标识的。</p>
+<p>当线程执行到monitorenter指令时，当前线程试图获取监视器对象所有权，如果未加锁或者已被当前线程持有，就把锁计数加1；执行到monitorexit指令的时候，锁计数减1。锁计数为0时，锁就被释放了。</p>
+<p>如果当前线程获取监视器对象失败，线程会阻塞等待，线程会作为一个结点存入监视器对象的锁池队列中，等待唤醒。</p>
+<p>监视器对象还有一个等待池队列，在同步代码块中调用锁对象的wait方法的时候，线程会阻塞，并被封装为一个结点，进入监视器对象的等待池队列，调用锁对象的notify和notifyAll的时候，会把等待池队列中的线程放入锁池队列中，只有锁池中的线程才能参与竞争锁。</p>
+<p>wait和notify用来线程之间同步过程的，比如实现生产者消费者模型。</p>
+<p>监视器锁底层是通过操作系统的互斥锁实现的，操作系统做线程切换需要从用户态转换到内核态，所以比较消耗性能。这种依赖于操作系统互斥锁而实现的锁叫做重量级锁。</p>
+<p>如果线程竞争并不激烈，切换线程的开销是不划算的，特别是多个线程在不同的时段获取同一把锁，可以用自旋锁，就是CAS+循环，CAS由硬件之间实现，开销比切换线程开销要小，这就是轻量级锁，在JDK6引入。</p>
+<p>锁信息具体存储在对象头的MarkWord里，一个对象在虚拟机的内存布局分为三部分，对象头、实例数据、对齐填充，其中对象头又分为MarkWord、类型指针、数组长度，MarkWord存储了锁相关的信息、hashCode、垃圾回收的分代年龄等。</p>
+<p>轻量级锁的CAS操作具体修改的是锁对象头的mark word，修改为指向当前线程栈帧中的锁记录的指针。虚拟机会为每个线程在当前线程栈帧中创建一块锁记录空间，存储锁对象的对象头中的mark word的拷贝。</p>
+<p>如果CAS修改成功，当前线程就获得了轻量级锁。</p>
+<p>如果更新失败，说明有线程竞争，开始自旋，自旋超过一定次数，升级为重量级锁。避免竞争激烈的情况下自旋空耗CPU。</p>
+<p>如果压根都没有线程竞争，只有单线程访问同步代码块，其实每次进行CAS操作获取轻量级锁也是没有必要的开销，所以JDK6又引入了偏向锁，只在第一次申请锁的时候，对Java对象头的MARK WORD做CAS操作，记录下当前申请锁的线程ID，退出同步代码块后，也不释放锁，锁对象的对象头中记录的还是当前的线程ID，同一个线程再次进入这个锁的同步代码块的时候，检查锁的对象头中记录的线程ID是否还是自己，是的话就直接进入，不用再CAS了。当有多个线程要申请锁的时候，就会升级到轻量级锁。</p>
+<p>轻量级锁是为了在线程交替执行同步块时提高性能，而偏向锁则是在只有一个线程执行同步块时进一步提高性能。</p>
+<h1 id="ReentrantLock与synchronized的区别？"><a href="#ReentrantLock与synchronized的区别？" class="headerlink" title="ReentrantLock与synchronized的区别？"></a>ReentrantLock与synchronized的区别？</h1><p>ReentrantLock与synchronized有相同的功能和语义，添加了更多灵活的功能。<br>synchronized能干的ReentrantLock都能干，ReentrantLock能干synchronized不一定能干。</p>
+<p>最主要区别有三点：支持等待可中断、可实现公平锁、锁可以绑定多个条件。</p>
+<p>详细区别：<br>|   |ReentrantLock|synchronized<br>|—|—|—|<br>|底层实现|继承AQS|监视器模式<br>|灵活性|支持响应中断、超时、尝试获取锁|不灵活<br>|释放锁形式|必须显式调用unlock()释放锁，可跨方法调用|自动释放监视器，不可跨方法释放<br>|锁类型|公平锁和非公平锁|非公平锁<br>|条件队列|可关联多个条件队列|只有一个条件队列<br>|错误排查|没有释放锁，很追溯发生错误的位置，因为没有记录应该释放锁的时间和位置难度|synchronized加锁解锁过程有完整的日志</p>
+<h1 id="该用ReentrantLock还是synchronized？"><a href="#该用ReentrantLock还是synchronized？" class="headerlink" title="该用ReentrantLock还是synchronized？"></a>该用ReentrantLock还是synchronized？</h1><p>除非需要ReentrantLock的特定的功能，否则还是应该优先使用synchronized，因为简单易用，不会忘记释放锁。</p>
+<h1 id="ReentrantLock实现原理"><a href="#ReentrantLock实现原理" class="headerlink" title="ReentrantLock实现原理"></a>ReentrantLock实现原理</h1><p>底层通过继承AbstractQueuedSynchronizer实现。</p>
+<p>大致过程：</p>
+<ul>
+<li>先通过cas修改int类型的state变量，修改成功则获取互斥锁成功。</li>
+<li>cas修改失败则把当前线程生成一个节点，放入一个等待队列中，线程被挂起。<ul>
+<li>等待队列操作也都是通过cas加自旋的方式来完成，避免同步开销。</li>
+</ul>
+</li>
+<li>释放锁后，会唤醒队列去自旋CAS去修改state来获取互斥锁。</li>
+</ul>
+<p>state变量记录锁的重入次数。</p>
+<h1 id="synchronized锁升级"><a href="#synchronized锁升级" class="headerlink" title="synchronized锁升级"></a>synchronized锁升级</h1><ul>
+<li>jdk1.6之前synchronized直接就上重量级锁。</li>
+<li>jdk1.6开始synchronized会先由无锁转为偏向锁，再转为轻量级锁，再转为重量级锁，锁只能升级不能降级。</li>
+</ul>
+<p>偏向锁、轻量级锁是针对synchronized优化。</p>
+<h1 id="对象头"><a href="#对象头" class="headerlink" title="对象头"></a>对象头</h1><p>JVM中，对象在内存中除了存储对象本身的数据，还会额外存储关于对象的一些附加信息。</p>
+<ul>
+<li>普通对象的对象头中存储mark word和类型指针（指向对象所属类的指针）。</li>
+<li>数组对象还会存储数组长度。</li>
+</ul>
+<p>mark word存储对象的hashcode、GC分代年龄、锁状态等信息。</p>
+<p>mark word长度在32位系统上为32位，64位系统上长度为64位。</p>
+<p>为了在有限的空间存储较多的信息，其数据格式不固定，数据位共享复用。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210826195541.png"></p>
+<p>当对象状态为偏向锁（biasable）时，mark word存储的是偏向的线程ID；</p>
+<p>当状态为轻量级锁（lightweight locked）时，mark word存储的是指向线程栈中Lock Record的指针；</p>
+<p>当状态为重量级锁（inflated）时，为指向堆中的monitor对象的指针。</p>
+<h1 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h1><p>研究发现，大多数情况下不仅不存在锁竞争，而且总是由同一个线程多次重入，为了让同一个线程多次重入获取锁的代价更低，就引入了偏向锁的概念。</p>
+<p>偏向锁获取过程：</p>
+<ol>
+<li> 当前线程访问Mark Word中偏向锁的标识是否设置成1，锁标志位是否为01，确认是否为可偏向状态。</li>
+<li> 如果为可偏向状态，则测试线程ID是否指向当前线程，如果是，进入步骤5，否则进入步骤3。</li>
+<li> 如果线程ID并未指向当前线程，则通过CAS操作竞争锁。如果竞争成功，则将Mark Word中线程ID设置为当前线程ID，然后执行5；如果竞争失败，执行4。</li>
+<li> 如果CAS获取偏向锁失败，则表示有竞争。当到达全局安全点（safepoint）时获得偏向锁的线程被挂起，偏向锁升级为轻量级锁，然后被阻塞在安全点的线程继续往下执行同步代码。（撤销偏向锁的时候会导致当前获得偏向锁的线程被暂停）</li>
+<li> 执行同步代码。</li>
+</ol>
+<p>偏向锁的释放：</p>
+<p>偏向锁只有当遇到其他线程也尝试获取偏向锁时，持有偏向锁的线程才会释放锁，线程不会主动去释放偏向锁。（也就是对于获取偏向锁的线程 只有lock的动作，没有unlock的动作，这是因偏向的需要，即使可能这个线程已经死亡。）偏向锁的撤销步骤如下：</p>
+<ol>
+<li> 等到全局安全点（在这个时间点上没有正在执行的字节码）。</li>
+<li> 暂停持有偏向锁的线程，然后检查持有偏向锁的线程是否还活着，如果线程不处于活动状态，则将对象头设置为无锁状态。争抢锁的线程会再走生成偏向锁的过程，然后成为偏向锁的拥有者。</li>
+<li> 如果持有偏向锁的线程还处于活动状态，则将锁升级为轻量级锁。</li>
+</ol>
+<h1 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h1><p>轻量级锁实现是自旋锁，没有抢到锁的线程将自旋，即不停的循环判断是否能获取到锁，不会让线程阻塞。获取锁的操作就是通过CAS修改对象头的锁标记位。</p>
+<p>长时间的循环是很占用CPU的，一个线程持有锁，其他线程只能原地空耗CPU，不执行任何有效的任务，这种现象称为busy-waiting。</p>
+<p>利用短时间的busy-waiting换取线程的阻塞和唤醒在用户态和内核态切换的开销。</p>
+<p>busy-waiting是有限度的（JVM可以设置参数调节循环次数上限），如果锁竞争激烈，自旋超过一定次数，就升级为重量级锁。</p>
+<p>具体的CAS过程：</p>
+<ul>
+<li>  当线程请求锁时，若该锁对象的Mark Word中标志位为01（未锁定状态），则在该线程的栈帧中创建一块名为『锁记录』的空间，然后将锁对象的Mark Word拷贝至该空间；最后通过CAS操作将锁对象的Mark Word指向该锁记录；</li>
+<li>  若CAS操作成功，则轻量级锁的上锁过程成功；</li>
+<li>  若CAS操作失败，再判断当前线程是否已经持有了该轻量级锁；若已经持有，则直接进入同步块；若尚未持有，则表示该锁已经被其他线程占用，此时轻量级锁就要膨胀成重量级锁。</li>
+</ul>
+<p>轻量级锁比重量级锁性能更高的前提是：</p>
+<ul>
+<li>在轻量级锁被占用的整个同步周期内，不存在其他线程的竞争。若在该过程中一旦有其他线程竞争，那么就会膨胀成重量级锁，从而除了使用互斥量以外，还额外发生了CAS操作，因此更慢！</li>
+</ul>
+<p>轻量级锁是为了在线程交替执行同步块时提高性能。</p>
+<h1 id="重量级锁"><a href="#重量级锁" class="headerlink" title="重量级锁"></a>重量级锁</h1><p>阻塞所有竞争锁但未获得锁的线程。</p>
+<p>实现依赖于操作系统的同步函数，在linux上使用mutex互斥锁，涉及到用户态和内核态的切换、进程线程上下文的切换，成本较高。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CAS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CAS/" class="post-title-link" itemprop="url">Java并发-CAS</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-13 20:00:00" itemprop="dateCreated datePublished" datetime="2017-10-13T20:00:00+08:00">2017-10-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">并发</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E5%B9%B6%E5%8F%91/Java%E5%B9%B6%E5%8F%91-CAS/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="并发/Java并发-CAS/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="悲观锁"><a href="#悲观锁" class="headerlink" title="悲观锁"></a>悲观锁</h1><p>悲观锁更新的方式认为：在更新数据的时候大概率会有其他线程去争夺共享资源</p>
+<p>所以悲观锁的做法是：第一个获取资源的线程会将资源锁定起来，其他没争夺到资源的线程只能进入阻塞队列，等第一个获取资源的线程释放锁之后，这些线程才能有机会重新争夺资源。</p>
+<h1 id="乐观锁"><a href="#乐观锁" class="headerlink" title="乐观锁"></a>乐观锁</h1><p>乐观锁更新方式认为：在更新数据的时候其他线程争抢这个共享变量的概率非常小，所以更新数据的时候不会对共享数据加锁。</p>
+<p>但是在正式更新数据之前会检查数据是否被其他线程改变过，如果未被其他线程改变过就将共享变量更新成最新值，如果发现共享变量已经被其他线程更新过了，就重试，直到成功为止。</p>
+<p>CAS机制就是乐观锁的典型实现。</p>
+<h1 id="CAS"><a href="#CAS" class="headerlink" title="CAS"></a>CAS</h1><p>CAS，是Compare and Swap的简称，在这个机制中有三个核心的参数：</p>
+<ul>
+<li>  主内存中存放的共享变量的值：V（一般情况下这个V是内存的地址值，通过这个地址可以获得内存中的值）</li>
+<li>  工作内存中共享变量的副本值，也叫预期值：A</li>
+<li>  需要将共享变量更新到的最新值：B</li>
+</ul>
+<h1 id="CAS优点"><a href="#CAS优点" class="headerlink" title="CAS优点"></a>CAS优点</h1><ol>
+<li> 可以保证变量操作的原子性；</li>
+<li> 并发量不是很高的情况下，使用CAS机制比使用锁机制效率更高；</li>
+<li> 在线程对共享资源占用时间较短的情况下，使用CAS机制效率也会较高。</li>
+</ol>
+<h1 id="CAS缺点"><a href="#CAS缺点" class="headerlink" title="CAS缺点"></a>CAS缺点</h1><h2 id="ABA问题"><a href="#ABA问题" class="headerlink" title="ABA问题"></a>ABA问题</h2><p>ABA问题：CAS在操作的时候会检查变量的值是否被更改过，如果没有则更新值，但是带来一个问题，最开始的值是A，接着变成B，最后又变成了A。经过检查这个值确实没有修改过，因为最后的值还是A，但是实际上这个值确实已经被修改过了。为了解决这个问题，在每次进行操作的时候加上一个版本号，每次操作的就是两个值，一个版本号和某个值，A——&gt;B——&gt;A问题就变成了1A——&gt;2B——&gt;3A。在jdk中提供了AtomicStampedReference类解决ABA问题，用Pair这个内部类实现，包含两个属性，分别代表版本号和引用，在compareAndSet中先对当前引用进行检查，再对版本号标志进行检查，只有全部相等才更新值。</p>
+<h2 id="可能会消耗较高的CPU"><a href="#可能会消耗较高的CPU" class="headerlink" title="可能会消耗较高的CPU"></a>可能会消耗较高的CPU</h2><p>看起来CAS比锁的效率高，从阻塞机制变成了非阻塞机制，减少了线程之间等待的时间。每个方法不能绝对的比另一个好，在线程之间竞争程度大的时候，如果使用CAS，每次都有很多的线程在竞争，也就是说CAS机制不能更新成功。这种情况下CAS机制会一直重试，这样就会比较耗费CPU。因此可以看出，如果线程之间竞争程度小，使用CAS是一个很好的选择；但是如果竞争很大，使用锁可能是个更好的选择。在并发量非常高的环境中，如果仍然想通过原子类来更新的话，可以使用AtomicLong的替代类：LongAdder。</p>
+<h2 id="不能保证代码块的原子性"><a href="#不能保证代码块的原子性" class="headerlink" title="不能保证代码块的原子性"></a>不能保证代码块的原子性</h2><p>Java中的CAS机制只能保证共享变量操作的原子性，而不能保证代码块的原子性。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%20%E5%8A%A8%E7%94%BB%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Android/Android%20%E5%8A%A8%E7%94%BB%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Android 动画原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-13 19:55:00" itemprop="dateCreated datePublished" datetime="2017-07-13T19:55:00+08:00">2017-07-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/Android/Android%20%E5%8A%A8%E7%94%BB%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android 动画机制原理/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="View-Animation原理"><a href="#View-Animation原理" class="headerlink" title="View Animation原理"></a>View Animation原理</h1><ol>
+<li> 首先，当调用了 View.startAnimation() 时动画并没有马上就执行，而是通过 invalidate() 层层通知到 ViewRootImpl 发起一次遍历 View 树的请求，而这次请求会等到接收到最近一帧到了的信号时才去发起遍历 View 树绘制操作。</li>
+<li> 从 DecorView 开始遍历，绘制流程在遍历时会调用到 View 的 draw() 方法，当该方法被调用时，如果 View 有绑定动画，那么会去调用applyLegacyAnimation()，这个方法是专门用来处理动画相关逻辑的。</li>
+<li> 在 applyLegacyAnimation() 这个方法里，如果动画还没有执行过初始化，先调用动画的初始化方法 initialized()，同时调用 onAnimationStart() 通知动画开始了，然后调用 getTransformation() 来根据当前时间计算动画进度，紧接着调用 applyTransformation() 并传入动画进度来应用动画。</li>
+<li> getTransformation() 这个方法有返回值，如果动画还没结束会返回 true，动画已经结束或者被取消了返回 false。所以 applyLegacyAnimation() 会根据 getTransformation() 的返回值来决定是否通知 ViewRootImpl 再发起一次遍历请求，返回值是 true 表示动画没结束，那么就去通知 ViewRootImpl 再次发起一次遍历请求。然后当下一帧到来时，再从 DecorView 开始遍历 View 树绘制，重复上面的步骤，这样直到动画结束。</li>
+<li> 有一点需要注意，动画是在每一帧的绘制流程里被执行，所以动画并不是单独执行的，也就是说，如果这一帧里有一些 View 需要重绘，那么这些工作同样是在这一帧里的这次遍历 View 树的过程中完成的。每一帧只会发起一次 perfromTraversals() 操作。</li>
+</ol>
+<p>View Animation 是在绘制的时候，改变 view 的视觉效果来实现动画的。所以不会对 view 的测量和布局过程有影响。</p>
+<p>View 的动画是通过触发绘制过程来执行 draw 的。因为动画是连续的，所以需要不停的触发。</p>
+<h1 id="View-Animation为什么移动位置后，点击事件的响应依旧是在原来位置上？"><a href="#View-Animation为什么移动位置后，点击事件的响应依旧是在原来位置上？" class="headerlink" title="View Animation为什么移动位置后，点击事件的响应依旧是在原来位置上？"></a>View Animation为什么移动位置后，点击事件的响应依旧是在原来位置上？</h1><p>因为动画是在 draw 时候形成的，也就是说只是视觉效果。其并没有改变它本身在父类中的位置；</p>
+<h1 id="View-Animation中如果对-View-做放大缩小得动画，那么其宽度高度值是否会变化？"><a href="#View-Animation中如果对-View-做放大缩小得动画，那么其宽度高度值是否会变化？" class="headerlink" title="View Animation中如果对 View 做放大缩小得动画，那么其宽度高度值是否会变化？"></a>View Animation中如果对 View 做放大缩小得动画，那么其宽度高度值是否会变化？</h1><p>View Animation 是在绘制的时候，改变 view 的视觉效果来实现动画的。所以不会对 view 的测量和布局过程有影响。</p>
+<h1 id="属性动画的原理"><a href="#属性动画的原理" class="headerlink" title="属性动画的原理"></a>属性动画的原理</h1><ol>
+<li> ValueAnimator 属性动画调用了 start() 之后，会先去进行一些初始化工作，包括变量的初始化、通知动画开始事件；</li>
+<li> 然后通过 AnimationHandler 将其自身 this 添加到 mAnimationCallbacks 队列里，AnimationHandller 是一个单例类，为所有的属性动画服务，列表里存放着所有正在进行或准备开始的属性动画；</li>
+<li> 如果当前存在要运行的动画，那么 AnimationHandler 会去通过 Choreographer 向底层注册监听下一个屏幕刷新信号，当接收到信号时，它的 mFrameCallback 会开始进行工作，工作的内容包括遍历列表来分别处理每个属性动画在当前帧的行为，处理完列表中的所有动画后，如果列表还不为 0，那么它又会通过 Choreographer 再去向底层注册监听下一个屏幕刷新信号事件，如此反复，直至所有的动画都结束。</li>
+<li> AnimationHandler 遍历列表处理动画是在 doAnimationFrame() 中进行，而具体每个动画的处理逻辑则是在各自，也就是 ValueAnimator 的 doAnimationFrame() 中进行，各个动画如果处理完自身的工作后发现动画已经结束了，那么会将其在列表中的引用赋值为空，AnimationHandler 最后会去将列表中所有为 null 的都移除掉，来清理资源。</li>
+<li> 每个动画 ValueAnimator 在处理自身的动画行为时，首先，如果当前是动画的第一帧，那么会根据是否有”跳过片头”（setCurrentPlayTime()）来记录当前动画第一帧的时间 mStartTime 应该是什么。</li>
+<li> 第一帧的动画其实也就是记录 mStartTime 的时间以及一些变量的初始化而已，动画进度仍然是 0，所以下一帧才是动画开始的关键，但由于属性动画的处理工作是在绘制界面之前的，那么有可能因为绘制耗时，而导致 mStartTime 记录的第一帧时间与第二帧之间隔得太久，造成丢了开头的多帧，所以如果是这种情况下，会进行 mStartTime 的修正。</li>
+<li> 修正的具体做法则是当绘制工作完成后，此时，再根据当前时间与 mStartTime 记录的时间做比较，然后进行修正。</li>
+<li> 如果是在动画过程中的某一帧才出现绘制耗时现象，那么，只能表示无能为力了，丢帧是避免不了的了，想要解决就得自己去分析下为什么绘制会耗时；而如果是在第一帧是出现绘制耗时，那么，系统还是可以帮忙补救一下，修正下 mStartTime 来达到避免丢帧。</li>
+</ol>
+<hr>
+<ol>
+<li> 当接收到屏幕刷新信号后，AnimationHandler 会去遍历列表，将所有待执行的属性动画都取出来去计算当前帧的动画行为。</li>
+<li> 每个动画在处理当前帧的动画逻辑时，首先会先根据当前时间和动画第一帧时间以及动画的持续时长来初步计算出当前帧时动画所处的进度，然后会将这个进度值等价转换到 0-1 区间之内。</li>
+<li> 接着，插值器会将这个经过初步计算之后的进度值根据设定的规则计算出实际的动画进度值，取值也是在 0-1 区间内。</li>
+<li> 计算出当前帧动画的实际进度之后，会将这个进度值交给关键帧机制，来换算出我们需要的值，比如 ValueAnimator.ofInt(0, 100) 表示我们需要的值变化范围是从 0-100，那么插值器计算出的进度值是 0-1 之间的，接下去就需要借助关键帧机制来映射到 0-100 之间。</li>
+<li> 关键帧的数量是由 ValueAnimator.ofInt(0, 1, 2, 3) 参数的数量来决定的，比如这个就有四个关键帧，第一帧和最后一帧是必须的，所以最少会有两个关键帧，如果参数只有一个，那么第一帧默认为 0，最后一帧就是参数的值。当调用了这个 ofInt() 方法时，关键帧组也就被创建了。</li>
+<li> 当只有两个关键帧时，映射的规则是，如果没有设置估值器，那么就等比例映射，比如动画进度为 0.5，需要的值变化区间是 0-100，那么等比例映射后的值就是 50，那么我们在 onAnimationUpdate 的回调中通过 animation.getAnimatedValue() 获取到的值 50 就是这么来的。</li>
+<li> 如果有设置估值器，那么就按估值器的规则来进行映射。</li>
+<li> 当关键帧超过两个时，需要先找到当前动画进度是落于哪两个关键帧之间，然后将这个进度值先映射到这两个关键帧之间的取值，接着就可以将这两个关键帧看成是第一帧和最后一帧，那么就可以按照只有两个关键帧的情况下的映射规则来进行计算了。</li>
+<li> 而进度值映射到两个关键帧之间的取值，这就需要知道每个关键帧在整个关键帧组中的位置信息，或者说权重。而这个位置信息是在创建每个关键帧时就传进来的。onInt() 的规则是所有关键帧按等比例来分配权重，比如有三个关键帧，第一帧是 0，那么第二帧就是 0.5， 最后一帧 1。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/16/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><span class="page-number current">17</span><a class="page-number" href="/page/18/">18</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><a class="extend next" rel="next" href="/page/18/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/16/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><span class="page-number current">17</span><a class="page-number" href="/page/18/">18</a><a class="page-number" href="/page/19/">19</a><a class="extend next" rel="next" href="/page/18/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1605,20 +1545,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">191</span>
+          <span class="site-state-item-count">187</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">266</span>
+        <span class="site-state-item-count">257</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1659,7 +1599,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 5.4.2">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
@@ -34,7 +34,7 @@
 <meta property="og:image" content="https://gitee.com/picportal/pic/raw/master/img/20210225235523.png">
 <meta property="og:image" content="https://gitee.com/picportal/pic/raw/master/img/20210225235522.png">
 <meta property="article:published_time" content="2018-03-03T12:00:00.000Z">
-<meta property="article:modified_time" content="2021-11-02T09:25:29.413Z">
+<meta property="article:modified_time" content="2022-07-04T08:47:46.767Z">
 <meta property="article:author" content="Ricky.L">
 <meta property="article:tag" content="虚拟机">
 <meta property="article:tag" content="Class常量池">
@@ -231,7 +231,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -320,7 +320,7 @@
 <li><a target="_blank" rel="noopener" href="https://tech.meituan.com/2019/09/05/java-bytecode-enhancement.html">美团：字节码增强技术探索</a></li>
 </ul>
 <h2 id="Class常量池一个具体内容的例子？"><a href="#Class常量池一个具体内容的例子？" class="headerlink" title="Class常量池一个具体内容的例子？"></a>Class常量池一个具体内容的例子？</h2><p>定义如下的类：</p>
- <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JavaBean</span></span>&#123; </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> value = <span class="number">1</span>; </span><br><span class="line">    <span class="keyword">public</span> String s = <span class="string">&quot;abc&quot;</span>; </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> f = <span class="number">0x101</span>; </span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setValue</span><span class="params">(<span class="keyword">int</span> v)</span></span>&#123; </span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> temp = <span class="number">3</span>; </span><br><span class="line">        <span class="keyword">this</span>.value = temp + v; </span><br><span class="line">    &#125; </span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getValue</span><span class="params">()</span></span>&#123; </span><br><span class="line">        <span class="keyword">return</span> value; </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">JavaBean</span>&#123; </span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">value</span> <span class="operator">=</span> <span class="number">1</span>; </span><br><span class="line">    <span class="keyword">public</span> <span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> <span class="string">&quot;abc&quot;</span>; </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">f</span> <span class="operator">=</span> <span class="number">0x101</span>; </span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setValue</span><span class="params">(<span class="type">int</span> v)</span>&#123; </span><br><span class="line">        <span class="keyword">final</span> <span class="type">int</span> <span class="variable">temp</span> <span class="operator">=</span> <span class="number">3</span>; </span><br><span class="line">        <span class="built_in">this</span>.value = temp + v; </span><br><span class="line">    &#125; </span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getValue</span><span class="params">()</span>&#123; </span><br><span class="line">        <span class="keyword">return</span> value; </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
 <p>生成的class常量池如下： </p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">Constant pool: </span><br><span class="line">   #1 = Methodref          #6.#29         // java/lang/Object.&quot;&lt;init&gt;&quot;:()V </span><br><span class="line">   #2 = Fieldref           #5.#30         // JavaBasicKnowledge/JavaBean.value:I </span><br><span class="line">   #3 = String             #31            // abc </span><br><span class="line">   #4 = Fieldref           #5.#32         // JavaBasicKnowledge/JavaBean.s:Ljava/lang/String; </span><br><span class="line">   #5 = Class              #33            // JavaBasicKnowledge/JavaBean </span><br><span class="line">   #6 = Class              #34            // java/lang/Object </span><br><span class="line">   #7 = Utf8               value </span><br><span class="line">   #8 = Utf8               I </span><br><span class="line">   #9 = Utf8               s </span><br><span class="line">  #10 = Utf8               Ljava/lang/String; </span><br><span class="line">  #11 = Utf8               f </span><br><span class="line">  #12 = Utf8               ConstantValue </span><br><span class="line">  #13 = Integer            257 </span><br><span class="line">  #14 = Utf8               &lt;init&gt; </span><br><span class="line">  #15 = Utf8               ()V </span><br><span class="line">  #16 = Utf8               Code </span><br><span class="line">  #17 = Utf8               LineNumberTable </span><br><span class="line">  #18 = Utf8               LocalVariableTable </span><br><span class="line">  #19 = Utf8               this </span><br><span class="line">  #20 = Utf8               LJavaBasicKnowledge/JavaBean; </span><br><span class="line">  #21 = Utf8               setValue </span><br><span class="line">  #22 = Utf8               (I)V </span><br><span class="line">  #23 = Utf8               v </span><br><span class="line">  #24 = Utf8               temp </span><br><span class="line">  #25 = Utf8               getValue </span><br><span class="line">  #26 = Utf8               ()I </span><br><span class="line">  #27 = Utf8               SourceFile </span><br><span class="line">  #28 = Utf8               StringConstantPool.java </span><br><span class="line">  #29 = NameAndType        #14:#15        // &quot;&lt;init&gt;&quot;:()V </span><br><span class="line">  #30 = NameAndType        #7:#8          // value:I </span><br><span class="line">  #31 = Utf8               abc </span><br><span class="line">  #32 = NameAndType        #9:#10         // s:Ljava/lang/String; </span><br><span class="line">  #33 = Utf8               JavaBasicKnowledge/JavaBean </span><br><span class="line">  #34 = Utf8               java/lang/Object </span><br></pre></td></tr></table></figure>
 
@@ -363,7 +363,7 @@
 <p>ldc字节码在这里的执行语义是：到当前类的运行时常量池（runtime constant pool，HotSpot VM里是ConstantPool + ConstantPoolCache）去查找该index对应的项，如果该项尚未resolve则resolve之，并返回resolve后的内容。</p>
 <p>在遇到String类型常量时，resolve的过程如果发现StringTable已经有了内容匹配的java.lang.String的引用，则直接返回这个引用，反之，如果StringTable里尚未有内容匹配的String实例的引用，则会在Java堆里创建一个对应内容的String对象，然后在StringTable记录下这个引用，并返回这个引用出去。</p>
 <p>可见，ldc指令是否需要创建新的String实例，全看在第一次执行这一条ldc指令时，StringTable是否已经记录了一个对应内容的String的引用。</p>
-<h2 id="String-intern-用法和规则是什么？"><a href="#String-intern-用法和规则是什么？" class="headerlink" title="String.intern()用法和规则是什么？"></a>String.intern()用法和规则是什么？</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		String str1 = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;计算机&quot;</span>).append(<span class="string">&quot;软件&quot;</span>).toString();</span><br><span class="line">		System.out.println(str1.intern() == str1);</span><br><span class="line">		String str2 = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;ja&quot;</span>).append(<span class="string">&quot;va&quot;</span>).toString();</span><br><span class="line">		System.out.println(str2.intern() == str2);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;	</span><br></pre></td></tr></table></figure>
+<h2 id="String-intern-用法和规则是什么？"><a href="#String-intern-用法和规则是什么？" class="headerlink" title="String.intern()用法和规则是什么？"></a>String.intern()用法和规则是什么？</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>(<span class="string">&quot;计算机&quot;</span>).append(<span class="string">&quot;软件&quot;</span>).toString();</span><br><span class="line">		System.out.println(str1.intern() == str1);</span><br><span class="line">		<span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>(<span class="string">&quot;ja&quot;</span>).append(<span class="string">&quot;va&quot;</span>).toString();</span><br><span class="line">		System.out.println(str2.intern() == str2);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;	</span><br></pre></td></tr></table></figure>
 
 <p>以上代码，在 JDK6 下执行结果为 false、false，在 JDK7 以上执行结果为 true、false。</p>
 <p>首先我们调用StringBuilder创建了一个”计算机软件”String对象，因为调用了new关键字，因此是在运行时创建，之前JVM中是没有这个字符串的。</p>
@@ -519,20 +519,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">191</span>
+          <span class="site-state-item-count">187</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">266</span>
+        <span class="site-state-item-count">257</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -573,7 +573,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

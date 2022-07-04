@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 5.4.2">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
@@ -28,7 +28,7 @@
 <meta property="og:description" content="BlockCanaryEx检测主线程卡顿的原理是什么?给Looper设置自定义的Printer，Looper的loop()方法在处理一个消息的前后会调用Printer的println()方法，通过这个方法就可以计算主线程处理每一个消息的耗时。 这一原理与BlockCanary相同，不同的是两者采集的信息不同。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2019-08-20T12:55:00.000Z">
-<meta property="article:modified_time" content="2021-11-02T09:25:29.409Z">
+<meta property="article:modified_time" content="2022-07-04T08:47:46.767Z">
 <meta property="article:author" content="Ricky.L">
 <meta property="article:tag" content="源码分析">
 <meta property="article:tag" content="BlockCanaryEx">
@@ -221,7 +221,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -314,7 +314,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GcSampler.startIfNot(pid);</span><br><span class="line">GcSampler.clearGcInfoBefore(startTime);</span><br><span class="line">CpuSampler.getInstance().resetSampler(pid);</span><br></pre></td></tr></table></figure>
 
 <p>GcSampler.startIfNot(pid)启动了GcSamplerThread类型的线程，无限循环不停的在logcat中获取gc日志，每一行的日志对应一个GcInfo对象，该对象有两个属性</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GcInfo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> happenedTime;</span><br><span class="line">    <span class="keyword">private</span> String gcLog;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GcInfo</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> happenedTime;</span><br><span class="line">    <span class="keyword">private</span> String gcLog;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>所有获取的gc日志存储在一个类型<code>List&lt;GcInfo&gt;</code>的GC_INFO_LIST列表中</p>
 <p>GcSampler.clearGcInfoBefore(startTime)清除了GC_INFO_LIST中时间小于startTime的记录</p>
@@ -336,7 +336,7 @@
 <li> 将卡顿相关诊断信息封装为一个BlockInfo对象，发送给各个注册的BlockObserver</li>
 </ol>
 <h1 id="BlockMonitor的sMethodInfoPool里面存的是什么-是什么时候填充的？"><a href="#BlockMonitor的sMethodInfoPool里面存的是什么-是什么时候填充的？" class="headerlink" title="BlockMonitor的sMethodInfoPool里面存的是什么?是什么时候填充的？"></a>BlockMonitor的sMethodInfoPool里面存的是什么?是什么时候填充的？</h1><p>存的是MethodInfo</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MethodInfo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String cls;</span><br><span class="line">    <span class="keyword">private</span> String method;</span><br><span class="line">    <span class="keyword">private</span> String paramTypes;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> costRealTimeNano;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> costThreadTime;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MethodInfo</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String cls;</span><br><span class="line">    <span class="keyword">private</span> String method;</span><br><span class="line">    <span class="keyword">private</span> String paramTypes;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> costRealTimeNano;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> costThreadTime;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>存储了一个方法名、方法所属类、方法参数、方法真实耗时、方法CPU耗时</p>
 <h1 id="BlockMonitor的sMethodInfoPool是什么时候填充的？"><a href="#BlockMonitor的sMethodInfoPool是什么时候填充的？" class="headerlink" title="BlockMonitor的sMethodInfoPool是什么时候填充的？"></a>BlockMonitor的sMethodInfoPool是什么时候填充的？</h1><p>在BlockMonitor.reportMethodProfile()对sMethodInfoPool进行了元素的添加</p>
@@ -412,8 +412,8 @@
       <i class="fa fa-chevron-left"></i> 卡顿检测 - BlockCanary浅析
     </a></div>
       <div class="post-nav-item">
-    <a href="/%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95/%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E7%9A%84%E4%BB%B7%E5%80%BC/" rel="next" title="单元测试的价值">
-      单元测试的价值 <i class="fa fa-chevron-right"></i>
+    <a href="/Java/Java8%20Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F/" rel="next" title="Java8 Lambda表达式">
+      Java8 Lambda表达式 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -496,20 +496,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">191</span>
+          <span class="site-state-item-count">187</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">266</span>
+        <span class="site-state-item-count">257</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -550,7 +550,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

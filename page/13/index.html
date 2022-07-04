@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 5.4.2">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
@@ -184,675 +184,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/Android/Android%E7%AD%BE%E5%90%8D%E6%9C%BA%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/Android/Android%E7%AD%BE%E5%90%8D%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Android 签名机制</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-07-15 19:21:00" itemprop="dateCreated datePublished" datetime="2018-07-15T19:21:00+08:00">2018-07-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/Android/Android%E7%AD%BE%E5%90%8D%E6%9C%BA%E5%88%B6/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="Android/Android签名机制/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <span id="more"></span>
-
-<h1 id="数字签名解决了什么？"><a href="#数字签名解决了什么？" class="headerlink" title="数字签名解决了什么？"></a>数字签名解决了什么？</h1><p>校验apk文件的完整性，检查是否有损坏或篡改。</p>
-<h1 id="数字签名格式"><a href="#数字签名格式" class="headerlink" title="数字签名格式"></a>数字签名格式</h1><p>我们在对Apk签名时并没有直接指定私钥、公钥和数字证书，而是使用keystore文件，这些信息都包含在了keystore文件中。根据编码不同，keystore文件分为很多种，Android使用的是Java标准keystore格式JKS(Java Key Storage)，所以通过Android Studio导出的keystore文件是以.jks结尾的。</p>
-<p>keystore使用的证书标准是X.509，X.509标准也有多种编码格式，常用的有两种：pem（Privacy Enhanced Mail）和der（Distinguished Encoding Rules）。jks使用的是der格式，Android也支持直接使用pem格式的证书进行签名。</p>
-<h1 id="v1签名"><a href="#v1签名" class="headerlink" title="v1签名"></a>v1签名</h1><p>v1签名也就是jar签名机制</p>
-<p>签名过程：</p>
-<ol>
-<li> 先对apk中每个文件用SHA-1哈希算法求得摘要，再用BASE64编码，将这些信息保存在apk解压后的META-INF目录下的MANIFEST.MF里。</li>
-<li> 再对MANIFEST.MF整个文件以及MANIFEST.MF每个条目用SHA-1求得摘要，再用BASE64编码，存入META-INF/CERT.SF。</li>
-<li> 对CERT.SF计算摘要，用Android签名文件中的私钥加密这个摘要，作为签名存入CERT.RSA</li>
-</ol>
-<p>MANIFEST.MF和CERT.SF保证apk数据的完整性，CERT.RSA从整体上保证了数据的完整性和来源可靠。</p>
-<p>MANIFEST.MF和CERT.SF可能会被篡改，但最终CERT.RSA中的签名是由私钥加密生成的，没有私钥就不可能生成同样的签名。</p>
-<p>CERT.RSA还存储了签名文件（keystore）的公钥，用于解密CERT.RSA中的签名，校验apk时，如果CERT.SF求得摘要后跟签名不一致，说明CERT.SF被篡改过。</p>
-<p>v1签名缺点:</p>
-<ol>
-<li> META-INF不在校验访问，这样可以在这个目录下任意放置文件。</li>
-<li> 每一个文件计算摘要，比较耗时。</li>
-</ol>
-<p>CERT.RSA中存储了什么？</p>
-<p>签名文件的公钥、签名、签名算法、签名所有者信息。</p>
-<h1 id="v2签名"><a href="#v2签名" class="headerlink" title="v2签名"></a>v2签名</h1><ul>
-<li>v1签名验证的是每一个文件的完整性。</li>
-<li>v2签名验证的是整个apk的字节流。</li>
-</ul>
-<p>APK签名信息存储在“APK签名分块”。</p>
-<p>ZIP包原本的数据从头到尾分为三块：文件数据区、目录数据区、目录结尾数据区。</p>
-<p>APK签名分块是位于文件数据区和目录数据区之间的，目录结尾数据区中记录了目录数据区的地址位置（也就是相当于开头的偏移量），加入APK签名分块后，仅需要修改目录数据区的地址，不影响ZIP其他原来的数据。</p>
-<p>APK 签名方案 v2 负责保护第 1、3、4 部分的完整性，以及第 2 部分包含的“APK 签名方案 v2 分块”中的  signed data 分块的完整性。</p>
-<p>优势：</p>
-<ol>
-<li> 对整个zip分块计算哈希摘要，计算量减少，同时可以并行，速度更快。</li>
-<li> 验证了整个zip文件，不会漏校验zip中的数据。</li>
-</ol>
-<h1 id="v3签名"><a href="#v3签名" class="headerlink" title="v3签名"></a>v3签名</h1><p>android系统里不同的keystore签名的apk不能覆盖安装，但是keystore可能因为各种不可控的原因泄露了，按照这样的机制app的发布者就束手无策，别人就可以用恶意的apk覆盖安装发布者发布的正常的apk。如果能用新的keystore签名重新签名app，并能覆盖安装用旧的keystore签名的apk，就可以解决keystore泄露的问题了。</p>
-<p>但是也不能让任意的keystore签名的apk可以覆盖安装任意apk，这样keystore签名就失去了校验开发者身份的功能，覆盖安装apk时，android系统得知道新的apk用的新的签名也是同一个发布者签上的，那怎样保证这点？</p>
-<p>v3签名使用密钥轮转机制，让apk可以变更签名，在签名数据库新增了一个块，专门存储证书链，建立一个签名信任链，老的证书在前，新的证书在后，新的证书中的签名是由老的数字证书对应的keystore的私钥加密的，所以在覆盖安装apk时，就可以用旧apk中的老的数字证书中的公钥解密新的数字证书中的签名，得到新的数字证书的内容哈希摘要，再根据新证书中指明的哈希算法，计算新证书内容的哈希摘要，对比两个哈希摘要是否一致，一致则说明可信赖，可以覆盖安装。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okhttp%20%E5%8E%9F%E7%90%86%E7%BA%AA%E8%A6%81/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okhttp%20%E5%8E%9F%E7%90%86%E7%BA%AA%E8%A6%81/" class="post-title-link" itemprop="url">Okhttp 原理纪要</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-07-09 20:55:00" itemprop="dateCreated datePublished" datetime="2018-07-09T20:55:00+08:00">2018-07-09</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Okhttp%20%E5%8E%9F%E7%90%86%E7%BA%AA%E8%A6%81/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="源码分析/Okhttp 原理纪要/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="okhttp解决了什么问题？优势在哪？"><a href="#okhttp解决了什么问题？优势在哪？" class="headerlink" title="okhttp解决了什么问题？优势在哪？"></a>okhttp解决了什么问题？优势在哪？</h1><p>官网说法：</p>
-<ol>
-<li> 支持HTTP/2，允许所有相同host的请求复用一个socket。</li>
-<li> 连接池降低请求延迟（如果HTTP/2不可用）。</li>
-<li> 透明的GZIP支持，压缩下载体积。</li>
-<li> 支持响应体的缓存，避免重复请求。</li>
-</ol>
-<p>除此之外：</p>
-<ul>
-<li>支持部分异常情况重试请求，支持HTTP协议的重定向（OkHttp在网络不良的情况下，他能够静默从常见连接问题中恢复，支持多IP自动重试等）。</li>
-<li>检验了很多非法的细节处理。</li>
-<li>支持DNS 扩展。</li>
-</ul>
-<h1 id="http2多路复用机制是怎么回事？"><a href="#http2多路复用机制是怎么回事？" class="headerlink" title="http2多路复用机制是怎么回事？"></a>http2多路复用机制是怎么回事？</h1><p>http1的请求存在对头阻塞的问题，因为http请求没有编号，只能顺序的等待响应后，才好发送第二个请求，如果同时发送多个http请求，没有编号的情况下，每个请求处理速度不一样，返回顺序不一样，就不知道响应对应的是哪个请求了，只能顺序等待。</p>
-<p>http2对http请求做了报文分片，给每个分片编号了，可以理解tcp层的报文编号机制，在http层又实现了一下，这样就可以同时发送多个http请求，不用串行做http请求了。速度当然提升了。</p>
-<h1 id="一个OkHttp请求和响应的的过程？"><a href="#一个OkHttp请求和响应的的过程？" class="headerlink" title="一个OkHttp请求和响应的的过程？"></a>一个OkHttp请求和响应的的过程？</h1><p>Okhttp的整个请求与响应的流程就是Dispatcher不断从Request Queue里取出请求（Call），根据是否已经存存缓存，从内存缓存或者服务器获取请求的数据。</p>
-<p>请求分为同步和异步两种：</p>
-<ol>
-<li> 同步请求通过 调用Call.exectute()方法直接返回当前请求的Response</li>
-<li> 异步请求调用Call.enqueue()方法将请求（AsyncCall）添加到请求队列中去，并通过回调（Callback）获取服务器返回的结果。</li>
-</ol>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210905152314.png"></p>
-<p>请求用一个RealCall对象表示。</p>
-<p>同步请求</p>
-<p>调用client.dispatcher().executed(this);做请求，把RealCall对象添加到Dispatcher的runningSyncCalls双端队列里去</p>
-<p>调用getResponseWithInterceptorChain();，内部调用chain.proceed(originalRequest);获取响应结果</p>
-<p>异步请求  比同步请求多一个Callback</p>
-<p>请求会调用client.dispatcher().enqueue(new AsyncCall(responseCallback));</p>
-<p>创建一个AsyncCall封装一下Callback对象，然后放入Dispatcher的任务队列，分两种情况：</p>
-<p>如果正在运行的异步请求不超过64，而且同一个host下的异步请求不得超过5个则将请求添加到正在运行的同步请求队列中runningAsyncCalls并开始 执行请求，否则就添加到readyAsyncCalls继续等待。</p>
-<p>线程池执行的时候会调用AsyncCall的run()，再执行execute()，再执行getResponseWithInterceptorChain()。</p>
-<p>getResponseWithInterceptorChain()做了什么？</p>
-<p>通过责任链，先执行自定义的拦截器，再执行OkHttp内部的各个拦截器，包括重定向、缓存、连接、获取响应。</p>
-<h1 id="Dispatcher机制"><a href="#Dispatcher机制" class="headerlink" title="Dispatcher机制"></a>Dispatcher机制</h1><p>Dispatcher是一个任务调度器，它内部维护了三个双端队列：</p>
-<ol>
-<li> readyAsyncCalls：准备运行的异步请求</li>
-<li> runningAsyncCalls：正在运行的异步请求</li>
-<li> runningSyncCalls：正在运行的同步请求</li>
-</ol>
-<p>同步请求：直接把请求添加到正在运行的同步请求队列runningSyncCalls中</p>
-<p>异步请求会做个判断：</p>
-<p>如果正在运行的异步请求不超过64，而且同一个host下的异步请求不得超过5个则将请求添加到正在运行的同步请求队列中runningAsyncCalls并开始 执行请求，否则就添加到readyAsyncCalls继续等待。</p>
-<h2 id="为什么队列都用ArrayDeque，不用LinkedList"><a href="#为什么队列都用ArrayDeque，不用LinkedList" class="headerlink" title="为什么队列都用ArrayDeque，不用LinkedList?"></a>为什么队列都用ArrayDeque，不用LinkedList?</h2><p>ArrayDeque对局部性原理友好，数组存储的数据在物理内存上是连续的</p>
-<p>LinkedList在物理内存上是不连续的</p>
-<h2 id="Dispatcher中的线程池是什么？"><a href="#Dispatcher中的线程池是什么？" class="headerlink" title="Dispatcher中的线程池是什么？"></a>Dispatcher中的线程池是什么？</h2><p><code>new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS, new SynchronousQueue&lt;Runnable&gt;(), Util.threadFactory(&quot;OkHttp Dispatcher&quot;, false));</code></p>
-<p>特点：</p>
-<ol>
-<li> 无核心线程，创建的线程会保活60秒</li>
-<li>只要线程池提交了任务，就立刻执行<ol>
-<li> 有空闲存活的线程就用空闲线程执行</li>
-<li> 没有就创建新的线程执行，执行完任务后等待60秒再销毁</li>
-</ol>
-</li>
-</ol>
-<h2 id="为什么异步请求要限制一个数量？"><a href="#为什么异步请求要限制一个数量？" class="headerlink" title="为什么异步请求要限制一个数量？"></a>为什么异步请求要限制一个数量？</h2><p>异步请求每个请求都会开一个线程，创建一个线程是要消耗内存的，虚拟机栈和本地方法栈会占用1到2MB，创建过多的线程可能会引发内存溢出。所以多余的请求应该放到等待队列里。</p>
-<h2 id="为什么是64个？"><a href="#为什么是64个？" class="headerlink" title="为什么是64个？"></a>为什么是64个？</h2><p>参考：<br><a target="_blank" rel="noopener" href="https://github.com/square/okhttp/issues/4354">https://github.com/square/okhttp/issues/4354</a></p>
-<h2 id="为什么要限制同一个host下的异步请求数量不得超过5个？"><a href="#为什么要限制同一个host下的异步请求数量不得超过5个？" class="headerlink" title="为什么要限制同一个host下的异步请求数量不得超过5个？"></a>为什么要限制同一个host下的异步请求数量不得超过5个？</h2><p>防止其他host下的请求得不到响应，让每个host都有机会获得执行</p>
-<h1 id="重定向与重试"><a href="#重定向与重试" class="headerlink" title="重定向与重试"></a>重定向与重试</h1><p>Okhttp对重定向和重新请求这块是怎么优化的？</p>
-<p>RetryAndFollowUpInterceptor里处理请求时，用一个无限循环来执行请求。</p>
-<p>请求失败，符合重新请求的请求，就会重新执行请求，最多重新请求20次。</p>
-<ol>
-<li> 当抛出RouteException或者发生IOException时，拦截器会根据用户的设置和异常分析，决定当前请求是否可以重连</li>
-<li> 当发送网络请求完成并获取到Response后，对响应码进行判断是否需要身份验证、重定向、是否超时，如果需要就构建新的Request重新发起请求</li>
-</ol>
-<p>RetryAndFollowUpInterceptor优势：</p>
-<p>对各种通用细节情况做了处理，还是比较方便的，直接拿来用还是比较好的</p>
-<p>比如：</p>
-<ol>
-<li> 抛异常对连接池做了释放</li>
-<li> 重定向，发现Location头部指定的值不是http协议，就不支持重定向</li>
-</ol>
-<p>这里有两种需要重新请求的情况</p>
-<ol>
-<li> 网络请求失败抛出了异常，有些异常不是致命的，比如SocketTimeoutException这类的超时，是可以重试的</li>
-<li>网络请求完成了，但并不说明这个请求是成功的，需要通过followUpRequest方法对响应码进行判断，是否需要进行身份验证或者重定向，如果需要就构建新的Request，如下：<ol>
-<li> 407/401：未进行身份认证，需要对请求头进行处理后再发起新的请求</li>
-<li> 408：客户端请求超时，如果 Request 的请求体没有被 UnrepeatableRequestBody 标记，会继续发起新的请求</li>
-<li> 308/307/303/302/301/300：需要进行重定向，发起新的请求</li>
-</ol>
-</li>
-</ol>
-<p>抛出异常，则检测连接是否还可以继续，以下情况不会重试：</p>
-<ol>
-<li> OkHttpClient里配置请求出错不可以再重试</li>
-<li> 出错后，request body不能再次发送（request的body是UnrepeatableRequestBody的子类）</li>
-<li>发生以下致命异常也无法恢复连接：<ol>
-<li> ProtocolException：协议异常</li>
-<li> InterruptedIOException：中断异常</li>
-<li> SSLHandshakeException：SSL握手异常</li>
-<li> SSLPeerUnverifiedException：SSL握手未授权异常</li>
-</ol>
-</li>
-<li> 没有更多线路可以选择（streamAllocation.hasMoreRoutes()为false）</li>
-</ol>
-<p>根据响应码处理请求，返回Request不为空时则进行重定向处理，重定向的次数不能超过20次。</p>
-<p>比如401需要身份认证，调用配置的验证器重新创建一个请求。</p>
-<h2 id="RouteException是怎么抛出来的？"><a href="#RouteException是怎么抛出来的？" class="headerlink" title="RouteException是怎么抛出来的？"></a>RouteException是怎么抛出来的？</h2><p>该异常最终是由RealConnection.connect和StreamAllocation.newStream这两个方法抛出的，而newStream方法又是由ConnectInterceptor的intercept方法内部调用的（newStream方法最终会调用connect方法）；connect()方法是与服务器建立连接，newStream()是获取流，所以在连接拦截器中抛出也是正常的。</p>
-<p>要注意抛出这个异常意味着请求还没有发出去，只在连接阶段出问题了，就是打开Socket失败了，比如连接超时抛出的 SocketTimeoutException，包裹在 RouteException 中。</p>
-<p>RouteException 是 OkHttp 自定义的异常，是一个包裹类，包裹住了建连失败中发生的各种 Exception</p>
-<h1 id="GZIP这块是怎么支持的？"><a href="#GZIP这块是怎么支持的？" class="headerlink" title="GZIP这块是怎么支持的？"></a>GZIP这块是怎么支持的？</h1><p>BridgeInterceptor里支持。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">boolean</span> transparentGzip = <span class="keyword">false</span>;</span><br><span class="line"><span class="keyword">if</span> (userRequest.header(<span class="string">&quot;Accept-Encoding&quot;</span>) == <span class="keyword">null</span> &amp;&amp; userRequest.header(<span class="string">&quot;Range&quot;</span>) == <span class="keyword">null</span>) &#123;</span><br><span class="line">  transparentGzip = <span class="keyword">true</span>;</span><br><span class="line">  requestBuilder.header(<span class="string">&quot;Accept-Encoding&quot;</span>, <span class="string">&quot;gzip&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断服务器是否支持gzip压缩，如果支持，则将压缩提交给Okio库来处理</span></span><br><span class="line"><span class="keyword">if</span> (transparentGzip</span><br><span class="line">    &amp;&amp; <span class="string">&quot;gzip&quot;</span>.equalsIgnoreCase(networkResponse.header(<span class="string">&quot;Content-Encoding&quot;</span>))</span><br><span class="line">    &amp;&amp; HttpHeaders.hasBody(networkResponse)) &#123;</span><br><span class="line">  GzipSource responseBody = <span class="keyword">new</span> GzipSource(networkResponse.body().source());</span><br><span class="line">  Headers strippedHeaders = networkResponse.headers().newBuilder()</span><br><span class="line">      .removeAll(<span class="string">&quot;Content-Encoding&quot;</span>)</span><br><span class="line">      .removeAll(<span class="string">&quot;Content-Length&quot;</span>)</span><br><span class="line">      .build();</span><br><span class="line">  responseBuilder.headers(strippedHeaders);</span><br><span class="line">  responseBuilder.body(<span class="keyword">new</span> RealResponseBody(strippedHeaders, Okio.buffer(responseBody)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h1><h2 id="OKHttp对缓存这一块有什么处理和优化？"><a href="#OKHttp对缓存这一块有什么处理和优化？" class="headerlink" title="OKHttp对缓存这一块有什么处理和优化？"></a>OKHttp对缓存这一块有什么处理和优化？</h2><p>通过CacheInterceptor来支持，对http的缓存机制做出实现，按照http协议的RFC文档标准来实现。</p>
-<p>HTTP的缓存可以分为两种：</p>
-<ul>
-<li>  强制缓存：需要服务端参与判断是否继续使用缓存，当客户端第一次请求数据是，服务端返回了缓存的过期时间（Expires与Cache-Control），没有过期就可以继续使用缓存，否则则不适用，无需再向服务端询问。</li>
-<li>  对比缓存：需要服务端参与判断是否继续使用缓存，当客户端第一次请求数据时，服务端会将缓存标识（Last-Modified/If-Modified-Since与Etag/If-None-Match）与数据一起返回给客户端，客户端将两者都备份到缓存中 ，再次请求数据时，客户端将上次备份的缓存 标识发送给服务端，服务端根据缓存标识进行判断，如果返回304，则表示通知客户端可以继续使用缓存。</li>
-</ul>
-<p>强制缓存优先于对比缓存。</p>
-<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210905152023.png"></p>
-<p>上面提到强制缓存使用的的两个标识：</p>
-<ul>
-<li>  Expires：Expires的值为服务端返回的到期时间，即下一次请求时，请求时间小于服务端返回的到期时间，直接使用缓存数据。到期时间是服务端生成的，客户端和服务端的时间可能有误差。</li>
-<li>  Cache-Control：Expires有个时间校验的问题，所有HTTP1.1采用Cache-Control替代Expires。</li>
-</ul>
-<p>Cache-Control的取值有以下几种：</p>
-<ul>
-<li>  private: 客户端可以缓存。</li>
-<li>  public: 客户端和代理服务器都可缓存。</li>
-<li>  max-age=xxx: 缓存的内容将在 xxx 秒后失效</li>
-<li>  no-cache: 需要使用对比缓存来验证缓存数据。</li>
-<li>  no-store: 所有内容都不会缓存，强制缓存，对比缓存都不会触发。</li>
-</ul>
-<p>底层缓存机制是LRU缓存，key是请求中url的md5，value是文件中查询到的缓存</p>
-<p>Okhttp的缓存策略就是根据上述流程图实现的，具体的实现类是CacheStrategy，CacheStrategy的构造函数里有两个参数：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CacheStrategy(Request networkRequest, Response cacheResponse) &#123;  </span><br><span class="line">	<span class="keyword">this</span>.networkRequest = networkRequest;  </span><br><span class="line">	<span class="keyword">this</span>.cacheResponse = cacheResponse;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这两个参数参数的含义如下：</p>
-<ol>
-<li> networkRequest：网络请求。</li>
-<li> cacheResponse：缓存响应，基于DiskLruCache实现的文件缓存，可以是请求中url的md5，value是文件中查询到的缓存，这个我们下面会说。</li>
-</ol>
-<p>CacheStrategy就是利用这两个参数生成最终的策略，有点像map操作，将networkRequest与cacheResponse这两个值输入，处理之后再将这两个值输出，们的组合结果如下所示：</p>
-<ol>
-<li> 如果networkRequest为null，cacheResponse为null：only-if-cached(表明不进行网络请求，且缓存不存在或者过期，一定会返回503错误)。</li>
-<li> 如果networkRequest为null，cacheResponse为non-null：不进行网络请求，而且缓存可以使用，直接返回缓存，不用请求网络。</li>
-<li> 如果networkRequest为non-null，cacheResponse为null：需要进行网络请求，而且缓存不存在或者过期，直接访问网络。</li>
-<li> 如果networkRequest为non-null，cacheResponse为non-null：Header中含有ETag/Last-Modified标签，需要在条件请求下使用，还是需要访问网络。</li>
-</ol>
-<h1 id="连接池"><a href="#连接池" class="headerlink" title="连接池"></a>连接池</h1><h2 id="OKHttp对TCP连接这块有什么优化？具体怎么实现的？"><a href="#OKHttp对TCP连接这块有什么优化？具体怎么实现的？" class="headerlink" title="OKHttp对TCP连接这块有什么优化？具体怎么实现的？"></a>OKHttp对TCP连接这块有什么优化？具体怎么实现的？</h2><p>连接池复用</p>
-<p>每次网络请求都会创建一个StreamAllocation，代表一个请求。</p>
-<p>会先去ConnectionPool连接池寻找有没有可用的Connection，有就直接用</p>
-<h3 id="怎么判断一个Connection可不可以用？"><a href="#怎么判断一个Connection可不可以用？" class="headerlink" title="怎么判断一个Connection可不可以用？"></a>怎么判断一个Connection可不可以用？</h3><p>连接里没有正在运行的请求，也就是看RealConnection里有没有StreamAllocation对象</p>
-<p>没有就创建一个RealConnection，然后调用connect方法，内部会通过SSLSocketFactory创建一个Socket，调用Socket的connect方法进行TCP+TLS握手。然后把RealConnection放入连接池。</p>
-<p>在RealConnection里有个StreamAllocation虚引用列表，每创建一个StreamAllocation，就会把它添加进该列表中，如果留关闭以后就将StreamAllocation 对象从该列表中移除，正是利用利用这种引用计数的方式判定一个连接是否为空闲连接，</p>
-<h3 id="连接池里的连接什么时候清理？"><a href="#连接池里的连接什么时候清理？" class="headerlink" title="连接池里的连接什么时候清理？"></a>连接池里的连接什么时候清理？</h3><p>在第一次往ConnectionPool添加Connection的时候，就用线程池启动一个线程执行一个清理任务，任务是无限循环的。</p>
-<p>规定的是连接池最多保 持5个地址的连接能够keep-alive，每个keep-alive时长为5分钟，如果发现当前空闲的连接数大于5个，就会清理掉空闲的一个连接。</p>
-<p>每个Connection连接对象里会存一个StreamAllocation的弱引用，通过判断这个引用的个数来判断当前连接是否有正在执行的请求，http1协议下一个连接只有一个请求，http2中一个连接有多个请求。</p>
-<p>如果一个Connection连接对象里没有StreamAllocation的引用了，就会记录一个空闲的时间戳，在清理连接的线程中会判断Connection的空闲时间是否超过最大空闲时间，超过了就回收，没超过计算一个要等待的时间，然后通过synchronize加锁，再调用锁对象的wait()方法等待一段时间。</p>
-<p>如果不存在空闲连接就结束清理线程，等到有新的连接放入连接池，再启动清理线程。</p>
-<h1 id="Okhttp底层如何建立连接的？"><a href="#Okhttp底层如何建立连接的？" class="headerlink" title="Okhttp底层如何建立连接的？"></a>Okhttp底层如何建立连接的？</h1><p>通过Socket的connect()方法做TCP和TLS握手。</p>
-<p>通过Okio的Source和Sink对Socket的输入输出流做代理。</p>
-<p>发送请求就是往Socket的outputStream写入数据，读响应结果就是从Socket的inputStream读入数据</p>
-<p>Okio自己实现的缓存共享机制，可以避免在读输入流然后写输出流时的一次中间拷贝，因为常规读入输入流会读到一个字节数组里，再从字节数组写入到输出流。</p>
-<h1 id="OkHttp对DNS这块有什么优化吗？"><a href="#OkHttp对DNS这块有什么优化吗？" class="headerlink" title="OkHttp对DNS这块有什么优化吗？"></a>OkHttp对DNS这块有什么优化吗？</h1><p>提供DNS接口，可以自定义域名解析。</p>
-<p>默认用InetAddress.getAllByName()做域名解析。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/sucese/android-open-framework-analysis/blob/master/doc/Android%E5%BC%80%E6%BA%90%E6%A1%86%E6%9E%B6%E6%BA%90%E7%A0%81%E9%89%B4%E8%B5%8F%EF%BC%9AOkhttp.md">OkHttp源码鉴赏</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/" class="post-title-link" itemprop="url">B树、B+树</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-07-05 20:00:00" itemprop="dateCreated datePublished" datetime="2018-07-05T20:00:00+08:00">2018-07-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E7%AE%97%E6%B3%95/B%E6%A0%91%E3%80%81B+%E6%A0%91/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="算法/B树、B+树/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="B和B-里的B是什么意思"><a href="#B和B-里的B是什么意思" class="headerlink" title="B和B+里的B是什么意思?"></a>B和B+里的B是什么意思?</h1><p>B是Balanced的缩写，平衡的意思。</p>
-<p>全称可以叫多路（多叉）平衡查找（搜索）树。</p>
-<h2 id="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"><a href="#多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？" class="headerlink" title="多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？"></a>多路平衡查找树解决了什么问题？平衡二叉查找树为什么不能解决？</h2><p>由于平衡二叉查找树只有两个分叉，查询叶子结点需要访问$log_2{n}$次节点，即树的高度。</p>
-<p>如果要减少查找次数，就要让树变矮一点。</p>
-<p>那么一个节点有多个分叉，同时让一个节点存储多个值，就可以降低树的高度，进而减少节点平均的访问次数。</p>
-<h2 id="减少节点的访问次数有什么好处？"><a href="#减少节点的访问次数有什么好处？" class="headerlink" title="减少节点的访问次数有什么好处？"></a>减少节点的访问次数有什么好处？</h2><p>访问节点的成本可能非常大，减少访问节点的次数，就可以降低总的访问成本。</p>
-<p>例如访问IO比访问内存要慢的多，文件系统中普遍采用多路平衡查找树作为存储数据的结构。</p>
-<h2 id="B树与B-的区别？"><a href="#B树与B-的区别？" class="headerlink" title="B树与B+的区别？"></a>B树与B+的区别？</h2><p>B树与B+共同点：</p>
-<ol>
-<li> 都是一个节点按顺序存储多个值</li>
-<li> 每个节点可以有多个分叉</li>
-</ol>
-<p>B树独有：</p>
-<ol>
-<li> 非叶子节点存储了数据，非叶子节点占用空间更大</li>
-</ol>
-<p>B+树独有：</p>
-<ol>
-<li> 非叶子节点不存数据只存索引信息，数据全部在叶子节点，非叶子节点占用空间更小</li>
-<li> 叶子结点用双向链表相连，便于顺序查找</li>
-</ol>
-<h2 id="B-树作为数据库索引有什么优势？"><a href="#B-树作为数据库索引有什么优势？" class="headerlink" title="B+树作为数据库索引有什么优势？"></a>B+树作为数据库索引有什么优势？</h2><p>非叶子结点的大小可以设置为一页，内存从外存读取数据是按页读取的，这样就减少了IO访问次数。</p>
-<p>结点内部是有序的，可以再用二分查找去查找元素。</p>
-<p>B+树的非叶子结点不存储数据，只存键，这样同样空间大小可以存的键就更多，非叶子结点的数量就会减少，IO访问次数也就变少了。</p>
-<p>B+树的叶子结点用双链表链接，这样对区间查询友好，只需要通过非叶结点查找到区间范围，然后顺序遍历即可，可以减少对非叶结点的访问，进而减少IO访问次数。因为由于虚拟内存机制，非叶结点加载到内存后，可能也会被置换到外存，减少对非叶结点的访问次数，也就降低了置换次数，置换是需要IO访问的。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://draveness.me/whys-the-design-mysql-b-plus-tree/">为什么 MySQL 使用 B+ 树</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/v_july_v/article/details/6530142">从B树、B+树、B*树谈到R 树</a></li>
-<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/svL_yNmNJ-wj9aGjtO_Yww">拜托，别再问我什么是B+树 了</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_21993785/java/article/details/80580679">B+Tree在数据库索引上拥有独特优势的原因（为什么比红黑树更合适）</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Dagger2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Ricky.L">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ricky.L的随笔">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Dagger2/" class="post-title-link" itemprop="url">依赖注入 - Dagger2基本机制</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-06-12 19:55:00" itemprop="dateCreated datePublished" datetime="2018-06-12T19:55:00+08:00">2018-06-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%20-%20Dagger2/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="源码分析/依赖注入 - Dagger2/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="为什么要用依赖注入？"><a href="#为什么要用依赖注入？" class="headerlink" title="为什么要用依赖注入？"></a>为什么要用依赖注入？</h1><p>让每个类保持职责单一。</p>
-<p>好处：</p>
-<ul>
-<li>方便mock测试，减少排错和调试成本。</li>
-<li>类职责单一后，代码复用性非常强，减少改动成本。</li>
-<li>方便单元测试、自动化测试，促进项目健壮性。</li>
-</ul>
-<h1 id="Dagger2的优势？"><a href="#Dagger2的优势？" class="headerlink" title="Dagger2的优势？"></a>Dagger2的优势？</h1><ul>
-<li>无反射，编译时生成注入代码，无运行时性能损耗。</li>
-<li>符合jsr-330依赖注入标准，切换成本低。</li>
-</ul>
-<p>其他Java下的依赖注入框架，比如Dagger1、Guice，是通过反射在运行时对要注入的对象进行赋值，反射在运行时是比较耗时的，Dagger2没有反射，在编译时进行生成辅助代码，利用辅助代码做对象赋值，运行时性能没有消耗。</p>
-<p>Dagger2按照jsr-330依赖注入标准要求来设计，比如支持@Inject、@Qualifier、@Scope等jsr-330中规定的注解，以后替换为其他符合jsr-330标准的依赖注入框架时切换成本小。</p>
-<h1 id="Dagger2基本运行流程"><a href="#Dagger2基本运行流程" class="headerlink" title="Dagger2基本运行流程"></a>Dagger2基本运行流程</h1><ul>
-<li>开发者把要注入的对象写在Module对象中，Module对象挂载在各种Component下，都用注解来配置。</li>
-<li>要注入的对象的生命周期受Component对象的生命周期控制，Component对象什么时候创建、什么时候丢弃是完全自行控制的。</li>
-<li>编译时通过解析注解处理器，生成注入相关的代码。</li>
-<li>在Activity、Fragment中通过调用Component的inject()方法，给所有标注为@Inject的属性赋值。<ul>
-<li>也可以通过Component直接get到对象。</li>
-<li>inject()后，所有依赖路径上的对象都会被创建。</li>
-</ul>
-</li>
-</ul>
-<h1 id="作用域Scope"><a href="#作用域Scope" class="headerlink" title="作用域Scope"></a>作用域Scope</h1><p>Scope可以在三个地方使用：</p>
-<ul>
-<li>Component类上标记。</li>
-<li>Module中providerXXX方法。</li>
-<li>Dagger2要创建的类上标记。</li>
-</ul>
-<p>作用域的唯一的实际作用，是让Component里的对象创建过后就缓存在Component对象里。</p>
-<p>所有作用域是完全跟Component对象的生命周期走的。</p>
-<p>比如，有一个UserScope，表示用户登陆到用户注销期间的作用域范围。</p>
-<ul>
-<li>在Dagger2中，UserScope是要标记到Component上去的，可以把所有用户登陆期间需要的对象都挂载到一个UserComponent上去。</li>
-<li>用户登陆时创建一个UserComponent对象并保存，用户注销时丢弃保存的UserComponent对象。</li>
-<li>在Module中标记为UserScope的对象，通过UserComponent去获取的时候都是同一个。</li>
-</ul>
-<h2 id="作用域如何嵌套？"><a href="#作用域如何嵌套？" class="headerlink" title="作用域如何嵌套？"></a>作用域如何嵌套？</h2><p>比如用户作用域内，可能通过蓝牙绑定智能设备到App，会存在设备相关的状态，就定义一个DeviceComponent代表设备相关的状态对象。</p>
-<ul>
-<li>在设备绑定时创建DeviceComponent对象并保存，在设备解绑时丢弃DeviceComponent对象。</li>
-<li>再次绑定设备时，创建新的DeviceComponent对象示例，这样挂载在DeviceComponent的对象就都重新生成了，设备的状态对象都会更新。</li>
-<li>设备绑定和解绑的动作一定是发生在用户登陆期间的，所以DeviceComponent和UserComponent并无代码上的直接关联，就可以实现概念上的作用域嵌套。</li>
-</ul>
-<h1 id="SubComponent解决了什么？"><a href="#SubComponent解决了什么？" class="headerlink" title="SubComponent解决了什么？"></a>SubComponent解决了什么？</h1><p>有了Component，怎么还搞一个SubComponent？</p>
-<p>顾名思义，就是建立Component的层级关系，而建立层级关系是为了读取共享的对象。</p>
-<p>比如：</p>
-<ul>
-<li>用户登陆生命周期对应UserComponent。</li>
-<li>用户绑定手环手表的生命周期对应DeviceComponent。</li>
-<li>用户在App开启设备的跑步到停止跑步的生命周期对应RunningComponent。</li>
-<li>用户在App开启设备的心率检测到结束心率检测的生命周期对应HeartRateComponent。</li>
-</ul>
-<p>这里的层级关系从功能上看比较明显：</p>
-<ul>
-<li>用户绑定了设备才能启用跑步和心率检测的功能，所以：<ul>
-<li>HeartRateComponent和RunningComponent平级。</li>
-<li>DeviceComponent是RunningComponent和HeartRateComponent的父Component。</li>
-<li>RunningComponent和HeartRateComponent中的对象想要读取设备信息，应该都是读取DeviceComponent中同一份设备信息，这就催生了共享的需求。</li>
-</ul>
-</li>
-<li>不同用户之间设备信息是不一样的，所以：<ul>
-<li>UserComponent是DeviceComponent的父Component。</li>
-<li>DeviceComponent中的对象需要读取用户信息，读取的都是UserComponent下的对象状态。</li>
-<li>RunningComponent和HeartRateComponent中的对象要读取用户相关的状态，也要读取UserComponent挂载的对象。</li>
-<li>退出登录换一个账号登录后，DeviceComponent里的对象内容应该也要跟着变，因为不同的用户绑定的设备不一样。</li>
-</ul>
-</li>
-</ul>
-<p>如果没有Component的层级关系，DeviceComponent和RunningComponent中的对象要读取设备和用户相关的状态都要写重复的代码，Component层级关系消除了冗余的重复。</p>
-<h1 id="如何异步注入？"><a href="#如何异步注入？" class="headerlink" title="如何异步注入？"></a>如何异步注入？</h1><p>官方提供Producers机制，理解起来比较困难，其实更方便的是，通过Dagger2获取一个创建对象的函数，自己在代码里异步控制什么时候创建对象。</p>
-<h1 id="多绑定解决了什么？"><a href="#多绑定解决了什么？" class="headerlink" title="多绑定解决了什么？"></a>多绑定解决了什么？</h1><p>多绑定的意思是把要注入的对象信息都存储到一个集合里，比如Set或Map。</p>
-<p><strong>把要注入的对象存储到集合有什么好处？</strong></p>
-<p>可以实现一种插件化的架构。<br>把对象收集到一个中心，再做对象注入的时候，不需要依赖某个具体的Component或者Module对象，而是直接去中心里的集合中查表就行了。</p>
-<p>比如dagger.android中：</p>
-<ul>
-<li>每个Activity和Fragment都是单独的生命周期，都是单独的SubComponent，因为它们可能会读取共享的父Component的里的状态值。</li>
-<li>可以把这些SubComponent挂载的对象通过多绑定的注解标记，存入一个Map中，Key就是Activity或者Fragment类名。</li>
-<li>在Activity和Fragment的onCreate中，就可以只调用<code>AndroidInjection.inject(this)</code>。</li>
-<li>Dagger2内部就可以到Map中通过类名的Key查询到对应的Activity或者Fragment对应的SubComponent。</li>
-<li>然后创建Component对象，做实际的对象创建和注入。</li>
-</ul>
-<p>这样就简化了注入处的代码。</p>
-<p>参考：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://dagger.dev/dev-guide/multibindings">multibindings</a></li>
-</ul>
-<h1 id="Dagger2存在什么问题？"><a href="#Dagger2存在什么问题？" class="headerlink" title="Dagger2存在什么问题？"></a>Dagger2存在什么问题？</h1><ol>
-<li> 学习和科普成本极高。</li>
-<li> APT生成的辅助代码增加编译时间。</li>
-<li> APT生成的辅助代码增加了Apk体积。</li>
-</ol>
-<p>dagger2中各种基本情况组合起来非常复杂，光注解就非常繁多，比如@Inject、@Component、@Subcomponent、@MultiBinding、@Binds、@ContributesAndroidInjector，要在大型团队中推广，必须要保证至少有一个人能完全hold住所有Dagger2相关的问题，否则就是灾难。</p>
-<p>这位负责人还要尽量文档化，负责科普宣讲，减少认知和沟通成本。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ArrayDeque/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -884,7 +215,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -986,7 +317,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1026,7 +357,7 @@
           <h1 id="ArrayList存在什么问题？"><a href="#ArrayList存在什么问题？" class="headerlink" title="ArrayList存在什么问题？"></a>ArrayList存在什么问题？</h1><p>ArrayList是线程不安全的。</p>
 <p>可以用Collections.synchronizedList()加全局独占锁保证线程安全，但在读多写少的情况下，多线程读之间互斥降低了系统吞吐量。</p>
 <p>如果读与读之间不互斥，写与写、写与读才互斥，这样可以保证最大的吞吐量，这就是CopyOnWriteArrayList。</p>
-<h1 id="CopyOnWriteArrayList保证线程安全的原理？"><a href="#CopyOnWriteArrayList保证线程安全的原理？" class="headerlink" title="CopyOnWriteArrayList保证线程安全的原理？"></a>CopyOnWriteArrayList保证线程安全的原理？</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Appends the specified element to the end of this list.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> e element to be appended to this list</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; (as specified by &#123;<span class="doctag">@link</span> Collection#add&#125;)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Object[] elements = getArray();</span><br><span class="line">        <span class="keyword">int</span> len = elements.length;</span><br><span class="line">        Object[] newElements = Arrays.copyOf(elements, len + <span class="number">1</span>);</span><br><span class="line">        newElements[len] = e;</span><br><span class="line">        setArray(newElements);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">get</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> get(getArray(), index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="CopyOnWriteArrayList保证线程安全的原理？"><a href="#CopyOnWriteArrayList保证线程安全的原理？" class="headerlink" title="CopyOnWriteArrayList保证线程安全的原理？"></a>CopyOnWriteArrayList保证线程安全的原理？</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Appends the specified element to the end of this list.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> e element to be appended to this list</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; (as specified by &#123;<span class="doctag">@link</span> Collection#add&#125;)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">add</span><span class="params">(E e)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="built_in">this</span>.lock;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Object[] elements = getArray();</span><br><span class="line">        <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> elements.length;</span><br><span class="line">        Object[] newElements = Arrays.copyOf(elements, len + <span class="number">1</span>);</span><br><span class="line">        newElements[len] = e;</span><br><span class="line">        setArray(newElements);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> E <span class="title function_">get</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> get(getArray(), index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>如果用读写锁保证并发，可以保证读读之间没有阻塞等待，但有线程写数据时，读线程必须阻塞等待，这保证了每次都都可以读到最新修改的值。</p>
 <p>CopyOnWriteArrayList牺牲了读的实时性，读操作不上锁，只在写数据时使用ReentrantLock上锁，写数据时会把原数组拷贝到新的数组中，写数据的同时再有线程读数据，读到的是之前数组的值，不保证数据实时性，只保证最终结果一致性，牺牲了数据实时性，换取了读操作没有阻塞等待。</p>
@@ -1096,7 +427,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1194,7 +525,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1314,7 +645,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1422,7 +753,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-02 17:25:29" itemprop="dateModified" datetime="2021-11-02T17:25:29+08:00">2021-11-02</time>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1593,10 +924,760 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Android%E9%9B%86%E5%90%88%E7%B1%BB-SparseArray%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Android%E9%9B%86%E5%90%88%E7%B1%BB-SparseArray%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Android集合类-SparseArray原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-09 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-09T20:00:00+08:00">2018-05-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Android%E9%9B%86%E5%90%88%E7%B1%BB-SparseArray%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Android集合类-SparseArray原理/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="稀疏表是什么？"><a href="#稀疏表是什么？" class="headerlink" title="稀疏表是什么？"></a>稀疏表是什么？</h1><p>key为整数的哈希表</p>
+<h1 id="稀疏表特点"><a href="#稀疏表特点" class="headerlink" title="稀疏表特点"></a>稀疏表特点</h1><ul>
+<li>Key为int类型的哈希表，避免了Integer自动装箱。</li>
+<li>底层用数组存储元素，一个数组存储key，一个数组存储value，key是有序的，通过二分查找来定位元素。</li>
+<li>插入元素会移动数组，remove的时候只设置了一个removed标记位，避免频繁移动数组元素。</li>
+<li>数据量大的时候，复制数组时间就长了，查找时间也长了。</li>
+<li>好处是不需要额外的结构体，比较节约空间，数据量较小情况下访问想效率比较高。</li>
+</ul>
+<h1 id="SparseArray相比HashMap解决了什么？"><a href="#SparseArray相比HashMap解决了什么？" class="headerlink" title="SparseArray相比HashMap解决了什么？"></a>SparseArray相比HashMap解决了什么？</h1><p>优点：</p>
+<ol>
+<li> 避免了基本数据类型的装箱操作</li>
+<li> 不需要额外的结构体，单个元素的存储成本更低</li>
+<li> 数据量小的情况下，随机访问的效率更高，因为不需要额外复杂操作、删除元素也是延迟的</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li> 插入操作需要复制数组，增删效率降低</li>
+<li> 数据量巨大时，复制数组成本巨大，gc()成本也巨大</li>
+<li> 数据量巨大时，查询效率也会明显下降，因为需要二分查找，而不是直接哈希命中</li>
+</ol>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/entry/6844903442901630983">SparseArray 的使用及实现原理</a></li>
+</ul>
+<h1 id="SparseArray适用场景？"><a href="#SparseArray适用场景？" class="headerlink" title="SparseArray适用场景？"></a>SparseArray适用场景？</h1><p>原则：</p>
+<ol>
+<li> 数据量不大（千这个数量级以内）。</li>
+<li> 空间比时间重要，例如移动端对内存使用量敏感。</li>
+<li> 需要使用Map，且key为int类型。</li>
+</ol>
+<p>例如：<br>如果有一个ViewPager的每个页面都有一个图表，并且图表的点有上千个，而ViewPager会缓存左右两页，至少要开3个图表，用HashMap明显占用内存更多，容易引发内存溢出，而且自动装箱的消耗更多，用SparseArray肯定更快，内存占用更小。</p>
+<h1 id="SparseArray-put-int-key-E-value-原理？"><a href="#SparseArray-put-int-key-E-value-原理？" class="headerlink" title="SparseArray.put(int key, E value)原理？"></a>SparseArray.put(int key, E value)原理？</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Adds a mapping from the specified key to the specified value,</span></span><br><span class="line"><span class="comment"> * replacing the previous mapping from the specified key if there</span></span><br><span class="line"><span class="comment"> * was one.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">put</span><span class="params">(<span class="type">int</span> key, E value)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> ContainerHelpers.binarySearch(mKeys, mSize, key);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (i &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        mValues[i] = value;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        i = ~i;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (i &lt; mSize &amp;&amp; mValues[i] == DELETED) &#123;</span><br><span class="line">            mKeys[i] = key;</span><br><span class="line">            mValues[i] = value;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mGarbage &amp;&amp; mSize &gt;= mKeys.length) &#123;</span><br><span class="line">            gc();</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Search again because indices may have changed.</span></span><br><span class="line">            i = ~ContainerHelpers.binarySearch(mKeys, mSize, key);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        mKeys = GrowingArrayUtils.insert(mKeys, mSize, i, key);</span><br><span class="line">        mValues = GrowingArrayUtils.insert(mValues, mSize, i, value);</span><br><span class="line">        mSize++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面这段代码是一次插入数据的操作，单看的话有些难懂，因为插入跟删除之间有一定的关系，所以要看懂这段代码，还必须搞懂删除的逻辑。在看删除之前，还是先大体梳理一下插入的几个特点：</p>
+<ul>
+<li>  <strong>存放<code>key</code>的数组是有序的（二分查找的前提条件）</strong></li>
+<li>  <strong>如果冲突，新值直接覆盖原值，并且不会返回原值（<code>HashMap</code>会返回原值）</strong></li>
+<li>  <strong>如果当前要插入的 key 的索引上的值为DELETE，直接覆盖</strong></li>
+<li>  <strong>前几步都失败了，检查是否需要<code>gc()</code>并且在该索引上插入数据</strong></li>
+</ul>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/entry/6844903442901630983">SparseArray 的使用及实现原理</a></li>
+</ul>
+<h1 id="GrowingArrayUtils-insert-的原理？"><a href="#GrowingArrayUtils-insert-的原理？" class="headerlink" title="GrowingArrayUtils.insert()的原理？"></a>GrowingArrayUtils.insert()的原理？</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Inserts an element into the array at the specified index, growing the array if there is no</span></span><br><span class="line"><span class="comment"> * more room.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> array The array to which to append the element. Must NOT be null.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> currentSize The number of elements in the array. Must be less than or equal to</span></span><br><span class="line"><span class="comment"> *                    array.length.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> element The element to insert.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> the array to which the element was appended. This may be different than the given</span></span><br><span class="line"><span class="comment"> *         array.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; T[] insert(T[] array, <span class="type">int</span> currentSize, <span class="type">int</span> index, T element) &#123;</span><br><span class="line">    <span class="keyword">if</span> (currentSize + <span class="number">1</span> &lt;= array.length) &#123;</span><br><span class="line">        System.arraycopy(array, index, array, index + <span class="number">1</span>, currentSize - index);</span><br><span class="line">        array[index] = element;</span><br><span class="line">        <span class="keyword">return</span> array;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    T[] newArray = (T[]) Array.newInstance(array.getClass().getComponentType(),</span><br><span class="line">            growSize(currentSize));</span><br><span class="line">    System.arraycopy(array, <span class="number">0</span>, newArray, <span class="number">0</span>, index);</span><br><span class="line">    newArray[index] = element;</span><br><span class="line">    System.arraycopy(array, index, newArray, index + <span class="number">1</span>, array.length - index);</span><br><span class="line">    <span class="keyword">return</span> newArray;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果当前数据个数并不超过数组长度，直接把待插入位置后面的元素全部后移一位，腾出空间给新元素。</p>
+<p>如果数据总个数超过了数组容纳的长度，需要扩容，扩容大小为growSize(currentSize)求得，为原大小的两倍。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Given the current size of an array, returns an ideal size to which the array should grow.</span></span><br><span class="line"><span class="comment"> * This is typically double the given size, but should not be relied upon to do so in the</span></span><br><span class="line"><span class="comment"> * future.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">growSize</span><span class="params">(<span class="type">int</span> currentSize)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> currentSize &lt;= <span class="number">4</span> ? <span class="number">8</span> : currentSize * <span class="number">2</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后根据新大小创建新的数组，然后：</p>
+<ol>
+<li> 把原数组中待插入位置前面的元素都复制到新数组的前面</li>
+<li> 新数组中指定位置插入新元素</li>
+<li> 把原数组中待插入位置后面的元素都复制到新数组中插入元素的后面</li>
+</ol>
+<h1 id="SparseArray-remove-int-key-原理"><a href="#SparseArray-remove-int-key-原理" class="headerlink" title="SparseArray.remove(int key)原理?"></a>SparseArray.remove(int key)原理?</h1><p>通过key二分查找到index，然后讲DELETED赋值给mValues[index]，标记这个位置会删除</p>
+<p>为什么删除标记位DELETED？而不是直接删除元素？</p>
+<p>直接删除元素会复制数组，如果删除比较频繁，就会降低性能，这里是为了避免频繁进行数组拷贝调整</p>
+<h1 id="什么时候会清理掉DELETED的元素？"><a href="#什么时候会清理掉DELETED的元素？" class="headerlink" title="什么时候会清理掉DELETED的元素？"></a>什么时候会清理掉DELETED的元素？</h1><p>SparseArray.gc()里会清理</p>
+<h1 id="SparseArray-gc-的原理？"><a href="#SparseArray-gc-的原理？" class="headerlink" title="SparseArray.gc()的原理？"></a>SparseArray.gc()的原理？</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">gc</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// Log.e(&quot;SparseArray&quot;, &quot;gc start with &quot; + mSize);</span></span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> mSize;</span><br><span class="line">    <span class="type">int</span> <span class="variable">o</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span>[] keys = mKeys;</span><br><span class="line">    Object[] values = mValues;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">val</span> <span class="operator">=</span> values[i];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (val != DELETED) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i != o) &#123;</span><br><span class="line">                keys[o] = keys[i];</span><br><span class="line">                values[o] = val;</span><br><span class="line">                values[i] = <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            o++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mGarbage = <span class="literal">false</span>;</span><br><span class="line">    mSize = o;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Log.e(&quot;SparseArray&quot;, &quot;gc end with &quot; + mSize);</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>mValues里如果没有DELETED，那么i和o应该是相等的，但是如果有DELETED，o就会小于i，然后就可以把元素全部前移到数组头部，把空位留在数组尾部，相当于碎片整理了一下，留下了尾部整块的空闲空间。</p>
+<h1 id="什么时候触发GC-？"><a href="#什么时候触发GC-？" class="headerlink" title="什么时候触发GC()？"></a>什么时候触发GC()？</h1><p>以下方法会调用gc()：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210825214148.png"></p>
+<p>put的时候如果发现数组大小不够，就清理。</p>
+<p>size()求大小需要求得正确的大小。</p>
+<h1 id="SparseArray使用过程有什么坑？"><a href="#SparseArray使用过程有什么坑？" class="headerlink" title="SparseArray使用过程有什么坑？"></a>SparseArray使用过程有什么坑？</h1><p>indexOfValue比较的是value的指针，而并没有调用equals方法。</p>
+<p>如果value是String就有问题。</p>
+<p>如果是Integer，在Integer的缓存范围内也有问题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Returns an index for which &#123;<span class="doctag">@link</span> #valueAt&#125; would return the</span></span><br><span class="line"><span class="comment"> * specified value, or a negative number if no keys map to the</span></span><br><span class="line"><span class="comment"> * specified value.</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;Beware that this is a linear search, unlike lookups by key,</span></span><br><span class="line"><span class="comment"> * and that multiple keys can map to the same value and this will</span></span><br><span class="line"><span class="comment"> * find only one of them.</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;Note also that unlike most collections&#x27; &#123;<span class="doctag">@code</span> indexOf&#125; methods,</span></span><br><span class="line"><span class="comment"> * this method compares values using &#123;<span class="doctag">@code</span> ==&#125; rather than &#123;<span class="doctag">@code</span> equals&#125;.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">indexOfValue</span><span class="params">(E value)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (mGarbage) &#123;</span><br><span class="line">        gc();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mSize; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (mValues[i] == value) &#123;</span><br><span class="line">            <span class="keyword">return</span> i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/hapoy9/article/details/75554539">安卓SparseArray的indexOfValue方法遇到的坑</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/brehrehr/article/details/100118779">记录SparseArray的使用方法和使用过程遇到的问题</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/" class="post-title-link" itemprop="url">Java集合类-TreeMap、ConcurrentSkipListMap</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-08 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-08T20:00:00+08:00">2018-05-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-TreeMap%E3%80%81ConcurrentSkipListMap/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-TreeMap、ConcurrentSkipListMap/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="TreeMap作用"><a href="#TreeMap作用" class="headerlink" title="TreeMap作用"></a>TreeMap作用</h1><ul>
+<li> 元素可以按key保持顺序。</li>
+<li> 因为有序，提供了很多范围查询的方法，非常方便。</li>
+</ul>
+<h1 id="TreeMap的实现"><a href="#TreeMap的实现" class="headerlink" title="TreeMap的实现"></a>TreeMap的实现</h1><p>TreeMap实现了NavigableMap接口，该接口又继承SortedMap接口，两个提供了很多范围查询的方法，非常方便。</p>
+<p>用红黑树实现，插入、删除、查询的平均时间复杂度都是log(n)。</p>
+<h1 id="TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap"><a href="#TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap" class="headerlink" title="TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap?"></a>TreeMap也是非线程安全的，为什么不提供ConcurrentTreeMap?</h1><ol>
+<li> 因为红黑树的结构调整可能涉及整个树的结点，这样并发下就要锁住很多结点，使用跳表会更局部一点，只锁住局部的几个结点，并发性能更高。</li>
+<li> 红黑树加锁实现起来比较复杂，跳表是链表加锁比较容易实现</li>
+</ol>
+<p>可以用过Collections.synchronizedSortedMap()保证线程安全，也可以改用ConcurrentSkipListMap并发性能更好。</p>
+<h1 id="TreeMap为什么用红黑树不用AVL树？"><a href="#TreeMap为什么用红黑树不用AVL树？" class="headerlink" title="TreeMap为什么用红黑树不用AVL树？"></a>TreeMap为什么用红黑树不用AVL树？</h1><p>跟HashMap中的问题一样。</p>
+<p>红黑树的3结点可以吸收变化，在多次使用中可以减少调整数据结构的次数，从而提升性能。</p>
+<h1 id="ConcurrentSkipListMap是什么？"><a href="#ConcurrentSkipListMap是什么？" class="headerlink" title="ConcurrentSkipListMap是什么？"></a>ConcurrentSkipListMap是什么？</h1><p>跳表：链表+多级索引（多层链表）。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825212310.png"></p>
+<ul>
+<li>给有序链表再增加若干层额外的指针索引，用空间换时间。</li>
+<li>每一层都是一个有序链表。</li>
+<li>实际效果类似于平衡二叉搜索树。</li>
+<li>插入、删除、查询的平均时间复杂度都是log(n)。</li>
+<li>支持按key排序所有元素，也支持快速查找。</li>
+</ul>
+<h1 id="跳表的数据结构存在什么问题？"><a href="#跳表的数据结构存在什么问题？" class="headerlink" title="跳表的数据结构存在什么问题？"></a>跳表的数据结构存在什么问题？</h1><p>按照理想的生成链表的方式，上面每一层链表的节点个数，是下面一层的节点个数的一半，这样查找过程就非常类似于一个二分查找，使得查找的时间复杂度可以降低到O(log n)。</p>
+<p>但是，这种方法在插入数据的时候有很大的问题。新插入一个节点之后，就会打乱上下相邻两层链表上节点个数严格的2:1的对应关系。如果要维持这种对应关系，就必须把新插入的节点后面的所有节点（也包括新插入的节点）重新进行调整，这会让时间复杂度重新蜕化成O(n)。删除数据也有同样的问题。</p>
+<p>skiplist为了避免这一问题，它不要求上下相邻两层链表之间的节点个数有严格的对应关系，而是为每个节点随机出一个层数(level)。比如，一个节点随机出的层数是3，那么就把它链入到第1层到第3层这三层链表中。</p>
+<h1 id="跳表与红黑树区别？"><a href="#跳表与红黑树区别？" class="headerlink" title="跳表与红黑树区别？"></a>跳表与红黑树区别？</h1><ol>
+<li> 红黑树为了保持平衡有可能会调整很多结点甚至整个树，而跳表只要修改相邻结点更加的局部，跳表调整次数少性能也就高，同时并发加锁时，锁住的结点更少，可以减少竞争</li>
+<li> 跳表的区间查询更高效，因为找到链表头结点顺序遍历就行了，红黑树需要中序遍历相对比较复杂</li>
+<li> 跳表占用空间更少，平衡树每个节点包含2个指针（分别指向左右子树），而skiplist每个节点包含的指针数目平均为1/(1-p)，具体取决于参数p的大小。如果像Redis里的实现一样，取p=1/4，那么平均每个节点包含1.33个指针，比平衡树更有优势。</li>
+</ol>
+<h1 id="ConcurrentSkipListMap存在什么问题？"><a href="#ConcurrentSkipListMap存在什么问题？" class="headerlink" title="ConcurrentSkipListMap存在什么问题？"></a>ConcurrentSkipListMap存在什么问题？</h1><p>size方法求得链表长度要遍历整个链表，并且没有加锁，多线程高并发下这个方法返回值并不准确，高并发下使用size的意义不大。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/yd2sOhmVtZeEkJ06cTE7qA"> 死磕 java集合之ConcurrentSkipListMap源码分析——发现个bug</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/1811782/when-should-i-use-concurrentskiplistmap">When should I use ConcurrentSkipListMap?</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20202931/answer/16086538">为啥 redis 使用跳表(skiplist)而不是使用 red-black？ - 于康的回答 - 知乎</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ConcurrentHashMap%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ConcurrentHashMap%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Java集合类-ConcurrentHashMap原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-07 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-07T20:00:00+08:00">2018-05-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-ConcurrentHashMap%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-ConcurrentHashMap原理/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h1><p>高性能且线程安全的哈希表。</p>
+<h1 id="线程安全是怎么实现的？"><a href="#线程安全是怎么实现的？" class="headerlink" title="线程安全是怎么实现的？"></a>线程安全是怎么实现的？</h1><p>Java7中ConcurrentHashMap将哈希表分割成为多个段（Segment），每一个段继承ReentrantLock，对每一段进行加锁。每个Segment里类似又有一个小的HashMap，等于是双重哈希表。</p>
+<p>Java8中采用了自旋CAS和synchronzied保证线程安全，锁的粒度调整为对table数组中每个元素进行加锁；put元素时，定位到桶位置后，通过synchronzied给桶中链表首节点或红黑树根节点加锁。这样多线程竞争哈希表同一个桶位置的几率又降低了。</p>
+<p>java8的ConcurrentHashMap的数据结构参考java8的HashMap，采用数组+链表+红黑树。</p>
+<ul>
+<li><p>put方法里，是一个无限循环，即自旋，修改table数组都是通过cas操作，自旋锁的机制避免了阻塞和恢复线程的上下文切换开销。</p>
+</li>
+<li><p>只要当前桶位置没有元素，就先自旋CAS进行更新。</p>
+</li>
+<li><p>存在hash冲突或修改已有的值时，需要进入桶内部的链表或红黑树进行操作时，才开始用synchronized真正加锁。</p>
+</li>
+</ul>
+<p>get是不加锁的，所以与CopyOnWriteArrayList一样，不保证读数据的实时性，数据是弱一致性。</p>
+<p>size的求法和LongAdder里的思路一样，将大小数据分段累加，避免多线程竞争，用自旋cas保证数据更新的原子性。</p>
+<h1 id="不能解决什么问题？"><a href="#不能解决什么问题？" class="headerlink" title="不能解决什么问题？"></a>不能解决什么问题？</h1><p>因为数据是弱一致性的，get时并不加锁，所以对读数据实时性要求高的需求不能满足。</p>
+<p>例如线程1在某一时刻执行了put(key, value)，先线程2随后立即get(key)不一定能读取到线程1刚put的，因为put可能正在进行中还没结束。</p>
+<h1 id="扩容机制是怎样的？"><a href="#扩容机制是怎样的？" class="headerlink" title="扩容机制是怎样的？"></a>扩容机制是怎样的？</h1><p>本来一个线程扩容时，其他线程应该都阻塞等待这个线程扩容完成后才能对哈希表进行读写，这就成了并发的瓶颈。</p>
+<p>ConcurrentHashMap具体实现是，反正你闲着也是闲着，不如一起来扩容。</p>
+<p>扩容时nextTable会指向扩容后的数组，扩容方法transfer里通过自旋进行。</p>
+<p>多个线程通过sizeCtl判断当前所处状态，再通过transferIndex协调各线程应该操作哪一些桶。</p>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/ZOKEKAI/article/details/90051567">ConcurrentHashMap1.8 - 扩容详解（图文并茂）</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/lfs2640666960/p/9621461.html">深入理解HashMap+ConcurrentHashMap的扩容策略  </a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/487d00afe6ca">ConcurrentHashMap源码分析（JDK8） 扩容实现机制</a></li>
+</ul>
+<h1 id="跟同样是线程安全的Hashtable有何区别？"><a href="#跟同样是线程安全的Hashtable有何区别？" class="headerlink" title="跟同样是线程安全的Hashtable有何区别？"></a>跟同样是线程安全的Hashtable有何区别？</h1><p>Hashtable的线程安全是对整个哈希表上锁（在多数方法上加上sychronized），其中一个线程访问哈希表时，其他线程只能等待，很多没有必要上锁的场景也上锁，因此在多线程竞争激烈的情况下整体访问速度会变慢。</p>
+<p>ConcurrentHashMap把哈希表分割成若干个段，修改每一段时仅针对访问的段上锁，不同的线程访问不同的段时互不干扰，减少了多个线程争抢同一把锁的几率，减少了线程等待的时间，所以提高了性能。</p>
+<p>分段锁是怎么实现的？</p>
+<p>get方法不加锁，结点类里的value设置了volatile保证了value在多线程下的可见性，保证get到value最新的修改值。</p>
+<p>总结：</p>
+<ol>
+<li> 循环+CAS实现自旋锁，减少线程阻塞恢复的上下文切换消耗</li>
+<li> size更新采用LongAdder分段锁思想，减少竞争</li>
+<li> LongAdder机制中的字节填充解决伪共享</li>
+<li> 多线程协同分组扩容。</li>
+</ol>
+<h1 id="与Collections-synchronizedMap-的区别？"><a href="#与Collections-synchronizedMap-的区别？" class="headerlink" title="与Collections.synchronizedMap()的区别？"></a>与Collections.synchronizedMap()的区别？</h1><p>Collections.synchronizedMap()对HashMap做了一层装饰，用synchronized锁住整个哈希表，以保证各操作的线程安全，锁的粒度比较大。<br>性能比ConcurrentHashMap更差，但可以保证读的实时性。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://crossoverjie.top/2018/07/23/java-senior/ConcurrentHashMap/">HashMap? ConcurrentHashMap? 相信看完这篇没人能难住你！</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5dee05ac6fb9a0163f77beb6">深入解析 ConcurrentHashMap 实现内幕，吊打面试官？没问题</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/heqiyoujing/p/11143525.html">ConcurrentHashMap面试题</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://rickyqliu.github.io/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-HashMap%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Ricky.L">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ricky.L的随笔">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-HashMap%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Java集合类-HashMap原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-06 20:00:00" itemprop="dateCreated datePublished" datetime="2018-05-06T20:00:00+08:00">2018-05-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-04 16:47:46" itemprop="dateModified" datetime="2022-07-04T16:47:46+08:00">2022-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9B%86%E5%90%88%E7%B1%BB/" itemprop="url" rel="index"><span itemprop="name">集合类</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/%E9%9B%86%E5%90%88%E7%B1%BB/Java%E9%9B%86%E5%90%88%E7%B1%BB-HashMap%E5%8E%9F%E7%90%86/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="集合类/Java集合类-HashMap原理/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="HashMap源码"><a href="#HashMap源码" class="headerlink" title="HashMap源码"></a>HashMap源码</h1><p>JDK 1.7：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://sourcegraph.com/github.com/zxiaofan/JDK/-/blob/JDK1.7-Java%20SE%20Development%20Kit%207u80/src/java/util/HashMap.java">https://sourcegraph.com/github.com/zxiaofan/JDK/-/blob/JDK1.7-Java%20SE%20Development%20Kit%207u80/src/java/util/HashMap.java</a></li>
+</ul>
+<p>JDK 1.8：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://sourcegraph.com/github.com/zxiaofan/JDK/-/blob/JDK1.8/src/java/util/HashMap.java">https://sourcegraph.com/github.com/zxiaofan/JDK/-/blob/JDK1.8/src/java/util/HashMap.java</a></li>
+</ul>
+<h1 id="HashMap特点"><a href="#HashMap特点" class="headerlink" title="HashMap特点"></a>HashMap特点</h1><ol>
+<li> 非线程安全，所以存取速度快</li>
+<li> 可以接受null的键和值</li>
+<li> 不保证key有序</li>
+<li> key的顺序会随时间变化（动态调整大小后会变化）</li>
+</ol>
+<h1 id="散列过程"><a href="#散列过程" class="headerlink" title="散列过程"></a>散列过程</h1><ol>
+<li> 通过散列函数，用元素的key计算出元素在数组中的索引位置</li>
+<li> 解决散列冲突，即相同散列值（数组索引位置）元素如何存取</li>
+</ol>
+<h1 id="散列函数的选取标准"><a href="#散列函数的选取标准" class="headerlink" title="散列函数的选取标准"></a>散列函数的选取标准</h1><ol>
+<li> 易于计算</li>
+<li> 均匀分布所有键</li>
+</ol>
+<h1 id="拉链法查找一个元素的最少、最坏、平均次数分别是多少？"><a href="#拉链法查找一个元素的最少、最坏、平均次数分别是多少？" class="headerlink" title="拉链法查找一个元素的最少、最坏、平均次数分别是多少？"></a>拉链法查找一个元素的最少、最坏、平均次数分别是多少？</h1><p>设哈希表大小为m，已存储的元素个数为n</p>
+<p>如果散列函数把所有元素散列到一个位置，链表的长度就是n，最坏情况下就是查找链表中最后一个元素，查找次数是n</p>
+<p>如果散列函数散列到哈希表每个位置的概率相同，此时元素分布最均匀，拉链法相当于把n个元素分为m组，那么每组（链表）长度最多为n/m，最坏情况下查找链表最后一个元素，需要n/m次</p>
+<h1 id="桶（bucket）是什么意思？"><a href="#桶（bucket）是什么意思？" class="headerlink" title="桶（bucket）是什么意思？"></a>桶（bucket）是什么意思？</h1><p>HashMap内部的哈希表由数组实现，数组的每一个位置称为桶，存储一个链表的头结点，或红黑树的根节点，一个桶下所有元素key的hashCode都相同，元素存储在哪一个桶是根据元素key计算出数组索引位置而定的</p>
+<h1 id="什么情况下会要求哈希表的大小要是质数？"><a href="#什么情况下会要求哈希表的大小要是质数？" class="headerlink" title="什么情况下会要求哈希表的大小要是质数？"></a>什么情况下会要求哈希表的大小要是质数？</h1><p>简述：</p>
+<ul>
+<li>关注哈希表的大小是因为求得元素在哈希表中存储存储位置是通过  key的hashCode % 哈希表大小  得到，如果散列函数计算结果不均匀，容易产生散列冲突，提高了查找次数。</li>
+<li>质数不容易被整除，故而可以让计算出的索引分布的比较均匀。合数有公因子，计算出的索引位置容易聚集在公因数的位置，产生较多的散列冲突。</li>
+</ul>
+<p>key与哈希表大小互质，这样取模的结果就分散的比较均匀。</p>
+<p>如果key可以整除哈希表大小，如果key容易在公因数的位置产生聚集，就会产生较多的散列冲突。</p>
+<p>使用质数作为容量，可以使元素更分散，减少冲突；</p>
+<p>如果用合数作为容量，会使元素聚集，增加冲突，增加查找次数。</p>
+<p>一般是通过除留取余法确定元素在数组中存储索引位置，即：</p>
+<p>元素在数组中的存储位置 = key的hashCode % 哈希表长度</p>
+<p>假如关键字是随机分布的，那么无所谓一定要模质数。但在实际中往往关键字有某种规律，例如大量的等差数列，那么公差和模数不互质的时候发生碰撞的概率会变大，而用质数就可以很大程度上回避这个问题。</p>
+<p>例如2 4 6 8 10 12这6个数，如果对 6 取余  得到 2 4 0 2 4 0 只会得到3种HASH值，冲突会很多，并且呈现以合数的因子为间隔增长；如果对 7取余  得到 2 4 6 1 3 5 得到6种HASH值，没有冲突。</p>
+<p>用质数作为数组容量使得任何数想整除它是不可能的，因此探测序列最终会检查到所有单元，冲突较少。</p>
+<p>当散列函数计算结果的均匀性较差时，最好使用质数作为哈希表大小可以在除留取余时使得计算出的索引位置分布的更均匀。</p>
+<p>但是库一般都会提供散列比较均匀的散列函数，只要散列函数设计的均匀，什么数做桶的大小都行，有时为了方便支持桶的动态扩容或者避免使用除法，桶的大小使用2的幂。</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20806796">Hash时取模一定要模质数吗？
+</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhishengqianjun/article/details/79087525">算法分析：哈希表的大小为何是素数</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.moew.xyz/2019/07/29/%E4%B8%BA%E4%BD%95%E5%9C%A8%E6%95%A3%E5%88%97%E8%A1%A8%E4%B8%AD%E9%99%A4%E7%95%99%E4%BD%99%E6%95%B0%E6%B3%95%E5%8F%96%E6%A8%A1%E8%BF%90%E7%AE%97%E4%B8%AD%EF%BC%8C%E8%A6%81%E5%B0%BD%E9%87%8F%E5%8F%96%E7%B4%A0%E6%95%B0/">为何在散列表中除留余数法取模运算中，要尽量取素数
+</a></li>
+</ul>
+<h1 id="为什么桶容量要是2的次方？"><a href="#为什么桶容量要是2的次方？" class="headerlink" title="为什么桶容量要是2的次方？"></a>为什么桶容量要是2的次方？</h1><p>散列表用数组实现时，要计算元素应当存储在数组的哪个位置（索引），应当将元素key的hashCode对散列表大小取模，取模结果就是元素要存放在数组的索引位置。</p>
+<p>如果key的hashCode函数不能把key散列的均匀，就需要用质数作为哈希表大小，在除留取余的求数组索引时能够让元素分布的比较均匀。</p>
+<p>如果key的hashCode能够散列的比较均匀，那么其实用什么数作为哈希表大小都可以。</p>
+<p>桶容量为2的幂时取模的好处：<br>1.可以用位运算取模，计算速度更快，位运算也很方便。<br>2.可以让元素分布的均匀，减少散列冲突。<br>3.方便扩容计算，扩容也只需要乘以2，容量左移一位。</p>
+<h1 id="为什么2的幂的容量可以让元素分布更均匀？"><a href="#为什么2的幂的容量可以让元素分布更均匀？" class="headerlink" title="为什么2的幂的容量可以让元素分布更均匀？"></a>为什么2的幂的容量可以让元素分布更均匀？</h1><p>位运算对2的幂取模过程：一个二进制数乘以2的n次方相当于将该数左移n位，一个二进制数除以2的n次方相当于将该数右移n位，右移出界的部分就是余数，其实也就是原数低n位，取低n位的数，只需要将原数跟低位是n个1的二进制数做与操作就可以得到，低位是n个1的二进制数可以由2的n次方再减1得到。</p>
+<p>如果对不是2的幂的数进行位运算取模，假设这个数是x，x-1的二进制数一定不是全部都是1，而是含有0，此时x-1与原数做与操作后，那些有0的位置都会用不到，造成空间浪费，也增大了散列冲突。如果x-1全部是1的话，只要key的hashCode的二进制中的1在低n位分布均匀，就可以保证计算index的过程是分布均匀的，要求x-1的二进制全部是1，那么x就是2的幂。</p>
+<h1 id="通过构造函数传入不是2的幂的容量值会怎样？"><a href="#通过构造函数传入不是2的幂的容量值会怎样？" class="headerlink" title="通过构造函数传入不是2的幂的容量值会怎样？"></a>通过构造函数传入不是2的幂的容量值会怎样？</h1><p>会找一个最接近传入容量的2的幂作为实际桶的容量。</p>
+<h1 id="哈希表容量是2的幂会有什么问题？"><a href="#哈希表容量是2的幂会有什么问题？" class="headerlink" title="哈希表容量是2的幂会有什么问题？"></a>哈希表容量是2的幂会有什么问题？</h1><p>key的hash取余求索引时，会截断hash的高位，如果多个key的hash的低位比较固定，高位变化较大，那么最后计算的散列冲突就很多了。</p>
+<p>所以需要扰动函数处理一下key的hash，把高位的变化信息传递到低位。</p>
+<h1 id="扰动函数是什么，起到什么作用？"><a href="#扰动函数是什么，起到什么作用？" class="headerlink" title="扰动函数是什么，起到什么作用？"></a>扰动函数是什么，起到什么作用？</h1><p>存储一个元素时，需要决定该元素应该存储在table（桶）中哪一个位置，需要用元素的key的hashCode对桶容量做取模运算来获得要存储的数组索引位置。</p>
+<p>如果桶容量较小，取模操作会仅对key.hashCode()的低位做运算，如果多个元素的key的hashCode()低位相同，只是高位不同，那么冲突就较多，所以需要将高位和低位结合起来取模，减少冲突，避免散列分布不均。</p>
+<p>所以在对hashCode做取模运算之前，还需要让hashCode经过扰动函数扰动一下。</p>
+<p>jdk1.8中对key的hashCode的扰动函数做了优化：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">	<span class="type">int</span> h;</span><br><span class="line">	<span class="keyword">return</span> (key == <span class="literal">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>即将key.hashCode()的低16位和高16位做异或运算。</p>
+<p>仅仅异或一下做扰动，权衡了速度、性能、质量，既减少了系统的开销，也不会造成的因为高位没有参与下标的计算(table长度比较小时)，从而引起的碰撞。</p>
+<h2 id="为什么是右移16位？"><a href="#为什么是右移16位？" class="headerlink" title="为什么是右移16位？"></a>为什么是右移16位？</h2><p>推测：因为java中int是32位的，高16位和低16位异或已经算是顾全到了数字的二进制的每一位。</p>
+<p>实际：权衡了速度、性能、质量</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/fan2012huan/article/details/51097331">HashMap源码注解 之 静态工具方法hash()、tableSizeFor()（四）</a></li>
+</ul>
+<h2 id="扰动函数为什么是异或运算？"><a href="#扰动函数为什么是异或运算？" class="headerlink" title="扰动函数为什么是异或运算？"></a>扰动函数为什么是异或运算？</h2><ol>
+<li> 实现简单，运算快捷</li>
+<li>对参与运算的两方的二进制的每一位都各自有50%的概率影响结果输出</li>
+</ol>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/5889238/why-is-xor-the-default-way-to-combine-hashes">Why is XOR the default way to combine hashes?</a></li>
+</ul>
+<h1 id="桶的最大容量为什么是2的30次方，不是2的31次方？"><a href="#桶的最大容量为什么是2的30次方，不是2的31次方？" class="headerlink" title="桶的最大容量为什么是2的30次方，不是2的31次方？"></a>桶的最大容量为什么是2的30次方，不是2的31次方？</h1><p>java中int是32位，理论上1可以最多左移31位，因为1不移动就占了1位，所以可以移动的位数是32-1=31位；而虚拟机规定int类型最高位是符号位，符号位不参与移动，可移动位数就是31-1=30位</p>
+<h1 id="两个key对象的hashCode相同，如何获取value对象"><a href="#两个key对象的hashCode相同，如何获取value对象" class="headerlink" title="两个key对象的hashCode相同，如何获取value对象?"></a>两个key对象的hashCode相同，如何获取value对象?</h1><p>在遍历该桶的链表，链表中每个节点保存了键值对信息，将目标key与每个节点的key调用equals方法比较，相等的则为想要找到的节点，取其value对象。</p>
+<h1 id="什么对象适合做为HashMap的key"><a href="#什么对象适合做为HashMap的key" class="headerlink" title="什么对象适合做为HashMap的key?"></a>什么对象适合做为HashMap的key?</h1><p>使用String，Integer等系统类比较好，因为他们的hashCode方法实现是比较均匀的，可以减少散列冲突。</p>
+<p>其次这些类一旦创建都是不可变的，一来可以缓存hashCode，二来保证唯一性，三来线程安全。</p>
+<h1 id="自定义对象实现hashCode-方法有什么注意事项？"><a href="#自定义对象实现hashCode-方法有什么注意事项？" class="headerlink" title="自定义对象实现hashCode()方法有什么注意事项？"></a>自定义对象实现hashCode()方法有什么注意事项？</h1><p><strong>原则：</strong><br>一个对象的hashCode应该认为有均等的机会得到2的32次方中的任意一个32位整数值。</p>
+<p><img src="https://gitee.com/picportal/pic/raw/master/img/20210825205744.png" alt="《算法4》节选"></p>
+<p>一个优秀的散列方法需要满足三个条件：</p>
+<ul>
+<li>一致性 - 等价的键必然产生相等的散列值</li>
+<li>高效性 - 计算简便</li>
+<li>均匀性 - 均匀地散列所有的键</li>
+</ul>
+<p>保证均匀性的最好办法也许是保证键的每一位都在散列值的计算中起到了相同的作用，实现散列函数最常见的错误是忽略了高位的键。</p>
+<p>可以参考String的hashCode设计，kotlin的data class自动生成的hashCode以及集合类的hashCode算法都很相似。</p>
+<p>需要使用不可变的属性实现hashCode()方法，因为：</p>
+<ol>
+<li> 可以在计算一次哈希值后缓存起来，提高哈希表的读取速度。</li>
+<li> 如果key在放入哈希表时和取出哈希表时hashCode()发生变化，则会取不到之前存放的对象。</li>
+<li> 不可变的属性是线程安全的。</li>
+</ol>
+<h1 id="装载因子是什么？"><a href="#装载因子是什么？" class="headerlink" title="装载因子是什么？"></a>装载因子是什么？</h1><p>哈希表中已存储元素个数与哈希表总大小比值，即已存储元素个数与桶个数比值。</p>
+<p>装载因子越大，说明填充率高，空间利用率高，但是散列冲突可能性增大。</p>
+<p>装载因子越小，说明填充率低，浪费很多空间，但是散列冲突可能性减小。</p>
+<p>冲突越多，查找元素的时间越长，所以必须在时间和空间上进行权衡。</p>
+<h1 id="装载因子有什么作用？"><a href="#装载因子有什么作用？" class="headerlink" title="装载因子有什么作用？"></a>装载因子有什么作用？</h1><p>装载因子 = 已存储的元素个数 / 桶大小</p>
+<p>HashMap构造时可以传入一个装载因子，不传入的话会使用默认的装载因子0.75，构造时规定这个装载因子意思是装载因子的最大值。</p>
+<p>随着哈希表中存储元素的个数增多，填充率越高，实际的装载因子会逐渐增大，当  实际装载因子  大于  预设装载因子  时，为了避免大量的散列冲突，要增大桶的数量，HashMap会将通大小调整为原来的两倍，因为桶大小要求是2的幂，所以就扩大2倍。</p>
+<h1 id="桶容量是如何动态扩展的？"><a href="#桶容量是如何动态扩展的？" class="headerlink" title="桶容量是如何动态扩展的？"></a>桶容量是如何动态扩展的？</h1><p>当  已存储元素个数  超过  哈希表大小 * 装载因子，会扩容至原大小的两倍，并对部分元素重新散列。</p>
+<p>当put元素时，发现已存储元素个数超过threshold时，会触发扩容。</p>
+<p>threshold的首次赋值由构造HashMap时传入的初始容量和装载因子决定。</p>
+<p>threshold = 初始容量 * 装载因子</p>
+<p>每次扩容桶（table）大小会变为原来两倍，threshold也会变为原来的两倍。</p>
+<h1 id="构造函数传入不是2的幂的初始容量会怎样？"><a href="#构造函数传入不是2的幂的初始容量会怎样？" class="headerlink" title="构造函数传入不是2的幂的初始容量会怎样？"></a>构造函数传入不是2的幂的初始容量会怎样？</h1><p>不管传什么初始容量，都会经由tableSizeFor()计算得到大于等于传入的初始容量的最小的2的幂作为桶的实际容量大小</p>
+<p>在put()时触发resize()，threshold也会被重新赋值为桶容量乘以装载因子。</p>
+<h1 id="tableSizeFor-算法过程是怎样的？"><a href="#tableSizeFor-算法过程是怎样的？" class="headerlink" title="tableSizeFor()算法过程是怎样的？"></a>tableSizeFor()算法过程是怎样的？</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Returns a power of two size for the given target capacity.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">tableSizeFor</span><span class="params">(<span class="type">int</span> cap)</span> &#123;</span><br><span class="line">	<span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> cap - <span class="number">1</span>;</span><br><span class="line">	n |= n &gt;&gt;&gt; <span class="number">1</span>;</span><br><span class="line">	n |= n &gt;&gt;&gt; <span class="number">2</span>;</span><br><span class="line">	n |= n &gt;&gt;&gt; <span class="number">4</span>;</span><br><span class="line">	n |= n &gt;&gt;&gt; <span class="number">8</span>;</span><br><span class="line">	n |= n &gt;&gt;&gt; <span class="number">16</span>;</span><br><span class="line">	<span class="keyword">return</span> (n &lt; <span class="number">0</span>) ? <span class="number">1</span> : (n &gt;= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>分三种情况</p>
+<ol>
+<li>cap小于0，返回1</li>
+<li>cap经过位运算后大于等于MAXIMUM_CAPACITY，返回MAXIMUM_CAPACITY</li>
+<li>cap经过位运算后返回n+1</li>
+</ol>
+<p>先考虑正常的情况，对于一个给定的cap，分为两种情况，cap可能是2的幂或非2的幂。</p>
+<ol>
+<li>当cap不是2的幂，例如10，二进制为1010，cap - 1 = 1001，几个右移操作实际的结果就是从cap - 1的二进制的1的最高位开始到最低位全部变成1，最后返回n + 1就是2的幂了</li>
+<li>当cap是2的幂，例如16，二进制为10000，cap-1 = 1111，右移操作后n还是为1111，n+1就还是16</li>
+</ol>
+<p>所以正常情况下tableSizeFor()得出的就是大于等于cap的数</p>
+<p>如果cap一开始不减1，当cap是2的幂时，最后计算得出的就会是cap的2倍</p>
+<p>cap小于0，没有实际的意义，不能表示桶容量，故而返回最小正整数1</p>
+<p>cap大于等于MAXIMUM_CAPACITY时，MAXIMUM_CAPACITY是2的30次方，此时cap的二进制最高位1是在第31位，逻辑右移再加1会得到32个1，int中最高位（第32位）是符号位，最高位1表示负数了，没有意义，故而将最大值限定在2的30次方，2的30次方减1的二进制是从第1位到第30位全都是1</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/fan2012huan/article/details/51097331">HashMap源码注解 之 静态工具方法hash()、tableSizeFor()（四）
+</a></li>
+</ul>
+<h1 id="为什么要调整桶大小？"><a href="#为什么要调整桶大小？" class="headerlink" title="为什么要调整桶大小？"></a>为什么要调整桶大小？</h1><p>为了减少散列冲突，减少元素查找次数</p>
+<h1 id="为什么桶初始容量是16？"><a href="#为什么桶初始容量是16？" class="headerlink" title="为什么桶初始容量是16？"></a>为什么桶初始容量是16？</h1><p>这个问题不好解答可以考虑边界情况，桶容量过大、过小会导致什么</p>
+<p>桶容量过大会导致大量空间浪费</p>
+<p>桶容量过小会导致频繁扩容，扩容一次是耗时的</p>
+<p>16应当是一个权衡评估后得出的值</p>
+<h1 id="默认装载因子为什么是0-75？"><a href="#默认装载因子为什么是0-75？" class="headerlink" title="默认装载因子为什么是0.75？"></a>默认装载因子为什么是0.75？</h1><p>可以先考虑装载因子过大和过小分别会有什么问题</p>
+<p>装载因子过大，表明哈希表填充率高，但是散列冲突的可能性大，查找元素的次数多</p>
+<p>装载因子过小，表明哈希表的空闲空间大，空间利用率低，但冲突较少，查找元素次数少</p>
+<p>0.75乘以2的幂是整数，不需要再做四舍五入，计算方便</p>
+<p>根据HashMap注释</p>
+<p>As a general rule, the default load factor (.75) offers a good tradeoff between time and space costs. Higher values decrease the space overhead but increase the lookup cost(reflected in most of the operations of the HashMap class, including get and put). The expected number of entries in the map and its load factor should be taken into account when setting its initial capacity, so as to minimize the number of rehash operations. If the initial capacity is greater than the maximum number of entries divided by the load factor, no rehash operations will ever occur.</p>
+<p>参考资料</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/reliveIT/article/details/82960063">HashMap defaultLoadFactor = 0.75和泊松分布没有关系
+</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/64f6de3ffcc1">HashMap的loadFactor为什么是0.75？
+</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/31401836/2011291">StackOverflow: What is the significance of load factor in HashMap?
+</a></li>
+</ul>
+<h1 id="resize-的大致过程"><a href="#resize-的大致过程" class="headerlink" title="resize()的大致过程"></a>resize()的大致过程</h1><p>根据resize()方法的注释所言，resize()会将桶容量扩充两倍，由于容量是2的幂，原来桶中的元素位置要么是原封不动，要么是再移动2的幂个位置。</p>
+<p>求元素的在table中的索引依然是  元素key的hashCode &amp; (桶容量-1)</p>
+<p>例如原来容量是16，二进制为10000，求元素索引时是 hashCode &amp; 1111</p>
+<p>扩容两倍后容量是32，二进制位100000，求元素索引的计算变成了 hashCode &amp; 11111，比之前多了一个1，如果元素key的hashCode在该位也是1，等同于元素的索引位置增加了2的幂。</p>
+<p>桶中是链表时，会将链表划分为两个链表，一个留在原桶，一个放入移动了2的幂的桶中。</p>
+<p>为什么要这样调整？原封不动不行吗？</p>
+<p>因为这样做是为了保证散列均匀，减少冲突。</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://yikun.github.io/2015/04/01/Java-HashMap%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%8F%8A%E5%AE%9E%E7%8E%B0/">Java HashMap工作原理及实现
+</a></li>
+</ul>
+<h1 id="为什么在解决hash冲突的时候，不直接用红黑树？而选择先用链表，再转红黑树？"><a href="#为什么在解决hash冲突的时候，不直接用红黑树？而选择先用链表，再转红黑树？" class="headerlink" title="为什么在解决hash冲突的时候，不直接用红黑树？而选择先用链表，再转红黑树？"></a>为什么在解决hash冲突的时候，不直接用红黑树？而选择先用链表，再转红黑树？</h1><p>因为节点数过少时，红黑树的插入、删除的成本比链表要高很多。</p>
+<p>在散列均匀的情况下，冲突较少，每个桶中链表的平均长度比较短，性能可接受。</p>
+<h1 id="为什么链表的长度为8时变成红黑树？"><a href="#为什么链表的长度为8时变成红黑树？" class="headerlink" title="为什么链表的长度为8时变成红黑树？"></a>为什么链表的长度为8时变成红黑树？</h1><p>根据jdk1.8的HashMap中的注释所言，假设散列分布均匀，在负载因子为0.75的条件下，某一个桶中元素出现的频率满足λ为0.5的泊松分布。从概率来看，之所以链表长度超过 8 以后要变成红黑树，因为在散列分布均匀的情况下出现这种情况的概率小到忽略不计，一旦出现，几乎可以认为是散列函数设计有问题导致的，即散列不均匀。</p>
+<p>所以红黑树是专门应对元素key糟糕的（分布不均匀）的散列函数而准备的。</p>
+<p>二项分布：n次重复独立伯努利试验，一次伯努利实验只有两种对立的结果。</p>
+<p>泊松分布：当二项分布的n很大，p很小时，可以近似为泊松分布。</p>
+<p>算法第四版465页：<br><img src="https://gitee.com/picportal/pic/raw/master/img/20210825205936.png"><br><img src="https://gitee.com/picportal/pic/raw/master/img/20210825205952.png"></p>
+<p>散列均匀时，每个桶的链表的平均长度为  实际元素总数  / 哈希表大小，这个就是装载因子λ</p>
+<p>现在的问题就是，将N个元素随机放入M个桶，每个桶的元素平均个数为λ（N/M），求每个桶元素个数为k的概率。</p>
+<p>对于某一个桶而言，一个元素放入桶中是一个二元结果，要么放入，要么不放入，散列均匀的情况下，不管有多少个桶，每个元素出现在同一个桶的概率是相同，每个桶中平均有λ个元素时，那么一个元素出现在同一个桶的概率就是λ/N，就是桶元素数量占元素总数的比值，理解很直观。</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ysmull.cn/JCF/HashMap.html">谈谈 HashMap 实现中的若干数学问题
+</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/26263743">泊松分布 (Poisson Distributions) 的推导
+</a></li>
+</ul>
+<h1 id="为何红黑树节点数在小于等于6时又变成链表？为什么不是小于等于8时变回链表？"><a href="#为何红黑树节点数在小于等于6时又变成链表？为什么不是小于等于8时变回链表？" class="headerlink" title="为何红黑树节点数在小于等于6时又变成链表？为什么不是小于等于8时变回链表？"></a>为何红黑树节点数在小于等于6时又变成链表？为什么不是小于等于8时变回链表？</h1><p>是为了防止频繁插入和删除元素时不停的在树和链表之间互相转换、降低性能，红黑树和链表之间的转换是有成本的。</p>
+<h1 id="MIN-TREEIFY-CAPACITY是做什么的？"><a href="#MIN-TREEIFY-CAPACITY是做什么的？" class="headerlink" title="MIN_TREEIFY_CAPACITY是做什么的？"></a>MIN_TREEIFY_CAPACITY是做什么的？</h1><p>桶中元素超过TREEIFY_THRESHOLD个（8个）后，还要保证哈希表数组table的大小大于等于MIN_TREEIFY_CAPACITY才会把链表转红黑树，容量过小时使用红黑树性价比不高，用扩容来解决桶元素堆积的问题更适合。</p>
+<p>这个值为什么要是4 * TREEIFY_THRESHOLD，是为了避免在resize和树化之间产生冲突，比如初始容量是16，装载因子0.75，存储元素有16*0.75=12个时就应该扩容，但是此时如果是4个元素在一个桶，8个元素在另外一个桶，是要先树化的，树化后再等resize扩容了，可能又要将红黑树链表化，这样反复来回影响性能。</p>
+<h1 id="平衡二叉搜索树中为何选用红黑树？用AVL树会有什么问题？红黑树和AVL树有何区别？"><a href="#平衡二叉搜索树中为何选用红黑树？用AVL树会有什么问题？红黑树和AVL树有何区别？" class="headerlink" title="平衡二叉搜索树中为何选用红黑树？用AVL树会有什么问题？红黑树和AVL树有何区别？"></a>平衡二叉搜索树中为何选用红黑树？用AVL树会有什么问题？红黑树和AVL树有何区别？</h1><p>单次的插入和删除操作：</p>
+<p>单次插入数据，红黑树和AVL树平均都只需要几次旋转即可完成。</p>
+<p>单次删除元素，红黑树大多数只需要几次旋转调整，AVL树需要调整查找路径上所有结点。</p>
+<p>大量的插入和删除操作：</p>
+<p>红黑树由于是基于2-3树，3结点的存在可以吸纳一部分不平衡性，不用做频繁的旋转调整。</p>
+<p>AVL树需要始终保持平衡，在大量插入或删除元素后，AVL树的调整的次数多于红黑树。</p>
+<p>在大量数据的统计意义上，红黑树的插入和删除次数相对于AVL树较少，适合插入和删除频繁的场景。</p>
+<p>AVL树由于是高度平衡的，红黑树不是高度平衡，AVL树的查找次数比红黑树更少，适合对查询效率非常敏感，插入和删除不频繁的场景。</p>
+<p>红黑树的查询跟AVL树仍然是同一个数量级，所以综合查询、插入、删除的性能，红黑树表现较好。</p>
+<p>参考</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20545708/answer/58717264">为什么STL和linux都使用红黑树作为平衡树的实现？ - Acjx的回答 - 知乎 </a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/19856999/answer/944180969">红黑树比 AVL 树具体更高效在哪里？ - 伍亦勤的回答 - 知乎</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/16257761/difference-between-red-black-trees-and-avl-trees">Difference between red-black trees and AVL trees</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/21aspnet/article/details/88939297">为什么Java8中HashMap链表使用红黑树而不是AVL树
+</a></li>
+</ul>
+<h1 id="put方法大致过程"><a href="#put方法大致过程" class="headerlink" title="put方法大致过程"></a>put方法大致过程</h1><ol>
+<li>获取key的hashCode()并扰动</li>
+<li>table数组为null则通过resize()初始化table，创建HashMap对象不会立刻初始化table数组</li>
+<li>利用扰动后的hashCode除留取余求得元素在table中的索引</li>
+<li>如果没有碰撞冲突，直接存入桶中</li>
+<li>如果有碰撞冲突，桶中维护一个链表存储哈希值相同的元素，java7是头插法，java8是尾插法</li>
+<li>链表长度超过TREEIFY_THRESHOLD，链表转为红黑树</li>
+<li>如果元素已存在，替换value。元素存在先通过key的hashCode查看桶中是否有元素，没有则不存在，有元素需要依次遍历桶中元素，通过key的equals方法比较是否相等，有相等的则存在。</li>
+<li> 哈希表实际存储元素数量超过了阈值threshold（哈希表大小 * 装载因子），调用resize()扩容。</li>
+</ol>
+<h1 id="get方法的大致过程"><a href="#get方法的大致过程" class="headerlink" title="get方法的大致过程"></a>get方法的大致过程</h1><ol>
+<li>获取key的hashCode()并扰动</li>
+<li>根据哈希值求得table索引</li>
+<li>若桶中第一个元素命中，直接返回</li>
+<li> 有冲突则依次遍历链表或红黑树，通过key的equals比较来寻找目标节点，找到了返回其value，没有找到返回null</li>
+</ol>
+<h1 id="HashMap为什么线程不安全？高并发下会产生什么问题？"><a href="#HashMap为什么线程不安全？高并发下会产生什么问题？" class="headerlink" title="HashMap为什么线程不安全？高并发下会产生什么问题？"></a>HashMap为什么线程不安全？高并发下会产生什么问题？</h1><p>一句话：jdk7的HashMap在扩容时会改变链表中元素原本的顺序，高并发情况下容易导致链表产生环，进而导致死循环，CPU占用率飙升到100%。</p>
+<p>jdk7中扩容采用头插法是考虑到缓存的时间局部性原则，最近访问过的数据下次大概率会再次访问，把刚访问过的元素放在链表最前面可以直接被查询到，减少查找次数。</p>
+<p>jdk8中扩容改为尾插法，高并发情况下不会产生死循环了，但是resize依然不是原子性的，可能会产生数据丢失。</p>
+<p>其他方法例如链表和红黑树互转的过程，都不是原子性的，都可能会产生数据丢失的问题。</p>
+<p>参考</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/e2f75c8cce01">为什么HashMap线程不安全
+</a></li>
+</ul>
+<h1 id="Java-8-对HashMap做出了哪些改进？"><a href="#Java-8-对HashMap做出了哪些改进？" class="headerlink" title="Java  8  对HashMap做出了哪些改进？"></a>Java  8  对HashMap做出了哪些改进？</h1><ol>
+<li>桶中链表长度超过8将链表转为红黑树，以应对不均匀的散列函数导致的查询次数增多</li>
+<li> 链表插入元素由头插法改为尾插法，以解决并发下插入元素时链表产生环进而导致的死循环</li>
+</ol>
+<h1 id="modCount是做什么的？"><a href="#modCount是做什么的？" class="headerlink" title="modCount是做什么的？"></a>modCount是做什么的？</h1><p>对哈希表做出了修改（添加和删除元素），modCount就会增加，表示修改的次数，使用迭代器迭代哈希表时一旦发现modCount变化了，就会立刻抛出ConcurrentModificationException，以避免迭代时的不确定性，这称为fail-fast机制。注意修改一个已存在的元素的value不改变modCount。</p>
+<h1 id="HashMap的缺点是什么？想要用哈希表还有哪些选择？"><a href="#HashMap的缺点是什么？想要用哈希表还有哪些选择？" class="headerlink" title="HashMap的缺点是什么？想要用哈希表还有哪些选择？"></a>HashMap的缺点是什么？想要用哈希表还有哪些选择？</h1><p>缺点就是结构复杂，占用内存可能较多，对哈希表有简单需求的地方不需要这么复杂而完善的类</p>
+<p>例如ThreadLocalMap就自己实现了一套简单的哈希表，采用开放定址法</p>
+<p>还有Android上SparseArray、ArrayMap实现的内存消耗更低的哈希表</p>
+<h1 id="HashMap与Hashtable的区别？"><a href="#HashMap与Hashtable的区别？" class="headerlink" title="HashMap与Hashtable的区别？"></a>HashMap与Hashtable的区别？</h1><ol>
+<li> Hashtable的get、put、clear、contains、size等大部分方法上都加上了synchronized关键字，给整个对象上锁，HashMap非线程安全</li>
+<li> Hashtable中没有红黑树仅有链表</li>
+<li> Hashtable继承Dictionary类，HashMap实现Map接口</li>
+<li> Hashtable不允许null的key和value，而HashMap都允许</li>
+<li> Hashtable求key的hashCode没有扰动</li>
+<li> HashMap和Hashtable使用Iterator遍历元素过程中对哈希表添加或删除元素是会抛出异常的（fast-fail），但Hashtable用Enumeration迭代时不会fast-fail，因为通过Enumeration的nextElement()获取下一个元素时没有对modCount做判断，而Iterator的next方法对modCount做了判断。</li>
+<li> Hashtable是jdk1添加的，HashMap是jdk2添加的</li>
+</ol>
+<p>Dictionary已被废弃，所以Hashtable已经被废弃，而且同步性能较差，大多数操作都会锁住整个对象。用jdk1.5引入的采用分段锁的ConcurrentHashMap同步性能更好。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/12/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><a class="extend next" rel="next" href="/page/14/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/12/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><a class="extend next" rel="next" href="/page/14/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1664,20 +1745,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">191</span>
+          <span class="site-state-item-count">187</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">266</span>
+        <span class="site-state-item-count">257</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1718,7 +1799,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
